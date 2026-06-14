@@ -54,17 +54,16 @@ export default function Home() {
         <img src="/logo-outline.png" alt="" className="w-[820px] scale-[1.13] mt-48" />
       </div>
 
-      {/* Hero Section - Improved Mobile Version */}
+      {/* Hero Section - Mobile Optimized Like Your Screenshot */}
       <div 
-        className="relative w-full h-[360px] sm:h-[420px] md:h-[460px] flex items-center bg-cover bg-center md:bg-[center_25%]"
+        className="relative w-full h-[380px] sm:h-[420px] md:h-[460px] flex items-center bg-cover bg-center md:bg-[center_25%]"
         style={{ backgroundImage: "url('/hero-couple.png')" }}
       >
-        {/* Stronger gradient on mobile to improve text readability */}
-        <div className="absolute inset-0 bg-gradient-to-r from-[#F8F6F2] via-[#F8F6F2]/95 to-transparent md:via-[#F8F6F2]/90" 
-             style={{ width: '82%' }}></div>
+        <div className="absolute inset-0 bg-gradient-to-r from-[#F8F6F2] via-[#F8F6F2]/90 to-transparent md:via-[#F8F6F2]/85" 
+             style={{ width: '75%' }}></div>
 
         <div className="relative z-10 max-w-4xl px-6 md:pl-16 text-left">
-          <h1 className="text-5xl sm:text-6xl md:text-7xl font-bold tracking-[-0.02em] leading-none text-[#0B2D5C] mb-6">
+          <h1 className="text-5xl sm:text-6xl md:text-7xl font-bold tracking-[-0.02em] leading-none text-[#0B2D5C] mb-4">
             Strong Values.<br />
             <span className="text-[#D62828]">Strong Connections.</span>
           </h1>
