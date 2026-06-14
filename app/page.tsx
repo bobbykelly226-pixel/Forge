@@ -49,14 +49,14 @@ export default function Home() {
         )}
       </nav>
 
-      {/* Background Watermark - Hidden on Mobile */}
+      {/* Background Watermark - Only on Desktop */}
       <div className="hidden md:block fixed inset-0 flex items-center justify-center pointer-events-none z-0 opacity-10">
         <img src="/logo-outline.png" alt="" className="w-[820px] scale-[1.13] mt-48" />
       </div>
 
-      {/* Hero Section - Better Mobile View */}
+      {/* Hero Section - Improved Mobile Crop */}
       <div 
-        className="relative w-full h-[420px] md:h-[460px] flex items-center bg-cover bg-center md:bg-[center_25%]"
+        className="relative w-full h-[380px] sm:h-[460px] flex items-center bg-cover bg-[center_30%] md:bg-[center_25%]"
         style={{ backgroundImage: "url('/hero-couple.png')" }}
       >
         <div className="absolute inset-0 bg-gradient-to-r from-[#F8F6F2] via-[#F8F6F2]/95 to-transparent md:via-[#F8F6F2]/92" 
@@ -76,12 +76,60 @@ export default function Home() {
         </div>
       </div>
 
-      {/* Rest of the page (Values + About + Footer) remains the same */}
+      {/* Horizontal Values Section */}
       <div className="bg-[#F4F4F4] py-16">
         <div className="max-w-6xl mx-auto px-6">
           <h2 className="text-4xl font-bold tracking-tight text-[#0B2D5C] text-center mb-12">Our Core Values</h2>
-          {/* Values grid stays the same - omitted for brevity but keep your existing one */}
-          {/* Paste your existing values grid here if needed */}
+
+          <div className="grid grid-cols-2 md:grid-cols-6 gap-8 md:gap-6">
+            <div className="text-center px-4 flex flex-col items-center">
+              <div className="h-28 flex items-center justify-center mb-4">
+                <img src="/icon-faith.png" alt="Faith" className="w-20 h-20 object-contain" />
+              </div>
+              <h3 className="font-semibold text-[#0B2D5C] mb-2">FAITH</h3>
+              <p className="text-sm text-[#444444] text-center">Build a relationship with a foundation that matters.</p>
+            </div>
+
+            <div className="text-center px-4 flex flex-col items-center">
+              <div className="h-28 flex items-center justify-center mb-4">
+                <img src="/icon-family.png" alt="Family" className="w-24 h-24 object-contain" />
+              </div>
+              <h3 className="font-semibold text-[#0B2D5C] mb-2">FAMILY</h3>
+              <p className="text-sm text-[#444444] text-center">Find someone who values family as much as you do.</p>
+            </div>
+
+            <div className="text-center px-4 flex flex-col items-center">
+              <div className="h-28 flex items-center justify-center mb-4">
+                <img src="/icon-service.png" alt="Service" className="w-24 h-24 object-contain" />
+              </div>
+              <h3 className="font-semibold text-[#0B2D5C] mb-2">SERVICE</h3>
+              <p className="text-sm text-[#444444] text-center">Connect with people who lead with purpose and give with heart.</p>
+            </div>
+
+            <div className="text-center px-4 flex flex-col items-center">
+              <div className="h-28 flex items-center justify-center mb-4">
+                <img src="/icon-commitment.png" alt="Commitment" className="w-20 h-20 object-contain" />
+              </div>
+              <h3 className="font-semibold text-[#0B2D5C] mb-2">COMMITMENT</h3>
+              <p className="text-sm text-[#444444] text-center">Look for relationships built on loyalty, trust, and lasting commitment.</p>
+            </div>
+
+            <div className="text-center px-4 flex flex-col items-center">
+              <div className="h-28 flex items-center justify-center mb-4">
+                <img src="/icon-integrity.png" alt="Integrity" className="w-20 h-20 object-contain" />
+              </div>
+              <h3 className="font-semibold text-[#0B2D5C] mb-2">INTEGRITY</h3>
+              <p className="text-sm text-[#444444] text-center">Find someone whose actions match their values and words.</p>
+            </div>
+
+            <div className="text-center px-4 flex flex-col items-center">
+              <div className="h-28 flex items-center justify-center mb-4">
+                <img src="/icon-responsibility.png" alt="Responsibility" className="w-24 h-24 object-contain" />
+              </div>
+              <h3 className="font-semibold text-[#0B2D5C] mb-2">RESPONSIBILITY</h3>
+              <p className="text-sm text-[#444444] text-center">Connect with people who take ownership of their lives and future.</p>
+            </div>
+          </div>
         </div>
       </div>
 
