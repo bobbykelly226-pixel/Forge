@@ -54,16 +54,16 @@ export default function Home() {
         <img src="/logo-outline.png" alt="" className="w-[820px] scale-[1.13] mt-48" />
       </div>
 
-      {/* Hero Section - Mobile Optimized Like Your Screenshot */}
+      {/* Hero Section - Stronger Mobile Focus */}
       <div 
-        className="relative w-full h-[380px] sm:h-[420px] md:h-[460px] flex items-center bg-cover bg-center md:bg-[center_25%]"
+        className="relative w-full h-[380px] sm:h-[440px] md:h-[460px] flex items-center bg-cover bg-[center_35%] md:bg-[center_25%]"
         style={{ backgroundImage: "url('/hero-couple.png')" }}
       >
-        <div className="absolute inset-0 bg-gradient-to-r from-[#F8F6F2] via-[#F8F6F2]/90 to-transparent md:via-[#F8F6F2]/85" 
-             style={{ width: '75%' }}></div>
+        <div className="absolute inset-0 bg-gradient-to-r from-[#F8F6F2] via-[#F8F6F2]/96 to-transparent md:via-[#F8F6F2]/90" 
+             style={{ width: '80%' }}></div>
 
         <div className="relative z-10 max-w-4xl px-6 md:pl-16 text-left">
-          <h1 className="text-5xl sm:text-6xl md:text-7xl font-bold tracking-[-0.02em] leading-none text-[#0B2D5C] mb-4">
+          <h1 className="text-5xl sm:text-6xl md:text-7xl font-bold tracking-[-0.02em] leading-none text-[#0B2D5C] mb-6">
             Strong Values.<br />
             <span className="text-[#D62828]">Strong Connections.</span>
           </h1>
@@ -76,7 +76,7 @@ export default function Home() {
         </div>
       </div>
 
-      {/* Horizontal Values Section */}
+      {/* Values Section */}
       <div className="bg-[#F4F4F4] py-16">
         <div className="max-w-6xl mx-auto px-6">
           <h2 className="text-4xl font-bold tracking-tight text-[#0B2D5C] text-center mb-12">Our Core Values</h2>
