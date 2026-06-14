@@ -10,7 +10,7 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-[#F8F6F2] text-[#222222]">
-      {/* Navigation - Hamburger on Mobile */}
+      {/* Navigation */}
       <nav className="border-b border-[#0B2D5C]/20 bg-[#0B2D5C] backdrop-blur-md sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
           <a href="/" className="flex items-center gap-3 hover:opacity-90 transition flex-shrink-0">
@@ -49,18 +49,19 @@ export default function Home() {
         )}
       </nav>
 
-      {/* Background Watermark - Only on Desktop */}
+      {/* Background Watermark - Desktop Only */}
       <div className="hidden md:block fixed inset-0 flex items-center justify-center pointer-events-none z-0 opacity-10">
         <img src="/logo-outline.png" alt="" className="w-[820px] scale-[1.13] mt-48" />
       </div>
 
-      {/* Hero Section - Improved Mobile Crop */}
+      {/* Hero Section - Improved Mobile Version */}
       <div 
-        className="relative w-full h-[380px] sm:h-[460px] flex items-center bg-cover bg-[center_30%] md:bg-[center_25%]"
+        className="relative w-full h-[360px] sm:h-[420px] md:h-[460px] flex items-center bg-cover bg-center md:bg-[center_25%]"
         style={{ backgroundImage: "url('/hero-couple.png')" }}
       >
-        <div className="absolute inset-0 bg-gradient-to-r from-[#F8F6F2] via-[#F8F6F2]/95 to-transparent md:via-[#F8F6F2]/92" 
-             style={{ width: '78%' }}></div>
+        {/* Stronger gradient on mobile to improve text readability */}
+        <div className="absolute inset-0 bg-gradient-to-r from-[#F8F6F2] via-[#F8F6F2]/95 to-transparent md:via-[#F8F6F2]/90" 
+             style={{ width: '82%' }}></div>
 
         <div className="relative z-10 max-w-4xl px-6 md:pl-16 text-left">
           <h1 className="text-5xl sm:text-6xl md:text-7xl font-bold tracking-[-0.02em] leading-none text-[#0B2D5C] mb-6">
