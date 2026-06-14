@@ -1,0 +1,4 @@
+#!/bin/bash
+cd ~/swipe-right
+echo "🚀 Starting Forge..."
+npm run dev
