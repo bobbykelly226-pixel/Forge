@@ -8,19 +8,19 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-[#F8F6F2] text-[#222222]">
-      {/* Navigation */}
+      {/* Navigation - Much Better on Mobile */}
       <nav className="border-b border-[#0B2D5C]/20 bg-[#0B2D5C] backdrop-blur-md sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
-          <a href="/" className="flex items-center gap-3 hover:opacity-90 transition">
-            <img src="/forge-header.png" alt="Forge Logo" className="h-14 sm:h-16 w-auto" />
+          <a href="/" className="flex items-center gap-3 hover:opacity-90 transition flex-shrink-0">
+            <img src="/forge-header.png" alt="Forge Logo" className="h-10 sm:h-14 w-auto" />
           </a>
           
-          <div className="flex items-center gap-8 sm:gap-12 text-sm sm:text-lg font-medium text-white">
-            <Link href="/" className={`hover:text-[#D62828] transition ${pathname === '/' ? 'text-[#D62828] font-semibold' : ''}`}>Home</Link>
-            <Link href="/about" className={`hover:text-[#D62828] transition ${pathname === '/about' ? 'text-[#D62828] font-semibold' : ''}`}>About</Link>
-            <Link href="/values" className={`hover:text-[#D62828] transition ${pathname === '/values' ? 'text-[#D62828] font-semibold' : ''}`}>Values</Link>
-            <Link href="#" className={`hover:text-[#D62828] transition ${pathname === '/founder' ? 'text-[#D62828] font-semibold' : ''}`}>Meet the Founder</Link>
-            <Link href="/waitlist" className={`hover:text-[#D62828] transition ${pathname === '/waitlist' ? 'text-[#D62828] font-semibold' : ''}`}>Join Waitlist</Link>
+          <div className="flex items-center gap-4 sm:gap-8 text-sm sm:text-base font-medium text-white overflow-x-auto pb-1 hide-scroll">
+            <Link href="/" className={`hover:text-[#D62828] transition whitespace-nowrap ${pathname === '/' ? 'text-[#D62828] font-semibold' : ''}`}>Home</Link>
+            <Link href="/about" className={`hover:text-[#D62828] transition whitespace-nowrap ${pathname === '/about' ? 'text-[#D62828] font-semibold' : ''}`}>About</Link>
+            <Link href="/values" className={`hover:text-[#D62828] transition whitespace-nowrap ${pathname === '/values' ? 'text-[#D62828] font-semibold' : ''}`}>Values</Link>
+            <Link href="#" className={`hover:text-[#D62828] transition whitespace-nowrap ${pathname === '/founder' ? 'text-[#D62828] font-semibold' : ''}`}>Meet the Founder</Link>
+            <Link href="/waitlist" className={`hover:text-[#D62828] transition whitespace-nowrap ${pathname === '/waitlist' ? 'text-[#D62828] font-semibold' : ''}`}>Join Waitlist</Link>
           </div>
         </div>
       </nav>
@@ -30,20 +30,20 @@ export default function Home() {
         <img src="/logo-outline.png" alt="" className="w-[820px] scale-[1.13] mt-48" />
       </div>
 
-      {/* Hero Section */}
+      {/* Hero Section - Better Mobile Cropping */}
       <div 
-        className="relative w-full h-[420px] flex items-center bg-cover bg-center"
+        className="relative w-full h-[380px] sm:h-[460px] flex items-center bg-cover bg-center md:bg-[center_30%]"
         style={{ backgroundImage: "url('/hero-couple.png')" }}
       >
-        <div className="absolute inset-0 bg-gradient-to-r from-[#F8F6F2] via-[#F8F6F2]/92 to-transparent" 
-             style={{ width: '68%' }}></div>
+        <div className="absolute inset-0 bg-gradient-to-r from-[#F8F6F2] via-[#F8F6F2]/95 to-transparent md:via-[#F8F6F2]/92" 
+             style={{ width: '75%' }}></div>
 
         <div className="relative z-10 max-w-4xl px-6 md:pl-16 text-left">
-          <h1 className="text-6xl md:text-7xl font-bold tracking-tighter leading-none text-[#0B2D5C] mb-6">
+          <h1 className="text-5xl sm:text-6xl md:text-7xl font-bold tracking-[-0.02em] leading-none text-[#0B2D5C] mb-6">
             Strong Values.<br />
             <span className="text-[#D62828]">Strong Connections.</span>
           </h1>
-          <p className="text-xl text-[#444444] max-w-lg mb-8">
+          <p className="text-lg sm:text-xl text-[#444444] max-w-lg mb-8">
             A place where shared values come first, helping faith-driven and traditional-minded singles build meaningful, lasting relationships.
           </p>
           <a href="/waitlist" className="bg-[#D62828] hover:bg-[#A61F1F] text-white px-8 py-4 rounded-xl font-semibold text-lg transition inline-block">
@@ -55,7 +55,7 @@ export default function Home() {
       {/* Horizontal Values Section */}
       <div className="bg-[#F4F4F4] py-16">
         <div className="max-w-6xl mx-auto px-6">
-          <h2 className="text-4xl font-semibold text-[#0B2D5C] text-center mb-12">Our Core Values</h2>
+          <h2 className="text-4xl font-bold tracking-tight text-[#0B2D5C] text-center mb-12">Our Core Values</h2>
 
           <div className="grid grid-cols-2 md:grid-cols-6 gap-8 md:gap-6">
             <div className="text-center px-4 flex flex-col items-center">
@@ -114,7 +114,7 @@ export default function Home() {
         <div className="max-w-6xl mx-auto px-6 grid md:grid-cols-2 gap-12 items-center">
           <div>
             <p className="text-[#D62828] uppercase tracking-widest text-sm font-medium mb-3">ABOUT FORGE</p>
-            <h2 className="text-5xl leading-tight font-bold text-[#0B2D5C] mb-8">
+            <h2 className="text-4xl sm:text-5xl leading-tight font-bold tracking-tight text-[#0B2D5C] mb-8">
               Meaningful relationships don’t happen by chance.<br />
               <span className="text-[#D62828]">They’re forged by design.</span>
             </h2>
@@ -128,7 +128,7 @@ export default function Home() {
           </div>
 
           <div className="flex justify-center md:justify-end">
-            <img src="/forge-full.png" alt="Forge Logo" className="max-w-[420px] w-full" />
+            <img src="/forge-full.png" alt="Forge Logo" className="max-w-[380px] w-full" />
           </div>
         </div>
       </div>
@@ -137,13 +137,11 @@ export default function Home() {
       <footer className="bg-[#0B2D5C] text-white/80 py-8">
         <div className="max-w-6xl mx-auto px-6">
           <div className="flex flex-col md:flex-row justify-between items-center gap-8">
-            {/* Logo Only */}
             <div>
               <img src="/forge-header.png" alt="Forge" className="h-9 w-auto" />
             </div>
 
-            {/* Centered Links - Spread Out */}
-            <div className="flex flex-wrap justify-center gap-x-10 gap-y-2 text-sm">
+            <div className="flex flex-wrap justify-center gap-x-8 gap-y-2 text-sm">
               <Link href="/about" className="hover:text-white transition">About</Link>
               <Link href="/values" className="hover:text-white transition">Values</Link>
               <Link href="#" className="hover:text-white transition">Mission</Link>
@@ -152,7 +150,6 @@ export default function Home() {
               <Link href="#" className="hover:text-white transition">Contact</Link>
             </div>
 
-            {/* Larger Social Icons */}
             <div className="flex gap-8 text-2xl">
               <a href="#" className="hover:text-white transition">📘</a>
               <a href="#" className="hover:text-white transition">📷</a>
