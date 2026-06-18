@@ -48,14 +48,12 @@ export default function Home() {
     <div className="min-h-screen bg-[#F8F6F2] text-[#222222]">
       <Header />
 
-      {/* Mobile Hero - Dedicated stacked layout */}
+      {/* Mobile Hero - Dedicated image */}
       <div className="md:hidden">
-        {/* Mobile Hero Image */}
-        <div className="relative h-[380px] bg-cover bg-center" style={{ backgroundImage: "url('/hero-couple.png')" }}>
-          <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-black/10 to-transparent"></div>
+        <div className="relative h-[380px] bg-cover bg-center" style={{ backgroundImage: "url('/hero-mobile.jpg')" }}>
+          <div className="absolute inset-0 bg-gradient-to-b from-black/30 to-transparent"></div>
         </div>
 
-        {/* Mobile Text Card */}
         <div className="px-6 -mt-8 relative z-10 bg-[#F8F6F2] rounded-t-3xl pt-10 pb-12">
           <h1 className="text-5xl font-bold tracking-tight text-[#0B2D5C] leading-none mb-6">
             Strong Values.<br />
