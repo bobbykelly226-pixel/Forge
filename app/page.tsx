@@ -1,86 +1,84 @@
 'use client';
 
+import Header from '../components/Header';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
 import { useState } from 'react';
+import { createClient } from '@supabase/supabase-js';
+
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+);
 
 export default function Home() {
-  const pathname = usePathname();
-  const [menuOpen, setMenuOpen] = useState(false);
+  const [selectedOption, setSelectedOption] = useState<string | null>(null);
+  const [comment, setComment] = useState("");
+  const [submitted, setSubmitted] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const handleFeedbackSubmit = async () => {
+    if (!selectedOption) return;
+    setIsSubmitting(true);
+    try {
+      const { error } = await supabase.from('feedback').insert({
+        choice: selectedOption,
+        comment: comment || null,
+      });
+      if (error) throw error;
+      setSubmitted(true);
+    } catch (error) {
+      console.error('Error:', error);
+      alert('Something went wrong. Please try again.');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const scrollToPoll = () => {
+    document.getElementById('feedback-poll')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  };
+
+  const getFollowUpPrompt = () => {
+    if (selectedOption === "I'd definitely join") return "What excites you most about Forge?";
+    if (selectedOption === "I'd consider it") return "What's keeping you from saying yes today?";
+    return "What would make Forge more valuable to you?";
+  };
 
   return (
     <div className="min-h-screen bg-[#F8F6F2] text-[#222222]">
-      {/* Navigation */}
-      <nav className="border-b border-[#0B2D5C]/20 bg-[#0B2D5C] backdrop-blur-md sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
-          <a href="/" className="flex items-center gap-3 hover:opacity-90 transition flex-shrink-0">
-            <img src="/forge-header.png" alt="Forge Logo" className="h-10 sm:h-14 w-auto" />
-          </a>
+      <Header />
 
-          {/* Desktop Nav */}
-          <div className="hidden md:flex items-center gap-8 sm:gap-12 text-sm sm:text-lg font-medium text-white">
-            <Link href="/" className={`hover:text-[#D62828] transition ${pathname === '/' ? 'text-[#D62828] font-semibold' : ''}`}>Home</Link>
-            <Link href="/about" className={`hover:text-[#D62828] transition ${pathname === '/about' ? 'text-[#D62828] font-semibold' : ''}`}>About</Link>
-            <Link href="/values" className={`hover:text-[#D62828] transition ${pathname === '/values' ? 'text-[#D62828] font-semibold' : ''}`}>Values</Link>
-            <Link href="#" className={`hover:text-[#D62828] transition ${pathname === '/founder' ? 'text-[#D62828] font-semibold' : ''}`}>Meet the Founder</Link>
-            <Link href="/waitlist" className={`hover:text-[#D62828] transition ${pathname === '/waitlist' ? 'text-[#D62828] font-semibold' : ''}`}>Join Waitlist</Link>
-          </div>
-
-          {/* Mobile Hamburger */}
-          <button 
-            onClick={() => setMenuOpen(!menuOpen)}
-            className="md:hidden text-white text-3xl focus:outline-none"
-          >
-            {menuOpen ? '✕' : '☰'}
-          </button>
-        </div>
-
-        {/* Mobile Menu */}
-        {menuOpen && (
-          <div className="md:hidden bg-[#0B2D5C] border-t border-white/20 py-4">
-            <div className="flex flex-col text-center gap-4 text-lg font-medium text-white">
-              <Link href="/" onClick={() => setMenuOpen(false)} className="py-2 hover:text-[#D62828]">Home</Link>
-              <Link href="/about" onClick={() => setMenuOpen(false)} className="py-2 hover:text-[#D62828]">About</Link>
-              <Link href="/values" onClick={() => setMenuOpen(false)} className="py-2 hover:text-[#D62828]">Values</Link>
-              <Link href="#" onClick={() => setMenuOpen(false)} className="py-2 hover:text-[#D62828]">Meet the Founder</Link>
-              <Link href="/waitlist" onClick={() => setMenuOpen(false)} className="py-2 hover:text-[#D62828]">Join Waitlist</Link>
-            </div>
-          </div>
-        )}
-      </nav>
-
-      {/* Background Watermark - Desktop Only */}
-      <div className="hidden md:block fixed inset-0 flex items-center justify-center pointer-events-none z-0 opacity-10">
-        <img src="/logo-outline.png" alt="" className="w-[820px] scale-[1.13] mt-48" />
-      </div>
-
-      {/* Hero Section - Stronger Mobile Focus */}
+      {/* Hero Section */}
       <div 
-        className="relative w-full h-[380px] sm:h-[440px] md:h-[460px] flex items-center bg-cover bg-[center_35%] md:bg-[center_25%]"
+        className="relative w-full h-[340px] sm:h-[400px] md:h-[410px] flex items-center bg-cover bg-[center_35%] md:bg-[center_28%]"
         style={{ backgroundImage: "url('/hero-couple.png')" }}
       >
-        <div className="absolute inset-0 bg-gradient-to-r from-[#F8F6F2] via-[#F8F6F2]/96 to-transparent md:via-[#F8F6F2]/90" 
-             style={{ width: '80%' }}></div>
-
-        <div className="relative z-10 max-w-4xl px-6 md:pl-16 text-left">
+        <div className="absolute inset-0 bg-gradient-to-r from-[#F8F6F2] via-[#F8F6F2]/96 to-transparent md:via-[#F8F6F2]/90" style={{ width: '78%' }}></div>
+        <div className="relative z-10 max-w-4xl px-6 md:pl-20 text-left pt-8 md:pt-12">
           <h1 className="text-5xl sm:text-6xl md:text-7xl font-bold tracking-[-0.02em] leading-none text-[#0B2D5C] mb-6">
             Strong Values.<br />
             <span className="text-[#D62828]">Strong Connections.</span>
           </h1>
           <p className="text-lg sm:text-xl text-[#444444] max-w-lg mb-8">
-            A place where shared values come first, helping faith-driven and traditional-minded singles build meaningful, lasting relationships.
+            Forge was built for people who believe the strongest relationships begin with shared values. 
+            If you're looking for something rooted in faith, family, commitment, and purpose, you're in the right place.
           </p>
-          <a href="/waitlist" className="bg-[#D62828] hover:bg-[#A61F1F] text-white px-8 py-4 rounded-xl font-semibold text-lg transition inline-block">
-            Join the Waitlist
-          </a>
+          <button 
+            onClick={scrollToPoll}
+            className="bg-[#D62828] hover:bg-[#A61F1F] hover:-translate-y-0.5 hover:shadow-lg text-white px-8 py-4 rounded-xl font-semibold text-lg transition-all duration-200 inline-block mb-3"
+          >
+            Take Our Poll →
+          </button>
+          <p className="text-[15px] text-[#666666] max-w-xs">
+            Help us build Forge before launch. Your feedback takes less than 30 seconds.
+          </p>
         </div>
       </div>
 
-      {/* Values Section */}
+      {/* Horizontal Values Section */}
       <div className="bg-[#F4F4F4] py-16">
         <div className="max-w-6xl mx-auto px-6">
           <h2 className="text-4xl font-bold tracking-tight text-[#0B2D5C] text-center mb-12">Our Core Values</h2>
-
           <div className="grid grid-cols-2 md:grid-cols-6 gap-8 md:gap-6">
             <div className="text-center px-4 flex flex-col items-center">
               <div className="h-28 flex items-center justify-center mb-4">
@@ -89,7 +87,6 @@ export default function Home() {
               <h3 className="font-semibold text-[#0B2D5C] mb-2">FAITH</h3>
               <p className="text-sm text-[#444444] text-center">Build a relationship with a foundation that matters.</p>
             </div>
-
             <div className="text-center px-4 flex flex-col items-center">
               <div className="h-28 flex items-center justify-center mb-4">
                 <img src="/icon-family.png" alt="Family" className="w-24 h-24 object-contain" />
@@ -97,7 +94,6 @@ export default function Home() {
               <h3 className="font-semibold text-[#0B2D5C] mb-2">FAMILY</h3>
               <p className="text-sm text-[#444444] text-center">Find someone who values family as much as you do.</p>
             </div>
-
             <div className="text-center px-4 flex flex-col items-center">
               <div className="h-28 flex items-center justify-center mb-4">
                 <img src="/icon-service.png" alt="Service" className="w-24 h-24 object-contain" />
@@ -105,7 +101,6 @@ export default function Home() {
               <h3 className="font-semibold text-[#0B2D5C] mb-2">SERVICE</h3>
               <p className="text-sm text-[#444444] text-center">Connect with people who lead with purpose and give with heart.</p>
             </div>
-
             <div className="text-center px-4 flex flex-col items-center">
               <div className="h-28 flex items-center justify-center mb-4">
                 <img src="/icon-commitment.png" alt="Commitment" className="w-20 h-20 object-contain" />
@@ -113,7 +108,6 @@ export default function Home() {
               <h3 className="font-semibold text-[#0B2D5C] mb-2">COMMITMENT</h3>
               <p className="text-sm text-[#444444] text-center">Look for relationships built on loyalty, trust, and lasting commitment.</p>
             </div>
-
             <div className="text-center px-4 flex flex-col items-center">
               <div className="h-28 flex items-center justify-center mb-4">
                 <img src="/icon-integrity.png" alt="Integrity" className="w-20 h-20 object-contain" />
@@ -121,7 +115,6 @@ export default function Home() {
               <h3 className="font-semibold text-[#0B2D5C] mb-2">INTEGRITY</h3>
               <p className="text-sm text-[#444444] text-center">Find someone whose actions match their values and words.</p>
             </div>
-
             <div className="text-center px-4 flex flex-col items-center">
               <div className="h-28 flex items-center justify-center mb-4">
                 <img src="/icon-responsibility.png" alt="Responsibility" className="w-24 h-24 object-contain" />
@@ -150,9 +143,93 @@ export default function Home() {
               Learn More About Forge →
             </a>
           </div>
-
           <div className="flex justify-center md:justify-end">
             <img src="/forge-full.png" alt="Forge Logo" className="max-w-[380px] w-full" />
+          </div>
+        </div>
+      </div>
+
+      {/* Feedback Poll Section */}
+      <div id="feedback-poll" className="bg-white py-20 border-t">
+        <div className="max-w-[850px] mx-auto px-6">
+          <div className="bg-white border border-[#0B2D5C]/10 rounded-3xl p-12 shadow-sm">
+            <div className="text-center mb-10">
+              <h2 className="text-2xl font-semibold text-[#0F2D52] leading-tight mb-4">
+                Forge is being built for people who believe meaningful relationships start with shared values.
+              </h2>
+              <p className="text-lg text-[#444444]">
+                You're one of the first people to see Forge. Help us build it right.
+              </p>
+            </div>
+
+            <p className="text-xl font-medium text-[#0F2D52] text-center mb-10">
+              If Forge launched today, would you join?
+            </p>
+
+            {!submitted ? (
+              <div className="space-y-3 max-w-md mx-auto">
+                {[
+                  "I'd definitely join",
+                  "I'd consider it",
+                  "I probably wouldn't"
+                ].map((option) => (
+                  <button
+                    key={option}
+                    onClick={() => setSelectedOption(option)}
+                    className={`w-full py-4 px-8 rounded-2xl border text-lg font-medium transition-all duration-200 hover:shadow-md hover:-translate-y-0.5 ${
+                      selectedOption === option 
+                        ? "bg-[#0F2D52] text-white border-[#0F2D52]" 
+                        : "bg-white hover:bg-[#F8F6F2] border-[#0B2D5C]/30 hover:border-[#0B2D5C]"
+                    }`}
+                  >
+                    {option}
+                  </button>
+                ))}
+
+                {selectedOption && (
+                  <div className="mt-10">
+                    <label className="block text-sm font-medium text-[#444444] mb-3 text-center">
+                      {getFollowUpPrompt()}
+                    </label>
+                    <textarea
+                      value={comment}
+                      onChange={(e) => setComment(e.target.value)}
+                      placeholder="Share your thoughts..."
+                      className="w-full p-5 border border-[#0B2D5C]/20 rounded-2xl focus:outline-none focus:border-[#0F2D52] min-h-[110px] text-base"
+                    />
+                    <button
+                      onClick={handleFeedbackSubmit}
+                      disabled={isSubmitting}
+                      className="mt-6 w-full bg-[#D62828] hover:bg-[#A61F1F] text-white py-5 rounded-2xl font-semibold transition disabled:opacity-70"
+                    >
+                      {isSubmitting ? "Submitting..." : "Submit Feedback"}
+                    </button>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <div className="text-center py-12">
+                <p className="text-2xl text-[#0F2D52] font-medium mb-4">
+                  Thank you — that really helps.
+                </p>
+                {(selectedOption === "I'd definitely join" || selectedOption === "I'd consider it") ? (
+                  <div>
+                    <p className="text-[#444444] mb-8 max-w-sm mx-auto">
+                      Welcome to the beginning of Forge.<br />
+                      Your feedback is helping shape a dating platform built on faith, family, commitment, and shared values.
+                    </p>
+                    <a href="/waitlist" className="inline-block bg-[#D62828] hover:bg-[#A61F1F] text-white px-10 py-4 rounded-2xl font-semibold transition">
+                      Join the Waitlist
+                    </a>
+                  </div>
+                ) : (
+                  <p className="text-[#444444]">
+                    Thank you for your honest feedback.<br />
+                    Every response helps us improve Forge.
+                  </p>
+                )}
+              </div>
+            )}
           </div>
         </div>
       </div>
@@ -164,7 +241,6 @@ export default function Home() {
             <div>
               <img src="/forge-header.png" alt="Forge" className="h-9 w-auto" />
             </div>
-
             <div className="flex flex-wrap justify-center gap-x-10 gap-y-2 text-sm">
               <Link href="/about" className="hover:text-white transition">About</Link>
               <Link href="/values" className="hover:text-white transition">Values</Link>
@@ -173,14 +249,12 @@ export default function Home() {
               <Link href="#" className="hover:text-white transition">Terms of Service</Link>
               <Link href="#" className="hover:text-white transition">Contact</Link>
             </div>
-
             <div className="flex gap-8 text-2xl">
               <a href="#" className="hover:text-white transition">📘</a>
               <a href="#" className="hover:text-white transition">📷</a>
               <a href="#" className="hover:text-white transition">𝕏</a>
             </div>
           </div>
-
           <div className="text-center text-xs text-white/60 mt-6">
             © 2026 Forged by Design. All rights reserved.
           </div>
