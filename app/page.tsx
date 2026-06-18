@@ -48,18 +48,18 @@ export default function Home() {
     <div className="min-h-screen bg-[#F8F6F2] text-[#222222]">
       <Header />
 
-      {/* Mobile Hero - Dedicated image */}
+      {/* Mobile Hero - Polished */}
       <div className="md:hidden">
-        <div className="relative h-[380px] bg-cover bg-center" style={{ backgroundImage: "url('/hero-mobile.JPG')" }}>
+        <div className="relative h-[350px] bg-cover bg-center" style={{ backgroundImage: "url('/hero-mobile.jpg')" }}>
           <div className="absolute inset-0 bg-gradient-to-b from-black/30 to-transparent"></div>
         </div>
 
-        <div className="px-6 -mt-8 relative z-10 bg-[#F8F6F2] rounded-t-3xl pt-10 pb-12">
-          <h1 className="text-5xl font-bold tracking-tight text-[#0B2D5C] leading-none mb-6">
+        <div className="px-6 -mt-10 relative z-10 bg-[#F8F6F2] rounded-t-3xl pt-10 pb-12">
+          <h1 className="text-[42px] font-bold tracking-tight text-[#0B2D5C] leading-none mb-6">
             Strong Values.<br />
             <span className="text-[#D62828]">Strong Connections.</span>
           </h1>
-          <p className="text-[19px] text-[#444444] leading-relaxed mb-8">
+          <p className="text-[18px] text-[#444444] leading-relaxed mb-8 px-1">
             Forge was built for people who believe the strongest relationships begin with shared values. 
             If you're looking for something rooted in faith, family, commitment, and purpose, you're in the right place.
           </p>
