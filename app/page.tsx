@@ -48,12 +48,38 @@ export default function Home() {
     <div className="min-h-screen bg-[#F8F6F2] text-[#222222]">
       <Header />
 
-      {/* Hero Section */}
-      <div 
-        className="relative w-full h-[340px] sm:h-[400px] md:h-[410px] flex items-center bg-cover bg-[center_35%] md:bg-[center_28%]"
-        style={{ backgroundImage: "url('/hero-couple.png')" }}
-      >
-        <div className="absolute inset-0 bg-gradient-to-r from-[#F8F6F2] via-[#F8F6F2]/96 to-transparent md:via-[#F8F6F2]/90" style={{ width: '78%' }}></div>
+      {/* Mobile Hero */}
+      <div className="md:hidden">
+        <div className="relative h-[340px] bg-cover bg-center" style={{ backgroundImage: "url('/hero-couple.png')" }}>
+          <div className="absolute inset-0 bg-gradient-to-b from-black/30 to-transparent"></div>
+        </div>
+
+        <div className="px-6 -mt-6 relative z-10 bg-[#F8F6F2] rounded-t-3xl pt-8 pb-10">
+          <h1 className="text-5xl font-bold tracking-tight text-[#0B2D5C] leading-none mb-6">
+            Strong Values.<br />
+            <span className="text-[#D62828]">Strong Connections.</span>
+          </h1>
+          <p className="text-[19px] text-[#444444] leading-relaxed mb-8">
+            Forge was built for people who believe the strongest relationships begin with shared values. 
+            If you're looking for something rooted in faith, family, commitment, and purpose, you're in the right place.
+          </p>
+          
+          <button 
+            onClick={scrollToPoll}
+            className="w-full bg-[#D62828] hover:bg-[#A61F1F] text-white py-4 rounded-2xl font-semibold text-lg transition-all duration-200 mb-4"
+          >
+            Take Our Poll →
+          </button>
+          
+          <p className="text-[15px] text-[#666666] text-center">
+            Help us build Forge before launch. Your feedback takes less than 30 seconds.
+          </p>
+        </div>
+      </div>
+
+      {/* Desktop Hero (unchanged) */}
+      <div className="hidden md:block relative w-full h-[410px] flex items-center bg-cover bg-[center_28%]" style={{ backgroundImage: "url('/hero-couple.png')" }}>
+        <div className="absolute inset-0 bg-gradient-to-r from-[#F8F6F2] via-[#F8F6F2]/96 to-transparent" style={{ width: '78%' }}></div>
         <div className="relative z-10 max-w-4xl px-6 md:pl-20 text-left pt-8 md:pt-12">
           <h1 className="text-5xl sm:text-6xl md:text-7xl font-bold tracking-[-0.02em] leading-none text-[#0B2D5C] mb-6">
             Strong Values.<br />
@@ -212,6 +238,7 @@ export default function Home() {
                 <p className="text-2xl text-[#0F2D52] font-medium mb-4">
                   Thank you — that really helps.
                 </p>
+                
                 {(selectedOption === "I'd definitely join" || selectedOption === "I'd consider it") ? (
                   <div>
                     <p className="text-[#444444] mb-8 max-w-sm mx-auto">
@@ -241,6 +268,7 @@ export default function Home() {
             <div>
               <img src="/forge-header.png" alt="Forge" className="h-9 w-auto" />
             </div>
+
             <div className="flex flex-wrap justify-center gap-x-10 gap-y-2 text-sm">
               <Link href="/about" className="hover:text-white transition">About</Link>
               <Link href="/values" className="hover:text-white transition">Values</Link>
@@ -249,12 +277,14 @@ export default function Home() {
               <Link href="#" className="hover:text-white transition">Terms of Service</Link>
               <Link href="#" className="hover:text-white transition">Contact</Link>
             </div>
+
             <div className="flex gap-8 text-2xl">
               <a href="#" className="hover:text-white transition">📘</a>
               <a href="#" className="hover:text-white transition">📷</a>
               <a href="#" className="hover:text-white transition">𝕏</a>
             </div>
           </div>
+
           <div className="text-center text-xs text-white/60 mt-6">
             © 2026 Forged by Design. All rights reserved.
           </div>
