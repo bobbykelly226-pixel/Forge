@@ -48,9 +48,9 @@ export default function Home() {
     <div className="min-h-screen bg-[#F8F6F2] text-[#222222]">
       <Header />
 
-      {/* Mobile Hero */}
+      {/* Mobile Hero - Improved Crop */}
       <div className="md:hidden">
-        <div className="relative h-[340px] bg-cover bg-center" style={{ backgroundImage: "url('/hero-couple.png')" }}>
+        <div className="relative h-[360px] bg-cover bg-[60%_center]" style={{ backgroundImage: "url('/hero-couple.png')" }}>
           <div className="absolute inset-0 bg-gradient-to-b from-black/30 to-transparent"></div>
         </div>
 
