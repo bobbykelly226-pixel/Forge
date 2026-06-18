@@ -48,9 +48,9 @@ export default function Home() {
     <div className="min-h-screen bg-[#F8F6F2] text-[#222222]">
       <Header />
 
-      {/* Mobile Hero - Restored with exact filename */}
+      {/* Mobile Hero - Dedicated image with exact filename */}
       <div className="md:hidden">
-        <div className="relative h-[360px] bg-cover bg-center border-4 border-red-500" style={{ backgroundImage: "url('/images/hero-mobile.JPG')" }}>
+        <div className="relative h-[360px] bg-cover bg-center border-4 border-red-500" style={{ backgroundImage: "url('/hero-mobile.JPG')" }}>
           <div className="absolute inset-0 bg-gradient-to-b from-black/30 to-transparent"></div>
           <div className="absolute top-4 left-4 text-white font-bold text-xl bg-black/50 px-4 py-1 rounded">MOBILE HERO TEST</div>
         </div>
