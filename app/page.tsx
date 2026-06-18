@@ -50,7 +50,7 @@ export default function Home() {
 
       {/* Mobile Hero - Dedicated image */}
       <div className="md:hidden">
-        <div className="relative h-[380px] bg-cover bg-center" style={{ backgroundImage: "url('/hero-mobile.jpg')" }}>
+        <div className="relative h-[380px] bg-cover bg-center" style={{ backgroundImage: "url('/hero-mobile.JPG')" }}>
           <div className="absolute inset-0 bg-gradient-to-b from-black/30 to-transparent"></div>
         </div>
 
