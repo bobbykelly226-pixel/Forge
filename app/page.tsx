@@ -48,13 +48,15 @@ export default function Home() {
     <div className="min-h-screen bg-[#F8F6F2] text-[#222222]">
       <Header />
 
-      {/* Mobile Hero - Improved Crop */}
+      {/* Mobile Hero - Dedicated stacked layout */}
       <div className="md:hidden">
-        <div className="relative h-[360px] bg-cover bg-[60%_center]" style={{ backgroundImage: "url('/hero-couple.png')" }}>
-          <div className="absolute inset-0 bg-gradient-to-b from-black/30 to-transparent"></div>
+        {/* Mobile Hero Image */}
+        <div className="relative h-[380px] bg-cover bg-center" style={{ backgroundImage: "url('/hero-couple.png')" }}>
+          <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-black/10 to-transparent"></div>
         </div>
 
-        <div className="px-6 -mt-6 relative z-10 bg-[#F8F6F2] rounded-t-3xl pt-8 pb-10">
+        {/* Mobile Text Card */}
+        <div className="px-6 -mt-8 relative z-10 bg-[#F8F6F2] rounded-t-3xl pt-10 pb-12">
           <h1 className="text-5xl font-bold tracking-tight text-[#0B2D5C] leading-none mb-6">
             Strong Values.<br />
             <span className="text-[#D62828]">Strong Connections.</span>
@@ -77,7 +79,7 @@ export default function Home() {
         </div>
       </div>
 
-      {/* Desktop Hero (unchanged) */}
+      {/* Desktop Hero - Unchanged */}
       <div className="hidden md:block relative w-full h-[410px] flex items-center bg-cover bg-[center_28%]" style={{ backgroundImage: "url('/hero-couple.png')" }}>
         <div className="absolute inset-0 bg-gradient-to-r from-[#F8F6F2] via-[#F8F6F2]/96 to-transparent" style={{ width: '78%' }}></div>
         <div className="relative z-10 max-w-4xl px-6 md:pl-20 text-left pt-8 md:pt-12">
