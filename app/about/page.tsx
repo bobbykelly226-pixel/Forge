@@ -37,13 +37,27 @@ export default function About() {
             and a genuine desire to build something lasting.
           </p>
 
+          <h2 className="text-3xl font-semibold text-[#0B2D5C]">The Meaning Behind Our Name</h2>
+          <p>
+            Forge is more than a name. It represents the belief that the strongest things in life are built with intention, guided by character, and created to last. We believe meaningful relationships grow the same way. They are built through shared values, mutual respect, trust, faith, commitment, and a genuine desire to build a life together.
+          </p>
+          <p>
+            Forge is the platform where those connections begin. Forged In Life is the philosophy behind it. It reflects our belief that life's strongest relationships are not built on chance alone. They are shaped by the choices we make, the values we live by, and the lives we build together.
+          </p>
+          <p>
+            Because meaningful relationships aren't simply found.
+          </p>
+          <p>
+            They're Forged In Life.
+          </p>
+
           <h2 className="text-3xl font-semibold text-[#0B2D5C]">Why We Built Forge</h2>
           <p>
             Many people feel disconnected from modern dating culture. Endless swiping, casual interactions, 
             and surface-level matching often leave people frustrated and discouraged.
           </p>
           <p>
-            Forge was created as an alternative — a place where values come first and meaningful relationships 
+            Forge was created as an alternative, a place where values come first and meaningful relationships 
             can grow from a strong foundation.
           </p>
         </div>

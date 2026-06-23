@@ -9,41 +9,30 @@ export default function Founder() {
       <Header />
 
       <div className="pt-20 pb-20 max-w-4xl mx-auto px-6">
-        <div className="text-center mb-12">
-          <p className="text-[#D62828] uppercase tracking-widest text-sm font-medium mb-3">MEET THE FOUNDER</p>
+        <div className="text-center mb-16">
           <h1 className="text-5xl font-bold tracking-tight text-[#0B2D5C]">Why I Built Forge</h1>
           <p className="text-xl text-[#444444] mt-4">Every meaningful journey begins with a story. Here's mine.</p>
         </div>
 
-        <div className="prose prose-lg text-[#444444] leading-relaxed max-w-3xl mx-auto">
-          <p>Several years ago, after my marriage ended, I found myself stepping back into the world of modern dating.</p>
-          <p>Like many people, I downloaded the popular apps hoping to find a genuine connection.</p>
-          <p>Along the way, I met some wonderful people, but I kept running into the same challenge.</p>
-          <p>The things that mattered most to me weren't easy to find.</p>
-          <p>I could quickly learn someone's favorite restaurant, their hobbies, or where they liked to travel.</p>
-          <p>But it was much harder to discover the things that truly shape a relationship—faith, family, integrity, service, commitment, and the values that guide someone's life.</p>
-          <p>I wasn't looking for everyone to think like me.</p>
-          <p>I simply wanted a better way to find people who shared similar principles and were searching for something lasting.</p>
+        <div className="prose prose-lg text-[#444444] leading-[1.75] max-w-3xl mx-auto space-y-8">
+          <p>Several years ago, after my marriage ended, I found myself stepping back into the world of modern dating. Like many people, I downloaded the popular apps hoping to find a genuine connection.</p>
+          <p>Along the way, I met some wonderful people, but I kept running into the same challenge. The things that mattered most to me weren't easy to find. I could quickly learn someone's favorite restaurant, their hobbies, or where they liked to travel. But it was much harder to discover the things that truly shape a relationship, faith, family, integrity, service, commitment, and the values that guide someone's life.</p>
+          <p>I wasn't looking for everyone to think like me. I simply wanted a better way to find people who shared similar principles and were searching for something lasting.</p>
           <p className="text-2xl font-semibold text-[#0B2D5C] italic text-center my-12">Eventually, I found myself asking one simple question.<br />What if there was a better way?</p>
           <p>That question eventually became Forge.</p>
-          <p>For more than twenty years, I've dedicated my career to serving others—as an EMT, a police officer, and now as a registered nurse.</p>
-          <p>I'm also the proud father of two incredible daughters.</p>
-          <p>Those experiences have continually reinforced something I've always believed: The strongest relationships aren't built on perfect compatibility.</p>
-          <p>They're built on shared values, mutual respect, trust, and a commitment to something greater than ourselves.</p>
-          <p>Those aren't just ideals. They're principles I've tried to live by.</p>
-          <p>And they became the foundation for Forge.</p>
-          <p>Forge isn't about telling people what they should believe.</p>
-          <p>It's about creating a place where people can be honest about who they are, what they value, and the kind of future they hope to build with someone else.</p>
-          <p>My hope is that Forge becomes more than another dating platform.</p>
-          <p>I hope it becomes a community where people who value authenticity, commitment, faith, family, integrity, and meaningful connection finally feel at home.</p>
-          <p>Thank you for taking the time to learn my story.</p>
-          <p>Whether you're here because you're curious, because you share these values, or because you're simply looking for something real...</p>
-          <p>Welcome.</p>
-          <p className="text-3xl font-semibold text-[#D62828] text-center mt-12">Because meaningful relationships aren't forged by chance.<br />They're Forged In Life.</p>
-          <p className="text-center text-xl font-medium text-[#0B2D5C] mt-8">
-            — Bobby<br />
-            Founder, Forged In Life
-          </p>
+          <p>For more than twenty years, I've dedicated my career to serving others, as an EMT, a police officer, and now as a registered nurse. I'm also the proud father of two incredible daughters. Those experiences have continually reinforced something I've always believed: The strongest relationships aren't built on perfect compatibility. They're built on shared values, mutual respect, trust, and a commitment to something greater than ourselves.</p>
+          <p>Those aren't just ideals. They're principles I've tried to live by. And they became the foundation for Forge.</p>
+          <p>Forge isn't about telling people what they should believe. It's about creating a place where people can be honest about who they are, what they value, and the kind of future they hope to build with someone else.</p>
+          <p>My hope is that Forge becomes more than another dating platform. I hope it becomes a community where people who value authenticity, commitment, faith, family, integrity, and meaningful connection finally feel at home.</p>
+          <p>Thank you for taking the time to learn my story. Whether you're here because you're curious, because you share these values, or because you're simply looking for something real... Welcome.</p>
+          <div className="my-16 text-center">
+            <p className="text-3xl font-semibold text-[#D62828]">Because meaningful relationships aren't forged by chance.</p>
+            <p className="text-3xl font-semibold text-[#D62828] mt-2">They're Forged In Life.</p>
+          </div>
+          <div className="max-w-3xl mx-auto text-left mt-8">
+            <p className="text-[1.35rem] font-medium text-[#0B2D5C]">Bobby</p>
+            <p className="text-lg text-[#666666]">Founder, Forged In Life</p>
+          </div>
         </div>
       </div>
 

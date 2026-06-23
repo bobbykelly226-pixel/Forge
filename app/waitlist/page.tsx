@@ -12,7 +12,7 @@ export default function Waitlist() {
         <h1 className="text-5xl font-bold tracking-tight text-[#0B2D5C] mb-6">Join the Waitlist</h1>
         
         <p className="text-xl text-[#444444] mb-12">
-          Be among the first to experience Forge when it launches.
+          Be among the first to experience a dating platform built around faith, family, commitment, and meaningful connection.
         </p>
 
         <form className="space-y-6">
@@ -35,7 +35,7 @@ export default function Waitlist() {
         </form>
 
         <p className="text-sm text-[#666666] mt-10">
-          No spam. No pressure. Just updates on our progress and opportunities to help shape the future of Forge.
+          No spam. Just occasional updates, early access opportunities, and a chance to help shape the future of Forge.
         </p>
       </div>
 
