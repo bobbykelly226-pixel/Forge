@@ -1,6 +1,7 @@
 'use client';
 
 import Header from '../../components/Header';
+import Link from 'next/link';
 
 export default function Values() {
   return (
@@ -85,6 +86,36 @@ export default function Values() {
           </p>
         </div>
       </div>
+
+      {/* Footer */}
+      <footer className="bg-[#0B2D5C] text-white/80 py-8">
+        <div className="max-w-6xl mx-auto px-6">
+          <div className="flex flex-col md:flex-row justify-between items-center gap-8">
+            <div>
+              <img src="/Logos/forgedinlife-header-light.png" alt="Forge" className="h-12 w-auto" />
+            </div>
+
+            <div className="flex flex-wrap justify-center gap-x-10 gap-y-2 text-sm">
+              <Link href="/about" className="hover:text-white transition">About</Link>
+              <Link href="/values" className="hover:text-white transition">Values</Link>
+              <Link href="#" className="hover:text-white transition">Mission</Link>
+              <Link href="#" className="hover:text-white transition">Privacy Policy</Link>
+              <Link href="#" className="hover:text-white transition">Terms of Service</Link>
+              <Link href="#" className="hover:text-white transition">Contact</Link>
+            </div>
+
+            <div className="flex gap-8 text-2xl">
+              <a href="#" className="hover:text-white transition">📘</a>
+              <a href="#" className="hover:text-white transition">📷</a>
+              <a href="#" className="hover:text-white transition">𝕏</a>
+            </div>
+          </div>
+
+          <div className="text-center text-xs text-white/60 mt-6">
+            © 2026 Forged In Life. All rights reserved.
+          </div>
+        </div>
+      </footer>
     </div>
   );
 }

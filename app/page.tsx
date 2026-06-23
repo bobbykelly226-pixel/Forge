@@ -48,7 +48,7 @@ export default function Home() {
     <div className="min-h-screen bg-[#F8F6F2] text-[#222222]">
       <Header />
 
-      {/* Mobile Hero - Dedicated image in root public folder */}
+      {/* Mobile Hero */}
       <div className="md:hidden">
         <div className="relative h-[360px] bg-cover bg-center" style={{ backgroundImage: "url('/hero-mobile.JPG')" }}>
           <div className="absolute inset-0 bg-gradient-to-b from-black/30 to-transparent"></div>
@@ -77,7 +77,7 @@ export default function Home() {
         </div>
       </div>
 
-      {/* Desktop Hero - Unchanged */}
+      {/* Desktop Hero */}
       <div className="hidden md:block relative w-full h-[410px] flex items-center bg-cover bg-[center_28%]" style={{ backgroundImage: "url('/hero-couple.png')" }}>
         <div className="absolute inset-0 bg-gradient-to-r from-[#F8F6F2] via-[#F8F6F2]/96 to-transparent" style={{ width: '78%' }}></div>
         <div className="relative z-10 max-w-4xl px-6 md:pl-20 text-left pt-8 md:pt-12">
@@ -170,7 +170,7 @@ export default function Home() {
             </a>
           </div>
           <div className="flex justify-center md:justify-end">
-            <img src="/forge-full.png" alt="Forge Logo" className="max-w-[380px] w-full" />
+            <img src="/Logos/forgedinlife-full-dark.png" alt="Forge" className="max-w-[380px] w-full" />
           </div>
         </div>
       </div>
@@ -266,7 +266,7 @@ export default function Home() {
         <div className="max-w-6xl mx-auto px-6">
           <div className="flex flex-col md:flex-row justify-between items-center gap-8">
             <div>
-              <img src="/forge-header.png" alt="Forge" className="h-9 w-auto" />
+              <img src="/Logos/forgedinlife-header-light.png" alt="Forge" className="h-12 w-auto" />
             </div>
 
             <div className="flex flex-wrap justify-center gap-x-10 gap-y-2 text-sm">
@@ -286,7 +286,7 @@ export default function Home() {
           </div>
 
           <div className="text-center text-xs text-white/60 mt-6">
-            © 2026 Forged by Design. All rights reserved.
+            © 2026 Forged In Life. All rights reserved.
           </div>
         </div>
       </footer>
