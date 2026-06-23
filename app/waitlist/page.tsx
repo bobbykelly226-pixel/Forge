@@ -2,8 +2,37 @@
 
 import Header from '../../components/Header';
 import Link from 'next/link';
+import { useState } from 'react';
+import { joinWaitlist } from '../actions/waitlist';
 
 export default function Waitlist() {
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
+  const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
+  const [message, setMessage] = useState('');
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setStatus('loading');
+    setMessage('');
+
+    const formData = new FormData();
+    formData.append('name', name);
+    formData.append('email', email);
+
+    const result = await joinWaitlist(formData);
+
+    if (result.success) {
+      setStatus('success');
+      setMessage(result.message || 'Successfully joined the waitlist!');
+      setName('');
+      setEmail('');
+    } else {
+      setStatus('error');
+      setMessage(result.message || 'Something went wrong. Please try again.');
+    }
+  };
+
   return (
     <div className="min-h-screen bg-[#F8F6F2] text-[#222222]">
       <Header />
@@ -15,24 +44,42 @@ export default function Waitlist() {
           Be among the first to experience a dating platform built around faith, family, commitment, and meaningful connection.
         </p>
 
-        <form className="space-y-6">
-          <input 
-            type="text" 
-            placeholder="Your Full Name" 
-            className="w-full px-6 py-5 rounded-2xl border border-[#0B2D5C]/30 focus:border-[#0B2D5C] text-lg"
-          />
-          <input 
-            type="email" 
-            placeholder="Your Email Address" 
-            className="w-full px-6 py-5 rounded-2xl border border-[#0B2D5C]/30 focus:border-[#0B2D5C] text-lg"
-          />
-          <button 
-            type="button"
-            className="w-full bg-[#0B2D5C] hover:bg-[#0A2540] text-white font-semibold py-5 rounded-2xl text-lg transition"
-          >
-            Reserve My Spot
-          </button>
-        </form>
+        {status === 'success' ? (
+          <div className="bg-green-50 border border-green-200 rounded-3xl p-12">
+            <p className="text-2xl font-semibold text-green-800 mb-4">Thank you!</p>
+            <p className="text-green-700">{message}</p>
+          </div>
+        ) : (
+          <form onSubmit={handleSubmit} className="space-y-6">
+            <input 
+              type="text" 
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              placeholder="Your Full Name" 
+              className="w-full px-6 py-5 rounded-2xl border border-[#0B2D5C]/30 focus:border-[#0B2D5C] text-lg"
+              required
+            />
+            <input 
+              type="email" 
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="Your Email Address" 
+              className="w-full px-6 py-5 rounded-2xl border border-[#0B2D5C]/30 focus:border-[#0B2D5C] text-lg"
+              required
+            />
+            <button 
+              type="submit"
+              disabled={status === 'loading'}
+              className="w-full bg-[#0B2D5C] hover:bg-[#0A2540] disabled:bg-gray-400 text-white font-semibold py-5 rounded-2xl text-lg transition"
+            >
+              {status === 'loading' ? 'Submitting...' : 'Reserve My Spot'}
+            </button>
+          </form>
+        )}
+
+        {status === 'error' && (
+          <p className="text-red-600 mt-4 text-sm">{message}</p>
+        )}
 
         <p className="text-sm text-[#666666] mt-10">
           No spam. Just occasional updates, early access opportunities, and a chance to help shape the future of Forge.
