@@ -1,63 +1,120 @@
-'use server';
+'use client';
 
-import { Resend } from 'resend';
+import Header from '../../components/Header';
+import Link from 'next/link';
+import { useState } from 'react';
+import { joinWaitlist } from '../actions/waitlist';
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+export default function Waitlist() {
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
+  const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
+  const [message, setMessage] = useState('');
 
-export async function joinWaitlist(formData: FormData) {
-  const name = formData.get('name') as string;
-  const email = formData.get('email') as string;
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setStatus('loading');
+    setMessage('');
 
-  if (!name || !email) {
-    return { success: false, message: 'Name and email are required' };
-  }
+    const formData = new FormData();
+    formData.append('name', name);
+    formData.append('email', email);
 
-  try {
-    // Save to Supabase
-    const supabaseResponse = await fetch('https://uwgjdqzwcgbaaudbrvgx.supabase.co/rest/v1/waitlist', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InV3Z2pkcXp3Y2diYWF1ZGJydmd4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODExMzY2MjMsImV4cCI6MjA5NjcxMjYyM30.E8usBi9Rf_mm1T-9fpMD7BTKbXhPLUxSXVqjl2cab8g',
-      },
-      body: JSON.stringify({ name, email }),
-    });
+    const result = await joinWaitlist(formData);
 
-    if (!supabaseResponse.ok) {
-      throw new Error('Failed to save to database');
+    if (result.success) {
+      setStatus('success');
+      setMessage(result.message || 'Successfully joined the waitlist!');
+      setName('');
+      setEmail('');
+    } else {
+      setStatus('error');
+      setMessage(result.message || 'Something went wrong. Please try again.');
     }
+  };
 
-    // Send confirmation email to user
-    const userEmailResult = await resend.emails.send({
-      from: 'Forge <onboarding@resend.dev>',
-      to: email,
-      subject: "Welcome to the Forge Waitlist!",
-      html: `
-        <h2>Thank you, ${name}!</h2>
-        <p>You're now on the waitlist for <strong>Forge</strong>.</p>
-        <p>We'll keep you updated as we build a dating platform where strong values lead to strong connections.</p>
-        <p>Best regards,<br>The Forge Team</p>
-      `,
-    });
+  return (
+    <div className="min-h-screen bg-[#F8F6F2] text-[#222222]">
+      <Header />
 
-    console.log("User email result:", userEmailResult);
+      <div className="pt-20 pb-20 max-w-md mx-auto px-6 text-center">
+        <h1 className="text-5xl font-bold tracking-tight text-[#0B2D5C] mb-6">Join the Waitlist</h1>
+        
+        <p className="text-xl text-[#444444] mb-12">
+          Be among the first to experience a dating platform built around faith, family, commitment, and meaningful connection.
+        </p>
 
-    // Send notification to admin
-    await resend.emails.send({
-      from: 'Forge <onboarding@resend.dev>',
-      to: 'admin@forgedinlife.com',
-      subject: `New Waitlist Signup: ${name}`,
-      html: `
-        <h2>New Waitlist Submission</h2>
-        <p><strong>Name:</strong> ${name}</p>
-        <p><strong>Email:</strong> ${email}</p>
-        <p><strong>Time:</strong> ${new Date().toLocaleString()}</p>
-      `,
-    });
+        {status === 'success' ? (
+          <div className="bg-green-50 border border-green-200 rounded-3xl p-12">
+            <p className="text-2xl font-semibold text-green-800 mb-4">Thank you!</p>
+            <p className="text-green-700">{message}</p>
+          </div>
+        ) : (
+          <form onSubmit={handleSubmit} className="space-y-6">
+            <input 
+              type="text" 
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              placeholder="Your Full Name" 
+              className="w-full px-6 py-5 rounded-2xl border border-[#0B2D5C]/30 focus:border-[#0B2D5C] text-lg"
+              required
+            />
+            <input 
+              type="email" 
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="Your Email Address" 
+              className="w-full px-6 py-5 rounded-2xl border border-[#0B2D5C]/30 focus:border-[#0B2D5C] text-lg"
+              required
+            />
+            <button 
+              type="submit"
+              disabled={status === 'loading'}
+              className="w-full bg-[#0B2D5C] hover:bg-[#0A2540] disabled:bg-gray-400 text-white font-semibold py-5 rounded-2xl text-lg transition"
+            >
+              {status === 'loading' ? 'Submitting...' : 'Reserve My Spot'}
+            </button>
+          </form>
+        )}
 
-    return { success: true, message: 'Successfully joined the waitlist!' };
-  } catch (error) {
-    console.error('Waitlist error:', error);
-    return { success: false, message: 'Something went wrong. Please try again.' };
-  }
+        {status === 'error' && (
+          <p className="text-red-600 mt-4 text-sm">{message}</p>
+        )}
+
+        <p className="text-sm text-[#666666] mt-10">
+          No spam. Just occasional updates, early access opportunities, and a chance to help shape the future of Forge.
+        </p>
+      </div>
+
+      {/* Footer */}
+      <footer className="bg-[#0B2D5C] text-white/80 py-8">
+        <div className="max-w-6xl mx-auto px-6">
+          <div className="flex flex-col md:flex-row justify-between items-center gap-8">
+            <div>
+              <img src="/Logos/forgedinlife-header-light.png" alt="Forge" className="h-12 w-auto" />
+            </div>
+
+            <div className="flex flex-wrap justify-center gap-x-10 gap-y-2 text-sm">
+              <Link href="/about" className="hover:text-white transition">About</Link>
+              <Link href="/values" className="hover:text-white transition">Values</Link>
+              <Link href="#" className="hover:text-white transition">Mission</Link>
+              <Link href="#" className="hover:text-white transition">Privacy Policy</Link>
+              <Link href="#" className="hover:text-white transition">Terms of Service</Link>
+              <Link href="#" className="hover:text-white transition">Contact</Link>
+            </div>
+
+            <div className="flex gap-8 text-2xl">
+              <a href="#" className="hover:text-white transition">📘</a>
+              <a href="#" className="hover:text-white transition">📷</a>
+              <a href="#" className="hover:text-white transition">𝕏</a>
+            </div>
+          </div>
+
+          <div className="text-center text-xs text-white/60 mt-6">
+            © 2026 Forged In Life. All rights reserved.
+          </div>
+        </div>
+      </footer>
+    </div>
+  );
 }
