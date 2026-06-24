@@ -2,7 +2,7 @@
 
 import { Resend } from 'resend';
 
-const resend = new Resend('re_2t9qaXsf_M4j99cJzgEon9xU8Q7psjaMj');
+const resend = new Resend(process.env.RESEND_API_KEY);
 
 export async function joinWaitlist(formData: FormData) {
   const name = formData.get('name') as string;
@@ -14,7 +14,8 @@ export async function joinWaitlist(formData: FormData) {
 
   try {
     // Save to Supabase
-    await fetch('https://uwgjdqzwcgbaaudbrvgx.supabase.co/rest/v1/waitlist', {
+    console.log('Attempting to save to Supabase:', { name, email });
+    const supabaseResponse = await fetch('https://uwgjdqzwcgbaaudbrvgx.supabase.co/rest/v1/waitlist', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -23,8 +24,17 @@ export async function joinWaitlist(formData: FormData) {
       body: JSON.stringify({ name, email }),
     });
 
-    // Send confirmation email
-    await resend.emails.send({
+    if (!supabaseResponse.ok) {
+      const errorText = await supabaseResponse.text();
+      console.error('Supabase save failed:', errorText);
+      throw new Error('Failed to save to database');
+    }
+
+    console.log('✅ Supabase save successful');
+
+    // Send confirmation email to user
+    console.log('Attempting to send user confirmation email to:', email);
+    const userEmailResult = await resend.emails.send({
       from: 'Forge <onboarding@resend.dev>',
       to: email,
       subject: "Welcome to the Forge Waitlist!",
@@ -35,10 +45,26 @@ export async function joinWaitlist(formData: FormData) {
         <p>Best regards,<br>The Forge Team</p>
       `,
     });
+    console.log('User email result:', userEmailResult);
+
+    // Send notification to admin
+    console.log('Attempting to send admin notification');
+    await resend.emails.send({
+      from: 'Forge <onboarding@resend.dev>',
+      to: 'admin@forgedinlife.com',
+      subject: `New Waitlist Signup: ${name}`,
+      html: `
+        <h2>New Waitlist Submission</h2>
+        <p><strong>Name:</strong> ${name}</p>
+        <p><strong>Email:</strong> ${email}</p>
+        <p><strong>Time:</strong> ${new Date().toLocaleString()}</p>
+      `,
+    });
+    console.log('✅ Admin notification sent');
 
     return { success: true, message: 'Successfully joined the waitlist!' };
   } catch (error) {
-    console.error(error);
+    console.error('Waitlist error:', error);
     return { success: false, message: 'Something went wrong. Please try again.' };
   }
 }
