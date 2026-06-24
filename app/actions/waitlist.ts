@@ -35,7 +35,7 @@ export async function joinWaitlist(formData: FormData) {
     // Send confirmation email to user
     console.log('Attempting to send user confirmation email to:', email);
     const userEmailResult = await resend.emails.send({
-      from: 'Forge <onboarding@resend.dev>',
+      from: 'Forge <hello@forgedinlife.com>',
       to: email,
       subject: "Welcome to the Forge Waitlist!",
       html: `
@@ -50,7 +50,7 @@ export async function joinWaitlist(formData: FormData) {
     // Send notification to admin
     console.log('Attempting to send admin notification');
     await resend.emails.send({
-      from: 'Forge <onboarding@resend.dev>',
+      from: 'Forge <hello@forgedinlife.com>',
       to: 'admin@forgedinlife.com',
       subject: `New Waitlist Signup: ${name}`,
       html: `
