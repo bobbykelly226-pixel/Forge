@@ -1,0 +1,283 @@
+'use client';
+
+import Header from '../../components/Header';
+import Link from 'next/link';
+
+export default function Terms() {
+  return (
+    <div className="min-h-screen bg-[#F8F6F2] text-[#222222]">
+      <Header />
+
+      <main className="pt-14 pb-16 max-w-3xl mx-auto px-6">
+        <h1 className="text-5xl font-bold tracking-tight text-[#0B2D5C] mb-5">
+          Terms of Service
+        </h1>
+
+        <p className="text-sm text-[#666666] mb-8">
+          Last updated: June 2026
+        </p>
+
+        <div className="prose prose-lg max-w-none text-[#444444] leading-8">
+          <p className="mb-4">
+            Welcome to Forge. Forge is operated by Forged In Life and is currently a waitlist-stage platform focused on helping people build meaningful connections through shared values, character, faith, trust, commitment, and purpose.
+          </p>
+
+          <p className="mb-4">
+            These Terms of Service explain the basic rules that apply when you visit our website, join the Forge waitlist, submit information through our forms, or interact with Forge-related services.
+          </p>
+
+          <p className="mb-8">
+            By using the Forge website or joining the waitlist, you agree to these Terms. If you do not agree, please do not use the website or join the waitlist.
+          </p>
+
+          <h2 className="text-3xl font-semibold text-[#0B2D5C] mt-8 mb-3">
+            Waitlist-Stage Service
+          </h2>
+
+          <p className="mb-4">
+            Forge is currently in an early waitlist and development stage. Joining the waitlist does not guarantee access to any future product, service, feature, account, invitation, launch, membership, or platform.
+          </p>
+
+          <p className="mb-4">
+            Forge may change, delay, pause, limit, reject, remove, or discontinue any part of the website, waitlist, communications, or future services at any time.
+          </p>
+
+          <p className="mb-8">
+            We may accept, deny, remove, or limit waitlist submissions at our discretion, including submissions that appear false, abusive, automated, duplicative, suspicious, or inconsistent with these Terms.
+          </p>
+
+          <h2 className="text-3xl font-semibold text-[#0B2D5C] mt-8 mb-3">
+            Eligibility
+          </h2>
+
+          <p className="mb-4">
+            Forge is intended for adults 18 years of age and older.
+          </p>
+
+          <p className="mb-8">
+            You should not use the website or join the waitlist if you are under 18. We do not intend for minors to join the Forge waitlist.
+          </p>
+
+          <h2 className="text-3xl font-semibold text-[#0B2D5C] mt-8 mb-3">
+            Information You Provide
+          </h2>
+
+          <p className="mb-4">
+            When you join the waitlist or contact us, you agree to provide information that is accurate and that you are authorized to submit.
+          </p>
+
+          <p className="mb-8">
+            You agree not to submit false, misleading, abusive, unlawful, unauthorized, or fraudulent information through the website, waitlist, forms, email systems, or related communication channels.
+          </p>
+
+          <h2 className="text-3xl font-semibold text-[#0B2D5C] mt-8 mb-3">
+            Acceptable Use
+          </h2>
+
+          <p className="mb-3">
+            You agree not to misuse the Forge website, waitlist, forms, email systems, backend systems, technical infrastructure, or related services.
+          </p>
+
+          <p className="mb-3">
+            This includes, but is not limited to:
+          </p>
+
+          <ul className="list-disc pl-6 space-y-2 mb-8">
+            <li>Submitting false or misleading information</li>
+            <li>Submitting information on behalf of another person without permission</li>
+            <li>Attempting to access systems, data, code, databases, admin areas, accounts, dashboards, API keys, environment variables, logs, or infrastructure without permission</li>
+            <li>Attempting to probe, scan, test, bypass, interfere with, or compromise the security of the website or related systems</li>
+            <li>Attempting to reverse engineer, scrape, copy, crawl, overload, disrupt, or automate use of the website or waitlist system</li>
+            <li>Using bots, scripts, spam tools, fake submissions, disposable abuse patterns, or automated systems to interact with Forge</li>
+            <li>Uploading, submitting, transmitting, or attempting to introduce malicious code, harmful files, malware, viruses, or harmful requests</li>
+            <li>Interfering with the operation, reliability, security, or performance of the website, forms, email systems, database, hosting, or related services</li>
+            <li>Impersonating another person, business, organization, or representative of Forge</li>
+            <li>Using Forge for unlawful, harmful, abusive, harassing, fraudulent, or deceptive purposes</li>
+          </ul>
+
+          <h2 className="text-3xl font-semibold text-[#0B2D5C] mt-8 mb-3">
+            Security and System Integrity
+          </h2>
+
+          <p className="mb-4">
+            You may not attempt to access, modify, damage, disrupt, overload, or interfere with any Forge system, server, database, codebase, form endpoint, administrative tool, email system, analytics tool, hosting environment, or third-party service connected to Forge.
+          </p>
+
+          <p className="mb-4">
+            You may not attempt to discover, extract, use, or expose API keys, environment variables, database credentials, private repository information, admin credentials, or other non-public technical information.
+          </p>
+
+          <p className="mb-4">
+            We may monitor, block, rate limit, filter, reject, remove, or investigate activity that appears suspicious, abusive, automated, fraudulent, or harmful to Forge, our users, our systems, or our service providers.
+          </p>
+
+          <p className="mb-8">
+            Nothing in these Terms gives you permission to access any non-public part of Forge, its backend systems, source code, database, accounts, infrastructure, or third-party services.
+          </p>
+
+          <h2 className="text-3xl font-semibold text-[#0B2D5C] mt-8 mb-3">
+            Email Communications
+          </h2>
+
+          <p className="mb-4">
+            By joining the waitlist, you agree that Forge may send you waitlist confirmations, launch updates, product announcements, and other Forge-related communications.
+          </p>
+
+          <p className="mb-8">
+            You may request to stop receiving Forge updates at any time. If unsubscribe tools are added in the future, you may also use those tools to manage your email preferences.
+          </p>
+
+          <h2 className="text-3xl font-semibold text-[#0B2D5C] mt-8 mb-3">
+            Privacy
+          </h2>
+
+          <p className="mb-4">
+            Your use of the Forge website and waitlist is also governed by our{' '}
+            <Link href="/privacy" className="text-[#0B2D5C] font-semibold hover:underline">
+              Privacy Policy
+            </Link>.
+          </p>
+
+          <p className="mb-8">
+            Please review the Privacy Policy to understand how Forge collects, uses, stores, and protects information submitted through the website.
+          </p>
+
+          <h2 className="text-3xl font-semibold text-[#0B2D5C] mt-8 mb-3">
+            Intellectual Property
+          </h2>
+
+          <p className="mb-4">
+            The Forge name, Forged In Life name, logos, branding, website design, written content, visual content, page layouts, graphics, and related materials are owned by Forged In Life or used with permission.
+          </p>
+
+          <p className="mb-8">
+            You may not copy, reproduce, modify, distribute, display, sell, exploit, or use Forge branding, website content, visual materials, or related intellectual property without written permission, except as allowed by law.
+          </p>
+
+          <h2 className="text-3xl font-semibold text-[#0B2D5C] mt-8 mb-3">
+            Third-Party Services
+          </h2>
+
+          <p className="mb-4">
+            Forge may use third-party services for website hosting, database storage, email delivery, analytics, security, performance monitoring, domain management, and other operational needs.
+          </p>
+
+          <p className="mb-8">
+            Forge is not responsible for third-party websites, platforms, tools, services, outages, policies, or actions that are not owned or controlled by Forged In Life.
+          </p>
+
+          <h2 className="text-3xl font-semibold text-[#0B2D5C] mt-8 mb-3">
+            No Professional Advice
+          </h2>
+
+          <p className="mb-4">
+            The Forge website and related content are provided for general informational and waitlist purposes only.
+          </p>
+
+          <p className="mb-8">
+            Nothing on the website should be interpreted as legal, financial, medical, therapeutic, counseling, relationship, safety, religious, or professional advice.
+          </p>
+
+          <h2 className="text-3xl font-semibold text-[#0B2D5C] mt-8 mb-3">
+            No Guarantees
+          </h2>
+
+          <p className="mb-4">
+            Forge is provided on an as available and as developed basis.
+          </p>
+
+          <p className="mb-4">
+            We do not guarantee that the website, waitlist, emails, forms, future features, or related services will always be available, uninterrupted, error-free, secure, accurate, complete, or suitable for your expectations.
+          </p>
+
+          <p className="mb-8">
+            We also do not guarantee that joining the waitlist will result in access to any future version of Forge.
+          </p>
+
+          <h2 className="text-3xl font-semibold text-[#0B2D5C] mt-8 mb-3">
+            Limitation of Liability
+          </h2>
+
+          <p className="mb-4">
+            To the fullest extent permitted by law, Forged In Life and Forge will not be liable for indirect, incidental, consequential, special, punitive, exemplary, or similar damages arising from your use of, or inability to use, the website, waitlist, forms, emails, content, or future services.
+          </p>
+
+          <p className="mb-8">
+            This includes, but is not limited to, loss of data, lost opportunities, service interruptions, technical issues, email delivery issues, unauthorized access, third-party service problems, or reliance on website content.
+          </p>
+
+          <h2 className="text-3xl font-semibold text-[#0B2D5C] mt-8 mb-3">
+            Indemnification
+          </h2>
+
+          <p className="mb-8">
+            You agree to be responsible for claims, damages, losses, liabilities, costs, or expenses arising from your misuse of the website, violation of these Terms, violation of another person’s rights, unauthorized access attempts, abusive activity, or unlawful conduct related to Forge.
+          </p>
+
+          <h2 className="text-3xl font-semibold text-[#0B2D5C] mt-8 mb-3">
+            Changes to the Website or Terms
+          </h2>
+
+          <p className="mb-4">
+            Forge may update the website, waitlist, future services, or these Terms as the project grows.
+          </p>
+
+          <p className="mb-8">
+            When we update these Terms, we will revise the “Last updated” date at the top of this page. Continued use of the website after changes are posted means you accept the updated Terms.
+          </p>
+
+          <h2 className="text-3xl font-semibold text-[#0B2D5C] mt-8 mb-3">
+            Governing Law
+          </h2>
+
+          <p className="mb-8">
+            These Terms are intended to be governed by the laws of the State of Colorado, without regard to conflict of law principles, unless another jurisdiction’s laws are required to apply.
+          </p>
+
+          <h2 className="text-3xl font-semibold text-[#0B2D5C] mt-8 mb-3">
+            Contact Us
+          </h2>
+
+          <p className="mb-4">
+            If you have questions about these Terms of Service, please contact us at:
+          </p>
+
+          <p className="text-xl font-semibold text-[#0B2D5C] mb-0">
+            <a href="mailto:support@forgedinlife.com" className="hover:underline">
+              support@forgedinlife.com
+            </a>
+          </p>
+        </div>
+      </main>
+
+      {/* Footer - unchanged */}
+      <footer className="bg-[#0B2D5C] text-white/80 py-8">
+        <div className="max-w-6xl mx-auto px-6">
+          <div className="flex flex-col md:flex-row justify-between items-center gap-8">
+            <div>
+              <img src="/Logos/forgedinlife-header-light.png" alt="Forge" className="h-12 w-auto" />
+            </div>
+
+            <div className="flex flex-wrap justify-center gap-x-10 gap-y-2 text-sm">
+              <Link href="/about" className="hover:text-white transition">About</Link>
+              <Link href="/values" className="hover:text-white transition">Values</Link>
+              <Link href="/privacy" className="hover:text-white transition">Privacy Policy</Link>
+              <Link href="/terms" className="hover:text-white transition">Terms of Service</Link>
+              <Link href="/contact" className="hover:text-white transition">Contact</Link>
+            </div>
+
+            <div className="flex gap-8 text-2xl">
+              <a href="#" className="hover:text-white transition">📘</a>
+              <a href="#" className="hover:text-white transition">📷</a>
+              <a href="#" className="hover:text-white transition">𝕏</a>
+            </div>
+          </div>
+
+          <div className="text-center text-xs text-white/60 mt-6">
+            © 2026 Forged In Life. All rights reserved.
+          </div>
+        </div>
+      </footer>
+    </div>
+  );
+}
