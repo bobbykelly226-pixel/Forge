@@ -30,7 +30,6 @@ export default function About() {
             someone who values commitment and authenticity, Forge was created with you in mind.
           </p>
 
-          <h2 className="text-3xl font-semibold text-[#0B2D5C]">Our Mission</h2>
           <p>
             Our mission is simple: <strong>Strong Values. Strong Connections.</strong><br />
             We believe meaningful relationships are forged through shared values, mutual respect, 
@@ -74,10 +73,9 @@ export default function About() {
             <div className="flex flex-wrap justify-center gap-x-10 gap-y-2 text-sm">
               <Link href="/about" className="hover:text-white transition">About</Link>
               <Link href="/values" className="hover:text-white transition">Values</Link>
-              <Link href="#" className="hover:text-white transition">Mission</Link>
-              <Link href="#" className="hover:text-white transition">Privacy Policy</Link>
-              <Link href="#" className="hover:text-white transition">Terms of Service</Link>
-              <Link href="#" className="hover:text-white transition">Contact</Link>
+              <Link href="/privacy" className="hover:text-white transition">Privacy Policy</Link>
+              <Link href="/terms" className="hover:text-white transition">Terms of Service</Link>
+              <Link href="/contact" className="hover:text-white transition">Contact</Link>
             </div>
 
             <div className="flex gap-8 text-2xl">

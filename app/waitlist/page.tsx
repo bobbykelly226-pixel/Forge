@@ -97,10 +97,9 @@ export default function Waitlist() {
             <div className="flex flex-wrap justify-center gap-x-10 gap-y-2 text-sm">
               <Link href="/about" className="hover:text-white transition">About</Link>
               <Link href="/values" className="hover:text-white transition">Values</Link>
-              <Link href="#" className="hover:text-white transition">Mission</Link>
-              <Link href="#" className="hover:text-white transition">Privacy Policy</Link>
-              <Link href="#" className="hover:text-white transition">Terms of Service</Link>
-              <Link href="#" className="hover:text-white transition">Contact</Link>
+              <Link href="/privacy" className="hover:text-white transition">Privacy Policy</Link>
+              <Link href="/terms" className="hover:text-white transition">Terms of Service</Link>
+              <Link href="/contact" className="hover:text-white transition">Contact</Link>
             </div>
 
             <div className="flex gap-8 text-2xl">
