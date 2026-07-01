@@ -37,10 +37,10 @@ export async function joinWaitlist(formData: FormData) {
     const userEmailResult = await resend.emails.send({
       from: 'Forge <hello@forgedinlife.com>',
       to: email,
-      subject: "Welcome to the Forge Waitlist!",
+      subject: "Thank you for supporting the Forge launch!",
       html: `
         <h2>Thank you, ${name}!</h2>
-        <p>You're now on the waitlist for <strong>Forge</strong>.</p>
+        <p>Thank you for supporting the launch of <strong>Forge</strong>.</p><p>The platform has not launched yet, and this does not sign you up to use the dating app. Your feedback and early interest help us measure demand, shape the platform, and guide the next stage of the build.</p>
         <p>We'll keep you updated as we build a dating platform where strong values lead to strong connections.</p>
         <p>Best regards,<br>The Forge Team</p>
       `,
@@ -62,7 +62,7 @@ export async function joinWaitlist(formData: FormData) {
     });
     console.log('✅ Admin notification sent');
 
-    return { success: true, message: 'Successfully joined the waitlist!' };
+    return { success: true, message: 'Thank you for supporting the Forge launch. Your feedback and early interest help guide the next stage of the platform.' };
   } catch (error) {
     console.error('Waitlist error:', error);
     return { success: false, message: 'Something went wrong. Please try again.' };

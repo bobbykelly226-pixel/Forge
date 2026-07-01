@@ -246,7 +246,7 @@ export default function Home() {
                       Your feedback is helping shape a dating platform built on faith, family, commitment, and shared values.
                     </p>
                     <a href="/waitlist" className="inline-block bg-[#D62828] hover:bg-[#A61F1F] text-white px-10 py-4 rounded-2xl font-semibold transition">
-                      Join the Waitlist
+                      Support the Launch
                     </a>
                   </div>
                 ) : (

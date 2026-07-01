@@ -24,7 +24,7 @@ export default function Header() {
           <Link href="/about" className={`hover:text-[#D62828] transition ${pathname === '/about' ? 'text-[#D62828]' : ''}`}>About</Link>
           <Link href="/values" className={`hover:text-[#D62828] transition ${pathname === '/values' ? 'text-[#D62828]' : ''}`}>Values</Link>
           <Link href="/founder" className={`hover:text-[#D62828] transition ${pathname === '/founder' ? 'text-[#D62828]' : ''}`}>Meet the Founder</Link>
-          <Link href="/waitlist" className={`hover:text-[#D62828] transition ${pathname === '/waitlist' ? 'text-[#D62828]' : ''}`}>Join Waitlist</Link>
+          <Link href="/waitlist" className={`hover:text-[#D62828] transition ${pathname === '/waitlist' ? 'text-[#D62828]' : ''}`}>Support the Launch</Link>
         </div>
 
         <button 
@@ -42,7 +42,7 @@ export default function Header() {
             <Link href="/about" onClick={() => setMenuOpen(false)} className="py-2 hover:text-[#D62828]">About</Link>
             <Link href="/values" onClick={() => setMenuOpen(false)} className="py-2 hover:text-[#D62828]">Values</Link>
             <Link href="/founder" onClick={() => setMenuOpen(false)} className="py-2 hover:text-[#D62828]">Meet the Founder</Link>
-            <Link href="/waitlist" onClick={() => setMenuOpen(false)} className="py-2 hover:text-[#D62828]">Join Waitlist</Link>
+            <Link href="/waitlist" onClick={() => setMenuOpen(false)} className="py-2 hover:text-[#D62828]">Support the Launch</Link>
           </div>
         </div>
       )}

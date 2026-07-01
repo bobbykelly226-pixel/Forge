@@ -17,13 +17,13 @@ export default function Contact() {
           </p>
 
           <p>
-            Forge is currently in its waitlist stage. Whether you have a question, want to share feedback, or are interested in what we are building, you can reach us directly by email.
+            Forge is currently in its pre-launch stage. Whether you have a question, want to share feedback, or are interested in what we are building, you can reach us directly by email.
           </p>
 
           <div className="pt-6 border-t border-[#0B2D5C]/10">
             <h2 className="text-3xl font-semibold text-[#0B2D5C] mb-4">General Inquiries</h2>
             <p className="text-lg">
-              For general questions, waitlist interest, feedback, or launch updates, contact:
+              For general questions, launch support, feedback, or Forge updates, contact:
             </p>
             <p className="text-xl sm:text-2xl font-semibold text-[#0B2D5C] mt-6 break-words">
               <a href="mailto:hello@forgedinlife.com" className="hover:underline">hello@forgedinlife.com</a>

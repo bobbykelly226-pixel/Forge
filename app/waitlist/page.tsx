@@ -24,7 +24,7 @@ export default function Waitlist() {
 
     if (result.success) {
       setStatus('success');
-      setMessage(result.message || 'Successfully joined the waitlist!');
+      setMessage(result.message || 'Thank you for supporting the Forge launch.');
       setName('');
       setEmail('');
     } else {
@@ -37,20 +37,28 @@ export default function Waitlist() {
     <div className="min-h-screen bg-[#F8F6F2] text-[#222222]">
       <Header />
 
-      <div className="pt-20 pb-20 max-w-md mx-auto px-6 text-center">
-        <h1 className="text-5xl font-bold tracking-tight text-[#0B2D5C] mb-6">Join the Waitlist</h1>
+      <div className="pt-20 pb-20 max-w-2xl mx-auto px-6 text-center">
+        <h1 className="text-5xl font-bold tracking-tight text-[#0B2D5C] mb-6">Support the Launch</h1>
+
+        <p className="text-lg text-gray-700 max-w-2xl mx-auto mb-4">
+          Forge is still in the pre-launch stage. By sharing your feedback and contact information, you are helping measure interest, understand what people care about, and determine whether there is enough demand to keep building the full platform.
+        </p>
+
+        <p className="text-sm text-gray-600 max-w-2xl mx-auto mb-8">
+          This does not sign you up to use the dating app. It helps validate the idea and shape Forge before launch.
+        </p>
         
         <p className="text-xl text-[#444444] mb-12">
-          Be among the first to experience a dating platform built around faith, family, commitment, and meaningful connection.
+          Help validate a dating platform built around faith, family, commitment, and meaningful connection.
         </p>
 
         {status === 'success' ? (
-          <div className="bg-green-50 border border-green-200 rounded-3xl p-12">
+          <div className="bg-green-50 border border-green-200 rounded-3xl p-12 max-w-md mx-auto">
             <p className="text-2xl font-semibold text-green-800 mb-4">Thank you!</p>
             <p className="text-green-700">{message}</p>
           </div>
         ) : (
-          <form onSubmit={handleSubmit} className="space-y-6">
+          <form onSubmit={handleSubmit} className="space-y-6 max-w-md mx-auto">
             <input 
               type="text" 
               value={name}
@@ -72,7 +80,7 @@ export default function Waitlist() {
               disabled={status === 'loading'}
               className="w-full bg-[#0B2D5C] hover:bg-[#0A2540] disabled:bg-gray-400 text-white font-semibold py-5 rounded-2xl text-lg transition"
             >
-              {status === 'loading' ? 'Submitting...' : 'Reserve My Spot'}
+              {status === 'loading' ? 'Submitting...' : 'Support the Launch'}
             </button>
           </form>
         )}
@@ -82,7 +90,7 @@ export default function Waitlist() {
         )}
 
         <p className="text-sm text-[#666666] mt-10">
-          No spam. Just occasional updates, early access opportunities, and a chance to help shape the future of Forge.
+          No spam. Just occasional updates, feedback opportunities, and a chance to help shape the future of Forge.
         </p>
       </div>
 
