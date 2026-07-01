@@ -89,9 +89,14 @@ export default function Waitlist() {
           <p className="text-red-600 mt-4 text-sm">{message}</p>
         )}
 
-        <p className="text-sm text-[#666666] mt-10">
-          No spam. Just occasional updates, feedback opportunities, and a chance to help shape the future of Forge.
-        </p>
+        <div className="text-sm text-[#666666] mt-10 space-y-3">
+          <p>
+            No spam. Just occasional updates, feedback opportunities, and a chance to help shape the future of Forge.
+          </p>
+          <p>
+            Your name and email will not be shown publicly. Your information will only be used for Forge updates, feedback, validation, and launch-related communication.
+          </p>
+        </div>
       </div>
 
       {/* Footer */}
