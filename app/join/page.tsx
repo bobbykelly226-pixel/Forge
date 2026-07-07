@@ -10,6 +10,10 @@ export default function Join() {
 
       <div className="pt-16 pb-20 max-w-3xl mx-auto px-6">
         <div className="text-center mb-12">
+          <p className="text-sm uppercase tracking-[0.2em] text-[#D62828] font-semibold mb-6">
+            You found Forge early
+          </p>
+
           <img
             src="/Logos/forgedinlife-full-dark.png"
             alt="Forge"
@@ -20,29 +24,34 @@ export default function Join() {
             Become a Founding Member of Forge
           </h1>
 
+          <p className="text-xl sm:text-2xl font-medium text-[#0B2D5C] leading-relaxed max-w-2xl mx-auto mb-6">
+            You&apos;re not signing up for another dating app. You&apos;re helping build one.
+          </p>
+
           <p className="text-lg sm:text-xl text-[#444444] leading-relaxed max-w-2xl mx-auto">
-            Help us build a dating platform focused on values, character, and intentional
-            relationships — where faith, family, commitment, and purpose come before endless
+            Forge is being built for people who believe meaningful relationships start with
+            shared values — character, commitment, and intentional connection over endless
             swiping.
           </p>
         </div>
 
         <div className="bg-white border border-[#0B2D5C]/10 rounded-3xl p-8 sm:p-10 shadow-sm mb-12">
           <h2 className="text-2xl font-semibold text-[#0B2D5C] mb-4 text-center">
-            Why Early Members Matter
+            Why Your Support Matters Now
           </h2>
           <div className="space-y-4 text-[#444444] text-lg leading-relaxed">
             <p>
-              Forge is still in its pre-launch stage. The people who join now are not just signing
-              up for an app — they are helping shape what gets built next.
+              Forge has not launched yet. Early supporters are not just waiting for an app —
+              they are helping shape what gets built, what gets prioritized, and who this
+              platform is truly for.
             </p>
             <p>
-              Founding members help us measure real demand, understand what people care about most,
-              and guide the platform toward meaningful connection instead of surface-level matches.
+              Your voice helps us understand what matters most: values, character, commitment,
+              and relationships built with intention — not surface-level matches or hookup culture.
             </p>
             <p>
-              Your early support tells us whether there is enough interest to keep building a
-              values-first dating community — one designed for people who want something real.
+              If you believe there should be a dating platform built on something deeper, this
+              is your chance to stand with Forge before the world sees it.
             </p>
           </div>
         </div>
@@ -52,11 +61,12 @@ export default function Join() {
             href="/wait"
             className="inline-block w-full sm:w-auto bg-[#D62828] hover:bg-[#A61F1F] text-white px-10 py-5 rounded-2xl font-semibold text-lg transition"
           >
-            Join the Founding Member Waitlist →
+            Support the Launch →
           </Link>
 
-          <p className="text-sm text-[#666666]">
-            Takes less than a minute. No spam — just occasional launch updates.
+          <p className="text-sm text-[#666666] max-w-md mx-auto">
+            Stand with Forge at the beginning. Share your support, help guide the mission, and
+            be part of what we build next.
           </p>
 
           <Link
