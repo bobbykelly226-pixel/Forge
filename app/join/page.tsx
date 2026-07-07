@@ -25,14 +25,10 @@ export default function Join() {
 
           <h1
             id="join-hero-heading"
-            className="text-3xl sm:text-5xl font-bold tracking-tight text-[#0B2D5C] mb-4 sm:mb-5 leading-tight px-2 text-balance"
+            className="text-3xl sm:text-5xl font-bold tracking-tight text-[#0B2D5C] mb-8 sm:mb-10 leading-tight px-2 text-balance"
           >
-            Help Build Something Different
+            Help Build the Future of Dating
           </h1>
-
-          <p className="text-xl sm:text-2xl font-semibold text-[#0B2D5C] mb-8 sm:mb-10 leading-snug px-2 text-balance">
-            Become a Founding Member of Forge
-          </p>
 
           <p className="text-lg sm:text-2xl font-medium text-[#0B2D5C] leading-relaxed max-w-2xl mx-auto mb-10 sm:mb-12 px-1 text-balance">
             You&apos;re not signing up for another dating app. You&apos;re helping build one.
