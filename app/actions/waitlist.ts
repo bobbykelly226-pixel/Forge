@@ -2,7 +2,15 @@
 
 import { Resend } from 'resend';
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+const REQUIRED_ENV_VARS = [
+  'NEXT_PUBLIC_SUPABASE_URL',
+  'NEXT_PUBLIC_SUPABASE_ANON_KEY',
+  'RESEND_API_KEY',
+] as const;
+
+function getMissingEnvVars(): string[] {
+  return REQUIRED_ENV_VARS.filter((name) => !process.env[name]);
+}
 
 export async function joinWaitlist(formData: FormData) {
   const name = formData.get('name') as string;
@@ -12,14 +20,31 @@ export async function joinWaitlist(formData: FormData) {
     return { success: false, message: 'Name and email are required' };
   }
 
+  const missingEnvVars = getMissingEnvVars();
+  if (missingEnvVars.length > 0) {
+    console.error(
+      'Waitlist server action missing required environment variables:',
+      missingEnvVars.join(', ')
+    );
+    return {
+      success: false,
+      message:
+        'Waitlist is temporarily unavailable due to a server configuration issue. Please try again later.',
+    };
+  }
+
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
+  const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
+  const resend = new Resend(process.env.RESEND_API_KEY);
+
   try {
     // Save to Supabase
     console.log('Attempting to save to Supabase:', { name, email });
-    const supabaseResponse = await fetch('https://uwgjdqzwcgbaaudbrvgx.supabase.co/rest/v1/waitlist', {
+    const supabaseResponse = await fetch(`${supabaseUrl}/rest/v1/waitlist`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InV3Z2pkcXp3Y2diYWF1ZGJydmd4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODExMzY2MjMsImV4cCI6MjA5NjcxMjYyM30.E8usBi9Rf_mm1T-9fpMD7BTKbXhPLUxSXVqjl2cab8g',
+        apikey: supabaseAnonKey,
       },
       body: JSON.stringify({ name, email }),
     });
