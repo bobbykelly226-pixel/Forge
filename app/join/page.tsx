@@ -8,31 +8,37 @@ export default function Join() {
     <div className="min-h-screen bg-[#F8F6F2] text-[#222222]">
       <Header />
 
-      <div className="pt-12 sm:pt-16 pb-24 sm:pb-28 max-w-3xl mx-auto px-5 sm:px-6">
-        <div className="text-center mb-16 sm:mb-20">
-          <p className="text-sm sm:text-base tracking-wide text-[#D62828] font-semibold mb-8 sm:mb-10">
+      <main className="pt-12 sm:pt-16 pb-24 sm:pb-28 max-w-3xl mx-auto px-5 sm:px-6">
+        <section
+          aria-labelledby="join-hero-heading"
+          className="text-center mb-16 sm:mb-20"
+        >
+          <p className="text-sm sm:text-base tracking-wide text-[#D62828] font-semibold mb-8 sm:mb-10 text-balance">
             Welcome. You Found Forge Early.
           </p>
 
           <img
             src="/Logos/forgedinlife-full-dark.png"
-            alt="Forge"
-            className="max-w-[240px] sm:max-w-[280px] w-full mx-auto mb-10 sm:mb-12"
+            alt="Forge by Forged In Life"
+            className="max-w-[220px] sm:max-w-[280px] w-full mx-auto mb-10 sm:mb-12"
           />
 
-          <h1 className="text-3xl sm:text-5xl font-bold tracking-tight text-[#0B2D5C] mb-4 sm:mb-5 leading-tight px-2">
+          <h1
+            id="join-hero-heading"
+            className="text-3xl sm:text-5xl font-bold tracking-tight text-[#0B2D5C] mb-4 sm:mb-5 leading-tight px-2 text-balance"
+          >
             Help Build Something Different
           </h1>
 
-          <h2 className="text-xl sm:text-2xl font-semibold text-[#0B2D5C] mb-8 sm:mb-10 leading-snug px-2">
+          <p className="text-xl sm:text-2xl font-semibold text-[#0B2D5C] mb-8 sm:mb-10 leading-snug px-2 text-balance">
             Become a Founding Member of Forge
-          </h2>
+          </p>
 
-          <p className="text-lg sm:text-2xl font-medium text-[#0B2D5C] leading-relaxed max-w-2xl mx-auto mb-10 sm:mb-12 px-1">
+          <p className="text-lg sm:text-2xl font-medium text-[#0B2D5C] leading-relaxed max-w-2xl mx-auto mb-10 sm:mb-12 px-1 text-balance">
             You&apos;re not signing up for another dating app. You&apos;re helping build one.
           </p>
 
-          <div className="space-y-5 sm:space-y-6 text-base sm:text-lg text-[#444444] leading-relaxed max-w-2xl mx-auto text-left sm:text-center px-1">
+          <div className="space-y-5 sm:space-y-6 text-base sm:text-lg text-[#444444] leading-relaxed max-w-2xl mx-auto text-center px-1">
             <p>
               Forge is being built for people who believe meaningful relationships begin with
               shared values, strong character, commitment, and intention.
@@ -47,50 +53,59 @@ export default function Join() {
               with you.
             </p>
           </div>
-        </div>
+        </section>
 
-        <div className="bg-white border border-[#0B2D5C]/10 rounded-3xl p-7 sm:p-10 shadow-sm mb-16 sm:mb-20">
-          <h2 className="text-xl sm:text-2xl font-semibold text-[#0B2D5C] mb-6 sm:mb-8 text-center">
+        <section
+          aria-labelledby="join-support-heading"
+          className="bg-white border border-[#0B2D5C]/10 rounded-3xl p-7 sm:p-10 shadow-sm mb-16 sm:mb-20"
+        >
+          <h2
+            id="join-support-heading"
+            className="text-xl sm:text-2xl font-semibold text-[#0B2D5C] mb-6 sm:mb-8 text-center text-balance"
+          >
             Why Early Support Matters
           </h2>
-          <ul className="space-y-4 sm:space-y-5 text-[#444444] text-base sm:text-lg leading-relaxed max-w-xl mx-auto">
-            <li className="flex gap-3">
-              <span className="text-[#D62828] font-semibold shrink-0">•</span>
-              <span>Your voice helps shape the platform before launch.</span>
-            </li>
-            <li className="flex gap-3">
-              <span className="text-[#D62828] font-semibold shrink-0">•</span>
-              <span>Early supporters influence the features and priorities we build first.</span>
-            </li>
-            <li className="flex gap-3">
-              <span className="text-[#D62828] font-semibold shrink-0">•</span>
-              <span>Together we&apos;re creating a community focused on character, compatibility, and lasting relationships.</span>
+          <ul className="space-y-4 sm:space-y-5 text-[#444444] text-base sm:text-lg leading-relaxed max-w-xl mx-auto list-disc marker:text-[#D62828] pl-5 sm:pl-6">
+            <li>Your voice helps shape the platform before launch.</li>
+            <li>Early supporters influence the features and priorities we build first.</li>
+            <li>
+              Together we&apos;re creating a community focused on character, compatibility, and
+              lasting relationships.
             </li>
           </ul>
-        </div>
+        </section>
 
-        <div className="text-center space-y-7 sm:space-y-8">
-          <Link
-            href="/wait"
-            className="inline-block w-full sm:w-auto bg-[#D62828] hover:bg-[#A61F1F] text-white px-10 py-5 rounded-2xl font-semibold text-lg transition"
-          >
-            Support the Launch
-          </Link>
+        <section
+          aria-labelledby="join-cta-heading"
+          className="bg-white border border-[#0B2D5C]/10 rounded-3xl p-7 sm:p-10 shadow-sm text-center"
+        >
+          <h2 id="join-cta-heading" className="sr-only">
+            Support the Forge launch
+          </h2>
 
-          <p className="text-sm sm:text-base text-[#666666] max-w-md mx-auto leading-relaxed px-2">
-            We&apos;ll send occasional updates as Forge grows. No spam. No pressure. Just progress.
-          </p>
+          <div className="space-y-7 sm:space-y-8">
+            <Link
+              href="/wait"
+              className="inline-block w-full sm:w-auto min-h-[56px] bg-[#D62828] hover:bg-[#A61F1F] hover:-translate-y-0.5 hover:shadow-lg text-white px-10 py-5 rounded-2xl font-semibold text-lg transition motion-reduce:transition-none motion-reduce:hover:translate-y-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0B2D5C] focus-visible:ring-offset-2"
+            >
+              Support the Launch
+            </Link>
 
-          <Link
-            href="/"
-            className="inline-block text-[#0B2D5C] hover:text-[#D62828] font-medium transition pt-2"
-          >
-            ← Back to Homepage
-          </Link>
-        </div>
-      </div>
+            <p className="text-sm sm:text-base text-[#666666] max-w-md mx-auto leading-relaxed px-2 text-balance">
+              We&apos;ll send occasional updates as Forge grows. No spam. No pressure. Just progress.
+            </p>
 
-      <footer className="bg-[#0B2D5C] text-white/80 py-8">
+            <Link
+              href="/"
+              className="inline-block text-sm text-[#0B2D5C]/80 hover:text-[#D62828] font-medium transition py-2"
+            >
+              ← Back to Homepage
+            </Link>
+          </div>
+        </section>
+      </main>
+
+      <footer className="bg-[#0B2D5C] text-white/80 py-8 mt-8 sm:mt-12">
         <div className="max-w-6xl mx-auto px-6">
           <div className="flex flex-col md:flex-row justify-between items-center gap-8">
             <div>
