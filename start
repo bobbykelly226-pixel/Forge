@@ -1,4 +1,4 @@
 #!/bin/bash
-cd ~/swipe-right
+cd "$(dirname "$0")"
 echo "🚀 Starting Forge..."
 npm run dev
