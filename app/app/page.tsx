@@ -36,10 +36,16 @@ export default async function AppPage() {
         </p>
 
         <div className="bg-white border border-[#0B2D5C]/10 rounded-3xl p-8 sm:p-10 shadow-sm mb-10">
-          <p className="text-lg text-[#444444] leading-relaxed">
-            Profiles, matching, and messaging are coming next. Authentication is the
-            foundation we are building on first.
+          <p className="text-lg text-[#444444] leading-relaxed mb-6">
+            Your profile is the next step. Add the basics so Forge can start building
+            around who you are and what you are looking for.
           </p>
+          <Link
+            href="/profile"
+            className="inline-block bg-[#D62828] hover:bg-[#A61F1F] text-white px-8 py-4 rounded-2xl font-semibold text-lg transition"
+          >
+            Go to Your Profile →
+          </Link>
         </div>
 
         <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
