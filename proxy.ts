@@ -38,7 +38,10 @@ export async function proxy(request: NextRequest) {
 
   const { pathname } = request.nextUrl;
 
-  if (!user && pathname.startsWith('/app')) {
+  const isProtectedRoute =
+    pathname.startsWith('/app') || pathname.startsWith('/profile');
+
+  if (!user && isProtectedRoute) {
     const redirectUrl = request.nextUrl.clone();
     redirectUrl.pathname = '/login';
     redirectUrl.searchParams.set('redirectTo', pathname);
