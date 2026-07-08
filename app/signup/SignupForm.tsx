@@ -23,11 +23,13 @@ export default function SignupForm() {
 
     try {
       const supabase = createClient();
+      const emailRedirectTo = `${window.location.origin}/app`;
+
       const { data, error: signUpError } = await supabase.auth.signUp({
         email,
         password,
         options: {
-          emailRedirectTo: `${window.location.origin}/app`,
+          emailRedirectTo,
         },
       });
 
