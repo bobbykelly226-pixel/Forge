@@ -2,6 +2,13 @@
 
 import { saveProfile } from '@/app/actions/profile';
 import Header from '@/components/Header';
+import {
+  getProfilePhotoPath,
+  isAllowedProfilePhotoType,
+  PROFILE_PHOTO_BUCKET,
+  validateProfilePhoto,
+} from '@/lib/profile-photo';
+import { createClient } from '@/lib/supabase/client';
 import type { Profile } from '@/lib/types/profile';
 import Link from 'next/link';
 import { useState } from 'react';
@@ -36,21 +43,78 @@ export default function ProfileForm({ profile }: ProfileFormProps) {
   const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
   const [message, setMessage] = useState('');
   const [photoPreview, setPhotoPreview] = useState<string | null>(profile?.profile_photo_url ?? null);
+  const [selectedPhotoFile, setSelectedPhotoFile] = useState<File | null>(null);
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setStatus('loading');
     setMessage('');
 
-    const formData = new FormData(event.currentTarget);
-    const result = await saveProfile(formData);
+    let succeeded = false;
 
-    if (result.success) {
-      setStatus('success');
+    try {
+      const formData = new FormData(event.currentTarget);
+      let uploadedPhotoUrl: string | null = null;
+
+      if (selectedPhotoFile) {
+        const validationError = validateProfilePhoto(selectedPhotoFile);
+        if (validationError) {
+          throw new Error(validationError);
+        }
+
+        const supabase = createClient();
+        const {
+          data: { user },
+        } = await supabase.auth.getUser();
+
+        if (!user) {
+          throw new Error('You must be signed in to upload a profile photo.');
+        }
+
+        if (!isAllowedProfilePhotoType(selectedPhotoFile.type)) {
+          throw new Error('Please upload a JPG, PNG, WEBP, or GIF image.');
+        }
+
+        const filePath = getProfilePhotoPath(user.id, selectedPhotoFile.type);
+        const { error: uploadError } = await supabase.storage
+          .from(PROFILE_PHOTO_BUCKET)
+          .upload(filePath, selectedPhotoFile, {
+            upsert: true,
+            contentType: selectedPhotoFile.type,
+          });
+
+        if (uploadError) {
+          throw new Error(`Could not upload your profile photo: ${uploadError.message}`);
+        }
+
+        const {
+          data: { publicUrl },
+        } = supabase.storage.from(PROFILE_PHOTO_BUCKET).getPublicUrl(filePath);
+
+        uploadedPhotoUrl = publicUrl;
+        formData.set('profile_photo_url', publicUrl);
+      }
+
+      const result = await saveProfile(formData);
+
+      if (!result.success) {
+        if (uploadedPhotoUrl) {
+          throw new Error(
+            `Your photo was uploaded, but we could not save your profile: ${result.message}`
+          );
+        }
+        throw new Error(result.message);
+      }
+
+      setSelectedPhotoFile(null);
       setMessage(result.message);
-    } else {
-      setStatus('error');
-      setMessage(result.message);
+      succeeded = true;
+    } catch (error) {
+      const errorMessage =
+        error instanceof Error ? error.message : 'An unexpected error occurred. Please try again.';
+      setMessage(errorMessage);
+    } finally {
+      setStatus(succeeded ? 'success' : 'error');
     }
   };
 
@@ -60,8 +124,18 @@ export default function ProfileForm({ profile }: ProfileFormProps) {
       return;
     }
 
-    const previewUrl = URL.createObjectURL(file);
-    setPhotoPreview(previewUrl);
+    const validationError = validateProfilePhoto(file);
+    if (validationError) {
+      setStatus('error');
+      setMessage(validationError);
+      event.target.value = '';
+      return;
+    }
+
+    setSelectedPhotoFile(file);
+    setPhotoPreview(URL.createObjectURL(file));
+    setStatus('idle');
+    setMessage('');
   };
 
   const initials = getInitials(profile?.full_name);
@@ -104,7 +178,6 @@ export default function ProfileForm({ profile }: ProfileFormProps) {
 
               <input
                 id="profile_photo"
-                name="profile_photo"
                 type="file"
                 accept="image/jpeg,image/png,image/webp,image/gif"
                 onChange={handlePhotoChange}
