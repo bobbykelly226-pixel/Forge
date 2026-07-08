@@ -7,6 +7,7 @@ export type Profile = {
   faith_importance: string | null;
   service_background: string | null;
   short_bio: string | null;
+  profile_photo_url: string | null;
   created_at: string;
   updated_at: string;
 };

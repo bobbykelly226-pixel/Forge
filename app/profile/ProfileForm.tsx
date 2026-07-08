@@ -15,9 +15,27 @@ const inputClassName =
 
 const labelClassName = 'block text-sm font-medium text-[#0B2D5C] mb-2';
 
+function getInitials(name: string | null | undefined): string {
+  if (!name) {
+    return 'F';
+  }
+
+  const parts = name.trim().split(/\s+/).filter(Boolean);
+  if (parts.length === 0) {
+    return 'F';
+  }
+
+  if (parts.length === 1) {
+    return parts[0].charAt(0).toUpperCase();
+  }
+
+  return `${parts[0].charAt(0)}${parts[parts.length - 1].charAt(0)}`.toUpperCase();
+}
+
 export default function ProfileForm({ profile }: ProfileFormProps) {
   const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
   const [message, setMessage] = useState('');
+  const [photoPreview, setPhotoPreview] = useState<string | null>(profile?.profile_photo_url ?? null);
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -35,6 +53,18 @@ export default function ProfileForm({ profile }: ProfileFormProps) {
       setMessage(result.message);
     }
   };
+
+  const handlePhotoChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) {
+      return;
+    }
+
+    const previewUrl = URL.createObjectURL(file);
+    setPhotoPreview(previewUrl);
+  };
+
+  const initials = getInitials(profile?.full_name);
 
   return (
     <div className="min-h-screen bg-[#F8F6F2] text-[#222222]">
@@ -54,6 +84,39 @@ export default function ProfileForm({ profile }: ProfileFormProps) {
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-6 bg-white border border-[#0B2D5C]/10 rounded-3xl p-7 sm:p-10 shadow-sm">
+          <div className="text-center">
+            <label htmlFor="profile_photo" className={labelClassName}>
+              Profile photo
+            </label>
+
+            <div className="flex flex-col items-center gap-4 mb-2">
+              {photoPreview ? (
+                <img
+                  src={photoPreview}
+                  alt="Profile photo preview"
+                  className="w-32 h-32 rounded-full object-cover border-4 border-[#F8F6F2] shadow-md"
+                />
+              ) : (
+                <div className="w-32 h-32 rounded-full bg-[#0B2D5C]/10 border-4 border-[#F8F6F2] shadow-md flex items-center justify-center">
+                  <span className="text-3xl font-bold text-[#0B2D5C]">{initials}</span>
+                </div>
+              )}
+
+              <input
+                id="profile_photo"
+                name="profile_photo"
+                type="file"
+                accept="image/jpeg,image/png,image/webp,image/gif"
+                onChange={handlePhotoChange}
+                className="block w-full max-w-sm text-sm text-[#444444] file:mr-4 file:py-3 file:px-4 file:rounded-xl file:border-0 file:bg-[#0B2D5C] file:text-white file:font-semibold hover:file:bg-[#0A2540]"
+              />
+            </div>
+
+            <p className="text-sm text-[#666666]">
+              JPG, PNG, WEBP, or GIF. Max 5 MB.
+            </p>
+          </div>
+
           <div>
             <label htmlFor="full_name" className={labelClassName}>
               Full name
@@ -182,11 +245,19 @@ export default function ProfileForm({ profile }: ProfileFormProps) {
           </button>
         </form>
 
-        <p className="text-center mt-8">
-          <Link href="/app" className="text-[#0B2D5C] hover:text-[#D62828] font-medium transition">
+        <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mt-8">
+          {profile?.full_name && (
+            <Link
+              href="/profile/preview"
+              className="inline-block bg-[#0B2D5C] hover:bg-[#0A2540] text-white px-6 py-3 rounded-2xl font-semibold transition"
+            >
+              Preview Profile
+            </Link>
+          )}
+          <Link href="/app" className="text-[#0B2D5C] hover:text-[#D62828] font-medium transition py-2">
             ← Back to App
           </Link>
-        </p>
+        </div>
       </main>
     </div>
   );
