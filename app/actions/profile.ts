@@ -26,6 +26,7 @@ export async function saveProfile(formData: FormData): Promise<ProfileActionResu
   const faithImportance = (formData.get('faith_importance') as string)?.trim();
   const serviceBackground = (formData.get('service_background') as string)?.trim();
   const shortBio = (formData.get('short_bio') as string)?.trim();
+  const profilePhotoUrlInput = (formData.get('profile_photo_url') as string)?.trim();
 
   if (!fullName) {
     return { success: false, message: 'Full name is required.' };
@@ -40,6 +41,18 @@ export async function saveProfile(formData: FormData): Promise<ProfileActionResu
     age = parsedAge;
   }
 
+  const { data: existingProfile } = await supabase
+    .from('profiles')
+    .select('profile_photo_url')
+    .eq('id', user.id)
+    .maybeSingle();
+
+  let profilePhotoUrl = existingProfile?.profile_photo_url ?? null;
+
+  if (profilePhotoUrlInput) {
+    profilePhotoUrl = profilePhotoUrlInput;
+  }
+
   const { error } = await supabase.from('profiles').upsert(
     {
       id: user.id,
@@ -50,6 +63,7 @@ export async function saveProfile(formData: FormData): Promise<ProfileActionResu
       faith_importance: faithImportance || null,
       service_background: serviceBackground || null,
       short_bio: shortBio || null,
+      profile_photo_url: profilePhotoUrl,
     },
     { onConflict: 'id' }
   );
@@ -60,6 +74,7 @@ export async function saveProfile(formData: FormData): Promise<ProfileActionResu
   }
 
   revalidatePath('/profile');
+  revalidatePath('/profile/preview');
   revalidatePath('/app');
 
   return { success: true, message: 'Your profile has been saved.' };

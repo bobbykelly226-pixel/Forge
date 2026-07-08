@@ -40,12 +40,20 @@ export default async function AppPage() {
             Your profile is the next step. Add the basics so Forge can start building
             around who you are and what you are looking for.
           </p>
-          <Link
-            href="/profile"
-            className="inline-block bg-[#D62828] hover:bg-[#A61F1F] text-white px-8 py-4 rounded-2xl font-semibold text-lg transition"
-          >
-            Go to Your Profile →
-          </Link>
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+            <Link
+              href="/profile"
+              className="inline-block bg-[#D62828] hover:bg-[#A61F1F] text-white px-8 py-4 rounded-2xl font-semibold text-lg transition"
+            >
+              Go to Your Profile →
+            </Link>
+            <Link
+              href="/profile/preview"
+              className="inline-block bg-[#0B2D5C] hover:bg-[#0A2540] text-white px-8 py-4 rounded-2xl font-semibold text-lg transition"
+            >
+              Preview Profile
+            </Link>
+          </div>
         </div>
 
         <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
