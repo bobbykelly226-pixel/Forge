@@ -1,9 +1,16 @@
 'use client';
 
 import Link from 'next/link';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 const TOTAL_STEPS = 4;
+const DESKTOP_MEDIA_QUERY = '(min-width: 640px)';
+
+const primaryButtonClassName =
+  'inline-flex w-full items-center justify-center rounded-2xl bg-[#D62828] px-8 py-4 text-lg font-semibold text-white transition hover:bg-[#A61F1F]';
+
+const secondaryButtonClassName =
+  'inline-flex w-full items-center justify-center rounded-2xl border border-[#0B2D5C]/20 bg-white px-8 py-4 text-lg font-semibold text-[#0B2D5C] transition hover:bg-[#F8F6F2]';
 
 const INTENTION_OPTIONS = [
   'Long-term relationship',
@@ -73,6 +80,19 @@ export default function OnboardingShell() {
   const [step, setStep] = useState(1);
   const [intention, setIntention] = useState<string | null>(null);
   const [selectedValues, setSelectedValues] = useState<string[]>([]);
+  // Default to mobile-first so Continue is above Back until we know the viewport.
+  const [isDesktop, setIsDesktop] = useState(false);
+
+  useEffect(() => {
+    const mediaQuery = window.matchMedia(DESKTOP_MEDIA_QUERY);
+    const syncViewport = () => {
+      setIsDesktop(mediaQuery.matches);
+    };
+
+    syncViewport();
+    mediaQuery.addEventListener('change', syncViewport);
+    return () => mediaQuery.removeEventListener('change', syncViewport);
+  }, []);
 
   const toggleValue = (value: string) => {
     setSelectedValues((current) =>
@@ -89,6 +109,23 @@ export default function OnboardingShell() {
   const goNext = () => {
     setStep((current) => Math.min(TOTAL_STEPS, current + 1));
   };
+
+  const backControl =
+    step > 1 ? (
+      <button type="button" onClick={goBack} className={secondaryButtonClassName}>
+        Back
+      </button>
+    ) : (
+      <Link href="/app" className={secondaryButtonClassName}>
+        Back to App
+      </Link>
+    );
+
+  const continueControl = (
+    <button type="button" onClick={goNext} className={primaryButtonClassName}>
+      Continue
+    </button>
+  );
 
   return (
     <div className="mx-auto max-w-lg px-5 pb-24 pt-10 sm:px-6 sm:pt-14">
@@ -218,30 +255,18 @@ export default function OnboardingShell() {
       </div>
 
       {step < TOTAL_STEPS && (
-        <div className="mt-6 flex flex-col gap-3 sm:flex-row">
-          {step > 1 ? (
-            <button
-              type="button"
-              onClick={goBack}
-              className="inline-flex w-full items-center justify-center rounded-2xl border border-[#0B2D5C]/20 bg-white px-8 py-4 text-lg font-semibold text-[#0B2D5C] transition hover:bg-[#F8F6F2] sm:w-auto sm:min-w-[140px]"
-            >
-              Back
-            </button>
+        <div className="mt-6" data-onboarding-nav={isDesktop ? 'desktop' : 'mobile'}>
+          {isDesktop ? (
+            <div className="grid grid-cols-2 gap-3">
+              {backControl}
+              {continueControl}
+            </div>
           ) : (
-            <Link
-              href="/app"
-              className="inline-flex w-full items-center justify-center rounded-2xl border border-[#0B2D5C]/20 bg-white px-8 py-4 text-lg font-semibold text-[#0B2D5C] transition hover:bg-[#F8F6F2] sm:w-auto sm:min-w-[140px]"
-            >
-              Back to App
-            </Link>
+            <div className="flex flex-col gap-3">
+              {continueControl}
+              {backControl}
+            </div>
           )}
-          <button
-            type="button"
-            onClick={goNext}
-            className="inline-flex w-full flex-1 items-center justify-center rounded-2xl bg-[#D62828] px-8 py-4 text-lg font-semibold text-white transition hover:bg-[#A61F1F]"
-          >
-            Continue
-          </button>
         </div>
       )}
 
