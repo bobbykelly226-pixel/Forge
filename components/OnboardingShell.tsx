@@ -218,31 +218,61 @@ export default function OnboardingShell() {
       </div>
 
       {step < TOTAL_STEPS && (
-        <div className="mt-6 flex flex-col gap-3 sm:grid sm:grid-cols-2">
-          <button
-            type="button"
-            onClick={goNext}
-            className="order-1 inline-flex w-full items-center justify-center rounded-2xl bg-[#D62828] px-8 py-4 text-lg font-semibold text-white transition hover:bg-[#A61F1F] sm:order-2"
-          >
-            Continue
-          </button>
-          {step > 1 ? (
+        <>
+          {/* Mobile: Continue above Back. DOM order is the visual order. */}
+          <div className="mt-6 flex flex-col gap-3 sm:hidden">
             <button
               type="button"
-              onClick={goBack}
-              className="order-2 inline-flex w-full items-center justify-center rounded-2xl border border-[#0B2D5C]/20 bg-white px-8 py-4 text-lg font-semibold text-[#0B2D5C] transition hover:bg-[#F8F6F2] sm:order-1"
+              onClick={goNext}
+              className="inline-flex w-full items-center justify-center rounded-2xl bg-[#D62828] px-8 py-4 text-lg font-semibold text-white transition hover:bg-[#A61F1F]"
             >
-              Back
+              Continue
             </button>
-          ) : (
-            <Link
-              href="/app"
-              className="order-2 inline-flex w-full items-center justify-center rounded-2xl border border-[#0B2D5C]/20 bg-white px-8 py-4 text-lg font-semibold text-[#0B2D5C] transition hover:bg-[#F8F6F2] sm:order-1"
+            {step > 1 ? (
+              <button
+                type="button"
+                onClick={goBack}
+                className="inline-flex w-full items-center justify-center rounded-2xl border border-[#0B2D5C]/20 bg-white px-8 py-4 text-lg font-semibold text-[#0B2D5C] transition hover:bg-[#F8F6F2]"
+              >
+                Back
+              </button>
+            ) : (
+              <Link
+                href="/app"
+                className="inline-flex w-full items-center justify-center rounded-2xl border border-[#0B2D5C]/20 bg-white px-8 py-4 text-lg font-semibold text-[#0B2D5C] transition hover:bg-[#F8F6F2]"
+              >
+                Back to App
+              </Link>
+            )}
+          </div>
+
+          {/* Desktop: Back left, Continue right. */}
+          <div className="mt-6 hidden gap-3 sm:grid sm:grid-cols-2">
+            {step > 1 ? (
+              <button
+                type="button"
+                onClick={goBack}
+                className="inline-flex w-full items-center justify-center rounded-2xl border border-[#0B2D5C]/20 bg-white px-8 py-4 text-lg font-semibold text-[#0B2D5C] transition hover:bg-[#F8F6F2]"
+              >
+                Back
+              </button>
+            ) : (
+              <Link
+                href="/app"
+                className="inline-flex w-full items-center justify-center rounded-2xl border border-[#0B2D5C]/20 bg-white px-8 py-4 text-lg font-semibold text-[#0B2D5C] transition hover:bg-[#F8F6F2]"
+              >
+                Back to App
+              </Link>
+            )}
+            <button
+              type="button"
+              onClick={goNext}
+              className="inline-flex w-full items-center justify-center rounded-2xl bg-[#D62828] px-8 py-4 text-lg font-semibold text-white transition hover:bg-[#A61F1F]"
             >
-              Back to App
-            </Link>
-          )}
-        </div>
+              Continue
+            </button>
+          </div>
+        </>
       )}
 
       {step === TOTAL_STEPS && (
