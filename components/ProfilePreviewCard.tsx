@@ -21,7 +21,7 @@ function getInitials(name: string | null): string {
   return `${parts[0].charAt(0)}${parts[parts.length - 1].charAt(0)}`.toUpperCase();
 }
 
-function DetailRow({
+function DetailBlock({
   label,
   value,
   emptyMessage,
@@ -31,14 +31,14 @@ function DetailRow({
   emptyMessage: string;
 }) {
   return (
-    <div className="rounded-2xl bg-[#F8F6F2] px-5 py-4">
-      <p className="text-xs uppercase tracking-wide text-[#D62828] font-semibold mb-1.5">
+    <div className="rounded-3xl border border-[#0B2D5C]/08 bg-[#F8F6F2] px-5 py-5 sm:px-6">
+      <p className="text-xs uppercase tracking-[0.14em] text-[#D62828] font-semibold mb-2">
         {label}
       </p>
       {value ? (
-        <p className="text-base text-[#222222] leading-relaxed">{value}</p>
+        <p className="text-lg text-[#1F1F1F] leading-relaxed">{value}</p>
       ) : (
-        <p className="text-base text-[#888888] leading-relaxed italic">{emptyMessage}</p>
+        <p className="text-base text-[#7A7A7A] leading-relaxed">{emptyMessage}</p>
       )}
     </div>
   );
@@ -61,15 +61,14 @@ function getMissingFields(profile: Profile): string[] {
 export default function ProfilePreviewCard({ profile }: ProfilePreviewCardProps) {
   const initials = getInitials(profile.full_name);
   const displayName = profile.full_name?.trim() || 'Your name';
-  const metaLine = [profile.age, profile.location].filter(Boolean).join(' · ');
   const missingFields = getMissingFields(profile);
   const isIncomplete = missingFields.length > 0;
 
   return (
-    <article className="bg-white border border-[#0B2D5C]/10 rounded-[2rem] shadow-sm overflow-hidden">
-      <div className="relative bg-[#0B2D5C]">
+    <article className="overflow-hidden rounded-[2rem] border border-[#0B2D5C]/12 bg-white shadow-[0_18px_50px_rgba(11,45,92,0.08)]">
+      <div className="relative">
         {profile.profile_photo_url ? (
-          <div className="aspect-[4/5] sm:aspect-[5/6] w-full overflow-hidden">
+          <div className="aspect-[3/4] w-full overflow-hidden bg-[#0B2D5C]">
             <img
               src={profile.profile_photo_url}
               alt={profile.full_name ? `${profile.full_name} profile photo` : 'Profile photo'}
@@ -79,44 +78,64 @@ export default function ProfilePreviewCard({ profile }: ProfilePreviewCardProps)
         ) : (
           <div
             aria-label="Profile photo placeholder"
-            className="aspect-[4/5] sm:aspect-[5/6] w-full flex flex-col items-center justify-center bg-gradient-to-b from-[#0B2D5C] to-[#0A2540] px-6"
+            className="aspect-[3/4] w-full bg-gradient-to-b from-[#0B2D5C] via-[#0C356B] to-[#0A2540] px-8 flex flex-col items-center justify-center text-center"
           >
-            <div className="w-28 h-28 rounded-full bg-white/10 border border-white/20 flex items-center justify-center mb-5">
-              <span className="text-4xl font-bold text-white">{initials}</span>
+            <div className="mb-6 flex h-32 w-32 items-center justify-center rounded-full border border-white/25 bg-white/10">
+              <span className="text-5xl font-bold text-white">{initials}</span>
             </div>
-            <p className="text-white/90 text-center text-base leading-relaxed max-w-xs">
-              Add a photo so others can put a face to your story.
+            <p className="max-w-xs text-lg leading-relaxed text-white/90">
+              Add a clear photo so someone can put a face to your story.
             </p>
           </div>
         )}
+
+        <div className="absolute left-4 top-4">
+          <span className="inline-flex items-center rounded-full bg-[#F8F6F2]/95 px-3.5 py-1.5 text-xs font-semibold uppercase tracking-[0.12em] text-[#0B2D5C] shadow-sm">
+            Preview Mode
+          </span>
+        </div>
       </div>
 
-      <div className="px-6 pt-7 pb-8 sm:px-8 sm:pt-8 sm:pb-10">
-        <header className="mb-7 sm:mb-8">
-          <h2 className="text-3xl sm:text-4xl font-bold tracking-tight text-[#0B2D5C]">
+      <div className="px-6 pb-9 pt-7 sm:px-8 sm:pb-10 sm:pt-8">
+        <header className="mb-8 border-b border-[#0B2D5C]/10 pb-7">
+          <h2 className="text-[2.15rem] leading-tight font-bold tracking-tight text-[#0B2D5C] sm:text-5xl">
             {displayName}
           </h2>
 
-          {metaLine ? (
-            <p className="mt-2 text-lg text-[#555555]">{metaLine}</p>
-          ) : (
-            <p className="mt-2 text-base text-[#888888] italic">
-              Add your age and location to help others know where you are in life.
-            </p>
-          )}
+          <div className="mt-4 flex flex-wrap gap-2.5">
+            {profile.age ? (
+              <span className="rounded-full bg-[#0B2D5C]/[0.06] px-4 py-2 text-sm font-medium text-[#0B2D5C]">
+                {profile.age} years old
+              </span>
+            ) : (
+              <span className="rounded-full bg-[#F8F6F2] px-4 py-2 text-sm text-[#888888]">
+                Age not added yet
+              </span>
+            )}
+
+            {profile.location ? (
+              <span className="rounded-full bg-[#0B2D5C]/[0.06] px-4 py-2 text-sm font-medium text-[#0B2D5C]">
+                {profile.location}
+              </span>
+            ) : (
+              <span className="rounded-full bg-[#F8F6F2] px-4 py-2 text-sm text-[#888888]">
+                Location not added yet
+              </span>
+            )}
+          </div>
         </header>
 
-        <section className="mb-7 sm:mb-8">
-          <h3 className="text-sm uppercase tracking-wide text-[#D62828] font-semibold mb-3">
+        <section className="mb-8">
+          <h3 className="mb-3 text-xs font-semibold uppercase tracking-[0.14em] text-[#D62828]">
             About
           </h3>
           {profile.short_bio ? (
-            <p className="text-base sm:text-lg text-[#333333] leading-relaxed whitespace-pre-wrap">
+            <p className="text-lg leading-relaxed text-[#2A2A2A] whitespace-pre-wrap">
               {profile.short_bio}
             </p>
           ) : (
-            <div className="rounded-2xl bg-[#F8F6F2] px-5 py-5">
-              <p className="text-base text-[#666666] leading-relaxed">
+            <div className="rounded-3xl border border-dashed border-[#0B2D5C]/20 bg-[#F8F6F2] px-5 py-6">
+              <p className="text-base leading-relaxed text-[#555555]">
                 Your profile is starting to take shape. Add a short bio so future matches can
                 understand what matters to you.
               </p>
@@ -124,22 +143,22 @@ export default function ProfilePreviewCard({ profile }: ProfilePreviewCardProps)
           )}
         </section>
 
-        <section>
-          <h3 className="text-sm uppercase tracking-wide text-[#D62828] font-semibold mb-3">
+        <section className="mb-2">
+          <h3 className="mb-3 text-xs font-semibold uppercase tracking-[0.14em] text-[#D62828]">
             What matters
           </h3>
           <div className="space-y-3">
-            <DetailRow
+            <DetailBlock
               label="Relationship goal"
               value={profile.relationship_goal}
               emptyMessage="Share what you are looking for in a relationship."
             />
-            <DetailRow
+            <DetailBlock
               label="Faith importance"
               value={profile.faith_importance}
               emptyMessage="Tell others how faith shapes your life and relationships."
             />
-            <DetailRow
+            <DetailBlock
               label="Service background"
               value={profile.service_background}
               emptyMessage="Military, first responder, healthcare, volunteer, or other service."
@@ -148,11 +167,11 @@ export default function ProfilePreviewCard({ profile }: ProfilePreviewCardProps)
         </section>
 
         {isIncomplete && (
-          <div className="mt-8 rounded-2xl border border-[#0B2D5C]/15 bg-[#0B2D5C]/[0.03] px-5 py-5">
-            <p className="text-base font-semibold text-[#0B2D5C] mb-2">
+          <div className="mt-8 rounded-3xl border border-[#D62828]/20 bg-[#D62828]/[0.04] px-5 py-6 sm:px-6">
+            <p className="mb-2 text-lg font-semibold text-[#0B2D5C]">
               Complete your profile to help Forge make better compatibility suggestions.
             </p>
-            <p className="text-sm text-[#555555] leading-relaxed">
+            <p className="text-sm leading-relaxed text-[#555555]">
               The more intentional your profile is, the better Forge can help surface meaningful
               alignment. Consider adding {missingFields.slice(0, 3).join(', ')}
               {missingFields.length > 3 ? ', and more' : ''}.
