@@ -1,7 +1,5 @@
 'use server';
 
-import { revalidatePath } from 'next/cache';
-
 import { createClient } from '@/lib/supabase/server';
 import {
   COMPATIBILITY_QUESTION_KEYS,
@@ -99,6 +97,8 @@ export async function saveCompatibilityAnswer(
       : answerValue;
 
   // Clearing a multi-select removes the stored answer rather than saving [].
+  // Do not revalidatePath here: refreshing /onboarding mid-flow can interrupt
+  // the client shell. Answers reload on the next full page visit.
   if (
     (typeof normalizedValue === 'string' && !normalizedValue) ||
     (Array.isArray(normalizedValue) && normalizedValue.length === 0)
@@ -114,8 +114,6 @@ export async function saveCompatibilityAnswer(
       return { success: false, message: 'Could not clear your answer. Please try again.' };
     }
 
-    revalidatePath('/onboarding');
-    revalidatePath('/app');
     return { success: true, message: 'Answer cleared.' };
   }
 
@@ -136,9 +134,6 @@ export async function saveCompatibilityAnswer(
     console.error('Compatibility answer save failed:', error.message);
     return { success: false, message: 'Could not save your answer. Please try again.' };
   }
-
-  revalidatePath('/onboarding');
-  revalidatePath('/app');
 
   return { success: true, message: 'Answer saved.' };
 }

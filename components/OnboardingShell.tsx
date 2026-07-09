@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { useEffect, useState, useTransition } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 import { saveCompatibilityAnswer } from '@/app/actions/compatibility';
 import {
@@ -61,20 +61,17 @@ function OptionButton({
   label,
   selected,
   onClick,
-  disabled,
 }: {
   label: string;
   selected: boolean;
   onClick: () => void;
-  disabled?: boolean;
 }) {
   return (
     <button
       type="button"
       onClick={onClick}
-      disabled={disabled}
       aria-pressed={selected}
-      className={`w-full rounded-2xl border px-5 py-4 text-left text-base font-medium transition disabled:opacity-60 ${
+      className={`w-full rounded-2xl border px-5 py-4 text-left text-base font-medium transition ${
         selected
           ? 'border-[#0B2D5C] bg-[#0B2D5C] text-white'
           : 'border-[#0B2D5C]/15 bg-white text-[#0B2D5C] hover:border-[#0B2D5C]/35'
@@ -114,9 +111,13 @@ export default function OnboardingShell({
     readStringArrayAnswer(initialAnswers, COMPATIBILITY_QUESTION_KEYS.coreValues)
   );
   const [saveMessage, setSaveMessage] = useState<string | null>(null);
-  const [isPending, startTransition] = useTransition();
+  const [saveError, setSaveError] = useState<string | null>(null);
   // Default to mobile-first so Continue is above Back until we know the viewport.
   const [isDesktop, setIsDesktop] = useState(false);
+
+  // Per-question save generations so rapid toggles don't apply stale responses,
+  // and older writes don't overwrite newer ones in the UI status.
+  const saveGenerationRef = useRef<Record<string, number>>({});
 
   useEffect(() => {
     const mediaQuery = window.matchMedia(DESKTOP_MEDIA_QUERY);
@@ -134,18 +135,39 @@ export default function OnboardingShell({
     answerValue: string | string[],
     successMessage: string
   ) => {
-    startTransition(async () => {
-      const result = await saveCompatibilityAnswer(questionKey, answerValue);
-      if (result.success) {
-        setSaveMessage(successMessage);
-      } else {
-        setSaveMessage(result.message);
+    const generation = (saveGenerationRef.current[questionKey] ?? 0) + 1;
+    saveGenerationRef.current[questionKey] = generation;
+
+    void (async () => {
+      try {
+        const result = await saveCompatibilityAnswer(questionKey, answerValue);
+
+        // Ignore stale responses from earlier clicks.
+        if (saveGenerationRef.current[questionKey] !== generation) {
+          return;
+        }
+
+        if (result.success) {
+          setSaveError(null);
+          setSaveMessage(successMessage);
+        } else {
+          setSaveMessage(null);
+          setSaveError(result.message);
+        }
+      } catch {
+        if (saveGenerationRef.current[questionKey] !== generation) {
+          return;
+        }
+
+        setSaveMessage(null);
+        setSaveError('Could not save your answer. Please try again.');
       }
-    });
+    })();
   };
 
   const selectIntention = (option: string) => {
     setIntention(option);
+    setSaveError(null);
     persistAnswer(
       COMPATIBILITY_QUESTION_KEYS.relationshipIntention,
       option,
@@ -154,30 +176,44 @@ export default function OnboardingShell({
   };
 
   const toggleValue = (value: string) => {
-    setSelectedValues((current) => {
-      const next = current.includes(value)
-        ? current.filter((item) => item !== value)
-        : [...current, value];
+    const next = selectedValues.includes(value)
+      ? selectedValues.filter((item) => item !== value)
+      : [...selectedValues, value];
 
-      persistAnswer(
-        COMPATIBILITY_QUESTION_KEYS.coreValues,
-        next,
-        next.length > 0 ? 'Values saved.' : 'Values cleared.'
-      );
-
-      return next;
-    });
+    // Optimistic UI: update selection immediately, save in the background.
+    setSelectedValues(next);
+    setSaveError(null);
+    persistAnswer(
+      COMPATIBILITY_QUESTION_KEYS.coreValues,
+      next,
+      next.length > 0 ? 'Values saved.' : 'Values cleared.'
+    );
   };
 
   const goBack = () => {
     setSaveMessage(null);
+    setSaveError(null);
     setStep((current) => Math.max(1, current - 1));
   };
 
   const goNext = () => {
     setSaveMessage(null);
+    setSaveError(null);
     setStep((current) => Math.min(TOTAL_STEPS, current + 1));
   };
+
+  const statusMessage =
+    saveError ??
+    saveMessage ??
+    (step === 2
+      ? intention
+        ? 'Your intention is saved to your account.'
+        : 'Select an option to save your answer.'
+      : step === 3
+        ? selectedValues.length > 0
+          ? 'Your values are saved to your account.'
+          : 'Select one or more values to save your answer.'
+        : null);
 
   const backControl =
     step > 1 ? (
@@ -247,16 +283,14 @@ export default function OnboardingShell({
                   label={option}
                   selected={intention === option}
                   onClick={() => selectIntention(option)}
-                  disabled={isPending}
                 />
               ))}
             </div>
-            <p className="mt-5 text-sm text-[#777777]">
-              {saveMessage && step === 2
-                ? saveMessage
-                : intention
-                  ? 'Your intention is saved to your account.'
-                  : 'Select an option to save your answer.'}
+            <p
+              className={`mt-5 text-sm ${saveError ? 'text-[#D62828]' : 'text-[#777777]'}`}
+              role={saveError ? 'alert' : undefined}
+            >
+              {statusMessage}
             </p>
           </section>
         )}
@@ -280,16 +314,14 @@ export default function OnboardingShell({
                   label={option}
                   selected={selectedValues.includes(option)}
                   onClick={() => toggleValue(option)}
-                  disabled={isPending}
                 />
               ))}
             </div>
-            <p className="mt-5 text-sm text-[#777777]">
-              {saveMessage && step === 3
-                ? saveMessage
-                : selectedValues.length > 0
-                  ? 'Your values are saved to your account.'
-                  : 'Select one or more values to save your answer.'}
+            <p
+              className={`mt-5 text-sm ${saveError ? 'text-[#D62828]' : 'text-[#777777]'}`}
+              role={saveError ? 'alert' : undefined}
+            >
+              {statusMessage}
             </p>
           </section>
         )}
