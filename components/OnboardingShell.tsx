@@ -246,13 +246,13 @@ export default function OnboardingShell() {
       )}
 
       {step === TOTAL_STEPS && (
-        <div className="mt-6">
+        <div className="mt-5 text-center">
           <button
             type="button"
             onClick={goBack}
-            className="inline-flex w-full items-center justify-center rounded-2xl border border-[#0B2D5C]/20 bg-white px-8 py-4 text-lg font-semibold text-[#0B2D5C] transition hover:bg-[#F8F6F2] sm:w-auto"
+            className="text-sm font-medium text-[#666666] transition hover:text-[#0B2D5C]"
           >
-            Back
+            ← Previous step
           </button>
         </div>
       )}
