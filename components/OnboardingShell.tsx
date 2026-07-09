@@ -218,7 +218,14 @@ export default function OnboardingShell() {
       </div>
 
       {step < TOTAL_STEPS && (
-        <div className="mt-6 flex flex-col gap-3 sm:flex-row">
+        <div className="mt-6 flex flex-col gap-3 sm:flex-row-reverse">
+          <button
+            type="button"
+            onClick={goNext}
+            className="inline-flex w-full flex-1 items-center justify-center rounded-2xl bg-[#D62828] px-8 py-4 text-lg font-semibold text-white transition hover:bg-[#A61F1F]"
+          >
+            Continue
+          </button>
           {step > 1 ? (
             <button
               type="button"
@@ -235,13 +242,6 @@ export default function OnboardingShell() {
               Back to App
             </Link>
           )}
-          <button
-            type="button"
-            onClick={goNext}
-            className="inline-flex w-full flex-1 items-center justify-center rounded-2xl bg-[#D62828] px-8 py-4 text-lg font-semibold text-white transition hover:bg-[#A61F1F]"
-          >
-            Continue
-          </button>
         </div>
       )}
 
