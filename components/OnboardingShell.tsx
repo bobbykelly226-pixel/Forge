@@ -1,7 +1,13 @@
 'use client';
 
 import Link from 'next/link';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useTransition } from 'react';
+
+import { saveCompatibilityAnswer } from '@/app/actions/compatibility';
+import {
+  COMPATIBILITY_QUESTION_KEYS,
+  type CompatibilityAnswersMap,
+} from '@/lib/types/compatibility';
 
 const TOTAL_STEPS = 4;
 const DESKTOP_MEDIA_QUERY = '(min-width: 640px)';
@@ -55,17 +61,20 @@ function OptionButton({
   label,
   selected,
   onClick,
+  disabled,
 }: {
   label: string;
   selected: boolean;
   onClick: () => void;
+  disabled?: boolean;
 }) {
   return (
     <button
       type="button"
       onClick={onClick}
+      disabled={disabled}
       aria-pressed={selected}
-      className={`w-full rounded-2xl border px-5 py-4 text-left text-base font-medium transition ${
+      className={`w-full rounded-2xl border px-5 py-4 text-left text-base font-medium transition disabled:opacity-60 ${
         selected
           ? 'border-[#0B2D5C] bg-[#0B2D5C] text-white'
           : 'border-[#0B2D5C]/15 bg-white text-[#0B2D5C] hover:border-[#0B2D5C]/35'
@@ -76,10 +85,36 @@ function OptionButton({
   );
 }
 
-export default function OnboardingShell() {
+function readStringAnswer(
+  answers: CompatibilityAnswersMap,
+  key: (typeof COMPATIBILITY_QUESTION_KEYS)[keyof typeof COMPATIBILITY_QUESTION_KEYS]
+): string | null {
+  const value = answers[key];
+  return typeof value === 'string' ? value : null;
+}
+
+function readStringArrayAnswer(
+  answers: CompatibilityAnswersMap,
+  key: (typeof COMPATIBILITY_QUESTION_KEYS)[keyof typeof COMPATIBILITY_QUESTION_KEYS]
+): string[] {
+  const value = answers[key];
+  return Array.isArray(value) ? value.filter((item) => typeof item === 'string') : [];
+}
+
+export default function OnboardingShell({
+  initialAnswers = {},
+}: {
+  initialAnswers?: CompatibilityAnswersMap;
+}) {
   const [step, setStep] = useState(1);
-  const [intention, setIntention] = useState<string | null>(null);
-  const [selectedValues, setSelectedValues] = useState<string[]>([]);
+  const [intention, setIntention] = useState<string | null>(() =>
+    readStringAnswer(initialAnswers, COMPATIBILITY_QUESTION_KEYS.relationshipIntention)
+  );
+  const [selectedValues, setSelectedValues] = useState<string[]>(() =>
+    readStringArrayAnswer(initialAnswers, COMPATIBILITY_QUESTION_KEYS.coreValues)
+  );
+  const [saveMessage, setSaveMessage] = useState<string | null>(null);
+  const [isPending, startTransition] = useTransition();
   // Default to mobile-first so Continue is above Back until we know the viewport.
   const [isDesktop, setIsDesktop] = useState(false);
 
@@ -94,19 +129,53 @@ export default function OnboardingShell() {
     return () => mediaQuery.removeEventListener('change', syncViewport);
   }, []);
 
-  const toggleValue = (value: string) => {
-    setSelectedValues((current) =>
-      current.includes(value)
-        ? current.filter((item) => item !== value)
-        : [...current, value]
+  const persistAnswer = (
+    questionKey: string,
+    answerValue: string | string[],
+    successMessage: string
+  ) => {
+    startTransition(async () => {
+      const result = await saveCompatibilityAnswer(questionKey, answerValue);
+      if (result.success) {
+        setSaveMessage(successMessage);
+      } else {
+        setSaveMessage(result.message);
+      }
+    });
+  };
+
+  const selectIntention = (option: string) => {
+    setIntention(option);
+    persistAnswer(
+      COMPATIBILITY_QUESTION_KEYS.relationshipIntention,
+      option,
+      'Intention saved.'
     );
   };
 
+  const toggleValue = (value: string) => {
+    setSelectedValues((current) => {
+      const next = current.includes(value)
+        ? current.filter((item) => item !== value)
+        : [...current, value];
+
+      persistAnswer(
+        COMPATIBILITY_QUESTION_KEYS.coreValues,
+        next,
+        next.length > 0 ? 'Values saved.' : 'Values cleared.'
+      );
+
+      return next;
+    });
+  };
+
   const goBack = () => {
+    setSaveMessage(null);
     setStep((current) => Math.max(1, current - 1));
   };
 
   const goNext = () => {
+    setSaveMessage(null);
     setStep((current) => Math.min(TOTAL_STEPS, current + 1));
   };
 
@@ -153,8 +222,8 @@ export default function OnboardingShell() {
               surface-level attraction.
             </p>
             <p className="mt-5 text-base leading-relaxed text-[#555555]">
-              This first pass is simple on purpose. You are shaping the foundation Forge will use
-              later for meaningful alignment.
+              This first pass is simple on purpose. Your answers are saved to your account so you
+              can leave and come back anytime.
             </p>
           </section>
         )}
@@ -177,12 +246,17 @@ export default function OnboardingShell() {
                   key={option}
                   label={option}
                   selected={intention === option}
-                  onClick={() => setIntention(option)}
+                  onClick={() => selectIntention(option)}
+                  disabled={isPending}
                 />
               ))}
             </div>
             <p className="mt-5 text-sm text-[#777777]">
-              Placeholder only. Answers are not saved to your profile yet.
+              {saveMessage && step === 2
+                ? saveMessage
+                : intention
+                  ? 'Your intention is saved to your account.'
+                  : 'Select an option to save your answer.'}
             </p>
           </section>
         )}
@@ -206,11 +280,16 @@ export default function OnboardingShell() {
                   label={option}
                   selected={selectedValues.includes(option)}
                   onClick={() => toggleValue(option)}
+                  disabled={isPending}
                 />
               ))}
             </div>
             <p className="mt-5 text-sm text-[#777777]">
-              Placeholder only. Compatibility scoring is not active yet.
+              {saveMessage && step === 3
+                ? saveMessage
+                : selectedValues.length > 0
+                  ? 'Your values are saved to your account.'
+                  : 'Select one or more values to save your answer.'}
             </p>
           </section>
         )}
