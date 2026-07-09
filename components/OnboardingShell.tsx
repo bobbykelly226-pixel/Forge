@@ -1,7 +1,13 @@
 'use client';
 
 import Link from 'next/link';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
+
+import { saveCompatibilityAnswer } from '@/app/actions/compatibility';
+import {
+  COMPATIBILITY_QUESTION_KEYS,
+  type CompatibilityAnswersMap,
+} from '@/lib/types/compatibility';
 
 const TOTAL_STEPS = 4;
 const DESKTOP_MEDIA_QUERY = '(min-width: 640px)';
@@ -76,12 +82,42 @@ function OptionButton({
   );
 }
 
-export default function OnboardingShell() {
+function readStringAnswer(
+  answers: CompatibilityAnswersMap,
+  key: (typeof COMPATIBILITY_QUESTION_KEYS)[keyof typeof COMPATIBILITY_QUESTION_KEYS]
+): string | null {
+  const value = answers[key];
+  return typeof value === 'string' ? value : null;
+}
+
+function readStringArrayAnswer(
+  answers: CompatibilityAnswersMap,
+  key: (typeof COMPATIBILITY_QUESTION_KEYS)[keyof typeof COMPATIBILITY_QUESTION_KEYS]
+): string[] {
+  const value = answers[key];
+  return Array.isArray(value) ? value.filter((item) => typeof item === 'string') : [];
+}
+
+export default function OnboardingShell({
+  initialAnswers = {},
+}: {
+  initialAnswers?: CompatibilityAnswersMap;
+}) {
   const [step, setStep] = useState(1);
-  const [intention, setIntention] = useState<string | null>(null);
-  const [selectedValues, setSelectedValues] = useState<string[]>([]);
+  const [intention, setIntention] = useState<string | null>(() =>
+    readStringAnswer(initialAnswers, COMPATIBILITY_QUESTION_KEYS.relationshipIntention)
+  );
+  const [selectedValues, setSelectedValues] = useState<string[]>(() =>
+    readStringArrayAnswer(initialAnswers, COMPATIBILITY_QUESTION_KEYS.coreValues)
+  );
+  const [saveMessage, setSaveMessage] = useState<string | null>(null);
+  const [saveError, setSaveError] = useState<string | null>(null);
   // Default to mobile-first so Continue is above Back until we know the viewport.
   const [isDesktop, setIsDesktop] = useState(false);
+
+  // Per-question save generations so rapid toggles don't apply stale responses,
+  // and older writes don't overwrite newer ones in the UI status.
+  const saveGenerationRef = useRef<Record<string, number>>({});
 
   useEffect(() => {
     const mediaQuery = window.matchMedia(DESKTOP_MEDIA_QUERY);
@@ -94,21 +130,90 @@ export default function OnboardingShell() {
     return () => mediaQuery.removeEventListener('change', syncViewport);
   }, []);
 
+  const persistAnswer = (
+    questionKey: string,
+    answerValue: string | string[],
+    successMessage: string
+  ) => {
+    const generation = (saveGenerationRef.current[questionKey] ?? 0) + 1;
+    saveGenerationRef.current[questionKey] = generation;
+
+    void (async () => {
+      try {
+        const result = await saveCompatibilityAnswer(questionKey, answerValue);
+
+        // Ignore stale responses from earlier clicks.
+        if (saveGenerationRef.current[questionKey] !== generation) {
+          return;
+        }
+
+        if (result.success) {
+          setSaveError(null);
+          setSaveMessage(successMessage);
+        } else {
+          setSaveMessage(null);
+          setSaveError(result.message);
+        }
+      } catch {
+        if (saveGenerationRef.current[questionKey] !== generation) {
+          return;
+        }
+
+        setSaveMessage(null);
+        setSaveError('Could not save your answer. Please try again.');
+      }
+    })();
+  };
+
+  const selectIntention = (option: string) => {
+    setIntention(option);
+    setSaveError(null);
+    persistAnswer(
+      COMPATIBILITY_QUESTION_KEYS.relationshipIntention,
+      option,
+      'Intention saved.'
+    );
+  };
+
   const toggleValue = (value: string) => {
-    setSelectedValues((current) =>
-      current.includes(value)
-        ? current.filter((item) => item !== value)
-        : [...current, value]
+    const next = selectedValues.includes(value)
+      ? selectedValues.filter((item) => item !== value)
+      : [...selectedValues, value];
+
+    // Optimistic UI: update selection immediately, save in the background.
+    setSelectedValues(next);
+    setSaveError(null);
+    persistAnswer(
+      COMPATIBILITY_QUESTION_KEYS.coreValues,
+      next,
+      next.length > 0 ? 'Values saved.' : 'Values cleared.'
     );
   };
 
   const goBack = () => {
+    setSaveMessage(null);
+    setSaveError(null);
     setStep((current) => Math.max(1, current - 1));
   };
 
   const goNext = () => {
+    setSaveMessage(null);
+    setSaveError(null);
     setStep((current) => Math.min(TOTAL_STEPS, current + 1));
   };
+
+  const statusMessage =
+    saveError ??
+    saveMessage ??
+    (step === 2
+      ? intention
+        ? 'Your intention is saved to your account.'
+        : 'Select an option to save your answer.'
+      : step === 3
+        ? selectedValues.length > 0
+          ? 'Your values are saved to your account.'
+          : 'Select one or more values to save your answer.'
+        : null);
 
   const backControl =
     step > 1 ? (
@@ -153,8 +258,8 @@ export default function OnboardingShell() {
               surface-level attraction.
             </p>
             <p className="mt-5 text-base leading-relaxed text-[#555555]">
-              This first pass is simple on purpose. You are shaping the foundation Forge will use
-              later for meaningful alignment.
+              This first pass is simple on purpose. Your answers are saved to your account so you
+              can leave and come back anytime.
             </p>
           </section>
         )}
@@ -177,12 +282,15 @@ export default function OnboardingShell() {
                   key={option}
                   label={option}
                   selected={intention === option}
-                  onClick={() => setIntention(option)}
+                  onClick={() => selectIntention(option)}
                 />
               ))}
             </div>
-            <p className="mt-5 text-sm text-[#777777]">
-              Placeholder only. Answers are not saved to your profile yet.
+            <p
+              className={`mt-5 text-sm ${saveError ? 'text-[#D62828]' : 'text-[#777777]'}`}
+              role={saveError ? 'alert' : undefined}
+            >
+              {statusMessage}
             </p>
           </section>
         )}
@@ -209,8 +317,11 @@ export default function OnboardingShell() {
                 />
               ))}
             </div>
-            <p className="mt-5 text-sm text-[#777777]">
-              Placeholder only. Compatibility scoring is not active yet.
+            <p
+              className={`mt-5 text-sm ${saveError ? 'text-[#D62828]' : 'text-[#777777]'}`}
+              role={saveError ? 'alert' : undefined}
+            >
+              {statusMessage}
             </p>
           </section>
         )}
