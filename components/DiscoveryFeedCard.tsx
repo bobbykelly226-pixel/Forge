@@ -1,30 +1,23 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import type { KeyboardEvent, MouseEvent, ReactNode } from 'react';
+import type { KeyboardEvent, MouseEvent } from 'react';
 import {
-  Bookmark,
   Heart,
   Info,
   Lightbulb,
   MapPin,
   MessageCircle,
-  Send,
   Users,
-  X,
   type LucideIcon,
 } from 'lucide-react';
 
+import DiscoveryActionTiles from '@/components/discovery/DiscoveryActionTiles';
 import type { DiscoveryFeedProfile } from '@/lib/discovery-feed-mock';
 
 type DiscoveryFeedCardProps = {
   profile: DiscoveryFeedProfile;
   index: number;
-  onInterested: () => void;
-  onOpenToChat: () => void;
-  onSaveForLater: () => void;
-  onNotForMe: () => void;
-  openToChatLabel?: string;
 };
 
 const SIGNAL_ICONS: Record<string, LucideIcon> = {
@@ -32,13 +25,13 @@ const SIGNAL_ICONS: Record<string, LucideIcon> = {
   'Good Listener': Lightbulb,
   'Genuine and Present': Heart,
   'Values Family': Users,
-  Dependable: Bookmark,
+  Dependable: Heart,
   'Thoughtful Planner': Lightbulb,
   'Warm Presence': Heart,
   Empathetic: Heart,
   'Clear Communicator': MessageCircle,
   'Servant Hearted': Users,
-  'Steady Under Pressure': Bookmark,
+  'Steady Under Pressure': Heart,
   'Good Humor': Lightbulb,
 };
 
@@ -53,59 +46,7 @@ function SignalChip({ label }: { label: string }) {
   );
 }
 
-function ActionTile({
-  onClick,
-  label,
-  description,
-  icon,
-  variant,
-}: {
-  onClick: () => void;
-  label: string;
-  description: string;
-  icon: ReactNode;
-  variant: 'primary' | 'outline' | 'secondary';
-}) {
-  const base =
-    'flex w-full flex-col items-start gap-1 rounded-2xl px-4 py-3.5 text-left transition active:scale-[0.99] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 lg:gap-1.5 lg:px-5 lg:py-4';
-
-  const variants = {
-    primary:
-      'bg-[#D62828] text-white shadow-[0_10px_28px_rgba(214,40,40,0.18)] hover:bg-[#A61F1F] focus-visible:outline-[#D62828]',
-    outline:
-      'border border-[#0B2D5C]/25 bg-white text-[#0B2D5C] hover:border-[#0B2D5C]/45 hover:bg-[#FBF9F6] focus-visible:outline-[#0B2D5C]',
-    secondary:
-      'border border-[#0B2D5C]/12 bg-[#FBF9F6] text-[#0B2D5C] hover:border-[#0B2D5C]/25 hover:bg-white focus-visible:outline-[#0B2D5C]',
-  } as const;
-
-  return (
-    <button type="button" onClick={onClick} className={`${base} ${variants[variant]}`}>
-      <span className="inline-flex items-center gap-2.5">
-        <span className="inline-flex shrink-0" aria-hidden="true">
-          {icon}
-        </span>
-        <span className="text-[15px] font-semibold lg:text-base">{label}</span>
-      </span>
-      <span
-        className={`pl-8 text-xs leading-snug lg:pl-9 lg:text-[13px] ${
-          variant === 'primary' ? 'text-white/85' : 'text-[#6B7585]'
-        } hidden sm:block`}
-      >
-        {description}
-      </span>
-    </button>
-  );
-}
-
-export default function DiscoveryFeedCard({
-  profile,
-  index,
-  onInterested,
-  onOpenToChat,
-  onSaveForLater,
-  onNotForMe,
-  openToChatLabel = 'Open to Chat',
-}: DiscoveryFeedCardProps) {
+export default function DiscoveryFeedCard({ profile, index }: DiscoveryFeedCardProps) {
   const router = useRouter();
 
   const openProfile = () => {
@@ -134,18 +75,8 @@ export default function DiscoveryFeedCard({
         animationDelay: `${Math.min(index, 3) * 70}ms`,
       }}
     >
-      {/*
-        Desktop (lg+):
-          1) Top row — portrait (3:4) | information (height locked to portrait)
-          2) Full-width action row beneath a single horizontal divider
-             (portrait bottom === divider; portrait never enters actions)
-
-        Mobile:
-          Stacked portrait → information → actions (approved structure preserved)
-      */}
       <div className="overflow-hidden rounded-[2rem] border border-[#0B2D5C]/08 bg-white/90 shadow-[0_18px_50px_rgba(11,45,92,0.08)] backdrop-blur-sm transition duration-300 hover:shadow-[0_22px_56px_rgba(11,45,92,0.12)] lg:rounded-[2.25rem] lg:shadow-[0_22px_56px_rgba(11,45,92,0.09)] lg:hover:shadow-[0_26px_64px_rgba(11,45,92,0.13)]">
         <div className="lg:grid lg:grid-cols-[minmax(17.5rem,40%)_minmax(0,1fr)]">
-          {/* Portrait — 3:4 aspect drives the top-section row height on desktop */}
           <div
             role="link"
             tabIndex={0}
@@ -186,7 +117,6 @@ export default function DiscoveryFeedCard({
             </div>
           </div>
 
-          {/* Information — desktop height locked to portrait via h-0/min-h-full */}
           <div
             onClick={openProfile}
             className="flex min-h-0 cursor-pointer flex-col px-5 py-6 text-left sm:px-6 sm:py-7 lg:h-0 lg:min-h-full lg:overflow-y-auto lg:px-8 lg:py-7"
@@ -272,42 +202,12 @@ export default function DiscoveryFeedCard({
           </div>
         </div>
 
-        {/*
-          Full-width action section.
-          Top border is the single divider; sits directly under the portrait/info row,
-          so the portrait bottom aligns with this divider and never enters this section.
-        */}
         <div className="border-t border-[#0B2D5C]/10 px-5 py-5 sm:px-6 sm:py-6 lg:px-7 lg:py-6">
-          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-            <ActionTile
-              variant="primary"
-              label="Interested"
-              description={`Let ${profile.firstName} know you're interested`}
-              onClick={onInterested}
-              icon={<Heart className="h-5 w-5" strokeWidth={1.75} />}
-            />
-            <ActionTile
-              variant="outline"
-              label={openToChatLabel}
-              description="Send a low-pressure chat request"
-              onClick={onOpenToChat}
-              icon={<Send className="h-5 w-5" strokeWidth={1.75} />}
-            />
-            <ActionTile
-              variant="secondary"
-              label="Save for Later"
-              description={`Keep ${profile.firstName} in your discovery`}
-              onClick={onSaveForLater}
-              icon={<Bookmark className="h-5 w-5" strokeWidth={1.75} />}
-            />
-            <ActionTile
-              variant="secondary"
-              label="Not for Me"
-              description="Pass on this introduction"
-              onClick={onNotForMe}
-              icon={<X className="h-5 w-5" strokeWidth={1.75} />}
-            />
-          </div>
+          <DiscoveryActionTiles
+            profileId={profile.id}
+            profileName={profile.firstName}
+            layout="feed-grid"
+          />
         </div>
       </div>
     </article>

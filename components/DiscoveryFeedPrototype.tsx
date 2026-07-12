@@ -1,16 +1,15 @@
 'use client';
 
-import { useCallback, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { Clock, Heart, LayoutGrid, MapPin, Sparkles, type LucideIcon } from 'lucide-react';
 
 import DiscoveryBottomNav from '@/components/DiscoveryBottomNav';
 import DiscoveryDesktopTopBar from '@/components/DiscoveryDesktopTopBar';
+import { useDiscoveryActions } from '@/components/discovery/DiscoveryActionsProvider';
 import DiscoveryFeedCard from '@/components/DiscoveryFeedCard';
-import OpenToChatDrawer from '@/components/OpenToChatDrawer';
 import {
   DISCOVERY_FEED_PROFILES,
   DISCOVERY_FEED_VIEWER_NAME,
-  type DiscoveryFeedProfile,
 } from '@/lib/discovery-feed-mock';
 
 const FILTERS = [
@@ -86,44 +85,26 @@ function FilterButtons({ activeFilter, onSelect, layout }: FilterButtonsProps) {
 }
 
 export default function DiscoveryFeedPrototype() {
-  const [profiles] = useState<DiscoveryFeedProfile[]>(DISCOVERY_FEED_PROFILES);
+  const [profiles] = useState(DISCOVERY_FEED_PROFILES);
   const [showEmptyDemo, setShowEmptyDemo] = useState(false);
   const [activeFilter, setActiveFilter] = useState<FilterId>('All');
-  const [pressedNote, setPressedNote] = useState<string | null>(null);
-  const [openToChatDrawerOpen, setOpenToChatDrawerOpen] = useState(false);
-  const [openToChatSentById, setOpenToChatSentById] = useState<Record<string, boolean>>({});
-  const [openToChatDrawerMode, setOpenToChatDrawerMode] = useState<'educate' | 'success'>(
-    'educate'
-  );
-  const [activeChatProfile, setActiveChatProfile] = useState<DiscoveryFeedProfile | null>(null);
+  const [filterNote, setFilterNote] = useState<string | null>(null);
+  const { isPassed } = useDiscoveryActions();
 
-  const visibleProfiles = showEmptyDemo ? [] : profiles;
+  const visibleProfiles = showEmptyDemo
+    ? []
+    : profiles.filter((profile) => !isPassed(profile.id));
   const greeting = useMemo(() => getTimeGreeting(), []);
 
-  const flashNote = (message: string) => {
-    setPressedNote(message);
-    window.setTimeout(() => setPressedNote(null), 2200);
+  const flashFilterNote = (message: string) => {
+    setFilterNote(message);
+    window.setTimeout(() => setFilterNote(null), 2200);
   };
 
   const selectFilter = (filter: FilterId) => {
     setActiveFilter(filter);
-    flashNote('Prototype only — filters do not change results yet.');
+    flashFilterNote('Prototype only — filters do not change results yet.');
   };
-
-  const openOpenToChat = (profile: DiscoveryFeedProfile) => {
-    setActiveChatProfile(profile);
-    setOpenToChatDrawerMode(openToChatSentById[profile.id] ? 'success' : 'educate');
-    setOpenToChatDrawerOpen(true);
-  };
-
-  const closeOpenToChatDrawer = useCallback(() => {
-    setOpenToChatDrawerOpen(false);
-  }, []);
-
-  const handleOpenToChatSent = useCallback(() => {
-    if (!activeChatProfile) return;
-    setOpenToChatSentById((prev) => ({ ...prev, [activeChatProfile.id]: true }));
-  }, [activeChatProfile]);
 
   const feedContent =
     visibleProfiles.length === 0 ? (
@@ -160,22 +141,7 @@ export default function DiscoveryFeedPrototype() {
         style={{ scrollSnapType: 'y proximity' }}
       >
         {visibleProfiles.map((profile, index) => (
-          <DiscoveryFeedCard
-            key={profile.id}
-            profile={profile}
-            index={index}
-            openToChatLabel={openToChatSentById[profile.id] ? 'Request Sent' : 'Open to Chat'}
-            onInterested={() =>
-              flashNote('Prototype only — Interested does not create a match.')
-            }
-            onOpenToChat={() => openOpenToChat(profile)}
-            onSaveForLater={() =>
-              flashNote('Prototype only — Save for Later is not connected yet.')
-            }
-            onNotForMe={() =>
-              flashNote('Prototype only — Not for Me does not hide profiles yet.')
-            }
-          />
+          <DiscoveryFeedCard key={profile.id} profile={profile} index={index} />
         ))}
       </div>
     );
@@ -246,7 +212,7 @@ export default function DiscoveryFeedPrototype() {
           <div className="min-h-screen w-full lg:min-h-0">
             {/* Desktop top utilities span the main stage */}
             <div className="hidden px-0 lg:block">
-              <DiscoveryDesktopTopBar onPrototypeAction={flashNote} />
+              <DiscoveryDesktopTopBar onPrototypeAction={flashFilterNote} />
             </div>
 
             {/* Mobile + shared feed stage: max-w-lg on mobile (unchanged), wider on desktop */}
@@ -295,12 +261,12 @@ export default function DiscoveryFeedPrototype() {
 
               <div className="mt-7 min-h-0 flex-1 lg:mt-0">{feedContent}</div>
 
-              {pressedNote && (
+              {filterNote && (
                 <p
                   className="fixed inset-x-4 bottom-[5.75rem] z-30 mx-auto max-w-lg rounded-2xl border border-[#0B2D5C]/10 bg-[#0B2D5C] px-4 py-3 text-center text-sm text-white shadow-[0_12px_32px_rgba(11,45,92,0.25)] sm:inset-x-auto lg:bottom-8 lg:left-auto lg:right-8 lg:max-w-sm"
                   role="status"
                 >
-                  {pressedNote}
+                  {filterNote}
                 </p>
               )}
 
@@ -326,19 +292,6 @@ export default function DiscoveryFeedPrototype() {
       </div>
 
       <DiscoveryBottomNav active="discovery" />
-
-      <OpenToChatDrawer
-        open={openToChatDrawerOpen}
-        onClose={closeOpenToChatDrawer}
-        onSent={handleOpenToChatSent}
-        profileName={activeChatProfile?.firstName ?? 'them'}
-        mode={openToChatDrawerMode}
-        showFirstTimeBanner={
-          !!activeChatProfile &&
-          !openToChatSentById[activeChatProfile.id] &&
-          openToChatDrawerMode === 'educate'
-        }
-      />
     </>
   );
 }

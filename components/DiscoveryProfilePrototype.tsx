@@ -4,13 +4,12 @@ import Link from 'next/link';
 import { useCallback, useId, useRef, useState, type ReactNode } from 'react';
 
 import AlignmentDetailsDrawer from '@/components/AlignmentDetailsDrawer';
+import DiscoveryActionTiles from '@/components/discovery/DiscoveryActionTiles';
+import { useDiscoveryActions } from '@/components/discovery/DiscoveryActionsProvider';
 import ImportantAlignmentFactorsDrawer from '@/components/ImportantAlignmentFactorsDrawer';
-import OpenToChatDrawer from '@/components/OpenToChatDrawer';
 
-/**
- * Design-only Discovery Profile prototype.
- * No Supabase, matching, messaging, scoring, or live actions.
- */
+const PROFILE_ID = 'jessica';
+const PROFILE_NAME = 'Jessica';
 
 const GALLERY = [
   {
@@ -76,16 +75,10 @@ export default function DiscoveryProfilePrototype() {
   const [detailsOpen, setDetailsOpen] = useState(false);
   const [alignmentDrawerOpen, setAlignmentDrawerOpen] = useState(false);
   const [factorsDrawerOpen, setFactorsDrawerOpen] = useState(false);
-  const [openToChatDrawerOpen, setOpenToChatDrawerOpen] = useState(false);
-  const [openToChatSent, setOpenToChatSent] = useState(false);
-  const [openToChatDrawerMode, setOpenToChatDrawerMode] = useState<'educate' | 'success'>(
-    'educate'
-  );
+  const { isPassed } = useDiscoveryActions();
   const detailsPanelId = useId();
   const alignmentTriggerRef = useRef<HTMLButtonElement>(null);
   const factorsTriggerRef = useRef<HTMLButtonElement>(null);
-  const openToChatTriggerRef = useRef<HTMLButtonElement>(null);
-  const openToChatInfoRef = useRef<HTMLButtonElement>(null);
 
   const flashPress = (action: string) => {
     setPressedAction(action);
@@ -94,7 +87,6 @@ export default function DiscoveryProfilePrototype() {
 
   const openAlignmentDrawer = () => {
     setFactorsDrawerOpen(false);
-    setOpenToChatDrawerOpen(false);
     setAlignmentDrawerOpen(true);
   };
 
@@ -107,7 +99,6 @@ export default function DiscoveryProfilePrototype() {
 
   const openFactorsDrawer = () => {
     setAlignmentDrawerOpen(false);
-    setOpenToChatDrawerOpen(false);
     setFactorsDrawerOpen(true);
   };
 
@@ -118,31 +109,30 @@ export default function DiscoveryProfilePrototype() {
     });
   }, []);
 
-  const openOpenToChatDrawer = () => {
-    setAlignmentDrawerOpen(false);
-    setFactorsDrawerOpen(false);
-    // After the first successful send, skip education and show success immediately.
-    setOpenToChatDrawerMode(openToChatSent ? 'success' : 'educate');
-    setOpenToChatDrawerOpen(true);
-  };
-
-  const openOpenToChatEducation = () => {
-    setAlignmentDrawerOpen(false);
-    setFactorsDrawerOpen(false);
-    setOpenToChatDrawerMode('educate');
-    setOpenToChatDrawerOpen(true);
-  };
-
-  const closeOpenToChatDrawer = useCallback(() => {
-    setOpenToChatDrawerOpen(false);
-    window.requestAnimationFrame(() => {
-      openToChatTriggerRef.current?.focus();
-    });
-  }, []);
-
-  const handleOpenToChatSent = useCallback(() => {
-    setOpenToChatSent(true);
-  }, []);
+  if (isPassed(PROFILE_ID)) {
+    return (
+      <div className="mx-auto w-full max-w-lg px-4 pb-16 pt-5 sm:px-6 sm:pb-20 sm:pt-8">
+        <div className="rounded-[2rem] border border-[#0B2D5C]/08 bg-white/90 px-8 py-16 text-center shadow-[0_16px_44px_rgba(11,45,92,0.06)]">
+          <h1
+            className="text-2xl tracking-[-0.01em] text-[#0B2D5C]"
+            style={{ fontFamily: 'var(--font-discovery-display), Georgia, serif' }}
+          >
+            Introduction passed.
+          </h1>
+          <p className="mt-4 text-[15px] leading-relaxed text-[#5A6575]">
+            {PROFILE_NAME} was removed from your current introductions. Refresh the page to restore
+            this prototype profile.
+          </p>
+          <Link
+            href="/discovery"
+            className="mt-8 inline-flex items-center justify-center rounded-2xl bg-[#0B2D5C] px-6 py-3.5 text-base font-semibold text-white transition hover:bg-[#0A2540]"
+          >
+            Return to Discovery
+          </Link>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <>
@@ -524,68 +514,12 @@ export default function DiscoveryProfilePrototype() {
 
         {/* 11. Actions */}
         <SectionReveal delayMs={480}>
-          <section className="mt-10" aria-label="Prototype actions">
-            <div className="flex flex-col gap-3">
-              <button
-                type="button"
-                onClick={() => flashPress('interested')}
-                className="inline-flex w-full items-center justify-center rounded-2xl bg-[#D62828] px-8 py-4 text-lg font-semibold text-white shadow-[0_10px_28px_rgba(214,40,40,0.22)] transition hover:bg-[#A61F1F] hover:shadow-[0_12px_32px_rgba(214,40,40,0.28)] active:scale-[0.99]"
-              >
-                Interested
-              </button>
-              <div className="flex items-center gap-2.5">
-                <button
-                  ref={openToChatTriggerRef}
-                  type="button"
-                  onClick={openOpenToChatDrawer}
-                  aria-haspopup="dialog"
-                  aria-expanded={openToChatDrawerOpen}
-                  className="inline-flex min-w-0 flex-1 items-center justify-center rounded-2xl border border-[#0B2D5C]/25 bg-white/80 px-8 py-4 text-lg font-semibold text-[#0B2D5C] transition hover:border-[#0B2D5C]/45 hover:bg-white active:scale-[0.99]"
-                >
-                  {openToChatSent ? 'Request Sent' : 'Open to Chat'}
-                </button>
-                <button
-                  ref={openToChatInfoRef}
-                  type="button"
-                  onClick={openOpenToChatEducation}
-                  aria-label="Learn about Open to Chat"
-                  aria-haspopup="dialog"
-                  className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-[#0B2D5C]/15 bg-white/70 text-base font-semibold text-[#6B7585] transition hover:border-[#0B2D5C]/30 hover:text-[#0B2D5C] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0B2D5C]"
-                >
-                  <span aria-hidden="true">ⓘ</span>
-                </button>
-              </div>
-            </div>
-
-            <div className="mt-6 flex items-center justify-center gap-8">
-              <button
-                type="button"
-                onClick={() => flashPress('save')}
-                className="text-sm font-medium text-[#6B7585] transition hover:text-[#0B2D5C]"
-              >
-                Save for Later
-              </button>
-              <button
-                type="button"
-                onClick={() => flashPress('not-for-me')}
-                className="text-sm font-medium text-[#6B7585] transition hover:text-[#0B2D5C]"
-              >
-                Not for Me
-              </button>
-            </div>
-
-            {pressedAction &&
-              ['interested', 'save', 'not-for-me'].includes(pressedAction) && (
-                <p className="mt-4 text-center text-xs text-[#7A8494]">
-                  Prototype only — no matching, chat, or save actions.
-                </p>
-              )}
-            {openToChatSent && (
-              <p className="mt-4 text-center text-xs text-[#7A8494]">
-                After your first send, Open to Chat opens a quick confirmation. Use ⓘ to review
-                details. Resets on refresh.
-              </p>
-            )}
+          <section className="mt-10" aria-label="Discovery actions">
+            <DiscoveryActionTiles
+              profileId={PROFILE_ID}
+              profileName={PROFILE_NAME}
+              layout="profile-stack"
+            />
           </section>
         </SectionReveal>
 
@@ -599,20 +533,12 @@ export default function DiscoveryProfilePrototype() {
       <AlignmentDetailsDrawer
         open={alignmentDrawerOpen}
         onClose={closeAlignmentDrawer}
-        profileName="Jessica"
+        profileName={PROFILE_NAME}
       />
       <ImportantAlignmentFactorsDrawer
         open={factorsDrawerOpen}
         onClose={closeFactorsDrawer}
-        profileName="Jessica"
-      />
-      <OpenToChatDrawer
-        open={openToChatDrawerOpen}
-        onClose={closeOpenToChatDrawer}
-        onSent={handleOpenToChatSent}
-        profileName="Jessica"
-        mode={openToChatDrawerMode}
-        showFirstTimeBanner={!openToChatSent && openToChatDrawerMode === 'educate'}
+        profileName={PROFILE_NAME}
       />
     </>
   );
