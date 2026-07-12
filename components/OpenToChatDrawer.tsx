@@ -9,14 +9,14 @@ import {
   type KeyboardEvent as ReactKeyboardEvent,
 } from 'react';
 
-export type OpenToChatDrawerMode = 'educate' | 'success';
+export type OpenToChatDrawerMode = 'educate' | 'confirm' | 'success';
 
 type OpenToChatDrawerProps = {
   open: boolean;
   onClose: () => void;
   onSent?: () => void;
   profileName?: string;
-  /** educate = full explanation; success = lightweight confirmation only */
+  /** educate = full explanation; confirm = lightweight send; success = sent confirmation */
   mode: OpenToChatDrawerMode;
   /** Shows the friendly first-time banner inside the educational view */
   showFirstTimeBanner?: boolean;
@@ -197,7 +197,7 @@ export default function OpenToChatDrawer({
                 className="mt-2 text-[1.55rem] leading-tight tracking-[-0.02em] text-[#0B2D5C] sm:text-2xl"
                 style={{ fontFamily: 'var(--font-discovery-display), Georgia, serif' }}
               >
-                {showingSuccess ? 'Open to Chat sent' : `Open to Chat with ${profileName}?`}
+                {showingSuccess ? 'Open to Chat sent' : mode === 'confirm' ? `Send Open to Chat to ${profileName}?` : `Open to Chat with ${profileName}?`}
               </h2>
             </div>
             <button
@@ -228,6 +228,19 @@ export default function OpenToChatDrawer({
                   Prototype only — no real message, notification, or chat was created.
                 </p>
               </div>
+            </>
+          ) : mode === 'confirm' ? (
+            <>
+              <p id={descriptionId} className="text-[15px] leading-relaxed text-[#3D4654]">
+                Send a low-pressure request to learn more before deciding whether there may be a
+                connection.
+              </p>
+              <p className="mt-3 text-sm leading-relaxed text-[#7A8494]">
+                {profileName} can accept, ignore, or decline privately.
+              </p>
+              <p className="mt-8 text-center text-xs text-[#8A93A0]">
+                Prototype only — no messaging, notifications, or request storage.
+              </p>
             </>
           ) : (
             <>
