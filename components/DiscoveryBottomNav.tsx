@@ -94,7 +94,7 @@ function ProfileIcon({ active }: { active: boolean }) {
 export default function DiscoveryBottomNav({ active = 'discovery' }: DiscoveryBottomNavProps) {
   return (
     <nav
-      className="fixed inset-x-0 bottom-0 z-40 border-t border-[#0B2D5C]/10 bg-[#FBF9F6]/95 backdrop-blur-md"
+      className="fixed inset-x-0 bottom-0 z-40 border-t border-[#0B2D5C]/10 bg-[#FBF9F6]/95 backdrop-blur-md lg:hidden"
       aria-label="Primary"
       style={{ paddingBottom: 'max(0.5rem, env(safe-area-inset-bottom))' }}
     >
