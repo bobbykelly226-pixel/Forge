@@ -78,10 +78,14 @@ export default function DiscoveryProfilePrototype() {
   const [factorsDrawerOpen, setFactorsDrawerOpen] = useState(false);
   const [openToChatDrawerOpen, setOpenToChatDrawerOpen] = useState(false);
   const [openToChatSent, setOpenToChatSent] = useState(false);
+  const [openToChatDrawerMode, setOpenToChatDrawerMode] = useState<'educate' | 'success'>(
+    'educate'
+  );
   const detailsPanelId = useId();
   const alignmentTriggerRef = useRef<HTMLButtonElement>(null);
   const factorsTriggerRef = useRef<HTMLButtonElement>(null);
   const openToChatTriggerRef = useRef<HTMLButtonElement>(null);
+  const openToChatInfoRef = useRef<HTMLButtonElement>(null);
 
   const flashPress = (action: string) => {
     setPressedAction(action);
@@ -115,11 +119,17 @@ export default function DiscoveryProfilePrototype() {
   }, []);
 
   const openOpenToChatDrawer = () => {
-    if (openToChatSent) {
-      return;
-    }
     setAlignmentDrawerOpen(false);
     setFactorsDrawerOpen(false);
+    // After the first successful send, skip education and show success immediately.
+    setOpenToChatDrawerMode(openToChatSent ? 'success' : 'educate');
+    setOpenToChatDrawerOpen(true);
+  };
+
+  const openOpenToChatEducation = () => {
+    setAlignmentDrawerOpen(false);
+    setFactorsDrawerOpen(false);
+    setOpenToChatDrawerMode('educate');
     setOpenToChatDrawerOpen(true);
   };
 
@@ -523,21 +533,28 @@ export default function DiscoveryProfilePrototype() {
               >
                 Interested
               </button>
-              <button
-                ref={openToChatTriggerRef}
-                type="button"
-                onClick={openOpenToChatDrawer}
-                disabled={openToChatSent}
-                aria-haspopup="dialog"
-                aria-expanded={openToChatDrawerOpen}
-                className={`inline-flex w-full items-center justify-center rounded-2xl border px-8 py-4 text-lg font-semibold transition active:scale-[0.99] ${
-                  openToChatSent
-                    ? 'cursor-default border-[#0B2D5C]/15 bg-[#F8F6F2] text-[#6B7585]'
-                    : 'border-[#0B2D5C]/25 bg-white/80 text-[#0B2D5C] hover:border-[#0B2D5C]/45 hover:bg-white'
-                }`}
-              >
-                {openToChatSent ? 'Request Sent' : 'Open to Chat'}
-              </button>
+              <div className="flex items-center gap-2.5">
+                <button
+                  ref={openToChatTriggerRef}
+                  type="button"
+                  onClick={openOpenToChatDrawer}
+                  aria-haspopup="dialog"
+                  aria-expanded={openToChatDrawerOpen}
+                  className="inline-flex min-w-0 flex-1 items-center justify-center rounded-2xl border border-[#0B2D5C]/25 bg-white/80 px-8 py-4 text-lg font-semibold text-[#0B2D5C] transition hover:border-[#0B2D5C]/45 hover:bg-white active:scale-[0.99]"
+                >
+                  {openToChatSent ? 'Request Sent' : 'Open to Chat'}
+                </button>
+                <button
+                  ref={openToChatInfoRef}
+                  type="button"
+                  onClick={openOpenToChatEducation}
+                  aria-label="Learn about Open to Chat"
+                  aria-haspopup="dialog"
+                  className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-[#0B2D5C]/15 bg-white/70 text-base font-semibold text-[#6B7585] transition hover:border-[#0B2D5C]/30 hover:text-[#0B2D5C] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0B2D5C]"
+                >
+                  <span aria-hidden="true">ⓘ</span>
+                </button>
+              </div>
             </div>
 
             <div className="mt-6 flex items-center justify-center gap-8">
@@ -565,7 +582,8 @@ export default function DiscoveryProfilePrototype() {
               )}
             {openToChatSent && (
               <p className="mt-4 text-center text-xs text-[#7A8494]">
-                Prototype request state only — resets on refresh.
+                After your first send, Open to Chat opens a quick confirmation. Use ⓘ to review
+                details. Resets on refresh.
               </p>
             )}
           </section>
@@ -593,6 +611,8 @@ export default function DiscoveryProfilePrototype() {
         onClose={closeOpenToChatDrawer}
         onSent={handleOpenToChatSent}
         profileName="Jessica"
+        mode={openToChatDrawerMode}
+        showFirstTimeBanner={!openToChatSent && openToChatDrawerMode === 'educate'}
       />
     </>
   );

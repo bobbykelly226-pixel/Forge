@@ -9,11 +9,17 @@ import {
   type KeyboardEvent as ReactKeyboardEvent,
 } from 'react';
 
+export type OpenToChatDrawerMode = 'educate' | 'success';
+
 type OpenToChatDrawerProps = {
   open: boolean;
   onClose: () => void;
   onSent?: () => void;
   profileName?: string;
+  /** educate = full explanation; success = lightweight confirmation only */
+  mode: OpenToChatDrawerMode;
+  /** Shows the friendly first-time banner inside the educational view */
+  showFirstTimeBanner?: boolean;
 };
 
 function getFocusableElements(container: HTMLElement): HTMLElement[] {
@@ -36,13 +42,15 @@ export default function OpenToChatDrawer({
   onClose,
   onSent,
   profileName = 'Jessica',
+  mode,
+  showFirstTimeBanner = false,
 }: OpenToChatDrawerProps) {
   const titleId = useId();
   const descriptionId = useId();
   const panelRef = useRef<HTMLDivElement>(null);
   const closeButtonRef = useRef<HTMLButtonElement>(null);
   const primaryActionRef = useRef<HTMLButtonElement>(null);
-  const [sent, setSent] = useState(false);
+  const [sent, setSent] = useState(mode === 'success');
 
   const handleKeyDown = useCallback(
     (event: ReactKeyboardEvent<HTMLDivElement>) => {
@@ -84,14 +92,17 @@ export default function OpenToChatDrawer({
       return;
     }
 
-    // Reset to confirmation view whenever the drawer opens.
-    setSent(false);
+    setSent(mode === 'success');
 
     const previousOverflow = document.body.style.overflow;
     document.body.style.overflow = 'hidden';
 
     const focusTimer = window.setTimeout(() => {
-      closeButtonRef.current?.focus();
+      if (mode === 'success') {
+        primaryActionRef.current?.focus();
+      } else {
+        closeButtonRef.current?.focus();
+      }
     }, 30);
 
     const onDocumentKeyDown = (event: KeyboardEvent) => {
@@ -107,7 +118,7 @@ export default function OpenToChatDrawer({
       window.clearTimeout(focusTimer);
       document.removeEventListener('keydown', onDocumentKeyDown);
     };
-  }, [open, onClose]);
+  }, [open, onClose, mode]);
 
   useEffect(() => {
     if (!open || !sent) {
@@ -132,6 +143,7 @@ export default function OpenToChatDrawer({
   };
 
   const steps = NEXT_STEPS.map((step) => step.replaceAll('{name}', profileName));
+  const showingSuccess = sent;
 
   return (
     <div
@@ -185,7 +197,7 @@ export default function OpenToChatDrawer({
                 className="mt-2 text-[1.55rem] leading-tight tracking-[-0.02em] text-[#0B2D5C] sm:text-2xl"
                 style={{ fontFamily: 'var(--font-discovery-display), Georgia, serif' }}
               >
-                {sent ? 'Open to Chat sent' : `Open to Chat with ${profileName}?`}
+                {showingSuccess ? 'Open to Chat sent' : `Open to Chat with ${profileName}?`}
               </h2>
             </div>
             <button
@@ -201,7 +213,7 @@ export default function OpenToChatDrawer({
         </div>
 
         <div className="flex-1 overflow-y-auto overscroll-contain px-5 py-5 sm:px-6 sm:py-6">
-          {sent ? (
+          {showingSuccess ? (
             <>
               <p id={descriptionId} className="text-[15px] leading-relaxed text-[#3D4654]">
                 {profileName} will receive a private notification and can choose whether to open a
@@ -219,6 +231,30 @@ export default function OpenToChatDrawer({
             </>
           ) : (
             <>
+              {showFirstTimeBanner && (
+                <div className="mb-5 rounded-[1.25rem] border border-[#0B2D5C]/08 bg-white/90 px-4 py-3.5">
+                  <p className="text-sm font-semibold text-[#0B2D5C]">Your first Open to Chat</p>
+                  <p className="mt-1.5 text-sm leading-relaxed text-[#5A6575]">
+                    You&apos;re seeing this explanation because it&apos;s your first Open to Chat
+                    request.
+                  </p>
+                  <p className="mt-1.5 text-sm leading-relaxed text-[#5A6575]">
+                    Future requests will be much faster.
+                  </p>
+                  <p className="mt-1.5 text-sm leading-relaxed text-[#7A8494]">
+                    You can always review these details later using the information icon.
+                  </p>
+                </div>
+              )}
+
+              {!showFirstTimeBanner && (
+                <div className="mb-5 rounded-[1.25rem] border border-[#0B2D5C]/08 bg-white/80 px-4 py-3">
+                  <p className="text-sm leading-relaxed text-[#5A6575]">
+                    Reviewing Open to Chat details. You can close this anytime.
+                  </p>
+                </div>
+              )}
+
               <p id={descriptionId} className="text-[15px] leading-relaxed text-[#3D4654]">
                 Let {profileName} know you would be open to a conversation and would like to learn
                 more before deciding whether there may be a connection.
@@ -257,9 +293,7 @@ export default function OpenToChatDrawer({
                 <p className="mt-3 text-[15px] font-semibold leading-relaxed text-[#0B2D5C]">
                   Open to Chat is not the same as Interested.
                 </p>
-                <p className="mt-3 text-[15px] leading-relaxed text-[#5A6575]">
-                  It simply means:
-                </p>
+                <p className="mt-3 text-[15px] leading-relaxed text-[#5A6575]">It simply means:</p>
                 <p
                   className="mt-2 text-[16px] leading-relaxed text-[#0B2D5C]"
                   style={{ fontFamily: 'var(--font-discovery-display), Georgia, serif' }}
@@ -308,7 +342,7 @@ export default function OpenToChatDrawer({
         </div>
 
         <div className="shrink-0 border-t border-[#0B2D5C]/08 bg-[#F8F6F2] px-5 py-4 sm:px-6">
-          {sent ? (
+          {showingSuccess ? (
             <button
               ref={primaryActionRef}
               type="button"
