@@ -1,7 +1,9 @@
 'use client';
 
 import Link from 'next/link';
-import { useId, useState, type ReactNode } from 'react';
+import { useCallback, useId, useRef, useState, type ReactNode } from 'react';
+
+import AlignmentDetailsDrawer from '@/components/AlignmentDetailsDrawer';
 
 /**
  * Design-only Discovery Profile prototype.
@@ -70,12 +72,25 @@ function SectionReveal({
 export default function DiscoveryProfilePrototype() {
   const [pressedAction, setPressedAction] = useState<string | null>(null);
   const [detailsOpen, setDetailsOpen] = useState(false);
+  const [alignmentDrawerOpen, setAlignmentDrawerOpen] = useState(false);
   const detailsPanelId = useId();
+  const alignmentTriggerRef = useRef<HTMLButtonElement>(null);
 
   const flashPress = (action: string) => {
     setPressedAction(action);
     window.setTimeout(() => setPressedAction(null), 450);
   };
+
+  const openAlignmentDrawer = () => {
+    setAlignmentDrawerOpen(true);
+  };
+
+  const closeAlignmentDrawer = useCallback(() => {
+    setAlignmentDrawerOpen(false);
+    window.requestAnimationFrame(() => {
+      alignmentTriggerRef.current?.focus();
+    });
+  }, []);
 
   return (
     <>
@@ -159,16 +174,16 @@ export default function DiscoveryProfilePrototype() {
             </p>
 
             <button
+              ref={alignmentTriggerRef}
               type="button"
-              onClick={() => flashPress('learn-why')}
-              className="mt-6 inline-flex items-center gap-1.5 text-sm font-semibold text-[#0B2D5C] transition hover:text-[#D62828]"
+              onClick={openAlignmentDrawer}
+              className="mt-6 -mx-2 inline-flex w-[calc(100%+1rem)] items-center justify-between gap-3 rounded-2xl px-2 py-3 text-left text-sm font-semibold text-[#0B2D5C] transition hover:bg-[#0B2D5C]/04 hover:text-[#D62828] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0B2D5C]"
+              aria-haspopup="dialog"
+              aria-expanded={alignmentDrawerOpen}
             >
-              Learn why
+              <span>See why you align</span>
               <span aria-hidden="true">→</span>
             </button>
-            {pressedAction === 'learn-why' && (
-              <p className="mt-2 text-xs text-[#7A8494]">Prototype only — no action yet.</p>
-            )}
           </section>
         </SectionReveal>
 
@@ -508,6 +523,12 @@ export default function DiscoveryProfilePrototype() {
           No matching, scoring, messaging, or live data.
         </p>
       </div>
+
+      <AlignmentDetailsDrawer
+        open={alignmentDrawerOpen}
+        onClose={closeAlignmentDrawer}
+        profileName="Jessica"
+      />
     </>
   );
 }
