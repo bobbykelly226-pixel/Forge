@@ -172,38 +172,38 @@ export default function DiscoveryProfilePrototype() {
           </section>
         </SectionReveal>
 
-        {/* 4. Important Difference */}
+        {/* 4. Important Alignment Factors */}
         <SectionReveal delayMs={160}>
           <section
-            className="mt-4 rounded-[1.75rem] border border-amber-200/80 bg-[#FBF6EE] p-6 shadow-[0_8px_28px_rgba(146,112,48,0.06)] sm:p-7"
-            aria-labelledby="difference-title"
+            className="mt-4 rounded-[1.75rem] border-2 border-[#D62828] bg-[#FBF6EE] p-6 shadow-[0_8px_28px_rgba(214,40,40,0.08)] sm:p-7"
+            aria-labelledby="alignment-factors-title"
           >
             <div className="flex gap-3">
               <span
-                className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-amber-100 text-sm text-amber-800/80"
+                className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#D62828] text-sm font-bold text-white"
                 aria-hidden="true"
               >
                 !
               </span>
               <div>
                 <h2
-                  id="difference-title"
-                  className="text-lg font-semibold tracking-tight text-[#6B5428]"
+                  id="alignment-factors-title"
+                  className="text-lg font-semibold tracking-tight text-[#0B2D5C]"
                 >
-                  Important Difference to Review
+                  Important Alignment Factors
                 </h2>
-                <p className="mt-2 text-[15px] leading-relaxed text-[#7A6848]">
-                  One important life preference differs.
+                <p className="mt-2 text-[15px] leading-relaxed text-[#5A6575]">
+                  One important life preference may differ.
                 </p>
                 <button
                   type="button"
                   onClick={() => flashPress('difference')}
-                  className="mt-4 text-sm font-semibold text-[#8A6B35] transition hover:text-[#6B5428]"
+                  className="mt-4 text-sm font-semibold text-[#0B2D5C] transition hover:text-[#D62828]"
                 >
-                  Tap to learn more
+                  Tap to review the details
                 </button>
                 {pressedAction === 'difference' && (
-                  <p className="mt-2 text-xs text-[#9A8760]">Prototype only — no action yet.</p>
+                  <p className="mt-2 text-xs text-[#7A8494]">Prototype only — no action yet.</p>
                 )}
               </div>
             </div>
