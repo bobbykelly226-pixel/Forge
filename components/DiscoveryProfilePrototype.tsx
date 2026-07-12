@@ -5,6 +5,7 @@ import { useCallback, useId, useRef, useState, type ReactNode } from 'react';
 
 import AlignmentDetailsDrawer from '@/components/AlignmentDetailsDrawer';
 import ImportantAlignmentFactorsDrawer from '@/components/ImportantAlignmentFactorsDrawer';
+import OpenToChatDrawer from '@/components/OpenToChatDrawer';
 
 /**
  * Design-only Discovery Profile prototype.
@@ -75,9 +76,12 @@ export default function DiscoveryProfilePrototype() {
   const [detailsOpen, setDetailsOpen] = useState(false);
   const [alignmentDrawerOpen, setAlignmentDrawerOpen] = useState(false);
   const [factorsDrawerOpen, setFactorsDrawerOpen] = useState(false);
+  const [openToChatDrawerOpen, setOpenToChatDrawerOpen] = useState(false);
+  const [openToChatSent, setOpenToChatSent] = useState(false);
   const detailsPanelId = useId();
   const alignmentTriggerRef = useRef<HTMLButtonElement>(null);
   const factorsTriggerRef = useRef<HTMLButtonElement>(null);
+  const openToChatTriggerRef = useRef<HTMLButtonElement>(null);
 
   const flashPress = (action: string) => {
     setPressedAction(action);
@@ -86,6 +90,7 @@ export default function DiscoveryProfilePrototype() {
 
   const openAlignmentDrawer = () => {
     setFactorsDrawerOpen(false);
+    setOpenToChatDrawerOpen(false);
     setAlignmentDrawerOpen(true);
   };
 
@@ -98,6 +103,7 @@ export default function DiscoveryProfilePrototype() {
 
   const openFactorsDrawer = () => {
     setAlignmentDrawerOpen(false);
+    setOpenToChatDrawerOpen(false);
     setFactorsDrawerOpen(true);
   };
 
@@ -106,6 +112,26 @@ export default function DiscoveryProfilePrototype() {
     window.requestAnimationFrame(() => {
       factorsTriggerRef.current?.focus();
     });
+  }, []);
+
+  const openOpenToChatDrawer = () => {
+    if (openToChatSent) {
+      return;
+    }
+    setAlignmentDrawerOpen(false);
+    setFactorsDrawerOpen(false);
+    setOpenToChatDrawerOpen(true);
+  };
+
+  const closeOpenToChatDrawer = useCallback(() => {
+    setOpenToChatDrawerOpen(false);
+    window.requestAnimationFrame(() => {
+      openToChatTriggerRef.current?.focus();
+    });
+  }, []);
+
+  const handleOpenToChatSent = useCallback(() => {
+    setOpenToChatSent(true);
   }, []);
 
   return (
@@ -498,11 +524,19 @@ export default function DiscoveryProfilePrototype() {
                 Interested
               </button>
               <button
+                ref={openToChatTriggerRef}
                 type="button"
-                onClick={() => flashPress('open-to-chat')}
-                className="inline-flex w-full items-center justify-center rounded-2xl border border-[#0B2D5C]/25 bg-white/80 px-8 py-4 text-lg font-semibold text-[#0B2D5C] transition hover:border-[#0B2D5C]/45 hover:bg-white active:scale-[0.99]"
+                onClick={openOpenToChatDrawer}
+                disabled={openToChatSent}
+                aria-haspopup="dialog"
+                aria-expanded={openToChatDrawerOpen}
+                className={`inline-flex w-full items-center justify-center rounded-2xl border px-8 py-4 text-lg font-semibold transition active:scale-[0.99] ${
+                  openToChatSent
+                    ? 'cursor-default border-[#0B2D5C]/15 bg-[#F8F6F2] text-[#6B7585]'
+                    : 'border-[#0B2D5C]/25 bg-white/80 text-[#0B2D5C] hover:border-[#0B2D5C]/45 hover:bg-white'
+                }`}
               >
-                Open to Chat
+                {openToChatSent ? 'Request Sent' : 'Open to Chat'}
               </button>
             </div>
 
@@ -524,11 +558,16 @@ export default function DiscoveryProfilePrototype() {
             </div>
 
             {pressedAction &&
-              ['interested', 'open-to-chat', 'save', 'not-for-me'].includes(pressedAction) && (
+              ['interested', 'save', 'not-for-me'].includes(pressedAction) && (
                 <p className="mt-4 text-center text-xs text-[#7A8494]">
                   Prototype only — no matching, chat, or save actions.
                 </p>
               )}
+            {openToChatSent && (
+              <p className="mt-4 text-center text-xs text-[#7A8494]">
+                Prototype request state only — resets on refresh.
+              </p>
+            )}
           </section>
         </SectionReveal>
 
@@ -547,6 +586,12 @@ export default function DiscoveryProfilePrototype() {
       <ImportantAlignmentFactorsDrawer
         open={factorsDrawerOpen}
         onClose={closeFactorsDrawer}
+        profileName="Jessica"
+      />
+      <OpenToChatDrawer
+        open={openToChatDrawerOpen}
+        onClose={closeOpenToChatDrawer}
+        onSent={handleOpenToChatSent}
         profileName="Jessica"
       />
     </>
