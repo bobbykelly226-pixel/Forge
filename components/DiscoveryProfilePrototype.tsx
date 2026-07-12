@@ -5,6 +5,7 @@ import { useCallback, useId, useRef, useState, type ReactNode } from 'react';
 
 import AlignmentDetailsDrawer from '@/components/AlignmentDetailsDrawer';
 import ImportantAlignmentFactorsDrawer from '@/components/ImportantAlignmentFactorsDrawer';
+import OpenToChatDrawer from '@/components/OpenToChatDrawer';
 
 /**
  * Design-only Discovery Profile prototype.
@@ -75,9 +76,16 @@ export default function DiscoveryProfilePrototype() {
   const [detailsOpen, setDetailsOpen] = useState(false);
   const [alignmentDrawerOpen, setAlignmentDrawerOpen] = useState(false);
   const [factorsDrawerOpen, setFactorsDrawerOpen] = useState(false);
+  const [openToChatDrawerOpen, setOpenToChatDrawerOpen] = useState(false);
+  const [openToChatSent, setOpenToChatSent] = useState(false);
+  const [openToChatDrawerMode, setOpenToChatDrawerMode] = useState<'educate' | 'success'>(
+    'educate'
+  );
   const detailsPanelId = useId();
   const alignmentTriggerRef = useRef<HTMLButtonElement>(null);
   const factorsTriggerRef = useRef<HTMLButtonElement>(null);
+  const openToChatTriggerRef = useRef<HTMLButtonElement>(null);
+  const openToChatInfoRef = useRef<HTMLButtonElement>(null);
 
   const flashPress = (action: string) => {
     setPressedAction(action);
@@ -86,6 +94,7 @@ export default function DiscoveryProfilePrototype() {
 
   const openAlignmentDrawer = () => {
     setFactorsDrawerOpen(false);
+    setOpenToChatDrawerOpen(false);
     setAlignmentDrawerOpen(true);
   };
 
@@ -98,6 +107,7 @@ export default function DiscoveryProfilePrototype() {
 
   const openFactorsDrawer = () => {
     setAlignmentDrawerOpen(false);
+    setOpenToChatDrawerOpen(false);
     setFactorsDrawerOpen(true);
   };
 
@@ -106,6 +116,32 @@ export default function DiscoveryProfilePrototype() {
     window.requestAnimationFrame(() => {
       factorsTriggerRef.current?.focus();
     });
+  }, []);
+
+  const openOpenToChatDrawer = () => {
+    setAlignmentDrawerOpen(false);
+    setFactorsDrawerOpen(false);
+    // After the first successful send, skip education and show success immediately.
+    setOpenToChatDrawerMode(openToChatSent ? 'success' : 'educate');
+    setOpenToChatDrawerOpen(true);
+  };
+
+  const openOpenToChatEducation = () => {
+    setAlignmentDrawerOpen(false);
+    setFactorsDrawerOpen(false);
+    setOpenToChatDrawerMode('educate');
+    setOpenToChatDrawerOpen(true);
+  };
+
+  const closeOpenToChatDrawer = useCallback(() => {
+    setOpenToChatDrawerOpen(false);
+    window.requestAnimationFrame(() => {
+      openToChatTriggerRef.current?.focus();
+    });
+  }, []);
+
+  const handleOpenToChatSent = useCallback(() => {
+    setOpenToChatSent(true);
   }, []);
 
   return (
@@ -497,13 +533,28 @@ export default function DiscoveryProfilePrototype() {
               >
                 Interested
               </button>
-              <button
-                type="button"
-                onClick={() => flashPress('open-to-chat')}
-                className="inline-flex w-full items-center justify-center rounded-2xl border border-[#0B2D5C]/25 bg-white/80 px-8 py-4 text-lg font-semibold text-[#0B2D5C] transition hover:border-[#0B2D5C]/45 hover:bg-white active:scale-[0.99]"
-              >
-                Open to Chat
-              </button>
+              <div className="flex items-center gap-2.5">
+                <button
+                  ref={openToChatTriggerRef}
+                  type="button"
+                  onClick={openOpenToChatDrawer}
+                  aria-haspopup="dialog"
+                  aria-expanded={openToChatDrawerOpen}
+                  className="inline-flex min-w-0 flex-1 items-center justify-center rounded-2xl border border-[#0B2D5C]/25 bg-white/80 px-8 py-4 text-lg font-semibold text-[#0B2D5C] transition hover:border-[#0B2D5C]/45 hover:bg-white active:scale-[0.99]"
+                >
+                  {openToChatSent ? 'Request Sent' : 'Open to Chat'}
+                </button>
+                <button
+                  ref={openToChatInfoRef}
+                  type="button"
+                  onClick={openOpenToChatEducation}
+                  aria-label="Learn about Open to Chat"
+                  aria-haspopup="dialog"
+                  className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-[#0B2D5C]/15 bg-white/70 text-base font-semibold text-[#6B7585] transition hover:border-[#0B2D5C]/30 hover:text-[#0B2D5C] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0B2D5C]"
+                >
+                  <span aria-hidden="true">ⓘ</span>
+                </button>
+              </div>
             </div>
 
             <div className="mt-6 flex items-center justify-center gap-8">
@@ -524,11 +575,17 @@ export default function DiscoveryProfilePrototype() {
             </div>
 
             {pressedAction &&
-              ['interested', 'open-to-chat', 'save', 'not-for-me'].includes(pressedAction) && (
+              ['interested', 'save', 'not-for-me'].includes(pressedAction) && (
                 <p className="mt-4 text-center text-xs text-[#7A8494]">
                   Prototype only — no matching, chat, or save actions.
                 </p>
               )}
+            {openToChatSent && (
+              <p className="mt-4 text-center text-xs text-[#7A8494]">
+                After your first send, Open to Chat opens a quick confirmation. Use ⓘ to review
+                details. Resets on refresh.
+              </p>
+            )}
           </section>
         </SectionReveal>
 
@@ -548,6 +605,14 @@ export default function DiscoveryProfilePrototype() {
         open={factorsDrawerOpen}
         onClose={closeFactorsDrawer}
         profileName="Jessica"
+      />
+      <OpenToChatDrawer
+        open={openToChatDrawerOpen}
+        onClose={closeOpenToChatDrawer}
+        onSent={handleOpenToChatSent}
+        profileName="Jessica"
+        mode={openToChatDrawerMode}
+        showFirstTimeBanner={!openToChatSent && openToChatDrawerMode === 'educate'}
       />
     </>
   );
