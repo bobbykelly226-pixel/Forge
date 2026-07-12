@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useMemo, useState } from 'react';
+import { Clock, Heart, LayoutGrid, MapPin, Sparkles, type LucideIcon } from 'lucide-react';
 
 import DiscoveryBottomNav from '@/components/DiscoveryBottomNav';
 import DiscoveryDesktopTopBar from '@/components/DiscoveryDesktopTopBar';
@@ -12,7 +13,15 @@ import {
   type DiscoveryFeedProfile,
 } from '@/lib/discovery-feed-mock';
 
-const FILTERS = ['All', 'Nearby', 'Strong Alignment', 'New', 'Recently Active'] as const;
+const FILTERS = [
+  { id: 'All', label: 'All', icon: LayoutGrid },
+  { id: 'Nearby', label: 'Nearby', icon: MapPin },
+  { id: 'Strong Alignment', label: 'Strong Alignment', icon: Heart },
+  { id: 'New', label: 'New', icon: Sparkles },
+  { id: 'Recently Active', label: 'Recently Active', icon: Clock },
+] as const;
+
+type FilterId = (typeof FILTERS)[number]['id'];
 
 function getTimeGreeting(date = new Date()): string {
   const hour = date.getHours();
@@ -22,8 +31,8 @@ function getTimeGreeting(date = new Date()): string {
 }
 
 type FilterButtonsProps = {
-  activeFilter: (typeof FILTERS)[number];
-  onSelect: (filter: (typeof FILTERS)[number]) => void;
+  activeFilter: FilterId;
+  onSelect: (filter: FilterId) => void;
   layout: 'horizontal' | 'vertical';
 };
 
@@ -41,20 +50,21 @@ function FilterButtons({ activeFilter, onSelect, layout }: FilterButtonsProps) {
       aria-label="Discovery filters (prototype only)"
     >
       {FILTERS.map((filter) => {
-        const isActive = filter === activeFilter;
+        const isActive = filter.id === activeFilter;
+        const Icon: LucideIcon = filter.icon;
         return (
           <button
-            key={filter}
+            key={filter.id}
             type="button"
-            onClick={() => onSelect(filter)}
+            onClick={() => onSelect(filter.id)}
             className={
               isVertical
-                ? `w-full rounded-2xl px-4 py-3 text-left text-sm font-semibold transition ${
+                ? `inline-flex w-full items-center gap-2.5 rounded-2xl px-4 py-3 text-left text-sm font-semibold transition ${
                     isActive
                       ? 'bg-[#0B2D5C] text-white shadow-[0_8px_20px_rgba(11,45,92,0.18)]'
                       : 'border border-[#0B2D5C]/10 bg-white/70 text-[#0B2D5C] hover:border-[#0B2D5C]/25 hover:bg-white'
                   }`
-                : `shrink-0 rounded-full px-4 py-2 text-sm font-semibold transition ${
+                : `inline-flex shrink-0 items-center gap-1.5 rounded-full px-4 py-2 text-sm font-semibold transition ${
                     isActive
                       ? 'bg-[#0B2D5C] text-white shadow-[0_8px_20px_rgba(11,45,92,0.18)]'
                       : 'border border-[#0B2D5C]/12 bg-white/70 text-[#0B2D5C] hover:border-[#0B2D5C]/25'
@@ -62,7 +72,12 @@ function FilterButtons({ activeFilter, onSelect, layout }: FilterButtonsProps) {
             }
             aria-pressed={isActive}
           >
-            {filter}
+            <Icon
+              className={isVertical ? 'h-4 w-4 shrink-0' : 'h-3.5 w-3.5 shrink-0'}
+              strokeWidth={1.75}
+              aria-hidden="true"
+            />
+            {filter.label}
           </button>
         );
       })}
@@ -73,7 +88,7 @@ function FilterButtons({ activeFilter, onSelect, layout }: FilterButtonsProps) {
 export default function DiscoveryFeedPrototype() {
   const [profiles] = useState<DiscoveryFeedProfile[]>(DISCOVERY_FEED_PROFILES);
   const [showEmptyDemo, setShowEmptyDemo] = useState(false);
-  const [activeFilter, setActiveFilter] = useState<(typeof FILTERS)[number]>('All');
+  const [activeFilter, setActiveFilter] = useState<FilterId>('All');
   const [pressedNote, setPressedNote] = useState<string | null>(null);
   const [openToChatDrawerOpen, setOpenToChatDrawerOpen] = useState(false);
   const [openToChatSentById, setOpenToChatSentById] = useState<Record<string, boolean>>({});
@@ -90,7 +105,7 @@ export default function DiscoveryFeedPrototype() {
     window.setTimeout(() => setPressedNote(null), 2200);
   };
 
-  const selectFilter = (filter: (typeof FILTERS)[number]) => {
+  const selectFilter = (filter: FilterId) => {
     setActiveFilter(filter);
     flashNote('Prototype only — filters do not change results yet.');
   };

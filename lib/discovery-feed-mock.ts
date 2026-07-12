@@ -31,7 +31,12 @@ export const DISCOVERY_FEED_PROFILES: DiscoveryFeedProfile[] = [
     importantFactorsSummary: 'One important life preference may differ.',
     aboutPreview:
       'I am grounded, family-oriented, and happiest when I am building a meaningful life with the people I care about.',
-    characterSignals: ['Respectful Communicator', 'Good Listener', 'Genuine and Present'],
+    characterSignals: [
+      'Respectful Communicator',
+      'Good Listener',
+      'Genuine and Present',
+      'Values Family',
+    ],
     portraitGradient:
       'linear-gradient(160deg, #1B2F4A 0%, #3E566F 38%, #A8927D 72%, #E6D5C3 100%)',
   },
