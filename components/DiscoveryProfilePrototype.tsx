@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { useCallback, useId, useRef, useState, type ReactNode } from 'react';
 
 import AlignmentDetailsDrawer from '@/components/AlignmentDetailsDrawer';
+import ImportantAlignmentFactorsDrawer from '@/components/ImportantAlignmentFactorsDrawer';
 
 /**
  * Design-only Discovery Profile prototype.
@@ -73,8 +74,10 @@ export default function DiscoveryProfilePrototype() {
   const [pressedAction, setPressedAction] = useState<string | null>(null);
   const [detailsOpen, setDetailsOpen] = useState(false);
   const [alignmentDrawerOpen, setAlignmentDrawerOpen] = useState(false);
+  const [factorsDrawerOpen, setFactorsDrawerOpen] = useState(false);
   const detailsPanelId = useId();
   const alignmentTriggerRef = useRef<HTMLButtonElement>(null);
+  const factorsTriggerRef = useRef<HTMLButtonElement>(null);
 
   const flashPress = (action: string) => {
     setPressedAction(action);
@@ -82,6 +85,7 @@ export default function DiscoveryProfilePrototype() {
   };
 
   const openAlignmentDrawer = () => {
+    setFactorsDrawerOpen(false);
     setAlignmentDrawerOpen(true);
   };
 
@@ -89,6 +93,18 @@ export default function DiscoveryProfilePrototype() {
     setAlignmentDrawerOpen(false);
     window.requestAnimationFrame(() => {
       alignmentTriggerRef.current?.focus();
+    });
+  }, []);
+
+  const openFactorsDrawer = () => {
+    setAlignmentDrawerOpen(false);
+    setFactorsDrawerOpen(true);
+  };
+
+  const closeFactorsDrawer = useCallback(() => {
+    setFactorsDrawerOpen(false);
+    window.requestAnimationFrame(() => {
+      factorsTriggerRef.current?.focus();
     });
   }, []);
 
@@ -189,9 +205,14 @@ export default function DiscoveryProfilePrototype() {
 
         {/* 4. Important Alignment Factors */}
         <SectionReveal delayMs={160}>
-          <section
-            className="mt-4 rounded-[1.75rem] border-2 border-[#D62828] bg-[#FBF6EE] p-6 shadow-[0_8px_28px_rgba(214,40,40,0.08)] sm:p-7"
+          <button
+            ref={factorsTriggerRef}
+            type="button"
+            onClick={openFactorsDrawer}
+            aria-haspopup="dialog"
+            aria-expanded={factorsDrawerOpen}
             aria-labelledby="alignment-factors-title"
+            className="mt-4 w-full rounded-[1.75rem] border-2 border-[#D62828] bg-[#FBF6EE] p-6 text-left shadow-[0_8px_28px_rgba(214,40,40,0.08)] transition hover:shadow-[0_10px_32px_rgba(214,40,40,0.12)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#D62828] sm:p-7"
           >
             <div className="flex gap-3">
               <span
@@ -201,28 +222,22 @@ export default function DiscoveryProfilePrototype() {
                 !
               </span>
               <div>
-                <h2
+                <span
                   id="alignment-factors-title"
-                  className="text-lg font-semibold tracking-tight text-[#0B2D5C]"
+                  className="block text-lg font-semibold tracking-tight text-[#0B2D5C]"
                 >
                   Important Alignment Factors
-                </h2>
+                </span>
                 <p className="mt-2 text-[15px] leading-relaxed text-[#5A6575]">
                   One important life preference may differ.
                 </p>
-                <button
-                  type="button"
-                  onClick={() => flashPress('difference')}
-                  className="mt-4 text-sm font-semibold text-[#0B2D5C] transition hover:text-[#D62828]"
-                >
+                <p className="mt-4 text-sm font-semibold text-[#0B2D5C]">
                   Tap to review the details
-                </button>
-                {pressedAction === 'difference' && (
-                  <p className="mt-2 text-xs text-[#7A8494]">Prototype only — no action yet.</p>
-                )}
+                  <span aria-hidden="true"> →</span>
+                </p>
               </div>
             </div>
-          </section>
+          </button>
         </SectionReveal>
 
         {/* 5. Main Portrait */}
@@ -527,6 +542,11 @@ export default function DiscoveryProfilePrototype() {
       <AlignmentDetailsDrawer
         open={alignmentDrawerOpen}
         onClose={closeAlignmentDrawer}
+        profileName="Jessica"
+      />
+      <ImportantAlignmentFactorsDrawer
+        open={factorsDrawerOpen}
+        onClose={closeFactorsDrawer}
         profileName="Jessica"
       />
     </>
