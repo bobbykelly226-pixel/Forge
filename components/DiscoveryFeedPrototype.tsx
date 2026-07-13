@@ -3,8 +3,9 @@
 import { useMemo, useState } from 'react';
 import { Clock, Heart, LayoutGrid, MapPin, Sparkles, type LucideIcon } from 'lucide-react';
 
-import DiscoveryBottomNav from '@/components/DiscoveryBottomNav';
 import DiscoveryDesktopTopBar from '@/components/DiscoveryDesktopTopBar';
+import ForgeAppBottomNav from '@/components/ForgeAppBottomNav';
+import ForgeDesktopAppNav from '@/components/ForgeDesktopAppNav';
 import { useDiscoveryActions } from '@/components/discovery/DiscoveryActionsProvider';
 import DiscoveryFeedCard from '@/components/DiscoveryFeedCard';
 import {
@@ -195,6 +196,8 @@ export default function DiscoveryFeedPrototype() {
                 We&apos;ve selected a few thoughtful introductions based on your profile.
               </p>
 
+              <ForgeDesktopAppNav active="discovery" />
+
               <div className="mt-8 border-t border-[#0B2D5C]/08 pt-6">
                 <p className="mb-3 text-[11px] font-semibold uppercase tracking-[0.16em] text-[#D62828]">
                   Discover
@@ -291,7 +294,7 @@ export default function DiscoveryFeedPrototype() {
         </div>
       </div>
 
-      <DiscoveryBottomNav active="discovery" />
+      <ForgeAppBottomNav active="discovery" />
     </>
   );
 }
