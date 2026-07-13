@@ -12,6 +12,7 @@ import {
 
 /**
  * Public Character Signals display for /discovery/profile.
+ * Unified premium treatment — no management dashboard accents.
  * Prototype only — no live confirmations or persistence.
  */
 export default function PublicCharacterSignalsSection({
@@ -63,10 +64,10 @@ export default function PublicCharacterSignalsSection({
                   }}
                   type="button"
                   onClick={() => openDetail(entry.signalId, entry.confirmationCount)}
-                  className="flex w-full items-start gap-3 rounded-2xl border border-[#0B2D5C]/08 bg-[#FBF9F6]/80 px-4 py-3.5 text-left transition hover:border-[#0B2D5C]/18 hover:bg-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0B2D5C]"
+                  className="flex w-full items-start gap-3 rounded-2xl border border-[#0B2D5C]/08 border-l-[3px] border-l-[#557A67] bg-[#EDF4EF]/35 px-4 py-3.5 text-left transition hover:border-[#0B2D5C]/18 hover:bg-[#EDF4EF]/55 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0B2D5C]"
                   aria-haspopup="dialog"
                 >
-                  <span className="mt-0.5 inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[#0B2D5C] text-white">
+                  <span className="mt-0.5 inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[#557A67] text-white">
                     <CharacterSignalIcon signalId={entry.signalId} className="h-4 w-4" />
                   </span>
                   <span className="min-w-0 flex-1">

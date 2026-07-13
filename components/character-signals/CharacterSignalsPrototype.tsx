@@ -132,14 +132,14 @@ export default function CharacterSignalsPrototype() {
               </header>
 
               <div
-                className="mt-7 flex min-w-0 flex-col gap-6 lg:mt-8 lg:gap-8"
+                className="mt-7 flex min-w-0 flex-col gap-8 lg:mt-8 lg:gap-10"
                 style={{
                   animation: 'characterSignalsFadeUp 0.55s ease-out both',
                   animationDelay: '60ms',
                 }}
               >
                 {/* SECTION 2: Public (~62%) + Pending (~38%) */}
-                <div className="grid min-w-0 grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1.65fr)_minmax(18rem,1fr)] lg:items-stretch lg:gap-7 xl:gap-8">
+                <div className="grid min-w-0 grid-cols-1 gap-8 lg:grid-cols-[minmax(0,1.65fr)_minmax(18rem,1fr)] lg:items-stretch lg:gap-7 xl:gap-8">
                   <PublicSignalsSection signals={signals} />
                   <PendingSignalsSection signals={signals} />
                 </div>

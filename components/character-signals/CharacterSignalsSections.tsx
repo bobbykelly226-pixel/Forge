@@ -1,12 +1,18 @@
 'use client';
 
 import {
+  BookOpen,
+  Clock3,
+  Eye,
   EyeOff,
   Handshake,
   Heart,
-  ShieldCheck,
-  Users,
+  History,
   MessageSquareOff,
+  ShieldCheck,
+  Sprout,
+  Users,
+  type LucideIcon,
 } from 'lucide-react';
 
 import CharacterSignalCard from '@/components/character-signals/CharacterSignalCard';
@@ -17,12 +23,52 @@ import {
   type UserSignalInstance,
 } from '@/lib/character-signals-mock';
 
-const sectionShell =
-  'rounded-[1.75rem] border border-[#0B2D5C]/08 bg-white/70 p-5 shadow-[0_12px_40px_rgba(11,45,92,0.05)] sm:p-6 lg:p-7 xl:p-8';
+type SectionTone = 'public' | 'pending' | 'growing' | 'history' | 'education';
+
+const SECTION_THEME: Record<
+  SectionTone,
+  {
+    accent: string;
+    medium: string;
+    pale: string;
+    surface: string;
+  }
+> = {
+  public: {
+    accent: '#557A67',
+    medium: '#8EAD9B',
+    pale: '#EDF4EF',
+    surface: 'bg-[#EDF4EF]/55',
+  },
+  pending: {
+    accent: '#9A6A22',
+    medium: '#C69A52',
+    pale: '#FBF3E5',
+    surface: 'bg-[#FBF3E5]/60',
+  },
+  growing: {
+    accent: '#586B85',
+    medium: '#91A2BA',
+    pale: '#EEF2F7',
+    surface: 'bg-[#EEF2F7]/55',
+  },
+  history: {
+    accent: '#667085',
+    medium: '#98A2B3',
+    pale: '#F2F4F7',
+    surface: 'bg-[#F2F4F7]/70',
+  },
+  education: {
+    accent: '#5B6B7C',
+    medium: '#8FA0B2',
+    pale: '#FCFBF8',
+    surface: 'bg-[#FCFBF8]',
+  },
+};
 
 function EmptyBlock({ title, description }: { title: string; description: string }) {
   return (
-    <div className="rounded-2xl border border-dashed border-[#0B2D5C]/15 bg-[#FBF9F6]/80 px-5 py-10 text-center">
+    <div className="rounded-2xl border border-dashed border-[#0B2D5C]/15 bg-white/80 px-5 py-10 text-center">
       <p
         className="text-lg text-[#0B2D5C]"
         style={{ fontFamily: 'var(--font-discovery-display), Georgia, serif' }}
@@ -34,28 +80,56 @@ function EmptyBlock({ title, description }: { title: string; description: string
   );
 }
 
-function SectionHeader({
+function SectionFrame({
+  tone,
+  headingId,
   title,
   description,
-  headingId,
+  icon: Icon,
+  children,
+  className = '',
 }: {
+  tone: SectionTone;
+  headingId: string;
   title: string;
   description: string;
-  headingId: string;
+  icon: LucideIcon;
+  children: React.ReactNode;
+  className?: string;
 }) {
+  const theme = SECTION_THEME[tone];
+
   return (
-    <div className="mb-5 lg:mb-6">
-      <h2
-        id={headingId}
-        className="text-xl tracking-[-0.01em] text-[#0B2D5C] sm:text-[1.4rem]"
-        style={{ fontFamily: 'var(--font-discovery-display), Georgia, serif' }}
-      >
-        {title}
-      </h2>
-      <p className="mt-2 max-w-2xl text-sm leading-relaxed text-[#5A6575] lg:text-[15px]">
-        {description}
-      </p>
-    </div>
+    <section
+      className={`overflow-hidden rounded-[1.75rem] border border-[#0B2D5C]/08 shadow-[0_12px_40px_rgba(11,45,92,0.05)] ${theme.surface} ${className}`}
+      aria-labelledby={headingId}
+      style={{ borderTopWidth: 3, borderTopColor: theme.accent }}
+    >
+      <div className="border-b border-[#0B2D5C]/06 px-5 py-5 sm:px-6 sm:py-6 lg:px-7 lg:py-6 xl:px-8">
+        <div className="flex items-start gap-3.5">
+          <span
+            className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl text-white"
+            style={{ backgroundColor: theme.accent }}
+            aria-hidden="true"
+          >
+            <Icon className="h-5 w-5" strokeWidth={1.75} />
+          </span>
+          <div className="min-w-0 flex-1">
+            <h2
+              id={headingId}
+              className="text-xl tracking-[-0.01em] text-[#0B2D5C] sm:text-[1.4rem]"
+              style={{ fontFamily: 'var(--font-discovery-display), Georgia, serif' }}
+            >
+              {title}
+            </h2>
+            <p className="mt-1.5 max-w-2xl text-sm leading-relaxed text-[#5A6575] lg:text-[15px]">
+              {description}
+            </p>
+          </div>
+        </div>
+      </div>
+      <div className="px-5 py-5 sm:px-6 sm:py-6 lg:px-7 lg:py-7 xl:px-8">{children}</div>
+    </section>
   );
 }
 
@@ -68,12 +142,14 @@ export function PublicSignalsSection({ signals }: { signals: UserSignalInstance[
   );
 
   return (
-    <section className={`${sectionShell} h-full`} aria-labelledby="public-signals-heading">
-      <SectionHeader
-        headingId="public-signals-heading"
-        title="Your Public Signals"
-        description="Signals currently displayed on your profile, or hidden by you."
-      />
+    <SectionFrame
+      className="h-full"
+      tone="public"
+      headingId="public-signals-heading"
+      title="Your Public Signals"
+      description="Visible to people who view your profile."
+      icon={Eye}
+    >
       {visible.length === 0 ? (
         <EmptyBlock
           title="No Character Signals are displayed yet."
@@ -87,6 +163,7 @@ export function PublicSignalsSection({ signals }: { signals: UserSignalInstance[
               signalId={instance.signalId}
               confirmationCount={instance.confirmationCount}
               status={instance.status}
+              tone="public"
               detailTriggerRef={(node) => registerDetailTrigger(instance.signalId, node)}
               onViewDetails={() =>
                 openSignalDetail(instance.signalId, instance.confirmationCount)
@@ -114,7 +191,7 @@ export function PublicSignalsSection({ signals }: { signals: UserSignalInstance[
           ))}
         </div>
       )}
-    </section>
+    </SectionFrame>
   );
 }
 
@@ -127,60 +204,57 @@ export function PendingSignalsSection({ signals }: { signals: UserSignalInstance
   );
 
   return (
-    <section className={`${sectionShell} h-full`} aria-labelledby="pending-signals-heading">
-      <SectionHeader
-        headingId="pending-signals-heading"
-        title="Pending Approval"
-        description="Signals with enough confirmations, waiting for your choice."
-      />
+    <SectionFrame
+      className="h-full"
+      tone="pending"
+      headingId="pending-signals-heading"
+      title="Waiting for Your Decision"
+      description="These signals are ready to appear on your profile if you choose."
+      icon={Clock3}
+    >
       {pending.length === 0 ? (
         <EmptyBlock
-          title="Nothing is waiting for your approval."
+          title="Nothing is waiting for your decision."
           description="When a signal becomes eligible for display, it will appear here."
         />
       ) : (
         <div className="flex flex-col gap-4">
           {pending.map((instance) => (
-            <div key={instance.id} className="space-y-3">
-              {instance.status === 'pending' && (
-                <p className="text-sm leading-relaxed text-[#5A6575]">
-                  This signal is ready to appear on your profile.
-                </p>
-              )}
-              <CharacterSignalCard
-                signalId={instance.signalId}
-                confirmationCount={instance.confirmationCount}
-                status={instance.status}
-                detailTriggerRef={(node) => registerDetailTrigger(instance.signalId, node)}
-                onViewDetails={() =>
-                  openSignalDetail(instance.signalId, instance.confirmationCount)
-                }
-                actions={
-                  instance.status === 'pending' ? (
-                    <>
-                      <button
-                        type="button"
-                        onClick={() => approveForProfile(instance.id)}
-                        className="inline-flex items-center justify-center rounded-2xl bg-[#0B2D5C] px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-[#0A2540] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0B2D5C]"
-                      >
-                        Add to My Profile
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => keepPrivate(instance.id)}
-                        className="inline-flex items-center justify-center rounded-2xl border border-[#0B2D5C]/15 bg-white px-4 py-2.5 text-sm font-semibold text-[#0B2D5C] transition hover:bg-[#FBF9F6] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0B2D5C]"
-                      >
-                        Keep Private
-                      </button>
-                    </>
-                  ) : undefined
-                }
-              />
-            </div>
+            <CharacterSignalCard
+              key={instance.id}
+              signalId={instance.signalId}
+              confirmationCount={instance.confirmationCount}
+              status={instance.status}
+              tone="pending"
+              detailTriggerRef={(node) => registerDetailTrigger(instance.signalId, node)}
+              onViewDetails={() =>
+                openSignalDetail(instance.signalId, instance.confirmationCount)
+              }
+              actions={
+                instance.status === 'pending' ? (
+                  <>
+                    <button
+                      type="button"
+                      onClick={() => approveForProfile(instance.id)}
+                      className="inline-flex items-center justify-center rounded-2xl bg-[#0B2D5C] px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-[#0A2540] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0B2D5C]"
+                    >
+                      Add to My Profile
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => keepPrivate(instance.id)}
+                      className="inline-flex items-center justify-center rounded-2xl border border-[#0B2D5C]/15 bg-white px-4 py-2.5 text-sm font-semibold text-[#0B2D5C] transition hover:bg-[#FBF9F6] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0B2D5C]"
+                    >
+                      Keep Private
+                    </button>
+                  </>
+                ) : undefined
+              }
+            />
           ))}
         </div>
       )}
-    </section>
+    </SectionFrame>
   );
 }
 
@@ -189,12 +263,17 @@ export function GrowingSignalsSection({ signals }: { signals: UserSignalInstance
   const growing = signals.filter((signal) => signal.status === 'growing');
 
   return (
-    <section className={sectionShell} aria-labelledby="growing-signals-heading">
-      <SectionHeader
-        headingId="growing-signals-heading"
-        title="Growing Signals"
-        description="These remain visible only to you until enough independent people confirm the same quality."
-      />
+    <SectionFrame
+      tone="growing"
+      headingId="growing-signals-heading"
+      title="Growing Signals"
+      description="Private signals still gathering independent confirmations."
+      icon={Sprout}
+    >
+      <p className="mb-5 text-sm leading-relaxed text-[#5A6575]">
+        Growing Signals remain visible only to you until enough independent people confirm the
+        same quality.
+      </p>
       {growing.length === 0 ? (
         <EmptyBlock
           title="No growing signals yet."
@@ -211,7 +290,9 @@ export function GrowingSignalsSection({ signals }: { signals: UserSignalInstance
                 instance.confirmationCount === 1 ? 'person' : 'people'
               }`}
               status={instance.status}
+              tone="growing"
               layout="horizontal"
+              showConfirmationProgress
               detailTriggerRef={(node) => registerDetailTrigger(instance.signalId, node)}
               onViewDetails={() =>
                 openSignalDetail(instance.signalId, instance.confirmationCount)
@@ -220,7 +301,7 @@ export function GrowingSignalsSection({ signals }: { signals: UserSignalInstance
           ))}
         </div>
       )}
-    </section>
+    </SectionFrame>
   );
 }
 
@@ -230,12 +311,16 @@ export function RecognitionHistorySection({
   history: RecognitionHistoryEntry[];
 }) {
   return (
-    <section className={sectionShell} aria-labelledby="history-heading">
-      <SectionHeader
-        headingId="history-heading"
-        title="Recognition History"
-        description="A private record of recognitions you have received and given."
-      />
+    <SectionFrame
+      tone="history"
+      headingId="history-heading"
+      title="Recognition History"
+      description="A private record of recognitions you have received and shared."
+      icon={History}
+    >
+      <p className="mb-5 inline-flex rounded-full border border-[#667085]/20 bg-white px-3 py-1 text-[11px] font-semibold tracking-wide text-[#667085]">
+        Private activity
+      </p>
       {history.length === 0 ? (
         <EmptyBlock
           title="No recognition activity yet."
@@ -252,7 +337,7 @@ export function RecognitionHistorySection({
             return (
               <li
                 key={entry.id}
-                className="rounded-2xl border border-[#0B2D5C]/08 bg-white/85 px-4 py-4 sm:px-5"
+                className="rounded-2xl border border-[#0B2D5C]/08 border-l-[3px] border-l-[#667085] bg-white px-4 py-4 sm:px-5"
               >
                 <p className="text-sm font-semibold leading-snug text-[#0B2D5C] lg:text-[15px]">
                   {title}
@@ -264,7 +349,7 @@ export function RecognitionHistorySection({
           })}
         </ul>
       )}
-    </section>
+    </SectionFrame>
   );
 }
 
@@ -303,22 +388,23 @@ const PRINCIPLES = [
 
 export function HowCharacterSignalsWorkSection() {
   return (
-    <section className={sectionShell} aria-labelledby="how-it-works-heading">
-      <SectionHeader
-        headingId="how-it-works-heading"
-        title="How It Works"
-        description="Character Signals celebrate recurring positive behavior."
-      />
+    <SectionFrame
+      tone="education"
+      headingId="how-it-works-heading"
+      title="How Character Signals Work"
+      description="The principles that keep recognition positive, private, and trustworthy."
+      icon={BookOpen}
+    >
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3 lg:gap-4">
         {PRINCIPLES.map((principle) => {
           const Icon = principle.icon;
           return (
             <div
               key={principle.title}
-              className="rounded-2xl border border-[#0B2D5C]/08 bg-white/85 px-4 py-4 sm:px-5 sm:py-5"
+              className="rounded-2xl border border-[#0B2D5C]/08 bg-white px-4 py-4 sm:px-5 sm:py-5"
             >
               <div className="flex items-start gap-3">
-                <span className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[#E8EEF6] text-[#0B2D5C]">
+                <span className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[#EEF2F7] text-[#5B6B7C]">
                   <Icon className="h-4 w-4" strokeWidth={1.75} aria-hidden="true" />
                 </span>
                 <div className="min-w-0">
@@ -332,10 +418,10 @@ export function HowCharacterSignalsWorkSection() {
           );
         })}
       </div>
-      <p className="mt-6 rounded-2xl border border-[#0B2D5C]/10 bg-[#E8EEF6]/80 px-5 py-4 text-[15px] leading-relaxed text-[#0B2D5C]">
+      <p className="mt-6 rounded-2xl border border-[#5B6B7C]/15 bg-white px-5 py-4 text-[15px] leading-relaxed text-[#0B2D5C]">
         Character Signals are designed to encourage respectful dating, not judge someone&apos;s
         worth.
       </p>
-    </section>
+    </SectionFrame>
   );
 }
