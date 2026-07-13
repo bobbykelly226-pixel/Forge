@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { useCallback, useId, useRef, useState, type ReactNode } from 'react';
 
 import AlignmentDetailsDrawer from '@/components/AlignmentDetailsDrawer';
+import PublicCharacterSignalsSection from '@/components/character-signals/PublicCharacterSignalsSection';
 import DiscoveryActionTiles from '@/components/discovery/DiscoveryActionTiles';
 import { useDiscoveryActions } from '@/components/discovery/DiscoveryActionsProvider';
 import ImportantAlignmentFactorsDrawer from '@/components/ImportantAlignmentFactorsDrawer';
@@ -477,39 +478,7 @@ export default function DiscoveryProfilePrototype() {
 
         {/* 10. Character Signals */}
         <SectionReveal delayMs={440}>
-          <section className={`${cardClassName} mt-4`} aria-labelledby="signals-title">
-            <h2
-              id="signals-title"
-              className="text-xl tracking-[-0.01em] text-[#0B2D5C] sm:text-2xl"
-              style={{ fontFamily: 'var(--font-discovery-display), Georgia, serif' }}
-            >
-              Character Signals
-            </h2>
-            <p className="mt-2 text-sm text-[#7A8494]">Placeholder only — not live confirmations.</p>
-
-            <ul className="mt-6 space-y-5">
-              {[
-                { label: 'Respectful Communicator', count: 4 },
-                { label: 'Good Listener', count: 3 },
-                { label: 'Genuine and Present', count: 2 },
-              ].map((signal) => (
-                <li key={signal.label} className="flex items-start gap-3">
-                  <span
-                    className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-[#0B2D5C] text-[11px] font-bold text-white"
-                    aria-hidden="true"
-                  >
-                    ✓
-                  </span>
-                  <div>
-                    <p className="text-[15px] font-semibold text-[#0B2D5C]">{signal.label}</p>
-                    <p className="mt-1 text-sm text-[#7A8494]">
-                      Confirmed by {signal.count} people
-                    </p>
-                  </div>
-                </li>
-              ))}
-            </ul>
-          </section>
+          <PublicCharacterSignalsSection cardClassName={cardClassName} />
         </SectionReveal>
 
         {/* 11. Actions */}

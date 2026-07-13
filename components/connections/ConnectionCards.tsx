@@ -1,9 +1,10 @@
 'use client';
 
 import Link from 'next/link';
-import { Bookmark, Check, Heart, MessageCircle, RotateCcw, Send } from 'lucide-react';
-import { useRef } from 'react';
+import { Bookmark, Check, Heart, MessageCircle, RotateCcw, Send, Sparkles } from 'lucide-react';
+import { useRef, useState } from 'react';
 
+import RecognitionFlowDrawer from '@/components/character-signals/RecognitionFlowDrawer';
 import {
   ConnectionAlignment,
   ConnectionIdentity,
@@ -13,6 +14,7 @@ import {
 import { useConnectionsHub } from '@/components/connections/ConnectionsHubProvider';
 import type { ConnectionProfile, SentActivityEntry } from '@/lib/connections-mock';
 import { getProfileById } from '@/lib/connections-mock';
+import { RECOGNITION_RECIPIENTS } from '@/lib/character-signals-mock';
 
 const cardShell =
   'overflow-hidden rounded-[1.75rem] border border-[#0B2D5C]/08 bg-white/90 shadow-[0_12px_40px_rgba(11,45,92,0.06)] backdrop-blur-sm';
@@ -165,6 +167,19 @@ export function InterestReceivedCard({ profile }: { profile: ConnectionProfile }
 export function MutualConnectionCard({ profile }: { profile: ConnectionProfile }) {
   const { isMutualConversationReady, startMutualConversation } = useConnectionsHub();
   const ready = isMutualConversationReady(profile.id);
+  const [recognitionOpen, setRecognitionOpen] = useState(false);
+  const recognizeTriggerRef = useRef<HTMLButtonElement>(null);
+
+  const recipient =
+    RECOGNITION_RECIPIENTS.find((entry) => entry.id === profile.id) ??
+    (profile.canRecognize
+      ? {
+          id: profile.id,
+          firstName: profile.firstName,
+          defaultInteractionType: 'in_app' as const,
+          contextLabel: 'In-app conversation',
+        }
+      : null);
 
   return (
     <article className={cardShell}>
@@ -195,7 +210,7 @@ export function MutualConnectionCard({ profile }: { profile: ConnectionProfile }
               </p>
             </div>
           )}
-          <div className="mt-5 flex flex-col gap-2 sm:flex-row" onClick={(e) => e.stopPropagation()}>
+          <div className="mt-5 flex flex-col gap-2 sm:flex-row sm:flex-wrap" onClick={(e) => e.stopPropagation()}>
             {!ready && (
               <button
                 type="button"
@@ -207,9 +222,32 @@ export function MutualConnectionCard({ profile }: { profile: ConnectionProfile }
               </button>
             )}
             <ViewProfileLink />
+            {profile.canRecognize && recipient && (
+              <button
+                ref={recognizeTriggerRef}
+                type="button"
+                onClick={() => setRecognitionOpen(true)}
+                className="inline-flex items-center justify-center gap-2 rounded-2xl border border-[#0B2D5C]/20 bg-white px-4 py-3 text-sm font-semibold text-[#0B2D5C] transition hover:bg-[#FBF9F6] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0B2D5C]"
+              >
+                <Sparkles className="h-4 w-4" strokeWidth={1.75} aria-hidden="true" />
+                Recognize a Positive Quality
+              </button>
+            )}
           </div>
         </div>
       </div>
+
+      {profile.canRecognize && recipient && (
+        <RecognitionFlowDrawer
+          open={recognitionOpen}
+          recipient={recipient}
+          onClose={() => {
+            setRecognitionOpen(false);
+            window.requestAnimationFrame(() => recognizeTriggerRef.current?.focus());
+          }}
+          successReturnLabel="Return to Connections"
+        />
+      )}
     </article>
   );
 }

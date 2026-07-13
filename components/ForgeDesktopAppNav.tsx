@@ -1,15 +1,21 @@
 'use client';
 
 import Link from 'next/link';
-import { Compass, Link2 } from 'lucide-react';
+import { Compass, Link2, Sparkles } from 'lucide-react';
 
 const NAV_ITEMS = [
   { id: 'discovery', label: 'Discovery', href: '/discovery', icon: Compass },
   { id: 'connections', label: 'Connections', href: '/connections', icon: Link2 },
+  {
+    id: 'character-signals',
+    label: 'Character Signals',
+    href: '/character-signals',
+    icon: Sparkles,
+  },
 ] as const;
 
 type ForgeDesktopAppNavProps = {
-  active: 'discovery' | 'connections';
+  active: 'discovery' | 'connections' | 'character-signals';
 };
 
 export default function ForgeDesktopAppNav({ active }: ForgeDesktopAppNavProps) {
