@@ -228,7 +228,7 @@ export function growingProgressCopy(count: number): string {
     return 'Ready for your review before public display.';
   }
   if (remaining === 1) {
-    return 'One more confirmation before it can be displayed';
+    return 'One more independent confirmation before this signal becomes eligible for public display.';
   }
-  return `Needs ${remaining} more confirmations`;
+  return `${remaining} more independent confirmations before this signal becomes eligible for public display.`;
 }

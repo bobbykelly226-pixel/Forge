@@ -29,7 +29,7 @@ export default function CharacterSignalsPrototype() {
       ref={registerRecognitionTrigger}
       type="button"
       onClick={() => openRecognition()}
-      className="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-[#0B2D5C] px-4 py-3 text-sm font-semibold text-white transition hover:bg-[#0A2540] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0B2D5C] sm:w-auto"
+      className="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-[#0B2D5C] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#0A2540] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0B2D5C] sm:w-auto"
     >
       <Sparkles className="h-4 w-4" strokeWidth={1.75} aria-hidden="true" />
       Recognize Someone
@@ -55,7 +55,7 @@ export default function CharacterSignalsPrototype() {
         }
       `}</style>
 
-      <div className="mx-auto min-h-screen w-full lg:max-w-[1280px] lg:px-8 lg:py-8 xl:max-w-[1360px] xl:px-10">
+      <div className="mx-auto min-h-screen w-full lg:max-w-[1280px] lg:px-8 lg:py-8 xl:max-w-[1440px] xl:px-10">
         <div className="lg:grid lg:grid-cols-[17.5rem_minmax(0,1fr)] lg:items-start lg:gap-10 xl:grid-cols-[18.5rem_minmax(0,1fr)] xl:gap-12">
           <aside
             className="sticky top-8 hidden max-h-[calc(100vh-4rem)] self-start overflow-y-auto overscroll-contain [scrollbar-gutter:stable] [scrollbar-width:thin] [scrollbar-color:rgba(11,45,92,0.28)_transparent] lg:block [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-[#0B2D5C]/25 [&::-webkit-scrollbar-track]:bg-transparent"
@@ -92,12 +92,13 @@ export default function CharacterSignalsPrototype() {
             </div>
           </aside>
 
-          <div className="min-h-screen w-full lg:min-h-0">
+          <div className="min-h-screen w-full min-w-0 lg:min-h-0">
             <div className="hidden px-0 lg:block">
               <DiscoveryDesktopTopBar onPrototypeAction={flashNote} />
             </div>
 
             <div className="mx-auto flex w-full max-w-lg flex-col px-4 pb-[7.5rem] pt-5 sm:px-6 sm:pt-7 lg:mx-0 lg:max-w-none lg:px-0 lg:pb-10 lg:pt-0">
+              {/* SECTION 1: Page header */}
               <header
                 className="shrink-0"
                 style={{ animation: 'characterSignalsFadeUp 0.5s ease-out both' }}
@@ -113,16 +114,16 @@ export default function CharacterSignalsPrototype() {
                   </p>
                 </div>
 
-                <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
-                  <div className="min-w-0">
+                <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between lg:gap-8">
+                  <div className="min-w-0 flex-1">
                     <h1
-                      className="text-[2.1rem] leading-none tracking-[-0.02em] text-[#0B2D5C] sm:text-[2.45rem] lg:text-[2.2rem]"
+                      className="text-[2.1rem] leading-none tracking-[-0.02em] text-[#0B2D5C] sm:text-[2.45rem] lg:text-[2.15rem]"
                       style={{ fontFamily: 'var(--font-discovery-display), Georgia, serif' }}
                     >
                       <span className="lg:hidden">Character Signals</span>
                       <span className="hidden lg:inline">Your Character Signals</span>
                     </h1>
-                    <p className="mt-3 max-w-xl text-[15px] leading-relaxed text-[#5A6575] sm:text-base lg:mt-2">
+                    <p className="mt-3 max-w-2xl text-[15px] leading-relaxed text-[#5A6575] sm:text-base lg:mt-2">
                       Review, approve, and understand recognitions of how you show up.
                     </p>
                   </div>
@@ -131,22 +132,25 @@ export default function CharacterSignalsPrototype() {
               </header>
 
               <div
-                className="mt-7 flex flex-col gap-6 lg:mt-8 lg:gap-8"
+                className="mt-7 flex min-w-0 flex-col gap-6 lg:mt-8 lg:gap-8"
                 style={{
                   animation: 'characterSignalsFadeUp 0.55s ease-out both',
                   animationDelay: '60ms',
                 }}
               >
-                <div className="flex flex-col gap-6 lg:grid lg:grid-cols-[minmax(0,1.15fr)_minmax(0,0.85fr)] lg:items-start lg:gap-8">
-                  <div className="flex flex-col gap-6">
-                    <PublicSignalsSection signals={signals} />
-                    <PendingSignalsSection signals={signals} />
-                  </div>
-                  <div className="flex flex-col gap-6">
-                    <GrowingSignalsSection signals={signals} />
-                    <RecognitionHistorySection history={history} />
-                  </div>
+                {/* SECTION 2: Public (~62%) + Pending (~38%) */}
+                <div className="grid min-w-0 grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1.65fr)_minmax(18rem,1fr)] lg:items-stretch lg:gap-7 xl:gap-8">
+                  <PublicSignalsSection signals={signals} />
+                  <PendingSignalsSection signals={signals} />
                 </div>
+
+                {/* SECTION 3: Growing Signals — full width, 2-col cards */}
+                <GrowingSignalsSection signals={signals} />
+
+                {/* SECTION 4: Recognition History — full width, 2-col activity */}
+                <RecognitionHistorySection history={history} />
+
+                {/* SECTION 5: How It Works */}
                 <HowCharacterSignalsWorkSection />
               </div>
 
