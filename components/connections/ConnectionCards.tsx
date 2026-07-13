@@ -1,7 +1,8 @@
 'use client';
 
 import Link from 'next/link';
-import { Bookmark, Heart, MessageCircle, Send } from 'lucide-react';
+import { Bookmark, Check, Heart, MessageCircle, RotateCcw, Send } from 'lucide-react';
+import { useRef } from 'react';
 
 import {
   ConnectionAlignment,
@@ -214,9 +215,25 @@ export function MutualConnectionCard({ profile }: { profile: ConnectionProfile }
 }
 
 export function SavedProfileCard({ profile }: { profile: ConnectionProfile }) {
-  const { isSavedRemoved, removeSavedProfile } = useConnectionsHub();
+  const {
+    isSavedRemoved,
+    removeSavedProfile,
+    getSavedActionState,
+    handleSavedInterested,
+    handleUndoSavedInterested,
+    handleSavedOpenToChat,
+    registerSavedOpenToChatTrigger,
+  } = useConnectionsHub();
+
+  const openToChatRef = useRef<HTMLButtonElement>(null);
+  const actionState = getSavedActionState(profile.id);
 
   if (isSavedRemoved(profile.id)) return null;
+
+  const setOpenToChatRef = (node: HTMLButtonElement | null) => {
+    openToChatRef.current = node;
+    registerSavedOpenToChatTrigger(profile.id, node);
+  };
 
   return (
     <article className={cardShell}>
@@ -234,27 +251,70 @@ export function SavedProfileCard({ profile }: { profile: ConnectionProfile }) {
             <ViewProfileLink />
             <button
               type="button"
-              className="inline-flex items-center justify-center gap-2 rounded-2xl bg-[#D62828] px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-[#A61F1F]"
+              aria-pressed={actionState.interested}
+              onClick={() => {
+                if (!actionState.interested) {
+                  handleSavedInterested(profile.id, profile.firstName);
+                }
+              }}
+              className={`inline-flex items-center justify-center gap-2 rounded-2xl px-4 py-2.5 text-sm font-semibold transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0B2D5C] ${
+                actionState.interested
+                  ? 'bg-[#A61F1F] text-white ring-2 ring-[#D62828]/35 ring-offset-2 ring-offset-white'
+                  : 'bg-[#D62828] text-white hover:bg-[#A61F1F]'
+              }`}
             >
-              <Heart className="h-4 w-4" strokeWidth={1.75} aria-hidden="true" />
+              {actionState.interested ? (
+                <Check className="h-4 w-4" strokeWidth={2} aria-hidden="true" />
+              ) : (
+                <Heart className="h-4 w-4" strokeWidth={1.75} aria-hidden="true" />
+              )}
               Interested
             </button>
             <button
+              ref={setOpenToChatRef}
               type="button"
-              className="inline-flex items-center justify-center gap-2 rounded-2xl border border-[#0B2D5C]/20 bg-white px-4 py-2.5 text-sm font-semibold text-[#0B2D5C] transition hover:bg-[#FBF9F6]"
+              disabled={actionState.openToChatSent}
+              aria-disabled={actionState.openToChatSent}
+              onClick={() => handleSavedOpenToChat(profile.id, profile.firstName)}
+              className={`inline-flex items-center justify-center gap-2 rounded-2xl border px-4 py-2.5 text-sm font-semibold transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0B2D5C] disabled:cursor-not-allowed disabled:opacity-70 ${
+                actionState.openToChatSent
+                  ? 'border-[#0B2D5C]/25 bg-[#E8EEF6] text-[#0B2D5C]'
+                  : 'border-[#0B2D5C]/20 bg-white text-[#0B2D5C] hover:bg-[#FBF9F6]'
+              }`}
             >
               <Send className="h-4 w-4" strokeWidth={1.75} aria-hidden="true" />
-              Open to Chat
+              {actionState.openToChatSent ? 'Request Sent' : 'Open to Chat'}
             </button>
             <button
               type="button"
               onClick={() => removeSavedProfile(profile.id, profile.firstName)}
-              className="inline-flex items-center justify-center gap-2 rounded-2xl border border-[#0B2D5C]/12 px-4 py-2.5 text-sm font-medium text-[#6B7585] transition hover:text-[#0B2D5C]"
+              className="inline-flex items-center justify-center gap-2 rounded-2xl border border-[#0B2D5C]/12 px-4 py-2.5 text-sm font-medium text-[#6B7585] transition hover:text-[#0B2D5C] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0B2D5C]"
             >
               <Bookmark className="h-4 w-4" strokeWidth={1.75} aria-hidden="true" />
               Remove from Saved
             </button>
           </div>
+          {actionState.interested && (
+            <div className="mt-3 flex items-center justify-between gap-3 rounded-2xl border border-[#0B2D5C]/08 bg-[#F8F6F2] px-4 py-3">
+              <p className="text-xs leading-relaxed text-[#5A6575] sm:text-sm">
+                If {profile.firstName} is also interested, Forge will let you both know.
+              </p>
+              <button
+                type="button"
+                onClick={() => handleUndoSavedInterested(profile.id, profile.firstName)}
+                className="inline-flex shrink-0 items-center gap-1.5 text-sm font-semibold text-[#0B2D5C] transition hover:text-[#D62828] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0B2D5C]"
+              >
+                <RotateCcw className="h-3.5 w-3.5" strokeWidth={1.75} aria-hidden="true" />
+                Undo
+              </button>
+            </div>
+          )}
+          {actionState.openToChatSent && (
+            <p className="mt-3 text-xs leading-relaxed text-[#5A6575]">
+              Request sent — {profile.firstName} can accept, decline privately, or respond later.
+              No additional request can be sent in this session.
+            </p>
+          )}
         </div>
       </div>
     </article>
