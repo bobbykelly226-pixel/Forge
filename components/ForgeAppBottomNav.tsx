@@ -7,7 +7,7 @@ const NAV_ITEMS = [
   { id: 'discovery', label: 'Discovery', href: '/discovery', icon: Compass },
   { id: 'connections', label: 'Connections', href: '/connections', icon: Link2 },
   { id: 'messages', label: 'Messages', href: '#messages', icon: MessageCircle },
-  { id: 'profile', label: 'Profile', href: '#profile', icon: UserRound },
+  { id: 'profile', label: 'Profile', href: '/character-signals', icon: UserRound },
 ] as const;
 
 export type ForgeAppNavId = (typeof NAV_ITEMS)[number]['id'];
@@ -60,7 +60,7 @@ export default function ForgeAppBottomNav({ active = 'discovery' }: ForgeAppBott
         })}
       </div>
       <p className="pb-1 text-center text-[10px] tracking-wide text-[#8A93A0]">
-        Prototype navigation — Messages and Profile are placeholders
+        Prototype navigation — Messages is a placeholder
       </p>
     </nav>
   );

@@ -15,6 +15,8 @@ export type ConnectionProfile = {
   aboutPreview: string;
   characterSignals: string[];
   portraitGradient: string;
+  /** Prototype: enough interaction to recognize Character Signals */
+  canRecognize?: boolean;
 };
 
 export type SentActivityType = 'interested' | 'open_to_chat';
@@ -104,9 +106,10 @@ export const MUTUAL_CONNECTIONS: ConnectionProfile[] = [
     hasImportantFactors: true,
     aboutPreview:
       'I am grounded, family-oriented, and happiest when I am building a meaningful life with the people I care about.',
-    characterSignals: ['Respectful Communicator', 'Good Listener', 'Genuine and Present'],
+    characterSignals: ['Respectful Communicator', 'Great Listener', 'Genuine and Present'],
     portraitGradient:
       'linear-gradient(160deg, #1B2F4A 0%, #3E566F 38%, #A8927D 72%, #E6D5C3 100%)',
+    canRecognize: true,
   },
 ];
 
