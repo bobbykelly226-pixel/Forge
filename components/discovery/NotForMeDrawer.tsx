@@ -110,7 +110,7 @@ export default function NotForMeDrawer({
         aria-describedby={descriptionId}
         tabIndex={-1}
         onKeyDown={handleKeyDown}
-        className="relative z-[86] w-full max-w-md overflow-hidden rounded-t-[1.75rem] bg-[#F8F6F2] shadow-[0_-18px_60px_rgba(11,45,92,0.22)] outline-none sm:rounded-[1.75rem]"
+        className="relative z-[86] w-full max-w-md overflow-hidden rounded-t-[1.75rem] bg-white shadow-[0_-18px_60px_rgba(11,45,92,0.22)] outline-none sm:rounded-[1.75rem]"
       >
         <div className="px-5 py-6 sm:px-7 sm:py-7">
           <h2
@@ -136,7 +136,7 @@ export default function NotForMeDrawer({
             <button
               type="button"
               onClick={onClose}
-              className="inline-flex w-full items-center justify-center rounded-2xl border border-[#0B2D5C]/20 bg-white px-6 py-3.5 text-base font-semibold text-[#0B2D5C] transition hover:bg-[#F8F6F2]"
+              className="inline-flex w-full items-center justify-center rounded-2xl border border-[#0B2D5C]/20 bg-white px-6 py-3.5 text-base font-semibold text-[#0B2D5C] transition hover:bg-[#EEF2F7]"
             >
               Go Back
             </button>
