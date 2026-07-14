@@ -194,7 +194,7 @@ export async function updateOnboardingProgress(input: {
     return { success: false, message: 'You must be signed in.' };
   }
 
-  const updates: TablesUpdate<'user_app_state'> = {
+  const updates: TablesInsert<'user_app_state'> = {
     user_id: user.id,
   };
 
