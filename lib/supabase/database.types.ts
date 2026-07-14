@@ -1,13 +1,14 @@
 /**
  * Schema-aligned Supabase Database types for the Forge Backend Foundation.
  *
- * Source of truth: supabase/migrations/20260714000000_forge_backend_foundation.sql
- * (plus prior V1 migrations for profiles / compatibility_answers).
+ * TEMPORARY STATUS — NOT CLI-GENERATED:
+ * These types were hand-authored from
+ * supabase/migrations/20260714000000_forge_backend_foundation.sql
+ * (plus prior V1 migrations). They were NOT generated from an applied
+ * remote or local Supabase database schema.
  *
- * STATUS: These types were authored from the migration SQL because this
- * environment is not linked to a remote Supabase project. After applying the
- * migration remotely, regenerate with `npm run supabase:types` and replace
- * this file with the CLI output.
+ * After applying the migration to a linked project, replace this file with:
+ *   npm run supabase:types
  */
 
 export type Json =
@@ -683,7 +684,44 @@ export type Database = {
         ];
       };
     };
-    Views: Record<string, never>;
+    Views: {
+      discoverable_profiles: {
+        Row: {
+          id: string;
+          full_name: string | null;
+          age: number | null;
+          location: string | null;
+          relationship_goal: string | null;
+          faith_importance: string | null;
+          service_background: string | null;
+          short_bio: string | null;
+          more_about: string | null;
+          children: string | null;
+          has_children: string | null;
+          education: string | null;
+          pets: string | null;
+          smoking: string | null;
+          drinking: string | null;
+          career: string | null;
+          relocation: string | null;
+          things_i_enjoy: string[];
+          favorite_music_artists: string[];
+          favorite_music_songs: string[];
+          profile_photo_url: string | null;
+        };
+        Relationships: [];
+      };
+      discoverable_profile_photos: {
+        Row: {
+          id: string;
+          user_id: string;
+          storage_path: string;
+          display_order: number;
+          is_primary: boolean;
+        };
+        Relationships: [];
+      };
+    };
     Functions: {
       set_updated_at: {
         Args: Record<string, never>;
@@ -692,6 +730,10 @@ export type Database = {
       handle_new_user: {
         Args: Record<string, never>;
         Returns: unknown;
+      };
+      ensure_foundational_user_records: {
+        Args: { p_user_id?: string | null };
+        Returns: Json;
       };
     };
     Enums: {

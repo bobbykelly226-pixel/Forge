@@ -4,7 +4,7 @@ Authoritative documentation for the Forge Backend Foundation persistence layer.
 
 **Remote migration status:** Not applied from the agent environment. Apply `supabase/migrations/20260714000000_forge_backend_foundation.sql` in the linked Supabase SQL Editor before relying on these tables in production.
 
-**Types status:** `lib/supabase/database.types.ts` is schema-aligned to the migration SQL. After remote apply, refresh with `npm run supabase:types`.
+**Types status:** `lib/supabase/database.types.ts` contains **temporary schema-aligned types hand-authored from the migration SQL**. They were **not** generated from an applied Supabase database. After remote apply, replace them with `npm run supabase:types`.
 
 ---
 
@@ -14,6 +14,52 @@ Authoritative documentation for the Forge Backend Foundation persistence layer.
 - Prefer the existing Profile V2 / onboarding vocabulary over inventing parallel fields.
 - Private by default; public only when actively discoverable.
 - No matching, messaging, notifications, Voice, Video, Spotify, or Stripe in this foundation.
+
+---
+
+## What another authenticated Forge user may see
+
+Other users must **not** query `profiles` with `select *`. Peer reads go through `discoverable_profiles` (and `discoverable_profile_photos` for photo metadata).
+
+### Allowed (intentional public profile presentation)
+
+| Field | Source |
+|-------|--------|
+| User id | `discoverable_profiles.id` |
+| Display name | `full_name` |
+| Public age | `age` (not date of birth) |
+| City / region text | `location` |
+| Relationship goal | `relationship_goal` |
+| Faith | `faith_importance` |
+| Service background | `service_background` |
+| About | `short_bio` |
+| More About | `more_about` |
+| Children / Has children | `children`, `has_children` |
+| Education, pets, smoking, drinking, career, relocation | matching columns |
+| Things I Enjoy | `things_i_enjoy` |
+| Favorite music | `favorite_music_artists`, `favorite_music_songs` |
+| Legacy primary photo URL | `profile_photo_url` |
+| Approved photo metadata | `discoverable_profile_photos` (`storage_path`, order, primary) |
+
+### Never available to other users through profile reads
+
+| Information | Where it lives / why blocked |
+|-------------|------------------------------|
+| Exact date of birth | `profile_private_details` (owner-only) |
+| Postal code | `profile_private_details` (owner-only) |
+| Precise coordinates | `profile_private_details` (owner-only) |
+| Email address | `auth.users` only — never on profiles |
+| Phone number | Not stored in Forge app tables |
+| Profile status / discoverability flags | Filtered in the view; not selected for peers |
+| Onboarding / completion / last-active / created / updated timestamps | Owner-only on base `profiles` |
+| Private compatibility / questionnaire answers | `compatibility_answers` and `profile_answers` are owner-only |
+| Preferences | `profile_preferences` owner-only |
+| Photo moderation status | Excluded from `discoverable_profile_photos` |
+| Who saved or passed them | `saved_profiles` / `passed_profiles` actor-only |
+
+Anonymous users cannot browse dating profiles or these views.
+
+Canonical allow-list in code: `lib/data-model-rules.ts` → `DISCOVERABLE_PROFILE_COLUMNS`.
 
 ---
 
@@ -29,283 +75,141 @@ Authoritative documentation for the Forge Backend Foundation persistence layer.
 | Location (city/region) | `profiles.location` | Public-safe text only |
 | Age (public) | `profiles.age` | Exact DOB is private |
 
-`compatibility_answers` remains for the live onboarding flow (`relationship_intention`, `core_values`). New questionnaire work should prefer `profile_answers`; a later PR can migrate V1 rows.
-
 `waitlist` and `feedback` are marketing tables and are intentionally untouched.
 
 ---
 
-## Tables
+## Compatibility answers transition plan
 
-### 1. `profiles`
+### Current app behavior (confirmed)
 
-**Purpose:** Public-facing profile presentation and lifecycle.
+The live onboarding flow **still reads and writes** `compatibility_answers` via:
 
-**Key columns:** identity (`id` → `auth.users`), presentation fields (name, location, about, details, enjoy/music arrays), `status`, `is_discoverable`, completion/activity timestamps.
+- `app/actions/compatibility.ts`
+- `components/OnboardingShell.tsx`
+- keys: `relationship_intention`, `core_values`
 
-**Public vs private:** Readable by the owner always. Other authenticated users may read only when `status = 'active'` AND `is_discoverable = true`. Anonymous users cannot browse.
+### Future authoritative system
 
-**Not included:** Voice/Video introduction media columns.
+**`profile_answers` is the future authoritative questionnaire store** (importance, non-negotiable, visibility, matching-ready jsonb).
 
-### 2. `profile_private_details`
+### Rules for the next persistence PR
 
-**Purpose:** Sensitive inputs that must never appear as ordinary public profile columns.
+1. **Do not dual-write** the same question into both tables.
+2. Keep `compatibility_answers` data intact — no deletes in this foundation migration.
+3. During the persistence PR that connects onboarding:
+   - Migrate existing `compatibility_answers` rows into `profile_answers` once (same `question_key`, map `answer_value` → `answer`).
+   - Switch app reads/writes to `profile_answers` only.
+   - Leave `compatibility_answers` read-only or unused until a later cleanup migration.
+4. Until that PR lands, foundation data-access helpers use `profile_answers` only for new questionnaire APIs; they do not touch `compatibility_answers`.
 
-**Columns:** `date_of_birth`, `postal_code`, optional `latitude`/`longitude`.
+---
 
-**Access:** Owner-only select/insert/update. Exact DOB is never exposed through public profile queries.
+## Tables (summary)
 
-### 3. `profile_preferences`
+See migration SQL for full DDL. High level:
 
-**Purpose:** Discovery and relationship preferences.
+1. **`profiles`** — owner full row; peers use `discoverable_profiles`
+2. **`profile_private_details`** — DOB, postal, coords; owner-only
+3. **`profile_preferences`** — owner-only discovery prefs
+4. **`profile_answers`** — future questionnaire authority; owner-only
+5. **`profile_photos`** — owner metadata; peers use `discoverable_profile_photos`
+6. **`user_app_state`** — onboarding flags; owner-only
+7. **`saved_profiles` / `passed_profiles`** — private actor-only
+8. **`interests` / `open_to_chat_requests`** — participants read; restricted writes
+9. **`connections`** — participants select; no client writes
+10. **`user_blocks`** — blocker-only
+11. **`character_signals`** — positive-only; giver create; receiver approve/decline
 
-**Columns:** `gender_identity`, `interested_in[]`, age range, `max_distance_miles`, `discovery_enabled`, `open_to_chat_available`.
-
-**Access:** Owner-only. Check constraints enforce age (18–120) and distance (1–500) ranges.
-
-### 4. `profile_answers`
-
-**Purpose:** Compatibility, values, lifestyle, and alignment answers without one column per question.
-
-**Columns:** `question_key` (stable snake_case id), `answer` (jsonb), `importance_level` (1–5), `is_non_negotiable`, `visibility`.
-
-**Constraint:** One current answer per `(user_id, question_key)`.
-
-**Access:** Owner-only direct access. Future matching should use trusted server/SQL logic, not broad client reads of others’ answers.
-
-### 5. `profile_photos`
-
-**Purpose:** Ordered photo metadata. Binary files live in Storage.
-
-**Columns:** `storage_path`, `display_order`, `is_primary`, `moderation_status`.
-
-**Constraints:** Unique display order per user; at most one primary photo per user.
-
-**Access:** Owners manage their rows. Authenticated users may read metadata for active+discoverable profiles.
-
-### 6. `user_app_state`
-
-**Purpose:** Small cross-device product flags — not a JSON dumping ground.
-
-**Columns:** `onboarding_step`, `onboarding_completed`, `open_to_chat_education_seen`.
-
-**Access:** Owner-only.
-
-### 7. `saved_profiles`
-
-**Purpose:** Private Save for Later.
-
-**Rules:** Unique `(saver_id, saved_id)`; no self-save; only the saver can read/insert/delete. The saved person cannot see who saved them.
-
-### 8. `passed_profiles`
-
-**Purpose:** Private Not for Me.
-
-**Rules:** Unique pair; no self-pass; only the passer can access. The passed person is never notified via this table.
-
-### 9. `interests`
-
-**Purpose:** Persist Interested actions for future mutual behavior.
-
-**Rules:** No self-interest; unique sender→recipient; both participants may read; sender creates pending; sender may withdraw pending → `withdrawn`. Broader status transitions stay for trusted logic later.
-
-### 10. `open_to_chat_requests`
-
-**Purpose:** Open to Chat V2 requests with optional note (max 200 chars).
-
-**Statuses:** `pending`, `accepted`, `declined`, `expired`.
-
-**Rules:** No self-request; one row per sender→recipient; participants may read; sender may insert pending. No authenticated UPDATE policy — accept/decline/expire via trusted functions in a later PR. No read receipts, seen, or ignored status.
-
-### 11. `connections`
-
-**Purpose:** Real connection created by mutual interest or accepted Open to Chat.
-
-**Rules:** Ordered pair (`user_a_id < user_b_id`); one connection per unordered pair; no self-connection; participants may SELECT only. No client insert/update/delete.
-
-**Messaging later:** Threads should reference `connections.id` as the relationship anchor.
-
-### 12. `user_blocks`
-
-**Purpose:** Basic safety foundation for filtering.
-
-**Rules:** Unique blocker→blocked; no self-block; only the blocker can manage/read. Not a full moderation system.
-
-### 13. `character_signals`
-
-**Purpose:** Positive-only Character Signals recognition records.
-
-**Columns:** `giver_id`, `receiver_id`, `signal_key`, optional interaction type/context, `status` (`pending`/`approved`/`declined`), timestamps.
-
-**Rules:** No self-signal; giver creates pending; receiver approves or declines; public profile display later shows only approved positives. No negative public reviews.
+Untouched: `compatibility_answers`, `waitlist`, `feedback`.
 
 ---
 
 ## Enums
 
-| Enum | Values |
-|------|--------|
-| `profile_status` | `draft`, `active`, `paused`, `hidden`, `deactivated` |
-| `answer_visibility` | `private`, `shared_with_matches`, `public_summary` |
-| `photo_moderation_status` | `pending`, `approved`, `rejected` |
-| `interest_status` | `pending`, `mutual`, `withdrawn` |
-| `open_to_chat_status` | `pending`, `accepted`, `declined`, `expired` |
-| `connection_source` | `mutual_interest`, `open_to_chat` |
-| `connection_status` | `active`, `ended` |
-| `character_signal_status` | `pending`, `approved`, `declined` |
-| `character_signal_interaction` | `in_app`, `in_person` |
+`profile_status`, `answer_visibility`, `photo_moderation_status`, `interest_status`, `open_to_chat_status`, `connection_source`, `connection_status`, `character_signal_status`, `character_signal_interaction`
 
 ---
 
-## Relationships and constraints (summary)
+## Protected system information
 
-- All user FKs reference `auth.users(id)` with `ON DELETE CASCADE`.
-- One-to-one owner tables: `profiles`, `profile_private_details`, `profile_preferences`, `user_app_state`.
-- Unique relationship pairs prevent duplicate saves, passes, interests, Open to Chat requests, blocks, and connections.
-- Self-actions blocked with CHECK constraints.
-- Open to Chat note length ≤ 200.
-- Preference age/distance ranges enforced in CHECK constraints.
-- Reusable `set_updated_at()` trigger maintains `updated_at` on mutable tables.
+Triggers prevent ordinary authenticated clients from changing:
 
----
+- Ownership / participant ids (`id`, `user_id`, sender/recipient, giver/receiver, connection pair)
+- Administrative `profiles.status`
+- Completion timestamps except a one-time null→set stamp
+- `profile_photos.moderation_status`
+- Open to Chat / interest / connection protected status fields outside allowed transitions
+- `created_at` immutability
 
-## RLS policy summary
-
-| Table | SELECT | INSERT | UPDATE | DELETE |
-|-------|--------|--------|--------|--------|
-| `profiles` | Owner; peers if active+discoverable | Owner | Owner | — |
-| `profile_private_details` | Owner | Owner | Owner | — |
-| `profile_preferences` | Owner | Owner | Owner | — |
-| `profile_answers` | Owner | Owner | Owner | Owner |
-| `profile_photos` | Owner; peers if owner active+discoverable | Owner | Owner | Owner |
-| `user_app_state` | Owner | Owner | Owner | — |
-| `saved_profiles` | Saver only | Saver | — | Saver |
-| `passed_profiles` | Passer only | Passer | — | Passer |
-| `interests` | Sender or recipient | Sender (pending) | Sender withdraw only | — |
-| `open_to_chat_requests` | Sender or recipient | Sender (pending) | — (trusted fn later) | — |
-| `connections` | Participants | — | — | — |
-| `user_blocks` | Blocker | Blocker | — | Blocker |
-| `character_signals` | Giver or receiver | Giver (pending) | Receiver approve/decline | — |
-
-Anonymous users cannot browse dating profiles or media.
+Users may edit intentional profile presentation fields and preferences that belong to them (`OWNER_EDITABLE_PROFILE_COLUMNS` in `lib/data-model-rules.ts`). Connection inserts require trusted SQL (`forge.allow_system_writes = on`).
 
 ---
 
-## Storage
+## New-account reliability
 
-**Bucket:** `profile-photos` (private, 5MB, jpeg/png/webp/gif)
+1. Signup trigger `handle_new_user` calls `ensure_foundational_user_records`.
+2. That function idempotently inserts `profiles`, `profile_private_details`, `profile_preferences`, `user_app_state`.
+3. Failures during signup are **logged as warnings** (auth must not abort) and repaired later.
+4. Server data layer calls `ensureFoundationalRecords()` → RPC `ensure_foundational_user_records` before profile reads/writes. Missing rows are repaired and logged; incomplete repair returns an error (not silently ignored).
+5. Migration backfills existing `auth.users` idempotently.
 
-**Path convention:** `{user_id}/{photo_id-or-filename}`
-
-**Policies:**
-
-- Authenticated users upload/update/delete only inside their own folder.
-- Owners can read their own files.
-- Authenticated users may read files whose folder user has an active+discoverable profile.
-- Anonymous users cannot enumerate or retrieve dating-profile media.
-- Prefer signed URLs when wiring the UI (next persistence PR). Legacy `getPublicUrl` on the V1 profile form is unchanged in this PR and will need signed URLs after the private-bucket migration is applied.
+New profiles are never auto-discoverable.
 
 ---
 
-## New-user trigger
+## Storage / profile photos approach
 
-`handle_new_user` runs `AFTER INSERT ON auth.users` (security definer) and inserts minimum rows into:
+**Decision: keep the existing `profile-photos` bucket PUBLIC for this PR.**
 
-1. `profiles`
-2. `profile_private_details`
-3. `profile_preferences`
-4. `user_app_state`
+Why: the live Profile edit/preview flow uploads with `getPublicUrl()` (`app/profile/edit/ProfileForm.tsx`, `components/ProfilePreviewCard.tsx`). Making the bucket private now would break current photos, previews, and uploads.
 
-Behavior:
+Owner-scoped upload/update/delete policies remain. Private-bucket + signed-URL retrieval is deferred to the profile-persistence PR.
 
-- Nullable fields remain null until onboarding supplies them.
-- `is_discoverable` defaults to `false`.
-- Errors are caught and logged as warnings so signup never fails.
-- Existing auth users are backfilled idempotently by the migration.
+Path convention remains `{user_id}/{filename}`.
 
 ---
 
-## Onboarding answers
+## RLS summary
 
-Today’s live onboarding still writes `compatibility_answers` with keys:
-
-- `relationship_intention`
-- `core_values`
-
-Foundation path for new questionnaire data:
-
-- Store under `profile_answers.question_key` (same stable keys).
-- Put the value in `answer` jsonb.
-- Optionally set `importance_level`, `is_non_negotiable`, and `visibility`.
-
-`user_app_state` tracks step + completion; `profiles.onboarding_completed_at` is stamped when completion flips to true via the data-access helper.
+| Table / view | Peer / other access |
+|--------------|---------------------|
+| `profiles` | Owner only |
+| `discoverable_profiles` | Authenticated select of public columns for active+discoverable |
+| Private / prefs / answers / app state | Owner only |
+| `profile_photos` | Owner only |
+| `discoverable_profile_photos` | Authenticated select of approved metadata |
+| Saved / passed / blocks | Actor only |
+| Interests / O2C / signals | Participants; restricted writes |
+| Connections | Participants select only |
+| Anonymous | No dating profile browsing |
 
 ---
 
 ## Profile completion
 
-Source of truth: `lib/profile-completion.ts`
+Source: `lib/profile-completion.ts`
 
-Counted sections:
-
-1. Photos
-2. About Me (`short_bio`)
-3. Profile details (majority of lifestyle fields)
-4. Relationship Alignment (answers present)
-5. Important Alignment Factors (answers present)
-6. Things I Enjoy
-7. Favorite Music
-
-**Excluded while Coming Soon:** Voice Introduction, Video Introduction — they must not reduce completion.
-
-Percentage is computed in TypeScript from section completeness, not stored as a stale column.
-
----
-
-## Future matching (`profile_answers`)
-
-Matching should:
-
-1. Read the current user’s preferences and private DOB/location as needed server-side.
-2. Compare against candidates’ public profiles + answers via trusted functions/server code.
-3. Respect `importance_level` / `is_non_negotiable` / visibility.
-4. Never expose private answers or DOB to other clients.
-
-This PR does not implement scoring.
-
----
-
-## Future messaging (`connections`)
-
-Messaging should attach to an `connections` row between two participants. Client code must not invent connections; creation belongs to trusted mutual-interest / Open to Chat acceptance logic.
+Counted: photos, about, details, alignment, factors, enjoy, music.  
+**Excluded (Coming Soon):** Voice, Video.
 
 ---
 
 ## Intentionally deferred
 
-- Matching / Relationship Alignment calculations
-- Messaging and notifications
-- Open to Chat accept/decline SQL functions
-- Voice Introduction / Video Introduction
-- Spotify
-- Subscriptions / Stripe
-- Full moderation beyond photo status + blocks
-- Wiring Profile V2, onboarding, and discovery UI to these tables
+- Wiring UI to Supabase
+- Matching, messaging, notifications
+- Private photo bucket + signed URLs
+- Voice / Video / Spotify / Stripe
+- Dual-write elimination (see transition plan above)
 
 ---
 
 ## Data access layer
 
-Server helpers in `lib/data/` (authenticated user only):
+`lib/data/` — authenticated user only; calls `ensureFoundationalRecords` first:
 
-- `getCurrentUserProfile`
-- `getCurrentUserPrivateDetails`
-- `getCurrentUserPreferences`
-- `getCurrentUserProfileAnswers`
-- `getCurrentUserProfilePhotos`
-- `upsertCurrentUserProfile`
-- `updateOnboardingProgress`
-- `hasCompletedOnboarding`
-- `getCurrentUserAppState`
-
-No service-role key. No arbitrary user id for “current user” operations.
+- `ensureFoundationalRecords`
+- `getCurrentUserProfile` / PrivateDetails / Preferences / ProfileAnswers / ProfilePhotos / AppState
+- `upsertCurrentUserProfile` (editable columns only)
+- `updateOnboardingProgress` / `hasCompletedOnboarding`

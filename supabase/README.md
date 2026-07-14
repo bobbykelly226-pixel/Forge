@@ -10,6 +10,10 @@ supabase/
   README.md
 ```
 
+## Storage notes
+
+The `profile-photos` bucket remains **public** for V1 ProfileForm compatibility (`getPublicUrl`). Private-bucket migration is deferred until signed URLs are implemented in the profile-persistence PR.
+
 ## Applying migrations
 
 Migrations are applied manually in the linked Supabase project until CI/CD is wired.
@@ -24,6 +28,8 @@ npm run supabase:types
 ```
 
 `supabase:types` requires the Supabase CLI and a linked project (`npx supabase link`). It does not hardcode a project ID.
+
+Until types are regenerated from an applied schema, `lib/supabase/database.types.ts` is a **temporary schema-aligned hand-authored file**, not CLI output.
 
 ## Existing tables outside this app model
 

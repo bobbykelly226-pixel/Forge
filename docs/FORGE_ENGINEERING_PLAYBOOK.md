@@ -42,7 +42,9 @@ Forge exists to help people build meaningful, lasting relationships through comp
 - GitHub
 - Cursor
 
-Do not introduce a second database, ORM (Prisma/Drizzle), or custom auth system. Use the existing Supabase clients in `lib/supabase/`. See `docs/FORGE_DATA_MODEL.md` for the application schema.
+Do not introduce a second database, ORM (Prisma/Drizzle), or custom auth system. Use the existing Supabase clients in `lib/supabase/`. See `docs/FORGE_DATA_MODEL.md` for the application schema, privacy allow-list, and compatibility-answer transition plan.
+
+**Profile photos:** the live V1 upload/preview path still uses the public `profile-photos` bucket and `getPublicUrl()`. Do not flip the bucket to private until signed-URL retrieval is wired.
 
 ---
 
