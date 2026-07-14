@@ -8,6 +8,8 @@ import {
   PROFILE_PHOTO_REVALIDATE_PATHS,
 } from '../profile-photo';
 import {
+  AUTH_RESEND_COOLDOWN_MS,
+  interpretSignUpResult,
   mapAuthErrorMessage,
   sanitizeInternalPath,
 } from '../auth/messages';
@@ -70,7 +72,34 @@ describe('auth confirmation helpers', () => {
     assert.match(mapAuthErrorMessage('otp expired'), /invalid or has expired/i);
     assert.match(mapAuthErrorMessage('Email not confirmed'), /confirm your email/i);
     assert.match(mapAuthErrorMessage('Invalid login credentials'), /confirm your email/i);
+    assert.match(mapAuthErrorMessage('email rate limit exceeded'), /too many confirmation emails/i);
     assert.equal(mapAuthErrorMessage('secret_token_value_xyz').includes('secret_token_value_xyz'), false);
+  });
+
+  it('does not treat already-registered ambiguous signups as confirmation sent', () => {
+    const result = interpretSignUpResult({
+      user: { id: 'abc', identities: [] },
+      session: null,
+    });
+    assert.equal(result.kind, 'already_registered');
+  });
+
+  it('treats a fresh identity signup as confirmation_sent', () => {
+    const result = interpretSignUpResult({
+      user: { id: 'abc', identities: [{ provider: 'email' }], confirmation_sent_at: '2026-07-14' },
+      session: null,
+    });
+    assert.equal(result.kind, 'confirmation_sent');
+  });
+
+  it('surfaces signup rate-limit errors instead of success', () => {
+    const result = interpretSignUpResult({
+      errorMessage: 'email rate limit exceeded',
+      user: null,
+      session: null,
+    });
+    assert.equal(result.kind, 'error');
+    assert.match(result.message, /too many confirmation emails/i);
   });
 
   it('sanitizes confirmation redirect targets', () => {
@@ -84,6 +113,7 @@ describe('auth confirmation helpers', () => {
     const emailRedirectTo = `${origin}/auth/callback?next=/onboarding`;
     assert.equal(emailRedirectTo.includes('/auth/callback'), true);
     assert.equal(emailRedirectTo.includes('next=/onboarding'), true);
+    assert.ok(AUTH_RESEND_COOLDOWN_MS >= 30_000);
   });
 
   it('documents confirmed-user login and new-user onboarding redirect', () => {
