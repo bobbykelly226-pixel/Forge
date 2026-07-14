@@ -36,11 +36,13 @@ Forge exists to help people build meaningful, lasting relationships through comp
 - Next.js App Router
 - TypeScript
 - Tailwind CSS
-- Supabase
+- Supabase (Auth, PostgreSQL, Storage) — authoritative backend persistence
 - Resend
 - Vercel
 - GitHub
 - Cursor
+
+Do not introduce a second database, ORM (Prisma/Drizzle), or custom auth system. Use the existing Supabase clients in `lib/supabase/`. See `docs/FORGE_DATA_MODEL.md` for the application schema.
 
 ---
 
@@ -114,8 +116,8 @@ Forge exists to help people build meaningful, lasting relationships through comp
 
 ---
 
-## 11. Next Sprint
+## 11. Backend direction
 
-Sprint 2 is authentication foundation.
+Auth, V1 profiles, and onboarding persistence are in place. The Forge Backend Foundation migration establishes the production data model, RLS, private photo storage, and a server data-access layer.
 
-Do not start profiles, matching, or messaging until auth is stable.
+Next persistence work should wire existing product surfaces (onboarding, Profile V2, discovery actions, connections, character signals) to these tables — without redesigning the product or adding matching/messaging yet.
