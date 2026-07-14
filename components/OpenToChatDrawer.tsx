@@ -70,14 +70,6 @@ export default function OpenToChatDrawer({
 
   const [sending, setSending] = useState(false);
 
-  const resetForOpen = useCallback(() => {
-    setStep(initialStep);
-    setNoteDraft('');
-    setSentNote(null);
-    setLimitReached(false);
-    setSending(false);
-  }, [initialStep]);
-
   const handleKeyDown = useCallback(
     (event: ReactKeyboardEvent<HTMLDivElement>) => {
       if (event.key === 'Escape') {
@@ -114,8 +106,6 @@ export default function OpenToChatDrawer({
   useEffect(() => {
     if (!open) return;
 
-    resetForOpen();
-
     const previousOverflow = document.body.style.overflow;
     document.body.style.overflow = 'hidden';
 
@@ -137,7 +127,7 @@ export default function OpenToChatDrawer({
       window.clearTimeout(focusTimer);
       document.removeEventListener('keydown', onDocumentKeyDown);
     };
-  }, [open, onClose, resetForOpen, initialStep]);
+  }, [open, onClose, initialStep]);
 
   useEffect(() => {
     if (!open) return;

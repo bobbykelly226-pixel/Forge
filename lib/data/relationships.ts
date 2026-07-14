@@ -131,7 +131,7 @@ export async function sendOpenToChat(
 
   const { data, error } = await supabase.rpc('send_open_to_chat', {
     p_recipient_id: profileId,
-    p_note: note,
+    p_note: note ?? undefined,
   });
   return rpcResult(data, error, 'Could not send Open to Chat. Please try again.');
 }

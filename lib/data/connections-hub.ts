@@ -138,7 +138,9 @@ async function loadPublicProfilesByIds(
     .in('id', unique);
 
   for (const row of data ?? []) {
-    map.set(row.id, row as PublicDiscoveryProfile);
+    if (row.id) {
+      map.set(row.id, row as PublicDiscoveryProfile);
+    }
   }
   return map;
 }

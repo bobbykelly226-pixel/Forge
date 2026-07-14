@@ -4,7 +4,6 @@ import {
   createContext,
   useCallback,
   useContext,
-  useEffect,
   useMemo,
   useRef,
   useState,
@@ -81,14 +80,6 @@ export function DiscoveryActionsProvider({
   const [pending, setPending] = useState(false);
   const openToChatTriggers = useRef<Record<string, HTMLButtonElement | null>>({});
   const statusTimerRef = useRef<number | null>(null);
-
-  useEffect(() => {
-    setByProfileId(initialActionState);
-  }, [initialActionState]);
-
-  useEffect(() => {
-    setEducationSeen(initialEducationSeen);
-  }, [initialEducationSeen]);
 
   const getState = useCallback(
     (profileId: string): DiscoveryProfileActionState =>
@@ -431,6 +422,11 @@ export function DiscoveryActionsProvider({
       />
 
       <OpenToChatDrawer
+        key={
+          openToChatPrompt
+            ? `${openToChatPrompt.profileId}-${openToChatPrompt.initialStep}-${openToChatPrompt.educateOnly ? 'info' : 'send'}`
+            : 'closed'
+        }
         open={openToChatPrompt !== null}
         onClose={closeOpenToChatDrawer}
         onSent={handleOpenToChatSent}

@@ -36,6 +36,7 @@ export type DiscoveryFeedCardModel = {
   alignmentLabel: string;
   confidence: string;
   hasImportantFactors: boolean;
+  importantFactorsSummary?: string;
   aboutPreview: string;
   characterSignals: string[];
   portraitGradient: string;

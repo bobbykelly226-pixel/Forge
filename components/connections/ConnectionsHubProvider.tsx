@@ -4,7 +4,6 @@ import {
   createContext,
   useCallback,
   useContext,
-  useEffect,
   useMemo,
   useRef,
   useState,
@@ -213,20 +212,6 @@ export function ConnectionsHubProvider({
   const acceptTriggerRef = useRef<HTMLButtonElement | null>(null);
   const savedOpenToChatTriggers = useRef<Record<string, HTMLButtonElement | null>>({});
   const statusTimerRef = useRef<number | null>(null);
-
-  useEffect(() => {
-    setOpenToChat(initialData.openToChat);
-    setInterestReceived(initialData.interestReceived);
-    setMutual(initialData.mutual);
-    setSaved(initialData.saved);
-    setSent(initialData.sent);
-    setEducationSeen(initialData.educationSeen);
-    setOpenToChatStatus(buildInitialOtcStatus(initialData.openToChat));
-    setInterestStatus({});
-    setSavedRemoved({});
-    setSentWithdrawn({});
-    setSavedActions(buildInitialSavedActions(initialData.sent));
-  }, [initialData]);
 
   const announce = useCallback((text: string, detail?: string) => {
     if (statusTimerRef.current) window.clearTimeout(statusTimerRef.current);
@@ -868,6 +853,11 @@ export function ConnectionsHubProvider({
       />
 
       <OpenToChatDrawer
+        key={
+          openToChatPrompt
+            ? `${openToChatPrompt.profileId}-${openToChatPrompt.initialStep}-${openToChatPrompt.educateOnly ? 'info' : 'send'}`
+            : 'closed'
+        }
         open={openToChatPrompt !== null}
         onClose={closeOpenToChatDrawer}
         onSent={handleOpenToChatSent}

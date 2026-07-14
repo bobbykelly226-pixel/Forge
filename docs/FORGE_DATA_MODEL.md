@@ -2,9 +2,9 @@
 
 Authoritative documentation for the Forge Backend Foundation persistence layer.
 
-**Remote migration status:** Applied to the linked Forge Supabase project via `supabase migration up --linked`. Remote migration history records `20260714000000` (`forge_backend_foundation`) and `20260714060000` (`migrate_compatibility_to_profile_answers`).
+**Remote migration status:** Applied to the linked Forge Supabase project via `supabase migration up --linked`. Remote migration history records `20260714000000` (`forge_backend_foundation`), `20260714060000` (`migrate_compatibility_to_profile_answers`), and `20260714180000` (`discovery_connections_persistence`).
 
-**Types status:** `lib/supabase/database.types.ts` was **generated from the linked, applied Forge Supabase schema** via `npx supabase gen types typescript --linked --schema public` after migration `20260714060000` was recorded remotely.
+**Types status:** `lib/supabase/database.types.ts` was **generated from the linked, applied Forge Supabase schema** via `npx supabase gen types typescript --linked --schema public` after migration `20260714180000` was recorded remotely.
 
 ---
 
@@ -195,11 +195,29 @@ Counted: photos, about, details, alignment, factors, enjoy, music.
 
 ## Intentionally deferred
 
-- Wiring UI to Supabase
-- Matching, messaging, notifications
+- Matching scores / Relationship Alignment calculations
+- Messaging / message threads / notifications
 - Private photo bucket + signed URLs
 - Voice / Video / Spotify / Stripe
-- Dual-write elimination (see transition plan above)
+- Numeric daily Open to Chat send limit (counting infrastructure exists; product number not chosen)
+- Dual-write elimination cleanup for `compatibility_answers`
+
+---
+
+## Discovery & relationships (PR persistence layer)
+
+Trusted RPCs (security definer):
+
+- `set_my_discovery_visibility` — Show Me in Discovery (activates `status=active` when enabling)
+- `list_eligible_discovery_profiles` / `get_eligible_discovery_profile`
+- `save_profile_for_later` / `remove_saved_profile` / `pass_on_profile`
+- `send_interest` / `withdraw_interest` (mutual → `forge_ensure_connection`)
+- `send_open_to_chat` / `respond_open_to_chat` (`accept` | `defer` | `decline`)
+- `forge_users_blocked` / `count_open_to_chat_sent_today` / `mark_open_to_chat_education_seen`
+
+`open_to_chat_status` includes `deferred` for Not Right Now (private to recipient).
+
+App config: `lib/discovery/config.ts` (`OPEN_TO_CHAT_DAILY_LIMIT = null` until product decides).
 
 ---
 
