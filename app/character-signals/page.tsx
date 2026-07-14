@@ -15,9 +15,9 @@ const sans = Manrope({
 });
 
 export const metadata = {
-  title: 'Character Signals Prototype | Forge',
+  title: 'Character Signals | Forge',
   description:
-    'Design prototype for Forge Character Signals — positive recognitions from meaningful interactions. Layout only — no reviews, ratings, or persistent data.',
+    'Lightweight profile management for Forge Character Signals — choose which positive qualities appear on your Discovery Profile.',
   robots: {
     index: false,
     follow: false,

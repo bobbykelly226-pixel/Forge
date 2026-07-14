@@ -101,6 +101,8 @@ export type UserSignalInstance = {
   signalId: CharacterSignalId;
   confirmationCount: number;
   status: SignalDisplayStatus;
+  /** Optional attribution for a new recognition awaiting a decision */
+  recognizedBy?: string;
 };
 
 export type RecognitionHistoryEntry = {
@@ -166,6 +168,7 @@ export const INITIAL_USER_SIGNALS: UserSignalInstance[] = [
     signalId: 'clear_intentions',
     confirmationCount: 3,
     status: 'pending',
+    recognizedBy: 'Jessica',
   },
   {
     id: 'user-follow-through',
@@ -221,14 +224,3 @@ export const RECOGNITION_RECIPIENTS: RecognitionRecipient[] = [
     contextLabel: 'In-app conversation',
   },
 ];
-
-export function growingProgressCopy(count: number): string {
-  const remaining = Math.max(PUBLIC_DISPLAY_THRESHOLD - count, 0);
-  if (remaining <= 0) {
-    return 'Ready for your review before public display.';
-  }
-  if (remaining === 1) {
-    return 'One more independent confirmation before this signal becomes eligible for public display.';
-  }
-  return `${remaining} more independent confirmations before this signal becomes eligible for public display.`;
-}
