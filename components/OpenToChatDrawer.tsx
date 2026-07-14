@@ -8,11 +8,11 @@ import {
   useState,
   type KeyboardEvent as ReactKeyboardEvent,
 } from 'react';
-import { ArrowLeft, Check, MessageCircle, Pencil, Send } from 'lucide-react';
+import { Check, MessageCircle, Send } from 'lucide-react';
 
 import { OPEN_TO_CHAT_NOTE_MAX_LENGTH } from '@/lib/discovery-actions-types';
 
-export type OpenToChatDrawerStep = 'educate' | 'note' | 'review' | 'success';
+export type OpenToChatDrawerStep = 'educate' | 'note' | 'success';
 
 type OpenToChatDrawerProps = {
   open: boolean;
@@ -65,13 +65,13 @@ export default function OpenToChatDrawer({
 
   const [step, setStep] = useState<OpenToChatDrawerStep>(initialStep);
   const [noteDraft, setNoteDraft] = useState('');
-  const [reviewedNote, setReviewedNote] = useState<string | null>(null);
+  const [sentNote, setSentNote] = useState<string | null>(null);
   const [limitReached, setLimitReached] = useState(false);
 
   const resetForOpen = useCallback(() => {
     setStep(initialStep);
     setNoteDraft('');
-    setReviewedNote(null);
+    setSentNote(null);
     setLimitReached(false);
   }, [initialStep]);
 
@@ -166,30 +166,18 @@ export default function OpenToChatDrawer({
     goToNote();
   };
 
-  const prepareReview = (raw: string) => {
-    const trimmed = trimNote(raw);
-    setReviewedNote(trimmed.length > 0 ? trimmed : null);
-    setStep('review');
-  };
-
-  const handleReviewRequest = () => prepareReview(noteDraft);
-
-  const handleSkipNote = () => {
-    setNoteDraft('');
-    setReviewedNote(null);
-    setStep('review');
-  };
-
-  const handleEditNote = () => {
-    if (reviewedNote) setNoteDraft(reviewedNote);
-    setStep('note');
-  };
-
-  const handleSend = () => {
+  const sendImmediately = (raw: string) => {
     // Prototype only — no messaging, notifications, or storage.
-    onSent?.(reviewedNote);
+    const trimmed = trimNote(raw);
+    const note = trimmed.length > 0 ? trimmed : null;
+    setSentNote(note);
+    onSent?.(note);
     setStep('success');
   };
+
+  const handleSendRequest = () => sendImmediately(noteDraft);
+
+  const handleContinueWithoutNote = () => sendImmediately('');
 
   const handleNoteChange = (value: string) => {
     const next = value.slice(0, OPEN_TO_CHAT_NOTE_MAX_LENGTH);
@@ -201,11 +189,9 @@ export default function OpenToChatDrawer({
   const title =
     step === 'success'
       ? 'Open to Chat sent'
-      : step === 'review'
-        ? `Send Open to Chat to ${profileName}?`
-        : step === 'note'
-          ? 'Add a quick note?'
-          : 'Before you begin...';
+      : step === 'note'
+        ? 'Add a quick note?'
+        : 'Before you begin...';
 
   return (
     <div
@@ -280,7 +266,11 @@ export default function OpenToChatDrawer({
                 A short introduction can make your request feel more personal.
               </p>
 
-              <label id={noteLabelId} htmlFor="open-to-chat-note" className="mt-6 block text-sm font-semibold text-[#0B2D5C]">
+              <label
+                id={noteLabelId}
+                htmlFor="open-to-chat-note"
+                className="mt-6 block text-sm font-semibold text-[#0B2D5C]"
+              >
                 Your note
               </label>
               <textarea
@@ -323,43 +313,13 @@ export default function OpenToChatDrawer({
             </>
           )}
 
-          {step === 'review' && (
-            <>
-              <p id={descriptionId} className="text-[15px] leading-relaxed text-[#3D4654]">
-                {profileName} can choose whether to open the conversation.
-              </p>
-
-              <div className="mt-6 rounded-[1.5rem] border border-[#0B2D5C]/08 bg-white px-5 py-5">
-                <div className="inline-flex items-center gap-2 text-sm font-semibold text-[#0B2D5C]">
-                  <Send className="h-4 w-4" strokeWidth={1.75} aria-hidden="true" />
-                  Open to Chat request
-                </div>
-
-                {reviewedNote ? (
-                  <div className="mt-4">
-                    <p className="text-sm font-semibold text-[#0B2D5C]">Your note</p>
-                    <blockquote className="mt-2 whitespace-pre-wrap rounded-2xl border border-[#0B2D5C]/08 bg-[#FBF9F6] px-4 py-3.5 text-[15px] leading-relaxed text-[#3D4654]">
-                      “{reviewedNote}”
-                    </blockquote>
-                  </div>
-                ) : (
-                  <p className="mt-4 text-[15px] leading-relaxed text-[#5A6575]">No note added</p>
-                )}
-              </div>
-
-              <p className="mt-6 text-center text-xs text-[#8A93A0]">
-                Prototype only — no messaging, notifications, or request storage.
-              </p>
-            </>
-          )}
-
           {step === 'success' && (
             <>
               <div className="inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-[#0B2D5C] text-white">
                 <Check className="h-5 w-5" strokeWidth={2} aria-hidden="true" />
               </div>
               <p id={descriptionId} className="mt-4 text-[15px] leading-relaxed text-[#3D4654]">
-                {reviewedNote
+                {sentNote
                   ? 'Your note was included with the request.'
                   : 'Your request was sent without a note.'}
               </p>
@@ -402,36 +362,7 @@ export default function OpenToChatDrawer({
               <button
                 ref={primaryActionRef}
                 type="button"
-                onClick={handleReviewRequest}
-                className="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-[#0B2D5C] px-8 py-4 text-lg font-semibold text-white transition hover:bg-[#0A2540]"
-              >
-                <Pencil className="h-4 w-4" strokeWidth={1.75} aria-hidden="true" />
-                Review Your Introduction
-              </button>
-              <button
-                type="button"
-                onClick={handleSkipNote}
-                className="mt-3 inline-flex w-full items-center justify-center gap-2 rounded-2xl border border-[#0B2D5C]/20 bg-white px-8 py-3.5 text-base font-semibold text-[#0B2D5C] transition hover:bg-[#F8F6F2]"
-              >
-                <MessageCircle className="h-4 w-4" strokeWidth={1.75} aria-hidden="true" />
-                Continue Without a Note
-              </button>
-              <button
-                type="button"
-                onClick={onClose}
-                className="mt-2 inline-flex w-full items-center justify-center rounded-2xl px-8 py-3 text-sm font-semibold text-[#6B7585] transition hover:text-[#0B2D5C]"
-              >
-                Cancel
-              </button>
-            </>
-          )}
-
-          {step === 'review' && (
-            <>
-              <button
-                ref={primaryActionRef}
-                type="button"
-                onClick={handleSend}
+                onClick={handleSendRequest}
                 className="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-[#D62828] px-8 py-4 text-lg font-semibold text-white shadow-[0_10px_28px_rgba(214,40,40,0.22)] transition hover:bg-[#A61F1F]"
               >
                 <Send className="h-4 w-4" strokeWidth={1.75} aria-hidden="true" />
@@ -439,11 +370,11 @@ export default function OpenToChatDrawer({
               </button>
               <button
                 type="button"
-                onClick={handleEditNote}
+                onClick={handleContinueWithoutNote}
                 className="mt-3 inline-flex w-full items-center justify-center gap-2 rounded-2xl border border-[#0B2D5C]/20 bg-white px-8 py-3.5 text-base font-semibold text-[#0B2D5C] transition hover:bg-[#F8F6F2]"
               >
-                <ArrowLeft className="h-4 w-4" strokeWidth={1.75} aria-hidden="true" />
-                Edit Note
+                <MessageCircle className="h-4 w-4" strokeWidth={1.75} aria-hidden="true" />
+                Continue Without a Note
               </button>
               <button
                 type="button"
