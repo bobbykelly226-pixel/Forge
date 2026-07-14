@@ -114,8 +114,8 @@ export default function DiscoveryActionTiles({
     <div
       className={
         layout === 'feed-grid'
-          ? 'col-span-1 flex items-center justify-between gap-3 rounded-2xl border border-[#0B2D5C]/08 bg-[#F8F6F2] px-4 py-3 sm:col-span-2'
-          : 'flex items-center justify-between gap-3 rounded-2xl border border-[#0B2D5C]/08 bg-[#F8F6F2] px-4 py-3'
+          ? 'col-span-1 flex items-center justify-between gap-3 rounded-2xl border border-[#0B2D5C]/08 bg-[#EEF2F7] px-4 py-3 sm:col-span-2'
+          : 'flex items-center justify-between gap-3 rounded-2xl border border-[#0B2D5C]/08 bg-[#EEF2F7] px-4 py-3'
       }
     >
       <p className="text-xs leading-relaxed text-[#5A6575] sm:text-sm">

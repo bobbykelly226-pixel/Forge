@@ -241,7 +241,7 @@ export default function ProfileWorkspace({
     <div className="space-y-5">
       {unmappedEntries.length > 0 ? (
         <div
-          className="rounded-[1.5rem] border border-[#0B2D5C]/15 bg-[#F8F6F2] px-5 py-4 text-sm text-[#444444]"
+          className="rounded-[1.5rem] border border-[#0B2D5C]/15 bg-[#EEF2F7] px-5 py-4 text-sm text-[#444444]"
           role="status"
         >
           <p className="font-semibold text-[#0B2D5C] mb-1">Some earlier answers need a quick review</p>
@@ -292,7 +292,7 @@ export default function ProfileWorkspace({
                 <button
                   type="button"
                   onClick={() => openFromChecklist(item.id)}
-                  className="flex w-full items-center gap-3 rounded-2xl px-2 py-2 text-left text-sm text-[#0B2D5C] transition hover:bg-[#F8F6F2] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0B2D5C]"
+                  className="flex w-full items-center gap-3 rounded-2xl px-2 py-2 text-left text-sm text-[#0B2D5C] transition hover:bg-[#EEF2F7] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0B2D5C]"
                 >
                   <span
                     className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-xs font-bold ${
@@ -357,7 +357,7 @@ export default function ProfileWorkspace({
                   <div className="flex flex-wrap items-center gap-2">
                     <h3 className="text-[15px] font-semibold text-[#0B2D5C]">{section.title}</h3>
                     {section.comingSoon ? (
-                      <span className="rounded-full border border-[#0B2D5C]/12 bg-[#F8F6F2] px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-[0.12em] text-[#5A6575]">
+                      <span className="rounded-full border border-[#0B2D5C]/12 bg-[#EEF2F7] px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-[0.12em] text-[#5A6575]">
                         Coming Soon
                       </span>
                     ) : null}
@@ -376,7 +376,7 @@ export default function ProfileWorkspace({
                   <button
                     type="button"
                     onClick={() => (isOpen ? cancelEdit(section.id) : openForEdit(section.id))}
-                    className="inline-flex shrink-0 items-center gap-1 rounded-2xl border border-[#0B2D5C]/15 bg-white px-3.5 py-2 text-sm font-semibold text-[#0B2D5C] transition hover:bg-[#F8F6F2]"
+                    className="inline-flex shrink-0 items-center gap-1 rounded-2xl border border-[#0B2D5C]/15 bg-white px-3.5 py-2 text-sm font-semibold text-[#0B2D5C] transition hover:bg-[#EEF2F7]"
                     aria-expanded={isOpen}
                   >
                     {isOpen ? 'Close' : 'Edit'}
@@ -687,7 +687,7 @@ function SectionEditor({
         <button
           type="submit"
           disabled={saving}
-          className="rounded-2xl bg-[#D62828] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#A61F1F] disabled:bg-gray-400"
+          className="rounded-2xl bg-[#0B2D5C] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#0A2540] disabled:bg-gray-400"
         >
           {saving ? 'Saving…' : 'Save section'}
         </button>

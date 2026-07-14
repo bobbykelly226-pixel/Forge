@@ -187,7 +187,7 @@ export default function ProfilePhotoGallery({
               type="button"
               aria-label="Previous photo"
               onClick={goPrev}
-              className="absolute left-2 top-1/2 z-[1] flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full bg-[#0B2D5C]/45 text-white shadow-sm backdrop-blur-sm transition hover:bg-[#0B2D5C]/6 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+              className="absolute left-2 top-1/2 z-[1] flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full border border-[#C5CCD6]/55 bg-[#0B2D5C]/45 text-white shadow-sm backdrop-blur-sm transition hover:bg-[#0B2D5C]/6 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
             >
               <ChevronLeft className="h-5 w-5" aria-hidden="true" />
             </button>
@@ -195,7 +195,7 @@ export default function ProfilePhotoGallery({
               type="button"
               aria-label="Next photo"
               onClick={goNext}
-              className="absolute right-2 top-1/2 z-[1] flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full bg-[#0B2D5C]/45 text-white shadow-sm backdrop-blur-sm transition hover:bg-[#0B2D5C]/6 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+              className="absolute right-2 top-1/2 z-[1] flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full border border-[#C5CCD6]/55 bg-[#0B2D5C]/45 text-white shadow-sm backdrop-blur-sm transition hover:bg-[#0B2D5C]/6 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
             >
               <ChevronRight className="h-5 w-5" aria-hidden="true" />
             </button>

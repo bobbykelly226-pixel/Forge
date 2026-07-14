@@ -227,7 +227,7 @@ export default function ProfilePhotoManager({
       </div>
 
       {photos.length === 0 ? (
-        <p className="rounded-2xl border border-dashed border-[#0B2D5C]/20 bg-[#F8F6F2] px-4 py-6 text-center text-sm text-[#5A6575]">
+        <p className="rounded-2xl border border-dashed border-[#0B2D5C]/20 bg-[#EEF2F7] px-4 py-6 text-center text-sm text-[#5A6575]">
           No photos yet. Add a clear recent photo to get started.
         </p>
       ) : (
@@ -337,7 +337,7 @@ export default function ProfilePhotoManager({
             setReplaceTargetId(null);
             fileInputRef.current?.click();
           }}
-          className="inline-flex w-full items-center justify-center gap-2 rounded-2xl border border-[#0B2D5C]/20 bg-white px-5 py-3.5 text-sm font-semibold text-[#0B2D5C] transition hover:bg-[#F8F6F2] disabled:opacity-60"
+          className="inline-flex w-full items-center justify-center gap-2 rounded-2xl border border-[#0B2D5C]/20 bg-white px-5 py-3.5 text-sm font-semibold text-[#0B2D5C] transition hover:bg-[#EEF2F7] disabled:opacity-60"
         >
           <Upload className="h-4 w-4" aria-hidden="true" />
           {busy ? 'Working…' : atLimit ? 'Photo limit reached' : 'Add photo'}
