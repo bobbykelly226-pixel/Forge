@@ -8,6 +8,8 @@ import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
+const RESEND_COOLDOWN_SECONDS = Math.ceil(AUTH_RESEND_COOLDOWN_MS / 1000);
+
 export default function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -20,21 +22,17 @@ export default function LoginForm() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isResending, setIsResending] = useState(false);
   const [isResetting, setIsResetting] = useState(false);
-  const [resendCooldownUntil, setResendCooldownUntil] = useState(0);
-  const [now, setNow] = useState(0);
+  const [resendCooldownSeconds, setResendCooldownSeconds] = useState(0);
 
   useEffect(() => {
-    setNow(Date.now());
-  }, []);
-
-  useEffect(() => {
-    if (!resendCooldownUntil) return;
-    const timer = window.setInterval(() => setNow(Date.now()), 1000);
-    return () => window.clearInterval(timer);
-  }, [resendCooldownUntil]);
-
-  const resendSecondsLeft =
-    now === 0 ? 0 : Math.max(0, Math.ceil((resendCooldownUntil - now) / 1000));
+    if (resendCoolSeconds <= 0) {
+      return;
+    }
+    const timer = window.setTimeout(() => {
+      setResendCoolSeconds((seconds) => Math.max(0, seconds - 1));
+    }, 1000);
+    return () => window.clearTimeout(timer);
+  }, [resendCoolSeconds]);
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -64,7 +62,7 @@ export default function LoginForm() {
   };
 
   const handleResend = async () => {
-    if (resendSecondsLeft > 0) return;
+    if (resendCoolSeconds > 0) return;
     setError(null);
     setMessage(null);
     setIsResending(true);
@@ -75,7 +73,7 @@ export default function LoginForm() {
         origin: window.location.origin,
       });
 
-      setResendCooldownUntil(Date.now() + AUTH_RESEND_COOLDOWN_MS);
+      setResendCoolSeconds(RESEND_COOLDOWN_SECONDS);
 
       if (!result.success) {
         setError(result.message);
@@ -183,13 +181,13 @@ export default function LoginForm() {
           <button
             type="button"
             onClick={() => void handleResend()}
-            disabled={isResending || !email || resendSecondsLeft > 0}
+            disabled={isResending || !email || resendCoolSeconds > 0}
             className="text-sm font-medium text-[#0B2D5C] underline-offset-2 hover:underline disabled:opacity-50"
           >
             {isResending
               ? 'Sending confirmation email...'
-              : resendSecondsLeft > 0
-                ? `Resend available in ${resendSecondsLeft}s`
+              : resendCoolSeconds > 0
+                ? `Resend available in ${resendCoolSeconds}s`
                 : 'Resend confirmation email'}
           </button>
           <button
