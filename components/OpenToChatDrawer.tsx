@@ -205,9 +205,7 @@ export default function OpenToChatDrawer({
         ? `Send Open to Chat to ${profileName}?`
         : step === 'note'
           ? 'Add a quick note?'
-          : showFirstTimeBanner
-            ? 'Your first Open to Chat'
-            : `Open to Chat with ${profileName}`;
+          : 'Before you begin...';
 
   return (
     <div
@@ -269,56 +267,11 @@ export default function OpenToChatDrawer({
 
         <div className="flex-1 overflow-y-auto overscroll-contain px-5 py-5 sm:px-6 sm:py-6">
           {step === 'educate' && (
-            <>
-              {showFirstTimeBanner ? (
-                <p id={descriptionId} className="text-[15px] leading-relaxed text-[#3D4654]">
-                  Here is how Open to Chat works. You will not need to review this explanation every
-                  time.
-                </p>
-              ) : (
-                <p id={descriptionId} className="text-[15px] leading-relaxed text-[#3D4654]">
-                  Reviewing how Open to Chat works. You can close this anytime without sending a
-                  request.
-                </p>
-              )}
-
-              <ul className="mt-6 space-y-3 text-[15px] leading-relaxed text-[#3D4654]">
-                <li className="rounded-[1.25rem] border border-[#0B2D5C]/06 bg-white/80 px-4 py-3.5">
-                  This is a low-pressure request to talk.
-                </li>
-                <li className="rounded-[1.25rem] border border-[#0B2D5C]/06 bg-white/80 px-4 py-3.5">
-                  {profileName} chooses whether to open the conversation.
-                </li>
-                <li className="rounded-[1.25rem] border border-[#0B2D5C]/06 bg-white/80 px-4 py-3.5">
-                  Only one request may be sent to the same person.
-                </li>
-                <li className="rounded-[1.25rem] border border-[#0B2D5C]/06 bg-white/80 px-4 py-3.5">
-                  Requests are limited to keep contact intentional.
-                </li>
-                <li className="rounded-[1.25rem] border border-[#0B2D5C]/06 bg-white/80 px-4 py-3.5">
-                  No response is required. Repeated requests are not allowed.
-                </li>
-              </ul>
-
-              <section className="mt-7 rounded-[1.5rem] border border-[#0B2D5C]/08 bg-white px-5 py-5">
-                <p className="text-sm font-semibold uppercase tracking-[0.12em] text-[#D62828]">
-                  Low pressure
-                </p>
-                <p className="mt-3 text-[15px] font-semibold leading-relaxed text-[#0B2D5C]">
-                  Open to Chat is not the same as Interested.
-                </p>
-                <p
-                  className="mt-2 text-[16px] leading-relaxed text-[#0B2D5C]"
-                  style={{ fontFamily: 'var(--font-discovery-display), Georgia, serif' }}
-                >
-                  “I am curious and would be open to getting to know you.”
-                </p>
-              </section>
-
-              <p className="mt-6 text-center text-xs text-[#8A93A0]">
-                Prototype only — no messaging, notifications, or request storage.
-              </p>
-            </>
+            <div id={descriptionId} className="space-y-4 text-[15px] leading-relaxed text-[#3D4654]">
+              <p>Open to Chat lets you introduce yourself with an optional note.</p>
+              <p>The other person always decides whether to accept.</p>
+              <p>You can only send one Open to Chat request to each person.</p>
+            </div>
           )}
 
           {step === 'note' && (
@@ -342,13 +295,18 @@ export default function OpenToChatDrawer({
                 aria-describedby={`${descriptionId} ${counterId} ${limitAnnounceId}`}
                 className="mt-2 w-full resize-none rounded-2xl border border-[#0B2D5C]/15 bg-white px-4 py-3.5 text-[15px] leading-relaxed text-[#0B2D5C] outline-none transition placeholder:text-[#8A93A0] focus:border-[#0B2D5C]/40 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0B2D5C]"
               />
-              <div className="mt-2 flex items-center justify-between gap-3">
-                <p className="text-xs leading-relaxed text-[#7A8494]">
-                  Keep it respectful and avoid sharing personal contact information.
-                </p>
+              <div className="mt-2 flex items-start justify-between gap-3">
+                <div className="min-w-0">
+                  <p className="text-sm leading-relaxed text-[#5A6575]">
+                    A thoughtful introduction often leads to better conversations.
+                  </p>
+                  <p className="mt-1 text-xs leading-relaxed text-[#8A93A0]">
+                    Avoid sharing personal contact information.
+                  </p>
+                </div>
                 <p
                   id={counterId}
-                  className={`shrink-0 text-xs font-semibold tabular-nums ${
+                  className={`shrink-0 pt-0.5 text-xs font-semibold tabular-nums ${
                     nearLimit ? 'text-[#D62828]' : 'text-[#8A93A0]'
                   }`}
                   aria-live="polite"
@@ -448,7 +406,7 @@ export default function OpenToChatDrawer({
                 className="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-[#0B2D5C] px-8 py-4 text-lg font-semibold text-white transition hover:bg-[#0A2540]"
               >
                 <Pencil className="h-4 w-4" strokeWidth={1.75} aria-hidden="true" />
-                Review Request
+                Review Your Introduction
               </button>
               <button
                 type="button"
@@ -456,7 +414,7 @@ export default function OpenToChatDrawer({
                 className="mt-3 inline-flex w-full items-center justify-center gap-2 rounded-2xl border border-[#0B2D5C]/20 bg-white px-8 py-3.5 text-base font-semibold text-[#0B2D5C] transition hover:bg-[#F8F6F2]"
               >
                 <MessageCircle className="h-4 w-4" strokeWidth={1.75} aria-hidden="true" />
-                Skip Note
+                Continue Without a Note
               </button>
               <button
                 type="button"
