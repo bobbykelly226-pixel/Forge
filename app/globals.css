@@ -265,17 +265,19 @@
 .forge-btn--rf.forge-btn--tier1 {
   --forge-btn-height: 58px;
   --forge-btn-pad-x: 38px;
-  --forge-btn-radius: 11px;
+  /* Controlled rounded-rect — matches SVG OUTER_RX ≈ 7.5/60 */
+  --forge-btn-radius: 7px;
   --forge-btn-font-size: 16px;
   --forge-btn-tracking: 0.1em;
   height: var(--forge-btn-height);
   min-height: var(--forge-btn-height);
   color: #ffffff;
   background: transparent;
+  /* Contact + ambient shadow only — no decorative base rail */
   box-shadow:
-    0 1px 1px rgba(26, 35, 50, 0.28),
-    0 4px 10px rgba(11, 45, 92, 0.16),
-    0 10px 22px rgba(11, 45, 92, 0.1);
+    0 1px 1px rgba(26, 35, 50, 0.26),
+    0 4px 10px rgba(11, 45, 92, 0.15),
+    0 10px 22px rgba(11, 45, 92, 0.09);
 }
 
 .forge-btn-rf__art {
@@ -340,7 +342,7 @@
 .forge-btn--rf.forge-btn--lg {
   --forge-btn-height: 68px;
   --forge-btn-pad-x: 44px;
-  --forge-btn-radius: 12px;
+  --forge-btn-radius: 8px;
   --forge-btn-font-size: 17px;
   height: var(--forge-btn-height);
   min-height: var(--forge-btn-height);
@@ -349,7 +351,7 @@
 .forge-btn--rf.forge-btn--compact {
   --forge-btn-height: 48px;
   --forge-btn-pad-x: 28px;
-  --forge-btn-radius: 9px;
+  --forge-btn-radius: 6px;
   --forge-btn-font-size: 13px;
   --forge-btn-tracking: 0.09em;
   height: var(--forge-btn-height);

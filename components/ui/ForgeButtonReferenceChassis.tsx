@@ -43,11 +43,10 @@ const FACE_STOPS: Record<
 /**
  * Independent SVG chassis for the referenceFaithful Tier 1 candidate.
  *
- * Canonical viewBox 320×60 derived from the approved rendering:
- * - chassis thickness ≈ 17% of height (≈10.2 / 60)
- * - outer corner radius ≈ 18% of height (≈11 / 60)
- * - face inset past metal + graphite channel
- * - nested concentric radii
+ * Visual-correction pass against the smooth chrome rounded-rectangle reference:
+ * - controlled concentric corner family (not capsule, not chamfer)
+ * - balanced chrome perimeter (no heavy bottom rail)
+ * - substantial metal with dominant recessed face
  *
  * Decorative only — parent supplies real HTML text and interaction.
  */
@@ -69,14 +68,15 @@ export default function ForgeButtonReferenceChassis({
   const frameMask = `rf-frame-mask-${uid}`;
   const channelMask = `rf-channel-mask-${uid}`;
 
-  // Proportions in viewBox units (height = 60)
-  // Chassis ring ≈ 10.2 → 17% of height
-  const T = 10.2;
-  const CHANNEL = 1.6;
+  // viewBox height = 60
+  // Chassis ≈ 14% of height — substantial but leaves dominant face
+  const T = 8.4;
+  const CHANNEL = 1.35;
   const FACE_INSET = T + CHANNEL;
-  const OUTER_RX = 11;
-  const FACE_RX = 6.5;
-  const BEVEL_RX = 8;
+  // Controlled corner family — long flats, modest radius (~12.5% of height)
+  const OUTER_RX = 7.5;
+  const BEVEL_RX = 5.4;
+  const FACE_RX = 4.2;
   const W = 320;
   const H = 60;
 
@@ -89,41 +89,40 @@ export default function ForgeButtonReferenceChassis({
       focusable="false"
     >
       <defs>
-        {/* Main polished silver — bright TL → dark BR */}
+        {/* Balanced polished silver — bright TL, restrained BR (not heavy bottom rail) */}
         <linearGradient id={metal} x1="0%" y1="0%" x2="100%" y2="100%">
           <stop offset="0%" stopColor="#FFFFFF" />
-          <stop offset="8%" stopColor="#F6F8FA" />
-          <stop offset="18%" stopColor="#E8EDF2" />
-          <stop offset="32%" stopColor="#C7CED6" />
-          <stop offset="48%" stopColor="#8A949F" />
-          <stop offset="62%" stopColor="#AEB7C1" />
-          <stop offset="78%" stopColor="#D5DBE3" />
-          <stop offset="90%" stopColor="#68727D" />
-          <stop offset="100%" stopColor="#3F4754" />
+          <stop offset="10%" stopColor="#F6F8FA" />
+          <stop offset="22%" stopColor="#E8EDF2" />
+          <stop offset="38%" stopColor="#C7CED6" />
+          <stop offset="52%" stopColor="#AEB7C1" />
+          <stop offset="68%" stopColor="#D5DBE3" />
+          <stop offset="82%" stopColor="#929CA7" />
+          <stop offset="100%" stopColor="#68727D" />
         </linearGradient>
 
         <linearGradient id={metalVert} x1="0%" y1="0%" x2="0%" y2="100%">
-          <stop offset="0%" stopColor="#FFFFFF" stopOpacity="0.85" />
-          <stop offset="35%" stopColor="#C7CED6" stopOpacity="0.2" />
-          <stop offset="100%" stopColor="#303943" stopOpacity="0.55" />
+          <stop offset="0%" stopColor="#FFFFFF" stopOpacity="0.75" />
+          <stop offset="42%" stopColor="#C7CED6" stopOpacity="0.12" />
+          <stop offset="100%" stopColor="#4C5661" stopOpacity="0.28" />
         </linearGradient>
 
         <linearGradient id={steel} x1="100%" y1="100%" x2="0%" y2="0%">
-          <stop offset="0%" stopColor="#303943" stopOpacity="0.65" />
-          <stop offset="45%" stopColor="#68727D" stopOpacity="0.2" />
+          <stop offset="0%" stopColor="#303943" stopOpacity="0.32" />
+          <stop offset="50%" stopColor="#68727D" stopOpacity="0.1" />
           <stop offset="100%" stopColor="#FFFFFF" stopOpacity="0" />
         </linearGradient>
 
-        <radialGradient id={specular} cx="8%" cy="6%" r="42%">
-          <stop offset="0%" stopColor="#FFFFFF" stopOpacity="1" />
-          <stop offset="40%" stopColor="#F6F8FA" stopOpacity="0.45" />
+        <radialGradient id={specular} cx="10%" cy="8%" r="38%">
+          <stop offset="0%" stopColor="#FFFFFF" stopOpacity="0.95" />
+          <stop offset="45%" stopColor="#F6F8FA" stopOpacity="0.35" />
           <stop offset="100%" stopColor="#FFFFFF" stopOpacity="0" />
         </radialGradient>
 
         <linearGradient id={bevel} x1="0%" y1="0%" x2="0%" y2="100%">
           <stop offset="0%" stopColor="#FFFFFF" />
-          <stop offset="40%" stopColor="#E8EDF2" />
-          <stop offset="100%" stopColor="#68727D" />
+          <stop offset="45%" stopColor="#E8EDF2" />
+          <stop offset="100%" stopColor="#8A949F" />
         </linearGradient>
 
         <linearGradient id={faceGrad} x1="0%" y1="0%" x2="0%" y2="100%">
@@ -133,15 +132,14 @@ export default function ForgeButtonReferenceChassis({
           <stop offset="100%" stopColor={stops.bottom} />
         </linearGradient>
 
-        {/* Shaped glass — strongest upper-left, tapers diagonally */}
-        <linearGradient id={glass} x1="15%" y1="0%" x2="70%" y2="85%">
-          <stop offset="0%" stopColor="#FFFFFF" stopOpacity="0.28" />
-          <stop offset="35%" stopColor="#FFFFFF" stopOpacity="0.12" />
-          <stop offset="70%" stopColor="#FFFFFF" stopOpacity="0.03" />
+        {/* Broad soft upper-face glass — integrated, not an isolated oval */}
+        <linearGradient id={glass} x1="0%" y1="0%" x2="0%" y2="100%">
+          <stop offset="0%" stopColor="#FFFFFF" stopOpacity="0.26" />
+          <stop offset="45%" stopColor="#FFFFFF" stopOpacity="0.1" />
+          <stop offset="78%" stopColor="#FFFFFF" stopOpacity="0.02" />
           <stop offset="100%" stopColor="#FFFFFF" stopOpacity="0" />
         </linearGradient>
 
-        {/* Punch chassis ring */}
         <mask id={frameMask} maskUnits="userSpaceOnUse">
           <rect width={W} height={H} rx={OUTER_RX} fill="#fff" />
           <rect
@@ -154,14 +152,13 @@ export default function ForgeButtonReferenceChassis({
           />
         </mask>
 
-        {/* Graphite channel ring between bevel and face */}
         <mask id={channelMask} maskUnits="userSpaceOnUse">
           <rect
-            x={T - 0.4}
-            y={T - 0.4}
-            width={W - (T - 0.4) * 2}
-            height={H - (T - 0.4) * 2}
-            rx={BEVEL_RX + 0.3}
+            x={T - 0.3}
+            y={T - 0.3}
+            width={W - (T - 0.3) * 2}
+            height={H - (T - 0.3) * 2}
+            rx={BEVEL_RX + 0.2}
             fill="#fff"
           />
           <rect
@@ -175,18 +172,18 @@ export default function ForgeButtonReferenceChassis({
         </mask>
       </defs>
 
-      {/* 1–2 Dark lower chassis depth plate */}
+      {/* Subtle depth plate — aligned to chassis, not a protruding base rail */}
       <rect
-        x="0.6"
-        y="1.2"
-        width={W - 1.2}
-        height={H - 1.4}
+        x="0.4"
+        y="0.6"
+        width={W - 0.8}
+        height={H - 0.8}
         rx={OUTER_RX}
         fill="#303943"
-        opacity="0.55"
+        opacity="0.22"
       />
 
-      {/* 3 Main polished silver chassis */}
+      {/* Main polished silver chassis */}
       <rect
         width={W}
         height={H}
@@ -200,7 +197,7 @@ export default function ForgeButtonReferenceChassis({
         rx={OUTER_RX}
         fill={`url(#${metalVert})`}
         mask={`url(#${frameMask})`}
-        opacity="0.55"
+        opacity="0.45"
       />
       <rect
         width={W}
@@ -208,10 +205,10 @@ export default function ForgeButtonReferenceChassis({
         rx={OUTER_RX}
         fill={`url(#${steel})`}
         mask={`url(#${frameMask})`}
-        opacity="0.7"
+        opacity="0.45"
       />
 
-      {/* 4 Bright upper/left specular lip */}
+      {/* Bright upper/left specular lip */}
       <rect
         width={W}
         height={H}
@@ -219,44 +216,43 @@ export default function ForgeButtonReferenceChassis({
         fill={`url(#${specular})`}
         mask={`url(#${frameMask})`}
       />
-      {/* Thin outer polished lip strokes */}
       <path
-        d={`M ${OUTER_RX} 1.1 H ${W - OUTER_RX}`}
+        d={`M ${OUTER_RX} 1.05 H ${W - OUTER_RX}`}
         stroke="#FFFFFF"
-        strokeWidth="1.4"
+        strokeWidth="1.25"
         strokeLinecap="round"
-        opacity="0.9"
+        opacity="0.88"
         fill="none"
       />
       <path
-        d={`M 1.1 ${OUTER_RX} V ${H - OUTER_RX - 4}`}
+        d={`M 1.05 ${OUTER_RX} V ${H - OUTER_RX - 2}`}
         stroke="#FFFFFF"
-        strokeWidth="1.2"
-        strokeLinecap="round"
-        opacity="0.7"
-        fill="none"
-      />
-      {/* Bottom polish catch */}
-      <path
-        d={`M ${W * 0.28} ${H - 1.4} H ${W * 0.72}`}
-        stroke="#E8EDF2"
         strokeWidth="1.1"
         strokeLinecap="round"
-        opacity="0.55"
+        opacity="0.65"
+        fill="none"
+      />
+      {/* Bottom-center metal glint on the chassis rim only — NOT a detached rail */}
+      <path
+        d={`M ${W * 0.38} ${H - T * 0.35} H ${W * 0.62}`}
+        stroke="#E8EDF2"
+        strokeWidth="0.7"
+        strokeLinecap="round"
+        opacity="0.35"
         fill="none"
       />
 
-      {/* 5–6 Inner polished silver bevel rim */}
+      {/* Inner polished silver bevel rim */}
       <rect
-        x={T - 0.8}
-        y={T - 0.8}
-        width={W - (T - 0.8) * 2}
-        height={H - (T - 0.8) * 2}
+        x={T - 0.6}
+        y={T - 0.6}
+        width={W - (T - 0.6) * 2}
+        height={H - (T - 0.6) * 2}
         rx={BEVEL_RX}
         fill="none"
         stroke={`url(#${bevel})`}
-        strokeWidth="2.2"
-        opacity="0.95"
+        strokeWidth="1.8"
+        opacity="0.92"
       />
       <rect
         x={T}
@@ -266,31 +262,31 @@ export default function ForgeButtonReferenceChassis({
         rx={BEVEL_RX}
         fill="none"
         stroke="#FFFFFF"
-        strokeWidth="0.9"
-        opacity="0.55"
+        strokeWidth="0.75"
+        opacity="0.45"
       />
 
-      {/* 7 Graphite inset channel */}
+      {/* Graphite inset channel */}
       <rect
         width={W}
         height={H}
         fill="#1D252E"
         mask={`url(#${channelMask})`}
-        opacity="0.92"
+        opacity="0.9"
       />
       <rect
-        x={FACE_INSET - 0.5}
-        y={FACE_INSET - 0.5}
-        width={W - (FACE_INSET - 0.5) * 2}
-        height={H - (FACE_INSET - 0.5) * 2}
-        rx={FACE_RX + 0.4}
+        x={FACE_INSET - 0.4}
+        y={FACE_INSET - 0.4}
+        width={W - (FACE_INSET - 0.4) * 2}
+        height={H - (FACE_INSET - 0.4) * 2}
+        rx={FACE_RX + 0.3}
         fill="none"
         stroke="#26303A"
-        strokeWidth="1.1"
+        strokeWidth="1"
         opacity="0.95"
       />
 
-      {/* 8 Recessed colored face */}
+      {/* Recessed colored face */}
       <rect
         x={FACE_INSET}
         y={FACE_INSET}
@@ -299,7 +295,6 @@ export default function ForgeButtonReferenceChassis({
         rx={FACE_RX}
         fill={`url(#${faceGrad})`}
       />
-      {/* Edge darkening / inset depth */}
       <rect
         x={FACE_INSET}
         y={FACE_INSET}
@@ -308,48 +303,24 @@ export default function ForgeButtonReferenceChassis({
         rx={FACE_RX}
         fill="none"
         stroke="#000000"
-        strokeWidth="1.6"
-        opacity="0.28"
-      />
-      <rect
-        x={FACE_INSET + 0.8}
-        y={FACE_INSET + 0.8}
-        width={W - (FACE_INSET + 0.8) * 2}
-        height={H - (FACE_INSET + 0.8) * 2}
-        rx={FACE_RX - 0.6}
-        fill="none"
-        stroke="#FFFFFF"
-        strokeWidth="0.6"
-        opacity="0.08"
+        strokeWidth="1.3"
+        opacity="0.22"
       />
 
-      {/* 9 Inner face highlight (floor catch) */}
-      <path
-        d={`M ${FACE_INSET + FACE_RX} ${H - FACE_INSET - 1.2} H ${W - FACE_INSET - FACE_RX}`}
-        stroke="#FFFFFF"
-        strokeWidth="0.8"
-        opacity="0.12"
-        fill="none"
-      />
-
-      {/* 10 Shaped glass reflection — curved/diagonal upper region */}
+      {/* Broad soft glass reflection following upper face contour */}
       <path
         d={`
-          M ${FACE_INSET + 1.5} ${FACE_INSET + 1.2}
-          H ${W - FACE_INSET - 1.5}
-          Q ${W - FACE_INSET - 1.5} ${FACE_INSET + H * 0.22} ${W * 0.62} ${FACE_INSET + H * 0.34}
-          Q ${W * 0.38} ${FACE_INSET + H * 0.42} ${FACE_INSET + 1.5} ${FACE_INSET + H * 0.28}
+          M ${FACE_INSET + FACE_RX * 0.35} ${FACE_INSET + 0.8}
+          H ${W - FACE_INSET - FACE_RX * 0.35}
+          Q ${W - FACE_INSET - 0.5} ${FACE_INSET + H * 0.18}
+            ${W - FACE_INSET - 1} ${FACE_INSET + H * 0.36}
+          Q ${W * 0.5} ${FACE_INSET + H * 0.46}
+            ${FACE_INSET + 1} ${FACE_INSET + H * 0.36}
+          Q ${FACE_INSET + 0.5} ${FACE_INSET + H * 0.18}
+            ${FACE_INSET + FACE_RX * 0.35} ${FACE_INSET + 0.8}
           Z
         `}
         fill={`url(#${glass})`}
-      />
-      <ellipse
-        cx={W * 0.32}
-        cy={FACE_INSET + 7}
-        rx={W * 0.22}
-        ry="9"
-        fill="#FFFFFF"
-        opacity="0.1"
       />
     </svg>
   );
@@ -367,9 +338,9 @@ export const REFERENCE_FAITHFUL_FACE_TEXT: Record<ReferenceFaithfulFace, string>
 export const REFERENCE_FAITHFUL_PROPORTIONS = {
   viewBoxWidth: 320,
   viewBoxHeight: 60,
-  chassisThicknessRatio: 10.2 / 60,
-  outerRadiusRatio: 11 / 60,
-  faceInsetRatio: (10.2 + 1.6) / 60,
+  chassisThicknessRatio: 8.4 / 60,
+  outerRadiusRatio: 7.5 / 60,
+  faceInsetRatio: (8.4 + 1.35) / 60,
   standardHeightPx: 58,
   largeHeightPx: 68,
   compactExperimentalHeightPx: 48,

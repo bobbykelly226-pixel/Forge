@@ -51,16 +51,21 @@ describe('Forge button — referenceFaithful candidate', () => {
     assert.match(svg, /pointer-events:\s*none|focusable="false"/);
   });
 
-  it('shows reference image only on the protected internal review route', () => {
+  it('shows the smooth rounded-rectangle reference (not angular/chamfered copy)', () => {
     const review = page();
+    const svg = chassis();
+    assert.match(review, /Actual approved reference|sole visual source of truth/i);
+    assert.match(review, /smooth chrome rounded-rectangle/i);
+    assert.match(review, /not the prior angular\/chamfered/i);
+    assert.match(review, /no bottom silver rail/i);
     assert.match(review, /\/internal\/forge-button-approved-reference\.png/);
-    assert.match(review, /robots:\s*\{[\s\S]*index:\s*false/);
-    assert.match(review, /Approved reference|approved reference/i);
     assert.ok(
       existsSync(join(process.cwd(), 'public/internal/forge-button-approved-reference.png'))
     );
-
-    // Must not appear on product entry points
+    // Controlled corner family — not the prior bulbous 11/60 ratio
+    assert.match(svg, /OUTER_RX = 7\.5/);
+    assert.doesNotMatch(svg, /OUTER_RX = 11/);
+    // Reference asset must not appear on product entry points
     for (const file of ['app/page.tsx', 'app/layout.tsx', 'app/profile/page.tsx']) {
       try {
         const src = readFileSync(join(process.cwd(), file), 'utf8');
@@ -71,14 +76,27 @@ describe('Forge button — referenceFaithful candidate', () => {
     }
   });
 
+  it('omits the detached bottom silver rail under the chassis', () => {
+    const svg = chassis();
+    // Old rail sat on the outer bottom edge at H - 1.4 spanning a wide band
+    assert.doesNotMatch(svg, /H - 1\.4/);
+    assert.doesNotMatch(svg, /Bottom polish catch/);
+    assert.match(svg, /NOT a detached rail|no heavy bottom rail/i);
+  });
+
+  it('uses a broad soft glass reflection without an isolated oval sticker', () => {
+    const svg = chassis();
+    assert.match(svg, /Broad soft upper-face glass|Broad soft glass reflection/);
+    assert.doesNotMatch(svg, /<ellipse/);
+  });
+
   it('does not use the reference image as the interactive control', () => {
     const review = page();
-    assert.match(review, /not an interactive control/i);
+    assert.match(review, /not an\s+interactive control/i);
     assert.match(
       review,
       /<Image[\s\S]*?src="\/internal\/forge-button-approved-reference\.png"/
     );
-    // Ensure no ForgeButton wraps an Image (self-contained opening tag check)
     assert.doesNotMatch(review, /<ForgeButton[^>]*>\s*<Image/);
     assert.doesNotMatch(
       review,

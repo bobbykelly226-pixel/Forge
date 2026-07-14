@@ -121,14 +121,14 @@ export default function VisualSystemPage() {
 
         <div className="flex flex-col gap-6">
           {/* SECTION 1 */}
-          <Section title="1 · Reference and implementation candidate">
+          <Section title="1 · Actual approved reference vs implementation candidate">
             <div className="grid gap-6 lg:grid-cols-2">
               <div>
-                <Label>Approved reference</Label>
+                <Label>Actual approved reference</Label>
                 <div className="overflow-hidden border border-[#0B2D5C]/12 bg-[#1a1a1a]">
                   <Image
                     src="/internal/forge-button-approved-reference.png"
-                    alt="Approved metallic button reference rendering — navy, red, white, and graphite faces"
+                    alt="Actual approved metallic button reference — smooth chrome rounded rectangles in red, navy, white, and graphite"
                     width={1536}
                     height={1024}
                     className="h-auto w-full"
@@ -136,20 +136,21 @@ export default function VisualSystemPage() {
                   />
                 </div>
                 <p className="mt-2 text-[11px] text-[#8A93A0]">
-                  Internal review asset only — not an interactive control; not used on product
-                  routes.
+                  Sole visual source of truth for this review. Smooth chrome rounded-rectangle
+                  chassis — not the prior angular/chamfered plate. Internal asset only; not an
+                  interactive control.
                 </p>
               </div>
               <div>
-                <Label>Implementation candidate — referenceFaithful</Label>
+                <Label>Implementation candidate</Label>
                 <div
-                  className="flex min-h-[220px] flex-col items-center justify-center gap-5 p-8"
+                  className="flex min-h-[280px] flex-col items-center justify-center gap-4 p-6"
                   style={{ background: 'var(--forge-app-background, #E8EBF0)' }}
                 >
-                  <ForgeButton tier={1} variant="referenceFaithful" size="lg">
+                  <ForgeButton tier={1} variant="referenceFaithful" size="lg" face="red">
                     View My Profile
                   </ForgeButton>
-                  <ForgeButton tier={1} variant="referenceFaithful" face="red">
+                  <ForgeButton tier={1} variant="referenceFaithful" size="lg" face="navy">
                     View My Profile
                   </ForgeButton>
                   <div className="flex flex-wrap justify-center gap-3">
@@ -162,10 +163,22 @@ export default function VisualSystemPage() {
                   </div>
                 </div>
                 <p className="mt-2 text-[11px] text-[#8A93A0]">
-                  Independent SVG chassis candidate — compare material weight to the reference.
+                  referenceFaithful SVG candidate at comparable size — awaiting manual visual
+                  approval.
                 </p>
               </div>
             </div>
+
+            <ul className="mt-5 grid gap-1.5 border border-[#0B2D5C]/08 bg-[#F7F8FA] p-4 text-xs text-[#5A6575] sm:grid-cols-2">
+              <li>• Outer silhouette</li>
+              <li>• Corner profile</li>
+              <li>• Chassis thickness</li>
+              <li>• Chrome balance</li>
+              <li>• Inner-face proportions</li>
+              <li>• Glass reflection</li>
+              <li>• Typography</li>
+              <li>• Shadow (no bottom silver rail)</li>
+            </ul>
 
             <div className="mt-6 border-t border-[#0B2D5C]/08 pt-5">
               <Label>Prior experimental CSS chassis (not the candidate)</Label>
@@ -200,11 +213,12 @@ export default function VisualSystemPage() {
                   left specular edge
                 </li>
                 <li>
-                  <strong className="text-[#0B2D5C]">Main chassis</strong> — bright-to-dark silver /
-                  steel (~17% height)
+                  <strong className="text-[#0B2D5C]">Main chassis</strong> — balanced chrome wrap
+                  (~14% height)
                 </li>
                 <li>
-                  <strong className="text-[#0B2D5C]">Lower steel depth</strong> — darker BR shading
+                  <strong className="text-[#0B2D5C]">Lower steel depth</strong> — restrained (no bottom
+                  rail)
                 </li>
                 <li>
                   <strong className="text-[#0B2D5C]">Inner silver bevel</strong> — complete rim around
@@ -215,14 +229,14 @@ export default function VisualSystemPage() {
                   groove
                 </li>
                 <li>
-                  <strong className="text-[#0B2D5C]">Recessed face</strong> — Forge Navy tonal depth
+                  <strong className="text-[#0B2D5C]">Recessed face</strong> — dominant central area
                 </li>
                 <li>
-                  <strong className="text-[#0B2D5C]">Glass reflection</strong> — shaped upper-left
-                  taper
+                  <strong className="text-[#0B2D5C]">Glass reflection</strong> — broad soft upper
+                  contour
                 </li>
                 <li>
-                  <strong className="text-[#0B2D5C]">Contact shadow</strong> — weighty anchor beneath
+                  <strong className="text-[#0B2D5C]">Contact shadow</strong> — grounded depth only
                 </li>
               </ol>
             </div>
