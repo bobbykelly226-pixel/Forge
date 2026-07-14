@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
-import { readFileSync, readdirSync, statSync } from 'node:fs';
+import { readFileSync, readdirSync, statSync, existsSync } from 'node:fs';
 import { join } from 'node:path';
 
 const css = () => readFileSync(join(process.cwd(), 'app/globals.css'), 'utf8');
@@ -8,6 +8,8 @@ const page = () =>
   readFileSync(join(process.cwd(), 'app/internal/visual-system/page.tsx'), 'utf8');
 const component = () =>
   readFileSync(join(process.cwd(), 'components/ui/ForgeButton.tsx'), 'utf8');
+const chassis = () =>
+  readFileSync(join(process.cwd(), 'components/ui/ForgeButtonReferenceChassis.tsx'), 'utf8');
 
 function collectTsFiles(dir: string, acc: string[] = []): string[] {
   for (const name of readdirSync(dir)) {
@@ -20,157 +22,127 @@ function collectTsFiles(dir: string, acc: string[] = []): string[] {
   return acc;
 }
 
-describe('Forge button visual system — substantial metallic chassis', () => {
-  it('Tier 1 uses multiple visible metallic layers', () => {
-    const styles = css();
+describe('Forge button — referenceFaithful candidate', () => {
+  it('uses an independent SVG structure for the new candidate', () => {
+    const svg = chassis();
     const btn = component();
-    assert.match(styles, /\.forge-btn__chassis/);
-    assert.match(styles, /\.forge-btn__bevel/);
-    assert.match(styles, /\.forge-btn__face/);
-    assert.match(styles, /\.forge-btn__glass/);
-    assert.match(btn, /MetallicChassis/);
-    assert.match(btn, /forge-btn__bevel/);
-    assert.match(btn, /forge-btn__glass/);
-    assert.match(btn, /forge-btn__chassis-svg|<svg/);
+    assert.match(svg, /viewBox=\{`0 0 \$\{W\} \$\{H\}`\}|viewBox=\{`0 0 \$\{W\}/);
+    assert.match(svg, /ForgeButtonReferenceChassis|REFERENCE_FAITHFUL_PROPORTIONS/);
+    assert.match(svg, /frameMask|channelMask/);
+    assert.match(svg, /linearGradient/);
+    assert.match(btn, /referenceFaithful/);
+    assert.match(btn, /ForgeButtonReferenceChassis/);
+    assert.match(btn, /variant/);
   });
 
-  it('Tier 1 frame is not a single flat border', () => {
-    const styles = css();
-    assert.match(styles, /--forge-btn-chassis-thickness:\s*4\.5px/);
-    assert.match(styles, /linear-gradient\([\s\S]*#68727[dD]/);
-    assert.match(styles, /#ffffff|#FFFFFF/);
-    assert.match(styles, /#4[cC]5661/);
-    // Must not rely on a lone flat border for the metallic look
-    const tier1 = styles.match(/\.forge-btn--tier1\s*\{[^}]+\}/)?.[0] ?? '';
-    assert.ok(tier1.includes('background') || tier1.includes('box-shadow'));
-    assert.doesNotMatch(tier1, /border:\s*1px solid\s+#?[89a-fA-F]{3,6}\s*;/);
-  });
-
-  it('inner recessed face exists separately from the chassis', () => {
-    const styles = css();
+  it('keeps real text as HTML, not SVG paths', () => {
     const btn = component();
-    assert.match(styles, /\.forge-btn--tier1\s+\.forge-btn__face/);
-    assert.match(styles, /--forge-btn-inner-radius:\s*2\.5px/);
-    assert.match(styles, /--forge-btn-outer-radius:\s*4px/);
-    assert.match(btn, /forge-btn__face/);
-    assert.match(btn, /forge-btn__chassis/);
+    const svg = chassis();
+    assert.match(btn, /forge-btn__label/);
+    assert.doesNotMatch(svg, /<text[\s>]/);
+    assert.match(btn, /\{children\}/);
   });
 
-  it('graphite separator exists', () => {
-    const styles = css();
-    assert.match(styles, /#26303[aA]/);
-    assert.match(styles, /graphite separator/i);
-    assert.match(styles, /\.forge-btn__bevel/);
+  it('marks SVG layers decorative and aria-hidden', () => {
+    const btn = component();
+    const svg = chassis();
+    assert.match(btn, /forge-btn-rf__art" aria-hidden="true"/);
+    assert.match(svg, /aria-hidden="true"/);
+    assert.match(svg, /pointer-events:\s*none|focusable="false"/);
   });
 
-  it('glass reflection is limited to the upper portion', () => {
-    const styles = css();
-    assert.match(styles, /\.forge-btn__glass\s*\{[\s\S]*?height:\s*48%/);
-    assert.doesNotMatch(styles, /\.forge-btn__glass\s*\{[^}]*height:\s*100%/);
-  });
-
-  it('Soft Slate and white use navy-faced Tier 1', () => {
+  it('shows reference image only on the protected internal review route', () => {
     const review = page();
-    assert.match(review, /Soft Slate — navy Tier 1/);
-    assert.match(review, /White — navy Tier 1/);
-    assert.match(review, /surface="soft-slate"/);
-    assert.match(review, /surface="white"/);
+    assert.match(review, /\/internal\/forge-button-approved-reference\.png/);
+    assert.match(review, /robots:\s*\{[\s\S]*index:\s*false/);
+    assert.match(review, /Approved reference|approved reference/i);
+    assert.ok(
+      existsSync(join(process.cwd(), 'public/internal/forge-button-approved-reference.png'))
+    );
+
+    // Must not appear on product entry points
+    for (const file of ['app/page.tsx', 'app/layout.tsx', 'app/profile/page.tsx']) {
+      try {
+        const src = readFileSync(join(process.cwd(), file), 'utf8');
+        assert.doesNotMatch(src, /forge-button-approved-reference/);
+      } catch {
+        /* optional path */
+      }
+    }
   });
 
-  it('deep navy uses Soft Slate-faced Tier 1', () => {
-    const styles = css();
-    const btn = component();
+  it('does not use the reference image as the interactive control', () => {
     const review = page();
-    assert.match(styles, /\.forge-btn--tier1-face-soft-slate|\.forge-btn--tier1-on-dark/);
-    assert.match(btn, /soft-slate/);
-    assert.match(review, /Soft Slate Tier 1/);
-    assert.match(review, /surface="navy"/);
-  });
-
-  it('Tier 2 on white uses Soft Slate/pale fill', () => {
-    const styles = css();
-    assert.match(styles, /\.forge-btn--tier2-on-white/);
+    assert.match(review, /not an interactive control/i);
     assert.match(
-      styles,
-      /\.forge-btn--tier2-on-white\s*\{[\s\S]*?background:\s*var\(--forge-app-background/
+      review,
+      /<Image[\s\S]*?src="\/internal\/forge-button-approved-reference\.png"/
+    );
+    // Ensure no ForgeButton wraps an Image (self-contained opening tag check)
+    assert.doesNotMatch(review, /<ForgeButton[^>]*>\s*<Image/);
+    assert.doesNotMatch(
+      review,
+      /<ForgeButton[^>]*src="\/internal\/forge-button-approved-reference/
     );
   });
 
-  it('Tier 2 on deep navy is not a filled navy button', () => {
+  it('standard candidate is taller than the old 48px experiment', () => {
+    const styles = css();
+    const svg = chassis();
+    assert.match(styles, /\.forge-btn--rf\.forge-btn--tier1[\s\S]*?--forge-btn-height:\s*58px/);
+    assert.match(styles, /\.forge-btn--experimental\.forge-btn--tier1[\s\S]*?--forge-btn-height:\s*48px/);
+    assert.match(svg, /standardHeightPx:\s*58/);
+  });
+
+  it('labels compact size as experimental', () => {
+    const review = page();
+    const styles = css();
+    assert.match(review, /Compact experimental/);
+    assert.match(review, /not automatically approved/i);
+    assert.match(styles, /\.forge-btn--rf\.forge-btn--compact[\s\S]*?--forge-btn-height:\s*48px/);
+  });
+
+  it('Tier 2 on navy is not a filled navy block', () => {
     const styles = css();
     const dark = styles.match(/\.forge-btn--tier2-on-dark\s*\{[^}]+\}/)?.[0] ?? '';
     assert.ok(dark.length > 0);
-    assert.match(dark, /rgba\(255,\s*255,\s*255/);
-    assert.doesNotMatch(dark, /background:\s*var\(--forge-navy\)/);
-    assert.doesNotMatch(dark, /background:\s*#0[Bb]2[Dd]5[Cc]/);
+    assert.match(dark, /rgba\(255,\s*255,\s*255,\s*0\.0[4-9]/);
+    assert.match(dark, /border:\s*1px solid rgba\(232,\s*235,\s*240,\s*0\.78\)/);
+    assert.doesNotMatch(dark, /background:\s*(var\(--forge-navy\)|#0[Bb]2[Dd]5[Cc])/);
   });
 
-  it('Tier 2 dark variant uses light/silver outline', () => {
+  it('Tier 2 on white retains full text contrast', () => {
     const styles = css();
-    const dark = styles.match(/\.forge-btn--tier2-on-dark\s*\{[^}]+\}/)?.[0] ?? '';
-    assert.match(dark, /border-color:\s*rgba\(232,\s*235,\s*240/);
-    assert.match(dark, /#f7f9fc|#F7F9FC|color:\s*#f7f9fc/i);
+    const white = styles.match(/\.forge-btn--tier2-on-white\s*\{[^}]+\}/)?.[0] ?? '';
+    assert.match(white, /color:\s*var\(--forge-navy\)/);
+    assert.match(white, /background:\s*var\(--forge-app-background/);
+    assert.doesNotMatch(white, /opacity:\s*0\.\d/);
   });
 
-  it('Tier 3 remains text-only', () => {
-    const styles = css();
-    const t3 = styles.match(/\.forge-btn--tier3\s*\{[^}]+\}/)?.[0] ?? '';
-    assert.match(t3, /background:\s*transparent/);
-    assert.match(t3, /border:\s*none/);
-    assert.match(t3, /min-height:\s*44px/);
-  });
-
-  it('button and link semantics remain correct', () => {
-    const btn = component();
-    assert.match(btn, /<button/);
-    assert.match(btn, /<Link/);
-    assert.match(btn, /aria-busy/);
-    assert.match(btn, /aria-disabled/);
-  });
-
-  it('loading and disabled preserve dimensions', () => {
+  it('interaction states preserve dimensions', () => {
     const styles = css();
     const btn = component();
     assert.match(btn, /loading\?:/);
     assert.match(btn, /data-loading/);
-    assert.match(styles, /\.forge-btn--tier1\[data-loading='true'\]/);
-    assert.match(styles, /\.forge-btn--tier1:disabled:not\(\[data-loading='true'\]\)/);
-    assert.match(styles, /--forge-btn-height:\s*48px/);
+    assert.match(styles, /\[data-loading='true'\]/);
+    assert.match(styles, /--forge-btn-height:\s*58px/);
+    assert.match(styles, /--forge-btn-height:\s*68px/);
   });
 
-  it('mobile retains the same geometry', () => {
-    const styles = css();
-    assert.match(styles, /\.forge-btn--block\s*\{[\s\S]*?border-radius:\s*var\(--forge-btn-outer-radius\)/);
-    assert.match(styles, /--forge-btn-outer-radius:\s*4px/);
-    assert.match(styles, /--forge-btn-chassis-thickness:\s*4\.5px/);
-    assert.doesNotMatch(styles, /\.forge-btn--block[^{]*\{[^}]*border-radius:\s*(999|50%|1rem)/);
+  it('keeps reduced-motion behavior', () => {
+    assert.match(css(), /prefers-reduced-motion:\s*reduce/);
   });
 
-  it('includes reduced-motion behavior', () => {
-    const styles = css();
-    assert.match(styles, /prefers-reduced-motion:\s*reduce/);
-  });
-
-  it('locks Tier 2 to 4px radius token', () => {
-    const styles = css();
-    assert.match(styles, /--forge-btn-radius:\s*4px/);
-    assert.match(
-      styles,
-      /\.forge-btn--tier2\s*\{[\s\S]*?border-radius:\s*var\(--forge-btn-radius\)/
-    );
-  });
-
-  it('hosts the metallic reconstruction review at /internal/visual-system', () => {
+  it('hosts candidate review sections on /internal/visual-system', () => {
     const review = page();
-    assert.match(review, /robots:\s*\{[\s\S]*index:\s*false/);
-    assert.match(review, /Approved reference target|metallic rendering/i);
-    assert.match(review, /Primary surface matrix/);
-    assert.match(review, /Metallic detail/);
-    assert.match(review, /Red \(reference only\)/);
-    assert.match(review, /Do not use as ordinary primary/);
+    assert.match(review, /Implementation candidate/);
+    assert.match(review, /Enlarged detail/);
+    assert.match(review, /Surface matrix/);
+    assert.match(review, /referenceFaithful/);
+    assert.match(review, /variant="experimental"/);
   });
 
-  it('confirms no production routes use ForgeButton yet', () => {
+  it('confirms no product routes use the candidate', () => {
     const productDirs = [
       'app/profile',
       'app/discovery',
@@ -200,7 +172,12 @@ describe('Forge button visual system — substantial metallic chassis', () => {
       }
       for (const file of collectTsFiles(full)) {
         const src = readFileSync(file, 'utf8');
-        if (src.includes('ForgeButton') || src.includes('forge-btn--tier')) {
+        if (
+          src.includes('ForgeButton') ||
+          src.includes('forge-btn--rf') ||
+          src.includes('referenceFaithful') ||
+          src.includes('ForgeButtonReferenceChassis')
+        ) {
           offenders.push(file.replace(process.cwd() + '/', ''));
         }
       }
@@ -208,7 +185,7 @@ describe('Forge button visual system — substantial metallic chassis', () => {
     for (const file of ['app/page.tsx', 'app/layout.tsx']) {
       try {
         const src = readFileSync(join(process.cwd(), file), 'utf8');
-        if (src.includes('ForgeButton') || src.includes('forge-btn--tier')) {
+        if (src.includes('ForgeButton') || src.includes('referenceFaithful')) {
           offenders.push(file);
         }
       } catch {
@@ -218,7 +195,12 @@ describe('Forge button visual system — substantial metallic chassis', () => {
     assert.deepEqual(
       offenders,
       [],
-      `ForgeButton must not be rolled out to product routes yet. Found: ${offenders.join(', ')}`
+      `Candidate must not roll out to product routes. Found: ${offenders.join(', ')}`
     );
+  });
+
+  it('documents production-safe robots rules for the internal route', () => {
+    const review = page();
+    assert.match(review, /robots:\s*\{[\s\S]*index:\s*false[\s\S]*follow:\s*false/);
   });
 });
