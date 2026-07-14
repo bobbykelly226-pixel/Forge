@@ -5,8 +5,16 @@
 
 export type EnjoymentChip = {
   id: string;
-  emoji: string;
   label: string;
+  icon:
+    | 'trophy'
+    | 'tent'
+    | 'coffee'
+    | 'plane'
+    | 'paw'
+    | 'dice'
+    | 'book'
+    | 'dumbbell';
 };
 
 export type MusicList = {
@@ -42,14 +50,14 @@ export type ProfileHubCard = {
 
 /** Public Discovery Profile — Jessica */
 export const DISCOVERY_THINGS_I_ENJOY: EnjoymentChip[] = [
-  { id: 'broncos', emoji: '🏈', label: 'Broncos' },
-  { id: 'camping', emoji: '🏕', label: 'Camping' },
-  { id: 'coffee', emoji: '☕', label: 'Coffee Shops' },
-  { id: 'trips', emoji: '✈️', label: 'Weekend Trips' },
-  { id: 'dogs', emoji: '🐶', label: 'Dogs' },
-  { id: 'games', emoji: '🎲', label: 'Board Games' },
-  { id: 'reading', emoji: '📚', label: 'Reading' },
-  { id: 'fitness', emoji: '🏋️', label: 'Fitness' },
+  { id: 'broncos', icon: 'trophy', label: 'Broncos' },
+  { id: 'camping', icon: 'tent', label: 'Camping' },
+  { id: 'coffee', icon: 'coffee', label: 'Coffee Shops' },
+  { id: 'trips', icon: 'plane', label: 'Weekend Trips' },
+  { id: 'dogs', icon: 'paw', label: 'Dogs' },
+  { id: 'games', icon: 'dice', label: 'Board Games' },
+  { id: 'reading', icon: 'book', label: 'Reading' },
+  { id: 'fitness', icon: 'dumbbell', label: 'Fitness' },
 ];
 
 export const DISCOVERY_FAVORITE_MUSIC: MusicList = {

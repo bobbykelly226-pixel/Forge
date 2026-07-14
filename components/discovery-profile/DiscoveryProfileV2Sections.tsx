@@ -1,14 +1,39 @@
 'use client';
 
-import { Mic, Play, Video } from 'lucide-react';
+import {
+  BookOpen,
+  Coffee,
+  Dice5,
+  Dumbbell,
+  Mic,
+  PawPrint,
+  Plane,
+  Play,
+  TentTree,
+  Trophy,
+  Video,
+  type LucideIcon,
+} from 'lucide-react';
 
 import {
   DISCOVERY_FAVORITE_MUSIC,
   DISCOVERY_THINGS_I_ENJOY,
+  type EnjoymentChip,
 } from '@/lib/profile-v2-mock';
 
 const cardClassName =
   'rounded-[1.75rem] border border-[#0B2D5C]/08 bg-white/90 p-6 shadow-[0_12px_40px_rgba(11,45,92,0.06)] backdrop-blur-sm sm:p-7';
+
+const ENJOY_ICONS: Record<EnjoymentChip['icon'], LucideIcon> = {
+  trophy: Trophy,
+  tent: TentTree,
+  coffee: Coffee,
+  plane: Plane,
+  paw: PawPrint,
+  dice: Dice5,
+  book: BookOpen,
+  dumbbell: Dumbbell,
+};
 
 export function ThingsIEnjoySection() {
   return (
@@ -21,14 +46,21 @@ export function ThingsIEnjoySection() {
         Things I Enjoy
       </h2>
       <ul className="mt-5 flex flex-wrap gap-2.5">
-        {DISCOVERY_THINGS_I_ENJOY.map((item) => (
-          <li key={item.id}>
-            <span className="inline-flex items-center gap-2 rounded-full border border-[#0B2D5C]/10 bg-[#F8F6F2] px-3.5 py-2 text-sm font-medium text-[#0B2D5C]">
-              <span aria-hidden="true">{item.emoji}</span>
-              {item.label}
-            </span>
-          </li>
-        ))}
+        {DISCOVERY_THINGS_I_ENJOY.map((item) => {
+          const Icon = ENJOY_ICONS[item.icon];
+          return (
+            <li key={item.id}>
+              <span className="inline-flex min-h-11 items-center gap-2 rounded-full border border-[#0B2D5C]/10 bg-[#F8F6F2] px-3.5 py-2.5 text-sm font-medium text-[#0B2D5C]">
+                <Icon
+                  className="h-4 w-4 shrink-0 text-[#5A6575]"
+                  strokeWidth={1.75}
+                  aria-hidden="true"
+                />
+                {item.label}
+              </span>
+            </li>
+          );
+        })}
       </ul>
     </section>
   );

@@ -5,6 +5,7 @@ import {
   Camera,
   ChevronRight,
   Compass,
+  Eye,
   HeartHandshake,
   Lock,
   Mic,
@@ -172,6 +173,19 @@ export default function MyProfileHubPrototype() {
                           A few more details can strengthen your introductions.
                         </p>
                       </div>
+                    </div>
+
+                    <div className="mt-5 border-t border-[#0B2D5C]/06 pt-5">
+                      <Link
+                        href="/discovery/profile"
+                        className="inline-flex w-full items-center justify-center gap-2 rounded-2xl border border-[#0B2D5C]/20 bg-white px-5 py-3.5 text-sm font-semibold text-[#0B2D5C] transition hover:border-[#0B2D5C]/35 hover:bg-[#FBF9F6] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0B2D5C]"
+                      >
+                        <Eye className="h-4 w-4 shrink-0" strokeWidth={1.75} aria-hidden="true" />
+                        View My Profile
+                      </Link>
+                      <p className="mt-2.5 text-center text-xs leading-relaxed text-[#7A8494]">
+                        See your profile exactly as others see it.
+                      </p>
                     </div>
                   </section>
 
