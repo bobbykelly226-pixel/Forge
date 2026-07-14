@@ -10,6 +10,7 @@ import {
 } from '@/lib/profile-photo';
 import { createClient } from '@/lib/supabase/client';
 import type { Profile } from '@/lib/types/profile';
+import { THINGS_I_ENJOY_OPTIONS } from '@/lib/types/profile-answers';
 import Link from 'next/link';
 import { useState } from 'react';
 
@@ -93,6 +94,7 @@ export default function ProfileForm({ profile }: ProfileFormProps) {
 
         uploadedPhotoUrl = publicUrl;
         formData.set('profile_photo_url', publicUrl);
+        formData.set('profile_photo_storage_path', filePath);
       }
 
       const result = await saveProfile(formData);
@@ -293,6 +295,171 @@ export default function ProfileForm({ profile }: ProfileFormProps) {
               rows={4}
               defaultValue={profile?.short_bio ?? ''}
               placeholder="A few sentences about you and what matters to you."
+              className={`${inputClassName} resize-y min-h-[120px]`}
+            />
+          </div>
+
+          <div>
+            <label htmlFor="more_about" className={labelClassName}>
+              More about
+            </label>
+            <textarea
+              id="more_about"
+              name="more_about"
+              rows={4}
+              defaultValue={profile?.more_about ?? ''}
+              placeholder="Share more about yourself."
+              className={`${inputClassName} resize-y min-h-[120px]`}
+            />
+          </div>
+
+          <div>
+            <label htmlFor="children" className={labelClassName}>
+              Children
+            </label>
+            <input
+              id="children"
+              name="children"
+              type="text"
+              defaultValue={profile?.children ?? ''}
+              placeholder="Wants children"
+              className={inputClassName}
+            />
+          </div>
+
+          <div>
+            <label htmlFor="has_children" className={labelClassName}>
+              Has children
+            </label>
+            <input
+              id="has_children"
+              name="has_children"
+              type="text"
+              defaultValue={profile?.has_children ?? ''}
+              className={inputClassName}
+            />
+          </div>
+
+          <div>
+            <label htmlFor="education" className={labelClassName}>
+              Education
+            </label>
+            <input
+              id="education"
+              name="education"
+              type="text"
+              defaultValue={profile?.education ?? ''}
+              className={inputClassName}
+            />
+          </div>
+
+          <div>
+            <label htmlFor="pets" className={labelClassName}>
+              Pets
+            </label>
+            <input
+              id="pets"
+              name="pets"
+              type="text"
+              defaultValue={profile?.pets ?? ''}
+              className={inputClassName}
+            />
+          </div>
+
+          <div>
+            <label htmlFor="smoking" className={labelClassName}>
+              Smoking
+            </label>
+            <input
+              id="smoking"
+              name="smoking"
+              type="text"
+              defaultValue={profile?.smoking ?? ''}
+              className={inputClassName}
+            />
+          </div>
+
+          <div>
+            <label htmlFor="drinking" className={labelClassName}>
+              Drinking
+            </label>
+            <input
+              id="drinking"
+              name="drinking"
+              type="text"
+              defaultValue={profile?.drinking ?? ''}
+              className={inputClassName}
+            />
+          </div>
+
+          <div>
+            <label htmlFor="career" className={labelClassName}>
+              Career
+            </label>
+            <input
+              id="career"
+              name="career"
+              type="text"
+              defaultValue={profile?.career ?? ''}
+              className={inputClassName}
+            />
+          </div>
+
+          <div>
+            <label htmlFor="relocation" className={labelClassName}>
+              Relocation
+            </label>
+            <input
+              id="relocation"
+              name="relocation"
+              type="text"
+              defaultValue={profile?.relocation ?? ''}
+              className={inputClassName}
+            />
+          </div>
+
+          <fieldset>
+            <legend className={labelClassName}>Things I Enjoy</legend>
+            <div className="space-y-3">
+              {THINGS_I_ENJOY_OPTIONS.map((label) => (
+                <label key={label} className="flex items-center gap-3 text-[#222222]">
+                  <input
+                    type="checkbox"
+                    name="things_i_enjoy"
+                    value={label}
+                    defaultChecked={profile?.things_i_enjoy?.includes(label) ?? false}
+                    className="h-5 w-5 rounded border-[#0B2D5C]/30 text-[#0B2D5C] focus:ring-[#0B2D5C]/20"
+                  />
+                  <span>{label}</span>
+                </label>
+              ))}
+            </div>
+          </fieldset>
+
+          <div>
+            <label htmlFor="favorite_music_artists" className={labelClassName}>
+              Favorite music artists
+            </label>
+            <textarea
+              id="favorite_music_artists"
+              name="favorite_music_artists"
+              rows={4}
+              defaultValue={(profile?.favorite_music_artists ?? []).join('\n')}
+              placeholder="One artist per line"
+              className={`${inputClassName} resize-y min-h-[120px]`}
+            />
+          </div>
+
+          <div>
+            <label htmlFor="favorite_music_songs" className={labelClassName}>
+              Favorite music songs
+            </label>
+            <textarea
+              id="favorite_music_songs"
+              name="favorite_music_songs"
+              rows={4}
+              defaultValue={(profile?.favorite_music_songs ?? []).join('\n')}
+              placeholder="One song per line"
               className={`${inputClassName} resize-y min-h-[120px]`}
             />
           </div>
