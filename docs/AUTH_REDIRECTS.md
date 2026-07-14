@@ -7,8 +7,20 @@ Production site: `https://forgedinlife.com`
 - Signup `emailRedirectTo`: `{origin}/auth/callback?next=/onboarding`
 - Callback page: `/auth/callback` (handles URL hash tokens, PKCE `code`, and `token_hash`)
 - Confirm route: `/auth/confirm` (SSR `token_hash` + `type` template flow)
-- Error page: `/auth/error`
+- Result page: `/auth/result?outcome=…` (confirmed / already confirmed / invalid-or-expired)
+- Legacy error page: `/auth/error` (redirects to `/auth/result` with a classified outcome)
 - Resend confirmation: login screen action → same `emailRedirectTo`
+
+### Confirmation outcomes
+
+| Outcome | When | User-facing result |
+| --- | --- | --- |
+| `session_ready` | Confirm succeeds and a session is established | Foundation records ensured → `/onboarding` (or completed-profile destination) |
+| `confirmed_needs_signin` | Confirm succeeds but session cookies are not usable yet | “Email confirmed” → sign in (never “invalid or expired”) |
+| `already_confirmed` | Link previously consumed / account already confirmed | “Your email has already been confirmed. Sign in to continue.” |
+| `invalid_or_expired` | Link genuinely missing, invalid, or expired | “Confirmation needed” + resend guidance |
+
+Custom SMTP (Resend) remains required for reliable delivery — see below. Re-testing signup is optional when an already-confirmed account reproduces the callback/hash outcome.
 
 ## Required Supabase Dashboard settings
 

@@ -1,7 +1,11 @@
 import { type EmailOtpType } from '@supabase/supabase-js';
 import { NextResponse, type NextRequest } from 'next/server';
 
-import { mapAuthErrorMessage, resolvePostAuthRedirect, sanitizeInternalPath } from '@/lib/auth/redirects';
+import {
+  authResultPath,
+  classifyConfirmationProviderError,
+} from '@/lib/auth/confirmation';
+import { resolvePostAuthRedirect, sanitizeInternalPath } from '@/lib/auth/redirects';
 import { createClient } from '@/lib/supabase/server';
 
 /**
@@ -15,9 +19,7 @@ export async function GET(request: NextRequest) {
   const next = sanitizeInternalPath(searchParams.get('next')) ?? '/onboarding';
 
   if (!tokenHash || !type) {
-    return NextResponse.redirect(
-      `${origin}/auth/error?reason=${encodeURIComponent('missing_token')}`
-    );
+    return NextResponse.redirect(`${origin}${authResultPath('invalid_or_expired')}`);
   }
 
   const supabase = await createClient();
@@ -28,9 +30,8 @@ export async function GET(request: NextRequest) {
 
   if (error) {
     console.error('auth confirm verifyOtp failed');
-    return NextResponse.redirect(
-      `${origin}/auth/error?reason=${encodeURIComponent(mapAuthErrorMessage(error.message))}`
-    );
+    const outcome = classifyConfirmationProviderError(error.message);
+    return NextResponse.redirect(`${origin}${authResultPath(outcome)}`);
   }
 
   const destination = await resolvePostAuthRedirect(next);
