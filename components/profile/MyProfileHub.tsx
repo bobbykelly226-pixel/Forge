@@ -79,7 +79,7 @@ export default function MyProfileHub({
   displayName,
   location,
   photoUrl: initialPhotoUrl,
-  completionPercent,
+  completionPercent: initialCompletionPercent,
   onboardingCompleted,
   discoveryVisibility,
   profile,
@@ -91,6 +91,7 @@ export default function MyProfileHub({
   initialSection,
 }: MyProfileHubProps) {
   const [photoUrl, setPhotoUrl] = useState(initialPhotoUrl);
+  const [completionPercent, setCompletionPercent] = useState(initialCompletionPercent);
   const showCompletionUi = completionPercent < 100;
   const flashNote = (message: string) => {
     void message;
@@ -242,6 +243,7 @@ export default function MyProfileHub({
                     initialPhotos={photos}
                     initialSection={initialSection}
                     onPrimaryPhotoChange={setPhotoUrl}
+                    onCompletionPercentChange={setCompletionPercent}
                   />
                 </div>
               </div>

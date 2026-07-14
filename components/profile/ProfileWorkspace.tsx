@@ -78,6 +78,7 @@ export type ProfileWorkspaceProps = {
   initialPhotos: ManagedProfilePhoto[];
   initialSection?: string | null;
   onPrimaryPhotoChange?: (url: string | null) => void;
+  onCompletionPercentChange?: (percent: number) => void;
 };
 
 const inputClassName =
@@ -133,6 +134,7 @@ export default function ProfileWorkspace({
   initialPhotos,
   initialSection,
   onPrimaryPhotoChange,
+  onCompletionPercentChange,
 }: ProfileWorkspaceProps) {
   const [profile, setProfile] = useState<Profile>(initialProfile);
   const [coreValues, setCoreValues] = useState<string[]>(initialCoreValues);
@@ -155,6 +157,10 @@ export default function ProfileWorkspace({
   });
   const completionPercent = calculateProfileCompletionPercent(completionSections);
   const showCompletionUi = completionPercent < 100;
+
+  useEffect(() => {
+    onCompletionPercentChange?.(completionPercent);
+  }, [completionPercent, onCompletionPercentChange]);
 
   useEffect(() => {
     if (!openSection) return;

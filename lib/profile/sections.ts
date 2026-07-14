@@ -48,8 +48,8 @@ export type ProfileSectionDefinition = {
 export const PROFILE_SECTIONS: ProfileSectionDefinition[] = [
   {
     id: 'photo',
-    title: 'Profile photo',
-    description: 'A clear recent photo helps people recognize you.',
+    title: 'Profile photos',
+    description: 'Add up to 6 photos. Your primary photo appears first.',
     editable: true,
   },
   {
