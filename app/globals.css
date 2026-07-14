@@ -154,41 +154,45 @@
 }
 
 /* ------------------------------------------------------------------ */
-/* Forge Button System — shape + hierarchy source of truth             */
-/* Softened rectangular silhouette (NOT pills). Restrained metallic.   */
-/* Tier 1 = navy metallic primary · Tier 2 = quiet outline · Tier 3 = link */
+/* Forge Button System — APPROVED geometry + metallic construction     */
+/* Outer frame: exactly 4px · Inner face: exactly 3px · NOT pills      */
+/* Tier 1 = forged metallic badge · Tier 2 = quiet outline · Tier 3 = link */
 /* ------------------------------------------------------------------ */
 
 .forge-btn {
-  --forge-btn-radius: 0.375rem; /* ~6px — architectural, not pill */
-  --forge-btn-frame: 1.5px;
+  --forge-btn-outer-radius: 4px;
+  --forge-btn-inner-radius: 3px;
+  --forge-btn-radius: 4px; /* Tier 2 / shared silhouette token */
+  --forge-btn-frame-thickness: 2.5px;
+  --forge-btn-height: 48px;
+  --forge-btn-pad-x: 32px;
+  box-sizing: border-box;
   position: relative;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 0.5rem;
-  min-height: 2.875rem;
-  padding: 0.8rem 1.55rem;
-  border-radius: var(--forge-btn-radius);
-  border-style: solid;
-  border-width: var(--forge-btn-frame);
+  min-height: var(--forge-btn-height);
+  height: var(--forge-btn-height);
+  padding: 0;
+  margin: 0;
+  border: none;
+  border-radius: var(--forge-btn-outer-radius);
   font-family: inherit;
-  font-size: 0.8125rem;
-  font-weight: 600;
-  letter-spacing: 0.09em;
-  line-height: 1.2;
+  font-size: 14px;
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  line-height: 1;
   text-transform: uppercase;
   text-decoration: none;
   cursor: pointer;
   user-select: none;
   -webkit-tap-highlight-color: transparent;
+  overflow: visible;
+  isolation: isolate;
   transition:
-    transform 160ms ease,
-    box-shadow 160ms ease,
-    background-color 160ms ease,
-    border-color 160ms ease,
-    color 160ms ease,
-    opacity 160ms ease;
+    transform 140ms ease,
+    box-shadow 140ms ease,
+    filter 140ms ease;
 }
 
 .forge-btn:focus-visible {
@@ -199,219 +203,404 @@
 .forge-btn:disabled,
 .forge-btn[aria-disabled='true'] {
   cursor: not-allowed;
-  opacity: 0.55;
-  transform: none;
-  box-shadow: none;
+  pointer-events: none;
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .forge-btn {
-    transition: none;
+  .forge-btn,
+  .forge-btn__face,
+  .forge-btn__spinner {
+    transition: none !important;
+    animation: none !important;
   }
 }
 
-/* Tier 1 — Premium / Primary CTA (navy metallic) */
-.forge-btn--tier1 {
-  color: #ffffff;
-  border-color: transparent;
-  background:
-    linear-gradient(
-      180deg,
-      color-mix(in srgb, var(--forge-navy) 88%, #ffffff) 0%,
-      var(--forge-navy) 42%,
-      var(--forge-navy-deep) 100%
-    )
-      padding-box,
-    linear-gradient(
-      145deg,
-      #f4f6f8 0%,
-      #d7dde5 22%,
-      #9aa3af 48%,
-      #c5ccd6 68%,
-      #eef1f4 100%
-    )
-      border-box;
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.28),
-    inset 0 -1px 0 rgba(0, 0, 0, 0.22),
-    0 1px 0 rgba(255, 255, 255, 0.35),
-    0 8px 18px rgba(11, 45, 92, 0.16);
-  isolation: isolate;
-}
-
-.forge-btn--tier1::before {
-  content: '';
-  position: absolute;
-  inset: 2px 2px auto 2px;
-  height: 44%;
-  border-radius: calc(var(--forge-btn-radius) - 2px) calc(var(--forge-btn-radius) - 2px) 45% 45%;
-  background: linear-gradient(
-    180deg,
-    rgba(255, 255, 255, 0.2) 0%,
-    rgba(255, 255, 255, 0.06) 55%,
-    rgba(255, 255, 255, 0) 100%
-  );
-  pointer-events: none;
-  z-index: 0;
-}
-
-.forge-btn--tier1 > * {
+/* Shared label / face shell */
+.forge-btn__face {
+  box-sizing: border-box;
   position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  min-height: inherit;
+  padding: 0 var(--forge-btn-pad-x);
+  border-radius: var(--forge-btn-inner-radius);
+  overflow: hidden;
   z-index: 1;
 }
 
-.forge-btn--tier1:hover:not(:disabled):not([aria-disabled='true']) {
+.forge-btn__label {
+  position: relative;
+  z-index: 2;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  white-space: nowrap;
+}
+
+.forge-btn__spinner {
+  width: 0.85em;
+  height: 0.85em;
+  border: 1.5px solid currentColor;
+  border-right-color: transparent;
+  border-radius: 50%;
+  animation: forge-btn-spin 0.7s linear infinite;
+}
+
+@keyframes forge-btn-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* ------------------------------------------------------------------ */
+/* Tier 1 — forged metallic badge                                      */
+/* Layers: silver exterior → light/dark silver → graphite separator →  */
+/* recessed face → upper glass → lower depth → outer shadow            */
+/* ------------------------------------------------------------------ */
+
+.forge-btn--tier1 {
+  /* Polished silver exterior frame (full perimeter) */
+  background:
+    linear-gradient(
+      160deg,
+      #ffffff 0%,
+      #f2f4f7 12%,
+      #d5dbe3 28%,
+      #9aa3af 46%,
+      #c8ced6 62%,
+      #eef1f4 78%,
+      #b8c0ca 90%,
+      #f7f8fa 100%
+    );
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.55),
+    0 6px 14px rgba(11, 45, 92, 0.14),
+    0 2px 4px rgba(26, 35, 50, 0.12),
+    inset 0 1px 0 rgba(255, 255, 255, 0.85),
+    inset 0 -1px 0 rgba(90, 101, 117, 0.35);
+  padding: var(--forge-btn-frame-thickness);
+  color: #ffffff;
+}
+
+/* Graphite separator ring between silver frame and face */
+.forge-btn--tier1::before {
+  content: '';
+  position: absolute;
+  inset: var(--forge-btn-frame-thickness);
+  border-radius: var(--forge-btn-inner-radius);
+  box-shadow:
+    0 0 0 1px rgba(42, 49, 60, 0.55),
+    inset 0 0 0 0.5px rgba(26, 35, 50, 0.35);
+  pointer-events: none;
+  z-index: 2;
+}
+
+.forge-btn--tier1 .forge-btn__face {
+  /* Recessed Forge Navy face — #0B2D5C */
   background:
     linear-gradient(
       180deg,
-      color-mix(in srgb, var(--forge-navy) 78%, #ffffff) 0%,
-      var(--forge-navy) 40%,
+      color-mix(in srgb, var(--forge-navy) 92%, #ffffff) 0%,
+      var(--forge-navy) 38%,
+      var(--forge-navy) 72%,
       var(--forge-navy-deep) 100%
-    )
-      padding-box,
-    linear-gradient(
-      145deg,
-      #ffffff 0%,
-      #e3e7ec 24%,
-      #a8b0bb 50%,
-      #d0d6de 72%,
-      #f7f8fa 100%
-    )
-      border-box;
+    );
   box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.32),
-    inset 0 -1px 0 rgba(0, 0, 0, 0.2),
-    0 1px 0 rgba(255, 255, 255, 0.4),
-    0 10px 22px rgba(11, 45, 92, 0.2);
-  transform: translateY(-1px);
+    inset 0 2px 3px rgba(0, 0, 0, 0.28),
+    inset 0 -1px 0 rgba(255, 255, 255, 0.06);
+  color: #ffffff;
 }
 
-.forge-btn--tier1:active:not(:disabled):not([aria-disabled='true']) {
-  transform: translateY(0);
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.16),
-    inset 0 2px 4px rgba(0, 0, 0, 0.22),
-    0 3px 8px rgba(11, 45, 92, 0.14);
+/* Restrained upper glass reflection — upper portion only */
+.forge-btn--tier1 .forge-btn__face::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  height: 38%;
+  border-radius: var(--forge-btn-inner-radius) var(--forge-btn-inner-radius) 0 0;
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.16) 0%,
+    rgba(255, 255, 255, 0.05) 55%,
+    rgba(255, 255, 255, 0) 100%
+  );
+  pointer-events: none;
+  z-index: 1;
 }
 
-/* Material samples — review only; not standard product actions */
-.forge-btn--tier1-face-white {
-  color: #1a2332;
+.forge-btn--tier1:hover:not(:disabled):not([aria-disabled='true']):not([data-loading='true']) {
+  filter: brightness(1.03);
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.65),
+    0 7px 16px rgba(11, 45, 92, 0.16),
+    0 2px 5px rgba(26, 35, 50, 0.14),
+    inset 0 1px 0 rgba(255, 255, 255, 0.92),
+    inset 0 -1px 0 rgba(90, 101, 117, 0.4);
+  transform: translateY(-0.5px);
+}
+
+.forge-btn--tier1:active:not(:disabled):not([aria-disabled='true']):not([data-loading='true']),
+.forge-btn--tier1[data-pressed='true'] {
+  transform: translateY(1px);
+  filter: brightness(0.98);
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.35),
+    0 2px 6px rgba(11, 45, 92, 0.12),
+    inset 0 1px 0 rgba(255, 255, 255, 0.55),
+    inset 0 -1px 0 rgba(90, 101, 117, 0.3);
+}
+
+/* Soft Slate / pale face — official Tier 1 on deep navy surfaces */
+.forge-btn--tier1-face-soft-slate,
+.forge-btn--tier1-on-dark {
+  color: var(--forge-navy);
+}
+
+.forge-btn--tier1-face-soft-slate .forge-btn__face,
+.forge-btn--tier1-on-dark .forge-btn__face {
   background:
-    linear-gradient(180deg, #ffffff 0%, #f4f6f8 55%, #e8ebf0 100%) padding-box,
     linear-gradient(
-      145deg,
-      #f8f9fb 0%,
-      #d7dde5 22%,
-      #9aa3af 48%,
-      #c5ccd6 68%,
-      #eef1f4 100%
-    )
-      border-box;
+      180deg,
+      #f4f6f8 0%,
+      var(--forge-app-background) 42%,
+      #dde2e9 100%
+    );
+  box-shadow:
+    inset 0 2px 3px rgba(90, 101, 117, 0.18),
+    inset 0 -1px 0 rgba(255, 255, 255, 0.55);
+  color: var(--forge-navy);
+}
+
+.forge-btn--tier1-face-soft-slate .forge-btn__face::before,
+.forge-btn--tier1-on-dark .forge-btn__face::before {
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.55) 0%,
+    rgba(255, 255, 255, 0.18) 55%,
+    rgba(255, 255, 255, 0) 100%
+  );
+}
+
+/* Material studies — review only */
+.forge-btn--tier1-face-white {
+  color: var(--forge-navy);
+}
+
+.forge-btn--tier1-face-white .forge-btn__face {
+  background: linear-gradient(180deg, #ffffff 0%, #f7f8fa 50%, #eef1f4 100%);
+  box-shadow:
+    inset 0 2px 3px rgba(90, 101, 117, 0.12),
+    inset 0 -1px 0 rgba(255, 255, 255, 0.7);
+  color: var(--forge-navy);
+}
+
+.forge-btn--tier1-face-white .forge-btn__face::before {
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.7) 0%,
+    rgba(255, 255, 255, 0.2) 55%,
+    rgba(255, 255, 255, 0) 100%
+  );
 }
 
 .forge-btn--tier1-face-graphite {
-  color: #ffffff;
-  background:
-    linear-gradient(180deg, #7a8492 0%, #5c6674 45%, #4a5360 100%) padding-box,
-    linear-gradient(
-      145deg,
-      #f4f6f8 0%,
-      #d7dde5 22%,
-      #9aa3af 48%,
-      #c5ccd6 68%,
-      #eef1f4 100%
-    )
-      border-box;
+  color: #f4f6f8;
+}
+
+.forge-btn--tier1-face-graphite .forge-btn__face {
+  background: linear-gradient(180deg, #6b7583 0%, #5a6575 45%, #4a5360 100%);
+  color: #f4f6f8;
 }
 
 .forge-btn--tier1-face-red {
   color: #ffffff;
+}
+
+.forge-btn--tier1-face-red .forge-btn__face {
   background:
     linear-gradient(
       180deg,
-      color-mix(in srgb, var(--forge-red) 82%, #ffffff) 0%,
-      var(--forge-red) 42%,
+      color-mix(in srgb, var(--forge-red) 88%, #ffffff) 0%,
+      var(--forge-red) 40%,
       var(--forge-red-deep) 100%
-    )
-      padding-box,
-    linear-gradient(
-      145deg,
-      #f4f6f8 0%,
-      #d7dde5 22%,
-      #9aa3af 48%,
-      #c5ccd6 68%,
-      #eef1f4 100%
-    )
-      border-box;
+    );
+  color: #ffffff;
 }
 
-/* Tier 2 — Secondary Option (quiet outline; no heavy metallic frame) */
+/* Disabled — flattened depth, quieter frame (not opacity-only).
+   Loading retains metallic construction (excluded via :not([data-loading])). */
+.forge-btn--tier1:disabled:not([data-loading='true']),
+.forge-btn--tier1[aria-disabled='true']:not([data-loading='true']) {
+  filter: none;
+  transform: none;
+  background: linear-gradient(160deg, #e8ebf0 0%, #c5ccd6 40%, #d7dde5 70%, #eef1f4 100%);
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.4),
+    0 2px 4px rgba(11, 45, 92, 0.06),
+    inset 0 1px 0 rgba(255, 255, 255, 0.5);
+}
+
+.forge-btn--tier1:disabled:not([data-loading='true']) .forge-btn__face,
+.forge-btn--tier1[aria-disabled='true']:not([data-loading='true']) .forge-btn__face {
+  background: color-mix(in srgb, var(--forge-navy) 55%, #8a93a0);
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.12);
+  color: rgba(255, 255, 255, 0.78);
+}
+
+.forge-btn--tier1:disabled:not([data-loading='true']) .forge-btn__face::before,
+.forge-btn--tier1[aria-disabled='true']:not([data-loading='true']) .forge-btn__face::before {
+  opacity: 0.25;
+}
+
+.forge-btn--tier1-on-dark:disabled:not([data-loading='true']) .forge-btn__face,
+.forge-btn--tier1-on-dark[aria-disabled='true']:not([data-loading='true']) .forge-btn__face,
+.forge-btn--tier1-face-soft-slate:disabled:not([data-loading='true']) .forge-btn__face,
+.forge-btn--tier1-face-soft-slate[aria-disabled='true']:not([data-loading='true']) .forge-btn__face {
+  background: color-mix(in srgb, var(--forge-app-background) 70%, #8a93a0);
+  color: color-mix(in srgb, var(--forge-navy) 55%, #8a93a0);
+}
+
+/* Loading — preserve geometry; announce via aria-busy */
+.forge-btn--tier1[data-loading='true'] {
+  cursor: wait;
+  pointer-events: none;
+}
+
+.forge-btn--tier1[data-loading='true'] .forge-btn__label {
+  gap: 0.55rem;
+}
+
+/* ------------------------------------------------------------------ */
+/* Tier 2 — Quiet Premium supporting action (same silhouette family)   */
+/* ------------------------------------------------------------------ */
+
 .forge-btn--tier2 {
+  height: var(--forge-btn-height);
+  min-height: var(--forge-btn-height);
+  padding: 0 var(--forge-btn-pad-x);
+  border-radius: var(--forge-btn-radius);
+  border: 1px solid color-mix(in srgb, var(--forge-navy) 28%, var(--forge-silver));
+  background: color-mix(in srgb, #ffffff 70%, transparent);
   color: var(--forge-navy);
-  background: color-mix(in srgb, var(--forge-surface) 86%, transparent);
-  border-color: color-mix(in srgb, var(--forge-silver) 70%, var(--forge-navy));
-  border-width: 1px;
-  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.65);
+  box-shadow: none;
+}
+
+.forge-btn--tier2 .forge-btn__face {
+  padding: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  overflow: visible;
+}
+
+.forge-btn--tier2 .forge-btn__face::before {
+  display: none;
 }
 
 .forge-btn--tier2:hover:not(:disabled):not([aria-disabled='true']) {
   background: var(--forge-surface);
-  border-color: color-mix(in srgb, var(--forge-navy) 35%, var(--forge-silver));
-  box-shadow: 0 4px 12px rgba(11, 45, 92, 0.08);
-  transform: translateY(-1px);
+  border-color: color-mix(in srgb, var(--forge-navy) 42%, var(--forge-silver));
+  transform: translateY(-0.5px);
 }
 
-.forge-btn--tier2:active:not(:disabled):not([aria-disabled='true']) {
-  transform: translateY(0);
+.forge-btn--tier2:active:not(:disabled):not([aria-disabled='true']),
+.forge-btn--tier2[data-pressed='true'] {
+  transform: translateY(1px);
   background: var(--forge-surface-muted);
-  box-shadow: inset 0 1px 2px rgba(11, 45, 92, 0.08);
+}
+
+.forge-btn--tier2:disabled,
+.forge-btn--tier2[aria-disabled='true'] {
+  background: var(--forge-surface-muted);
+  border-color: color-mix(in srgb, var(--forge-silver) 80%, var(--forge-navy));
+  color: color-mix(in srgb, var(--forge-navy) 45%, #8a93a0);
+  transform: none;
 }
 
 .forge-btn--tier2-on-dark {
-  color: #ffffff;
-  background: transparent;
-  border-color: rgba(255, 255, 255, 0.72);
+  color: rgba(255, 255, 255, 0.94);
+  background: rgba(255, 255, 255, 0.04);
+  border-color: rgba(232, 235, 240, 0.72);
   box-shadow: none;
 }
 
 .forge-btn--tier2-on-dark:hover:not(:disabled):not([aria-disabled='true']) {
-  background: rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.1);
   border-color: #ffffff;
-  box-shadow: none;
 }
 
 .forge-btn--tier2-on-dark:focus-visible {
-  outline-color: #ffffff;
+  outline-color: #e8ebf0;
 }
 
-/* Tier 3 — Minimalist link */
+.forge-btn--tier2-on-dark:disabled,
+.forge-btn--tier2-on-dark[aria-disabled='true'] {
+  background: rgba(255, 255, 255, 0.03);
+  border-color: rgba(232, 235, 240, 0.35);
+  color: rgba(255, 255, 255, 0.45);
+}
+
+/* ------------------------------------------------------------------ */
+/* Tier 3 — typography-only                                            */
+/* ------------------------------------------------------------------ */
+
 .forge-btn--tier3 {
-  min-height: auto;
-  padding: 0.2rem 0;
+  height: auto;
+  min-height: 44px;
+  padding: 0.65rem 0.25rem;
   border: none;
   border-radius: 0;
   background: transparent;
   color: var(--forge-navy);
   box-shadow: none;
+  letter-spacing: 0.12em;
+}
+
+.forge-btn--tier3 .forge-btn__face {
+  padding: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  overflow: visible;
+}
+
+.forge-btn--tier3 .forge-btn__face::before {
+  display: none;
+}
+
+.forge-btn--tier3 .forge-btn__label {
   text-decoration: underline;
   text-decoration-thickness: 1px;
-  text-underline-offset: 0.28em;
-  letter-spacing: 0.08em;
+  text-underline-offset: 0.3em;
 }
 
 .forge-btn--tier3:hover:not(:disabled):not([aria-disabled='true']) {
   color: var(--forge-navy-deep);
-  text-decoration-thickness: 1.5px;
   transform: none;
 }
 
+.forge-btn--tier3:hover:not(:disabled):not([aria-disabled='true']) .forge-btn__label {
+  text-decoration-thickness: 1.5px;
+}
+
 .forge-btn--tier3:active:not(:disabled):not([aria-disabled='true']) {
-  opacity: 0.85;
+  opacity: 0.88;
+  transform: none;
+}
+
+.forge-btn--tier3:disabled,
+.forge-btn--tier3[aria-disabled='true'] {
+  color: color-mix(in srgb, var(--forge-navy) 40%, #8a93a0);
 }
 
 .forge-btn--tier3-on-dark {
-  color: rgba(255, 255, 255, 0.92);
+  color: rgba(255, 255, 255, 0.94);
 }
 
 .forge-btn--tier3-on-dark:hover:not(:disabled):not([aria-disabled='true']) {
@@ -419,23 +608,44 @@
 }
 
 .forge-btn--tier3-on-dark:focus-visible {
-  outline-color: #ffffff;
+  outline-color: #e8ebf0;
 }
 
+.forge-btn--tier3-on-dark:disabled,
+.forge-btn--tier3-on-dark[aria-disabled='true'] {
+  color: rgba(255, 255, 255, 0.4);
+}
+
+/* Sizes — radius stays 4px / 3px on every size and full-width */
 .forge-btn--block {
   width: 100%;
+  border-radius: var(--forge-btn-outer-radius);
+}
+
+.forge-btn--block.forge-btn--tier2 {
+  border-radius: var(--forge-btn-radius);
 }
 
 .forge-btn--sm {
-  min-height: 2.4rem;
-  padding: 0.55rem 1.15rem;
-  font-size: 0.75rem;
+  --forge-btn-height: 40px;
+  --forge-btn-pad-x: 22px;
+  height: var(--forge-btn-height);
+  min-height: var(--forge-btn-height);
+  font-size: 12px;
 }
 
 .forge-btn--lg {
-  min-height: 3.25rem;
-  padding: 0.95rem 1.85rem;
-  font-size: 0.875rem;
+  --forge-btn-height: 56px;
+  --forge-btn-pad-x: 40px;
+  height: var(--forge-btn-height);
+  min-height: var(--forge-btn-height);
+  font-size: 15px;
+}
+
+.forge-btn--tier3.forge-btn--sm,
+.forge-btn--tier3.forge-btn--lg {
+  height: auto;
+  min-height: 44px;
 }
 
 /* Selective Forge red — brand moments / destructive text only (not glossy primary) */
