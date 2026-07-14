@@ -44,10 +44,22 @@ export function validateProfilePhoto(file: File): string | null {
     return 'Please upload a JPG, PNG, WEBP, or GIF image.';
   }
 
-  if (file.size > PROFILE_PHOTO_MAX_BYTES) {
-    return 'Image must be 5 MB or smaller.';
-  }
+  // Original size is no longer rejected here — client processing resizes/compresses
+  // before upload. Processed output is validated separately.
+  return null;
+}
 
+/** Validate a processed upload blob before storage write. */
+export function validateProcessedProfilePhoto(file: File): string | null {
+  if (!file || file.size === 0) {
+    return 'We couldn’t process that image. Try another photo.';
+  }
+  if (file.type !== 'image/jpeg' && file.type !== 'image/webp' && file.type !== 'image/png') {
+    return 'That photo format isn’t supported yet.';
+  }
+  if (file.size > PROFILE_PHOTO_MAX_BYTES) {
+    return 'The processed image is still too large. Try a different photo.';
+  }
   return null;
 }
 

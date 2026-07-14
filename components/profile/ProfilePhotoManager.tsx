@@ -10,16 +10,22 @@ import {
   replaceProfilePhoto,
   setPrimaryProfilePhoto,
 } from '@/app/actions/profile';
+import ProfilePhotoCropDialog from '@/components/profile/ProfilePhotoCropDialog';
 import {
   MAX_PROFILE_PHOTOS,
   MAX_PROFILE_PHOTOS_MESSAGE,
   PROFILE_PHOTO_BUCKET,
   canAddAnotherProfilePhoto,
   createUniqueProfilePhotoPath,
-  isAllowedProfilePhotoType,
   type ManagedProfilePhoto,
-  validateProfilePhoto,
+  validateProcessedProfilePhoto,
 } from '@/lib/profile-photo';
+import {
+  type LoadedProfileImage,
+  calmProfilePhotoError,
+  loadProfileImage,
+  validateSelectedProfilePhoto,
+} from '@/lib/profile/image-processing';
 import { createClient } from '@/lib/supabase/client';
 
 export type ProfilePhotoManagerProps = {
@@ -31,6 +37,12 @@ export type ProfilePhotoManagerProps = {
   }) => void;
 };
 
+type PendingCrop = {
+  image: LoadedProfileImage;
+  fileName: string;
+  replaceId: string | null;
+};
+
 export default function ProfilePhotoManager({
   initialPhotos,
   disabled,
@@ -40,6 +52,7 @@ export default function ProfilePhotoManager({
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [replaceTargetId, setReplaceTargetId] = useState<string | null>(null);
+  const [pendingCrop, setPendingCrop] = useState<PendingCrop | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const applyResult = (result: {
@@ -62,14 +75,10 @@ export default function ProfilePhotoManager({
     return true;
   };
 
-  const uploadFile = async (file: File, replaceId: string | null) => {
-    const validationError = validateProfilePhoto(file);
-    if (validationError) {
-      setError(validationError);
-      return;
-    }
-    if (!isAllowedProfilePhotoType(file.type)) {
-      setError('Please upload a JPG, PNG, WEBP, or GIF image.');
+  const uploadProcessedFile = async (file: File, replaceId: string | null) => {
+    const processedError = validateProcessedProfilePhoto(file);
+    if (processedError) {
+      setError(processedError);
       return;
     }
     if (!replaceId && !canAddAnotherProfilePhoto(photos.length)) {
@@ -88,13 +97,13 @@ export default function ProfilePhotoManager({
       } = await supabase.auth.getUser();
       if (!user) throw new Error('You must be signed in to upload a profile photo.');
 
-      const filePath = createUniqueProfilePhotoPath(user.id, file.type);
+      const filePath = createUniqueProfilePhotoPath(user.id, 'image/jpeg');
       uploadedPath = filePath;
       const { error: uploadError } = await supabase.storage
         .from(PROFILE_PHOTO_BUCKET)
         .upload(filePath, file, {
           upsert: false,
-          contentType: file.type,
+          contentType: 'image/jpeg',
           cacheControl: '3600',
         });
       if (uploadError) throw new Error('Could not upload your profile photo.');
@@ -119,7 +128,7 @@ export default function ProfilePhotoManager({
           // Best-effort orphan cleanup.
         }
       }
-      setError(err instanceof Error ? err.message : 'Upload failed.');
+      setError(calmProfilePhotoError(err));
     } finally {
       setBusy(false);
       setReplaceTargetId(null);
@@ -129,8 +138,37 @@ export default function ProfilePhotoManager({
 
   const onFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
+    const replaceId = replaceTargetId;
+    event.target.value = '';
     if (!file) return;
-    await uploadFile(file, replaceTargetId);
+
+    if (!replaceId && !canAddAnotherProfilePhoto(photos.length)) {
+      setError(MAX_PROFILE_PHOTOS_MESSAGE);
+      return;
+    }
+
+    const selectionError = validateSelectedProfilePhoto(file);
+    if (selectionError) {
+      setError(selectionError.message);
+      setReplaceTargetId(null);
+      return;
+    }
+
+    setError(null);
+    setBusy(true);
+    try {
+      const loaded = await loadProfileImage(file);
+      setPendingCrop({
+        image: loaded,
+        fileName: file.name,
+        replaceId,
+      });
+    } catch (err) {
+      setError(calmProfilePhotoError(err));
+      setReplaceTargetId(null);
+    } finally {
+      setBusy(false);
+    }
   };
 
   const movePhoto = async (photoId: string, direction: -1 | 1) => {
@@ -183,8 +221,8 @@ export default function ProfilePhotoManager({
       <div>
         <p className="text-sm font-medium text-[#0B2D5C]">Your photos</p>
         <p className="mt-1 text-sm text-[#5A6575]">
-          Add up to {MAX_PROFILE_PHOTOS}. The primary photo appears first on your
-          profile and in Discovery.
+          Add up to {MAX_PROFILE_PHOTOS}. Large phone photos are resized before upload.
+          The primary photo appears first on your profile and in Discovery.
         </p>
       </div>
 
@@ -287,7 +325,7 @@ export default function ProfilePhotoManager({
         <input
           ref={fileInputRef}
           type="file"
-          accept="image/jpeg,image/png,image/webp,image/gif"
+          accept="image/jpeg,image/jpg,image/png,image/webp,image/gif,.jpg,.jpeg,.png,.webp,.gif,.heic,.heif"
           className="hidden"
           disabled={disabled || busy}
           onChange={(event) => void onFileChange(event)}
@@ -308,7 +346,7 @@ export default function ProfilePhotoManager({
           <p className="text-center text-xs text-[#5A6575]">{MAX_PROFILE_PHOTOS_MESSAGE}</p>
         ) : (
           <p className="text-center text-xs text-[#8A93A0]">
-            {photos.length} of {MAX_PROFILE_PHOTOS} photos
+            {photos.length} of {MAX_PROFILE_PHOTOS} photos · JPG, PNG, or WebP
           </p>
         )}
       </div>
@@ -317,6 +355,22 @@ export default function ProfilePhotoManager({
         <p className="text-sm text-red-600" role="alert">
           {error}
         </p>
+      ) : null}
+
+      {pendingCrop ? (
+        <ProfilePhotoCropDialog
+          image={pendingCrop.image}
+          fileName={pendingCrop.fileName}
+          onCancel={() => {
+            setPendingCrop(null);
+            setReplaceTargetId(null);
+          }}
+          onConfirm={(processed) => {
+            const replaceId = pendingCrop.replaceId;
+            setPendingCrop(null);
+            void uploadProcessedFile(processed, replaceId);
+          }}
+        />
       ) : null}
     </div>
   );

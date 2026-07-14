@@ -277,7 +277,7 @@ describe('multiple profile photos', () => {
     assert.match(manager, /Add photo/);
     assert.match(manager, /Remove/);
     assert.match(workspace, /ProfilePhotoManager/);
-    assert.match(presentation, /additional-photos/);
+    assert.match(presentation, /ProfilePhotoGallery/);
     assert.match(actions, /export async function addProfilePhoto/);
     assert.match(actions, /export async function deleteProfilePhoto/);
     assert.match(actions, /export async function setPrimaryProfilePhoto/);

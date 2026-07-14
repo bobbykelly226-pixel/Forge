@@ -1,8 +1,8 @@
 'use client';
 
 import Link from 'next/link';
-import { MapPin } from 'lucide-react';
 
+import ProfilePhotoGallery from '@/components/discovery/ProfilePhotoGallery';
 import {
   DISCOVERY_NEUTRAL_ALIGNMENT_LABEL,
   DISCOVERY_SURFACED_REASON,
@@ -12,14 +12,9 @@ import {
   firstNameFromFullName,
   nonEmptyStringList,
   resolvePublicLocation,
-  stablePortraitGradient,
   type PublicDiscoveryProfile,
 } from '@/lib/discovery/presentation';
-import {
-  additionalPublicPhotoUrls,
-  resolveAuthoritativeProfilePhotoUrl,
-  sortPhotosByDisplayOrder,
-} from '@/lib/profile-photo';
+import { sortPhotosByDisplayOrder } from '@/lib/profile-photo';
 
 export type PublicProfilePresentationProps = {
   profile: PublicDiscoveryProfile;
@@ -50,23 +45,12 @@ export default function PublicProfilePresentation({
 }: PublicProfilePresentationProps) {
   const firstName = firstNameFromFullName(profile.full_name);
   const orderedPhotos = sortPhotosByDisplayOrder(profile.photos ?? []);
-  const primaryUrl =
-    resolveAuthoritativeProfilePhotoUrl({
-      photos: orderedPhotos,
-      legacyProfilePhotoUrl: profile.profile_photo_url,
-    }) ?? profile.profile_photo_url;
-  const portrait = primaryUrl
-    ? `url(${primaryUrl})`
-    : stablePortraitGradient(profile.id);
-  const additionalPhotos =
-    orderedPhotos.length > 0 ? additionalPublicPhotoUrls(orderedPhotos) : [];
   const details = collectPublicProfileDetails(profile);
   const enjoy = nonEmptyStringList(profile.things_i_enjoy);
   const musicArtists = nonEmptyStringList(profile.favorite_music_artists);
   const musicSongs = nonEmptyStringList(profile.favorite_music_songs);
   const hasMusic = musicArtists.length > 0 || musicSongs.length > 0;
   const locationLabel = resolvePublicLocation(profile);
-  const hasLocation = Boolean(locationLabel);
   const hasAbout = Boolean(profile.short_bio?.trim());
   const hasMoreAbout = Boolean(profile.more_about?.trim());
 
@@ -79,56 +63,24 @@ export default function PublicProfilePresentation({
       {header ? <div className="mb-5 lg:mb-8">{header}</div> : null}
 
       <div className="lg:grid lg:grid-cols-[minmax(18rem,38%)_minmax(0,1fr)] lg:items-start lg:gap-10 xl:gap-12">
-        <div className="space-y-4 lg:sticky lg:top-8">
-          <div
-            className="relative aspect-[3/4] w-full overflow-hidden rounded-[2rem] lg:aspect-[3/4] lg:rounded-[2.25rem]"
-            style={{
-              backgroundImage: portrait,
-              backgroundSize: 'cover',
-              backgroundPosition: 'center',
-            }}
-          >
-            <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-[#0B2D5C]/70 to-transparent px-6 pb-6 pt-24 lg:px-7 lg:pb-7">
-              <h1
-                className="text-[2.25rem] leading-none text-white lg:text-[2.5rem]"
-                style={{ fontFamily: 'var(--font-discovery-display), Georgia, serif' }}
-              >
-                {firstName}
-                {profile.age != null ? `, ${profile.age}` : ''}
-              </h1>
-              {hasLocation ? (
-                <p className="mt-2 inline-flex items-center gap-1.5 text-sm text-white/90">
-                  <MapPin className="h-3.5 w-3.5" aria-hidden="true" />
-                  {locationLabel}
-                </p>
-              ) : null}
-            </div>
-            {mode === 'self-preview' ? (
-              <div className="absolute left-4 top-4">
-                <span className="inline-flex items-center rounded-full bg-[#F8F6F2]/95 px-3.5 py-1.5 text-xs font-semibold uppercase tracking-[0.12em] text-[#0B2D5C] shadow-sm">
-                  Your Preview
-                </span>
-              </div>
-            ) : null}
-          </div>
-
-          {additionalPhotos.length > 0 ? (
-            <section aria-label="Additional photos" data-testid="additional-photos">
-              <div className="grid grid-cols-3 gap-2 sm:gap-2.5">
-                {additionalPhotos.map((url) => (
-                  <div
-                    key={url}
-                    className="aspect-[3/4] overflow-hidden rounded-2xl bg-[#EEF2F7]"
-                    style={{
-                      backgroundImage: `url(${url})`,
-                      backgroundSize: 'cover',
-                      backgroundPosition: 'center',
-                    }}
-                  />
-                ))}
-              </div>
-            </section>
-          ) : null}
+        <div className="lg:sticky lg:top-8">
+          <ProfilePhotoGallery
+            profileId={profile.id}
+            firstName={firstName}
+            age={profile.age}
+            locationLabel={locationLabel}
+            legacyProfilePhotoUrl={profile.profile_photo_url}
+            photos={orderedPhotos}
+            badge={
+              mode === 'self-preview' ? (
+                <div className="absolute left-4 top-4 z-[1]">
+                  <span className="inline-flex items-center rounded-full bg-[#F8F6F2]/95 px-3.5 py-1.5 text-xs font-semibold uppercase tracking-[0.12em] text-[#0B2D5C] shadow-sm">
+                    Your Preview
+                  </span>
+                </div>
+              ) : null
+            }
+          />
         </div>
 
         <div className="mt-8 space-y-6 lg:mt-0 lg:space-y-8">
