@@ -1,0 +1,15 @@
+export {
+  ensureFoundationalRecords,
+  getCurrentUserAppState,
+  getCurrentUserPrivateDetails,
+  getCurrentUserPreferences,
+  getCurrentUserProfile,
+  getCurrentUserProfileAnswers,
+  getCurrentUserProfilePhotos,
+  hasCompletedOnboarding,
+  updateOnboardingProgress,
+  upsertCurrentUserProfile,
+  type DataAccessError,
+  type DataAccessResult,
+  type DataAccessSuccess,
+} from './profile';
