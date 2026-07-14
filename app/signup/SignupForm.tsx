@@ -1,7 +1,7 @@
 'use client';
 
+import { signUpWithEmail } from '@/app/actions/auth';
 import Header from '@/components/Header';
-import { createClient } from '@/lib/supabase/client';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
@@ -22,29 +22,25 @@ export default function SignupForm() {
     setIsSubmitting(true);
 
     try {
-      const supabase = createClient();
-      const emailRedirectTo = `${window.location.origin}/app`;
-
-      const { data, error: signUpError } = await supabase.auth.signUp({
+      const result = await signUpWithEmail({
         email,
         password,
-        options: {
-          emailRedirectTo,
-        },
+        origin: window.location.origin,
       });
 
-      if (signUpError) {
-        setError(signUpError.message);
-        return;
-      }
-
-      if (data.session) {
-        router.push('/app');
+      if (result.status === 'session') {
+        router.push('/onboarding');
         router.refresh();
         return;
       }
 
-      setMessage('Check your email to confirm your account, then sign in.');
+      if (result.status === 'error' || !result.success) {
+        setError(result.message);
+        return;
+      }
+
+      // confirmation_sent or already_registered — calm guidance, never a false delivery claim for errors
+      setMessage(result.message);
     } catch {
       setError('Something went wrong. Please try again.');
     } finally {

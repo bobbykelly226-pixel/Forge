@@ -1,23 +1,11 @@
-export const COMPATIBILITY_QUESTION_KEYS = {
-  relationshipIntention: 'relationship_intention',
-  coreValues: 'core_values',
-} as const;
+/**
+ * @deprecated Prefer `@/lib/types/profile-answers`.
+ * Kept so older imports continue to resolve to the same keys.
+ */
 
-export type CompatibilityQuestionKey =
-  (typeof COMPATIBILITY_QUESTION_KEYS)[keyof typeof COMPATIBILITY_QUESTION_KEYS];
-
-/** JSONB payload stored per question. V1 uses string or string[]. */
-export type CompatibilityAnswerValue = string | string[];
-
-export type CompatibilityAnswer = {
-  id: string;
-  user_id: string;
-  question_key: string;
-  answer_value: CompatibilityAnswerValue;
-  created_at: string;
-  updated_at: string;
-};
-
-export type CompatibilityAnswersMap = Partial<
-  Record<CompatibilityQuestionKey, CompatibilityAnswerValue>
->;
+export {
+  PROFILE_ANSWER_KEYS as COMPATIBILITY_QUESTION_KEYS,
+  type ProfileAnswerKey as CompatibilityQuestionKey,
+  type ProfileAnswerValue as CompatibilityAnswerValue,
+  type ProfileAnswersMap as CompatibilityAnswersMap,
+} from '@/lib/types/profile-answers';

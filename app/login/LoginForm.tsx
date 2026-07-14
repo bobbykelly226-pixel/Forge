@@ -1,10 +1,14 @@
 'use client';
 
+import { requestPasswordReset, resendConfirmationEmail } from '@/app/actions/auth';
 import Header from '@/components/Header';
+import { AUTH_RESEND_COOLDOWN_MS, mapAuthErrorMessage } from '@/lib/auth/messages';
 import { createClient } from '@/lib/supabase/client';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+
+const RESEND_COOLDOWN_SECONDS = Math.ceil(AUTH_RESEND_COOLDOWN_MS / 1000);
 
 export default function LoginForm() {
   const router = useRouter();
@@ -14,11 +18,26 @@ export default function LoginForm() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
+  const [message, setMessage] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isResending, setIsResending] = useState(false);
+  const [isResetting, setIsResetting] = useState(false);
+  const [cooldownSeconds, setCooldownSeconds] = useState(0);
+
+  useEffect(() => {
+    if (cooldownSeconds <= 0) {
+      return;
+    }
+    const timer = window.setTimeout(() => {
+      setCooldownSeconds((seconds) => Math.max(0, seconds - 1));
+    }, 1000);
+    return () => window.clearTimeout(timer);
+  }, [cooldownSeconds]);
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setError(null);
+    setMessage(null);
     setIsSubmitting(true);
 
     try {
@@ -29,16 +48,64 @@ export default function LoginForm() {
       });
 
       if (signInError) {
-        setError(signInError.message);
+        setError(mapAuthErrorMessage(signInError.message));
         return;
       }
 
-      router.push(redirectTo);
+      router.push(redirectTo.startsWith('/') ? redirectTo : '/app');
       router.refresh();
     } catch {
       setError('Something went wrong. Please try again.');
     } finally {
       setIsSubmitting(false);
+    }
+  };
+
+  const handleResend = async () => {
+    if (cooldownSeconds > 0) return;
+    setError(null);
+    setMessage(null);
+    setIsResending(true);
+
+    try {
+      const result = await resendConfirmationEmail({
+        email,
+        origin: window.location.origin,
+      });
+
+      setCooldownSeconds(RESEND_COOLDOWN_SECONDS);
+
+      if (!result.success) {
+        setError(result.message);
+        return;
+      }
+
+      setMessage(result.message);
+    } catch {
+      setError('Could not resend the confirmation email. Please try again.');
+    } finally {
+      setIsResending(false);
+    }
+  };
+
+  const handleReset = async () => {
+    setError(null);
+    setMessage(null);
+    setIsResetting(true);
+    try {
+      const result = await requestPasswordReset({
+        email,
+        origin: window.location.origin,
+      });
+      if (!result.success) {
+        setError(result.message);
+        return;
+      }
+      setMessage(result.message);
+    } catch {
+      setError('Could not start a password reset. Please try again.');
+    } finally {
+      setIsResetting(false);
     }
   };
 
@@ -95,6 +162,12 @@ export default function LoginForm() {
             </p>
           )}
 
+          {message && (
+            <p className="text-sm text-green-700 bg-green-50 border border-green-200 rounded-2xl px-4 py-3" role="status">
+              {message}
+            </p>
+          )}
+
           <button
             type="submit"
             disabled={isSubmitting}
@@ -103,6 +176,29 @@ export default function LoginForm() {
             {isSubmitting ? 'Signing in...' : 'Sign in'}
           </button>
         </form>
+
+        <div className="mt-5 flex flex-col items-center gap-3 text-center">
+          <button
+            type="button"
+            onClick={() => void handleResend()}
+            disabled={isResending || !email || cooldownSeconds > 0}
+            className="text-sm font-medium text-[#0B2D5C] underline-offset-2 hover:underline disabled:opacity-50"
+          >
+            {isResending
+              ? 'Sending confirmation email...'
+              : cooldownSeconds > 0
+                ? `Resend available in ${cooldownSeconds}s`
+                : 'Resend confirmation email'}
+          </button>
+          <button
+            type="button"
+            onClick={() => void handleReset()}
+            disabled={isResetting || !email}
+            className="text-sm font-medium text-[#5A6575] underline-offset-2 hover:underline disabled:opacity-50"
+          >
+            {isResetting ? 'Sending reset link...' : 'Reset password'}
+          </button>
+        </div>
 
         <p className="text-center text-[#444444] mt-8">
           New to Forge?{' '}
