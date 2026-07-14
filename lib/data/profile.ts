@@ -170,6 +170,52 @@ export async function getCurrentUserPrivateDetails(): Promise<
   return { success: true, data };
 }
 
+type PrivateDetailsUpsertFields = Partial<
+  Pick<
+    TablesUpdate<'profile_private_details'>,
+    | 'date_of_birth'
+    | 'postal_code'
+    | 'latitude'
+    | 'longitude'
+    | 'location_city'
+    | 'location_region'
+    | 'location_country'
+    | 'location_place_id'
+    | 'location_provider'
+  >
+>;
+
+/** Upsert owner-only private details for the authenticated user. */
+export async function upsertCurrentUserPrivateDetails(
+  fields: PrivateDetailsUpsertFields
+): Promise<DataAccessResult<Tables<'profile_private_details'>>> {
+  const ctx = await requireUserWithFoundation();
+  if (ctx.authError || !ctx.user) {
+    return { success: false, message: 'You must be signed in.' };
+  }
+  if (ctx.foundationError) {
+    return { success: false, message: ctx.foundationMessage };
+  }
+
+  const payload: TablesInsert<'profile_private_details'> = {
+    user_id: ctx.user.id,
+    ...fields,
+  };
+
+  const { data, error } = await ctx.supabase
+    .from('profile_private_details')
+    .upsert(payload, { onConflict: 'user_id' })
+    .select('*')
+    .single();
+
+  if (error) {
+    console.error('upsertCurrentUserPrivateDetails:', error.message);
+    return { success: false, message: 'Could not save private profile details.' };
+  }
+
+  return { success: true, data };
+}
+
 /** Current user's discovery preferences. */
 export async function getCurrentUserPreferences(): Promise<
   DataAccessResult<Tables<'profile_preferences'> | null>

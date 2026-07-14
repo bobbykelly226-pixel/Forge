@@ -1,6 +1,12 @@
 export const PROFILE_PHOTO_BUCKET = 'profile-photos';
 export const PROFILE_PHOTO_MAX_BYTES = 5 * 1024 * 1024;
 
+/** Centralized maximum for profile photo collection. */
+export const MAX_PROFILE_PHOTOS = 6;
+
+export const MAX_PROFILE_PHOTOS_MESSAGE =
+  'You can add up to 6 photos. Remove one to add another.';
+
 export const PROFILE_PHOTO_ALLOWED_TYPES = [
   'image/jpeg',
   'image/png',
@@ -38,10 +44,22 @@ export function validateProfilePhoto(file: File): string | null {
     return 'Please upload a JPG, PNG, WEBP, or GIF image.';
   }
 
-  if (file.size > PROFILE_PHOTO_MAX_BYTES) {
-    return 'Image must be 5 MB or smaller.';
-  }
+  // Original size is no longer rejected here — client processing resizes/compresses
+  // before upload. Processed output is validated separately.
+  return null;
+}
 
+/** Validate a processed upload blob before storage write. */
+export function validateProcessedProfilePhoto(file: File): string | null {
+  if (!file || file.size === 0) {
+    return 'We couldn’t process that image. Try another photo.';
+  }
+  if (file.type !== 'image/jpeg' && file.type !== 'image/webp' && file.type !== 'image/png') {
+    return 'That photo format isn’t supported yet.';
+  }
+  if (file.size > PROFILE_PHOTO_MAX_BYTES) {
+    return 'The processed image is still too large. Try a different photo.';
+  }
   return null;
 }
 
@@ -111,4 +129,79 @@ export const PROFILE_PHOTO_REVALIDATE_PATHS = [
   '/profile',
   '/profile/edit',
   '/profile/preview',
+  '/discovery',
 ] as const;
+
+export type ManagedProfilePhoto = {
+  id: string;
+  storage_path: string;
+  display_order: number;
+  is_primary: boolean;
+  public_url: string | null;
+};
+
+export function toManagedProfilePhoto(photo: {
+  id: string;
+  storage_path: string;
+  display_order: number;
+  is_primary: boolean;
+}): ManagedProfilePhoto {
+  return {
+    id: photo.id,
+    storage_path: photo.storage_path,
+    display_order: photo.display_order,
+    is_primary: photo.is_primary,
+    public_url: buildPublicProfilePhotoUrl(photo.storage_path),
+  };
+}
+
+/** Photos sorted by display_order for public + management presentation. */
+export function sortPhotosByDisplayOrder<T extends { display_order?: number | null }>(
+  photos: readonly T[]
+): T[] {
+  return [...photos].sort((a, b) => (a.display_order ?? 0) - (b.display_order ?? 0));
+}
+
+/**
+ * Ordered public photo URLs by saved display_order.
+ * Empty slots are omitted.
+ */
+export function orderedPublicPhotoUrls(input: {
+  photos: PhotoLike[] | null | undefined;
+  legacyProfilePhotoUrl?: string | null;
+}): string[] {
+  const photos = sortPhotosByDisplayOrder(input.photos ?? []);
+  if (photos.length === 0) {
+    const legacy = input.legacyProfilePhotoUrl?.trim();
+    return legacy ? [legacy] : [];
+  }
+
+  return photos
+    .map((photo) =>
+      photo.storage_path ? buildPublicProfilePhotoUrl(photo.storage_path) : null
+    )
+    .filter((url): url is string => Boolean(url));
+}
+
+/** Non-primary photos in saved display_order for public gallery strips. */
+export function additionalPublicPhotoUrls(
+  photos: PhotoLike[] | null | undefined
+): string[] {
+  return sortPhotosByDisplayOrder(photos ?? [])
+    .filter((photo) => !photo.is_primary)
+    .map((photo) =>
+      photo.storage_path ? buildPublicProfilePhotoUrl(photo.storage_path) : null
+    )
+    .filter((url): url is string => Boolean(url));
+}
+
+export function nextDisplayOrder(
+  photos: ReadonlyArray<{ display_order: number }>
+): number {
+  if (photos.length === 0) return 0;
+  return Math.max(...photos.map((photo) => photo.display_order)) + 1;
+}
+
+export function canAddAnotherProfilePhoto(currentCount: number): boolean {
+  return currentCount < MAX_PROFILE_PHOTOS;
+}

@@ -63,6 +63,7 @@ describe('profile photo replacement paths', () => {
       '/profile',
       '/profile/edit',
       '/profile/preview',
+      '/discovery',
     ]);
   });
 });

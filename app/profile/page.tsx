@@ -4,8 +4,9 @@ import { redirect } from 'next/navigation';
 import ForgeAppCanvas from '@/components/ForgeAppCanvas';
 import MyProfileHub from '@/components/profile/MyProfileHub';
 import { loadCurrentUserProfileBundle } from '@/lib/data/bundle';
-import { resolveAuthoritativeProfilePhotoUrl } from '@/lib/profile-photo';
-import { MY_PROFILE_SECTION_CARDS } from '@/lib/profile-v2-mock';
+import { resolveAuthoritativeProfilePhotoUrl, toManagedProfilePhoto } from '@/lib/profile-photo';
+import { PROFILE_ANSWER_KEYS } from '@/lib/types/profile-answers';
+import type { Profile } from '@/lib/types/profile';
 import { createClient } from '@/lib/supabase/server';
 
 const display = Fraunces({
@@ -22,14 +23,18 @@ const sans = Manrope({
 
 export const metadata = {
   title: 'My Profile | Forge',
-  description: 'Your home inside Forge — manage how you show up.',
+  description: 'Your home inside Forge — manage and edit how you show up.',
   robots: {
     index: false,
     follow: false,
   },
 };
 
-export default async function MyProfileHubPage() {
+type PageProps = {
+  searchParams?: Promise<{ section?: string }>;
+};
+
+export default async function MyProfileHubPage({ searchParams }: PageProps) {
   const supabase = await createClient();
   const {
     data: { user },
@@ -39,7 +44,19 @@ export default async function MyProfileHubPage() {
     redirect('/login?redirectTo=/profile');
   }
 
-  const bundle = await loadCurrentUserProfileBundle();
+  const resolvedParams = searchParams ? await searchParams : {};
+  const initialSection = resolvedParams.section ?? null;
+
+  const [bundle, privateDetailsResult] = await Promise.all([
+    loadCurrentUserProfileBundle(),
+    supabase
+      .from('profile_private_details')
+      .select(
+        'postal_code, latitude, longitude, location_place_id, location_provider'
+      )
+      .eq('user_id', user.id)
+      .maybeSingle(),
+  ]);
 
   if (!bundle.success) {
     return (
@@ -56,45 +73,42 @@ export default async function MyProfileHubPage() {
     );
   }
 
-  const { profile, photos, completionPercent, completionSections, appState } = bundle.data;
+  const { profile, photos, completionPercent, appState, answers } = bundle.data;
+
+  if (!profile) {
+    // Ensure a row exists for the workspace by creating a minimal editable shell.
+    redirect('/onboarding');
+  }
+
   const displayName =
-    profile?.full_name?.trim().split(/\s+/)[0] ||
-    profile?.full_name?.trim() ||
+    profile.full_name?.trim().split(/\s+/)[0] ||
+    profile.full_name?.trim() ||
     'Your profile';
 
   const photoUrl = resolveAuthoritativeProfilePhotoUrl({
     photos,
-    legacyProfilePhotoUrl: profile?.profile_photo_url,
+    legacyProfilePhotoUrl: profile.profile_photo_url,
   });
 
-  const checklist = completionSections.map((section) => ({
-    id: section.id,
-    label: section.label,
-    complete: section.complete,
-  }));
+  const coreValuesRaw = answers[PROFILE_ANSWER_KEYS.coreValues];
+  const coreValues = Array.isArray(coreValuesRaw)
+    ? coreValuesRaw.filter((item): item is string => typeof item === 'string')
+    : [];
 
-  const sectionCards = MY_PROFILE_SECTION_CARDS.map((card) => {
-    if (card.comingSoon) {
-      return card;
-    }
-    const match = completionSections.find((section) => section.id === card.id);
-    if (card.id === 'signals') {
-      return card;
-    }
-    if (card.id === 'privacy' || card.id === 'subscription') {
-      return card;
-    }
-    if (match) {
-      return {
-        ...card,
-        href: '/profile/edit',
-      };
-    }
-    return { ...card, href: '/profile/edit' };
-  });
+  const hasRelationshipAlignment =
+    typeof answers[PROFILE_ANSWER_KEYS.relationshipIntention] === 'string' &&
+    Boolean(
+      (answers[PROFILE_ANSWER_KEYS.relationshipIntention] as string).trim().length
+    );
+  const hasImportantAlignmentFactors = coreValues.length > 0;
 
   const discoveryCanEnable =
-    profile?.status !== 'deactivated' && profile?.status !== 'hidden';
+    profile.status !== 'deactivated' && profile.status !== 'hidden';
+
+  const profileForWorkspace = {
+    ...profile,
+    profile_photo_url: photoUrl,
+  } as Profile;
 
   return (
     <ForgeAppCanvas
@@ -105,19 +119,24 @@ export default async function MyProfileHubPage() {
     >
       <MyProfileHub
         displayName={displayName}
-        location={profile?.location ?? null}
+        location={profile.location ?? null}
         photoUrl={photoUrl}
         completionPercent={completionPercent}
-        checklist={checklist}
-        sectionCards={sectionCards}
         onboardingCompleted={Boolean(appState?.onboarding_completed)}
         discoveryVisibility={{
-          enabled: Boolean(profile?.is_discoverable),
+          enabled: Boolean(profile.is_discoverable),
           canEnable: discoveryCanEnable,
           message: discoveryCanEnable
             ? null
             : 'Discovery visibility is unavailable for this account.',
         }}
+        profile={profileForWorkspace}
+        privateDetails={privateDetailsResult.data ?? null}
+        coreValues={coreValues}
+        hasRelationshipAlignment={hasRelationshipAlignment}
+        hasImportantAlignmentFactors={hasImportantAlignmentFactors}
+        photos={photos.map(toManagedProfilePhoto)}
+        initialSection={initialSection}
       />
     </ForgeAppCanvas>
   );

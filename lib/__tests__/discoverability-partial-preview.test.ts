@@ -107,12 +107,12 @@ describe('discovery visibility without completion gate', () => {
   it('shows only meaningful saved fields on partial profiles', () => {
     const details = collectPublicProfileDetails(
       sparseProfile({
-        faith_importance: 'Important',
+        faith_identity: 'catholic',
         education: '',
         pets: '  ',
       })
     );
-    assert.deepEqual(details, [{ label: 'Faith', value: 'Important' }]);
+    assert.deepEqual(details, [{ label: 'Faith', value: 'Catholic' }]);
   });
 
   it('documents that turning visibility off removes from new Discovery results', () => {

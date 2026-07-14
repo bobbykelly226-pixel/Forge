@@ -331,6 +331,11 @@ export type Database = {
           created_at: string
           date_of_birth: string | null
           latitude: number | null
+          location_city: string | null
+          location_country: string | null
+          location_place_id: string | null
+          location_provider: string | null
+          location_region: string | null
           longitude: number | null
           postal_code: string | null
           updated_at: string
@@ -340,6 +345,11 @@ export type Database = {
           created_at?: string
           date_of_birth?: string | null
           latitude?: number | null
+          location_city?: string | null
+          location_country?: string | null
+          location_place_id?: string | null
+          location_provider?: string | null
+          location_region?: string | null
           longitude?: number | null
           postal_code?: string | null
           updated_at?: string
@@ -349,6 +359,11 @@ export type Database = {
           created_at?: string
           date_of_birth?: string | null
           latitude?: number | null
+          location_city?: string | null
+          location_country?: string | null
+          location_place_id?: string | null
+          location_provider?: string | null
+          location_region?: string | null
           longitude?: number | null
           postal_code?: string | null
           updated_at?: string
@@ -361,10 +376,14 @@ export type Database = {
           age: number | null
           career: string | null
           children: string | null
+          children_count: string | null
           created_at: string
           drinking: string | null
           education: string | null
+          faith_identity: string | null
           faith_importance: string | null
+          faith_other: string | null
+          faith_tradition: string | null
           favorite_music_artists: string[]
           favorite_music_songs: string[]
           full_name: string | null
@@ -373,28 +392,38 @@ export type Database = {
           is_discoverable: boolean
           last_active_at: string | null
           location: string | null
+          location_city: string | null
+          location_country: string | null
+          location_region: string | null
           more_about: string | null
           onboarding_completed_at: string | null
+          open_to_partner_with_children: string | null
           pets: string | null
           profile_completed_at: string | null
           profile_photo_url: string | null
           relationship_goal: string | null
           relocation: string | null
           service_background: string | null
+          service_backgrounds: string[]
           short_bio: string | null
           smoking: string | null
           status: Database["public"]["Enums"]["profile_status"]
           things_i_enjoy: string[]
+          unmapped_legacy_fields: Json
           updated_at: string
         }
         Insert: {
           age?: number | null
           career?: string | null
           children?: string | null
+          children_count?: string | null
           created_at?: string
           drinking?: string | null
           education?: string | null
+          faith_identity?: string | null
           faith_importance?: string | null
+          faith_other?: string | null
+          faith_tradition?: string | null
           favorite_music_artists?: string[]
           favorite_music_songs?: string[]
           full_name?: string | null
@@ -403,28 +432,38 @@ export type Database = {
           is_discoverable?: boolean
           last_active_at?: string | null
           location?: string | null
+          location_city?: string | null
+          location_country?: string | null
+          location_region?: string | null
           more_about?: string | null
           onboarding_completed_at?: string | null
+          open_to_partner_with_children?: string | null
           pets?: string | null
           profile_completed_at?: string | null
           profile_photo_url?: string | null
           relationship_goal?: string | null
           relocation?: string | null
           service_background?: string | null
+          service_backgrounds?: string[]
           short_bio?: string | null
           smoking?: string | null
           status?: Database["public"]["Enums"]["profile_status"]
           things_i_enjoy?: string[]
+          unmapped_legacy_fields?: Json
           updated_at?: string
         }
         Update: {
           age?: number | null
           career?: string | null
           children?: string | null
+          children_count?: string | null
           created_at?: string
           drinking?: string | null
           education?: string | null
+          faith_identity?: string | null
           faith_importance?: string | null
+          faith_other?: string | null
+          faith_tradition?: string | null
           favorite_music_artists?: string[]
           favorite_music_songs?: string[]
           full_name?: string | null
@@ -433,18 +472,24 @@ export type Database = {
           is_discoverable?: boolean
           last_active_at?: string | null
           location?: string | null
+          location_city?: string | null
+          location_country?: string | null
+          location_region?: string | null
           more_about?: string | null
           onboarding_completed_at?: string | null
+          open_to_partner_with_children?: string | null
           pets?: string | null
           profile_completed_at?: string | null
           profile_photo_url?: string | null
           relationship_goal?: string | null
           relocation?: string | null
           service_background?: string | null
+          service_backgrounds?: string[]
           short_bio?: string | null
           smoking?: string | null
           status?: Database["public"]["Enums"]["profile_status"]
           things_i_enjoy?: string[]
+          unmapped_legacy_fields?: Json
           updated_at?: string
         }
         Relationships: []
@@ -556,21 +601,30 @@ export type Database = {
           age: number | null
           career: string | null
           children: string | null
+          children_count: string | null
           drinking: string | null
           education: string | null
+          faith_identity: string | null
           faith_importance: string | null
+          faith_other: string | null
+          faith_tradition: string | null
           favorite_music_artists: string[] | null
           favorite_music_songs: string[] | null
           full_name: string | null
           has_children: string | null
           id: string | null
           location: string | null
+          location_city: string | null
+          location_country: string | null
+          location_region: string | null
           more_about: string | null
+          open_to_partner_with_children: string | null
           pets: string | null
           profile_photo_url: string | null
           relationship_goal: string | null
           relocation: string | null
           service_background: string | null
+          service_backgrounds: string[] | null
           short_bio: string | null
           smoking: string | null
           things_i_enjoy: string[] | null
@@ -579,21 +633,30 @@ export type Database = {
           age?: number | null
           career?: string | null
           children?: string | null
+          children_count?: string | null
           drinking?: string | null
           education?: string | null
+          faith_identity?: string | null
           faith_importance?: string | null
+          faith_other?: string | null
+          faith_tradition?: string | null
           favorite_music_artists?: string[] | null
           favorite_music_songs?: string[] | null
           full_name?: string | null
           has_children?: string | null
           id?: string | null
           location?: string | null
+          location_city?: string | null
+          location_country?: string | null
+          location_region?: string | null
           more_about?: string | null
+          open_to_partner_with_children?: string | null
           pets?: string | null
           profile_photo_url?: string | null
           relationship_goal?: string | null
           relocation?: string | null
           service_background?: string | null
+          service_backgrounds?: string[] | null
           short_bio?: string | null
           smoking?: string | null
           things_i_enjoy?: string[] | null
@@ -602,21 +665,30 @@ export type Database = {
           age?: number | null
           career?: string | null
           children?: string | null
+          children_count?: string | null
           drinking?: string | null
           education?: string | null
+          faith_identity?: string | null
           faith_importance?: string | null
+          faith_other?: string | null
+          faith_tradition?: string | null
           favorite_music_artists?: string[] | null
           favorite_music_songs?: string[] | null
           full_name?: string | null
           has_children?: string | null
           id?: string | null
           location?: string | null
+          location_city?: string | null
+          location_country?: string | null
+          location_region?: string | null
           more_about?: string | null
+          open_to_partner_with_children?: string | null
           pets?: string | null
           profile_photo_url?: string | null
           relationship_goal?: string | null
           relocation?: string | null
           service_background?: string | null
+          service_backgrounds?: string[] | null
           short_bio?: string | null
           smoking?: string | null
           things_i_enjoy?: string[] | null
@@ -645,6 +717,56 @@ export type Database = {
         }
         Returns: string
       }
+      forge_map_legacy_profile_row: {
+        Args: { p: Database["public"]["Tables"]["profiles"]["Row"] }
+        Returns: {
+          age: number | null
+          career: string | null
+          children: string | null
+          children_count: string | null
+          created_at: string
+          drinking: string | null
+          education: string | null
+          faith_identity: string | null
+          faith_importance: string | null
+          faith_other: string | null
+          faith_tradition: string | null
+          favorite_music_artists: string[]
+          favorite_music_songs: string[]
+          full_name: string | null
+          has_children: string | null
+          id: string
+          is_discoverable: boolean
+          last_active_at: string | null
+          location: string | null
+          location_city: string | null
+          location_country: string | null
+          location_region: string | null
+          more_about: string | null
+          onboarding_completed_at: string | null
+          open_to_partner_with_children: string | null
+          pets: string | null
+          profile_completed_at: string | null
+          profile_photo_url: string | null
+          relationship_goal: string | null
+          relocation: string | null
+          service_background: string | null
+          service_backgrounds: string[]
+          short_bio: string | null
+          smoking: string | null
+          status: Database["public"]["Enums"]["profile_status"]
+          things_i_enjoy: string[]
+          unmapped_legacy_fields: Json
+          updated_at: string
+        }
+        SetofOptions: {
+          from: "profiles"
+          to: "profiles"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      forge_normalize_token: { Args: { raw: string }; Returns: string }
       forge_order_pair: {
         Args: { p_user_a: string; p_user_b: string }
         Returns: {
@@ -662,21 +784,30 @@ export type Database = {
           age: number | null
           career: string | null
           children: string | null
+          children_count: string | null
           drinking: string | null
           education: string | null
+          faith_identity: string | null
           faith_importance: string | null
+          faith_other: string | null
+          faith_tradition: string | null
           favorite_music_artists: string[] | null
           favorite_music_songs: string[] | null
           full_name: string | null
           has_children: string | null
           id: string | null
           location: string | null
+          location_city: string | null
+          location_country: string | null
+          location_region: string | null
           more_about: string | null
+          open_to_partner_with_children: string | null
           pets: string | null
           profile_photo_url: string | null
           relationship_goal: string | null
           relocation: string | null
           service_background: string | null
+          service_backgrounds: string[] | null
           short_bio: string | null
           smoking: string | null
           things_i_enjoy: string[] | null
@@ -694,21 +825,30 @@ export type Database = {
           age: number | null
           career: string | null
           children: string | null
+          children_count: string | null
           drinking: string | null
           education: string | null
+          faith_identity: string | null
           faith_importance: string | null
+          faith_other: string | null
+          faith_tradition: string | null
           favorite_music_artists: string[] | null
           favorite_music_songs: string[] | null
           full_name: string | null
           has_children: string | null
           id: string | null
           location: string | null
+          location_city: string | null
+          location_country: string | null
+          location_region: string | null
           more_about: string | null
+          open_to_partner_with_children: string | null
           pets: string | null
           profile_photo_url: string | null
           relationship_goal: string | null
           relocation: string | null
           service_background: string | null
+          service_backgrounds: string[] | null
           short_bio: string | null
           smoking: string | null
           things_i_enjoy: string[] | null

@@ -6,19 +6,32 @@ import {
   DISCOVERY_NEUTRAL_ALIGNMENT_LABEL,
   DISCOVERY_NEUTRAL_CONFIDENCE,
 } from './config';
+import {
+  collectStructuredPublicProfileDetails,
+  publicLocationLabel,
+} from '@/lib/profile/public-labels';
 
 export type PublicDiscoveryProfile = {
   id: string;
   full_name: string | null;
   age: number | null;
   location: string | null;
+  location_city?: string | null;
+  location_region?: string | null;
+  location_country?: string | null;
   relationship_goal: string | null;
+  faith_identity?: string | null;
+  faith_tradition?: string | null;
+  faith_other?: string | null;
   faith_importance: string | null;
   service_background: string | null;
+  service_backgrounds?: string[] | null;
   short_bio: string | null;
   more_about: string | null;
   children: string | null;
   has_children: string | null;
+  children_count?: string | null;
+  open_to_partner_with_children?: string | null;
   education: string | null;
   pets: string | null;
   smoking: string | null;
@@ -29,6 +42,14 @@ export type PublicDiscoveryProfile = {
   favorite_music_artists: string[] | null;
   favorite_music_songs: string[] | null;
   profile_photo_url: string | null;
+  /** Ordered public photos (primary included). Empty slots omitted. */
+  photos?: Array<{
+    id?: string;
+    storage_path: string;
+    display_order: number;
+    is_primary: boolean;
+    public_url?: string | null;
+  }> | null;
 };
 
 export type DiscoveryFeedCardModel = {
@@ -79,38 +100,9 @@ export function stablePortraitGradient(profileId: string): string {
 
 /** Collect only non-empty public detail fields — never invent placeholders. */
 export function collectPublicProfileDetails(
-  profile: Pick<
-    PublicDiscoveryProfile,
-    | 'relationship_goal'
-    | 'faith_importance'
-    | 'children'
-    | 'has_children'
-    | 'education'
-    | 'career'
-    | 'pets'
-    | 'smoking'
-    | 'drinking'
-    | 'relocation'
-    | 'service_background'
-  >
+  profile: PublicDiscoveryProfile
 ): PublicProfileDetail[] {
-  const rows: Array<{ label: string; value: string | null }> = [
-    { label: 'Relationship goal', value: profile.relationship_goal },
-    { label: 'Faith', value: profile.faith_importance },
-    { label: 'Children', value: profile.children },
-    { label: 'Has children', value: profile.has_children },
-    { label: 'Education', value: profile.education },
-    { label: 'Career', value: profile.career },
-    { label: 'Pets', value: profile.pets },
-    { label: 'Smoking', value: profile.smoking },
-    { label: 'Drinking', value: profile.drinking },
-    { label: 'Relocation', value: profile.relocation },
-    { label: 'Service', value: profile.service_background },
-  ];
-
-  return rows
-    .filter((row): row is { label: string; value: string } => hasMeaningfulText(row.value))
-    .map((row) => ({ label: row.label, value: row.value.trim() }));
+  return collectStructuredPublicProfileDetails(profile);
 }
 
 export function nonEmptyStringList(values: string[] | null | undefined): string[] {
@@ -118,12 +110,16 @@ export function nonEmptyStringList(values: string[] | null | undefined): string[
   return values.map((item) => item.trim()).filter((item) => item.length > 0);
 }
 
+export function resolvePublicLocation(profile: PublicDiscoveryProfile): string | null {
+  return publicLocationLabel(profile);
+}
+
 export function toDiscoveryFeedCard(profile: PublicDiscoveryProfile): DiscoveryFeedCardModel {
   return {
     id: profile.id,
     firstName: firstNameFromFullName(profile.full_name),
     age: profile.age,
-    location: hasMeaningfulText(profile.location) ? profile.location.trim() : null,
+    location: resolvePublicLocation(profile),
     alignmentLabel: DISCOVERY_NEUTRAL_ALIGNMENT_LABEL,
     confidence: DISCOVERY_NEUTRAL_CONFIDENCE,
     hasImportantFactors: false,

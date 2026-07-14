@@ -10,8 +10,14 @@ import {
 } from '@/app/actions/onboarding';
 import {
   PROFILE_ANSWER_KEYS,
+  CORE_VALUES_OPTIONS,
   type ProfileAnswersMap,
 } from '@/lib/types/profile-answers';
+import {
+  RELATIONSHIP_GOAL_OPTIONS,
+  type RelationshipGoalValue,
+} from '@/lib/profile/structured-options';
+import { mapLegacyRelationshipGoal } from '@/lib/profile/legacy-mapping';
 
 const TOTAL_STEPS = 4;
 const DESKTOP_MEDIA_QUERY = '(min-width: 640px)';
@@ -22,23 +28,10 @@ const primaryButtonClassName =
 const secondaryButtonClassName =
   'inline-flex w-full items-center justify-center rounded-2xl border border-[#0B2D5C]/20 bg-white px-8 py-4 text-lg font-semibold text-[#0B2D5C] transition hover:bg-[#F8F6F2]';
 
-const INTENTION_OPTIONS = [
-  'Long-term relationship',
-  'Marriage-minded',
-  'Open to serious dating',
-  'Not sure yet, but intentional',
-] as const;
+/** Shared with Profile Edit — one source of truth for relationship goals. */
+const INTENTION_OPTIONS = RELATIONSHIP_GOAL_OPTIONS;
 
-const VALUES_OPTIONS = [
-  'Faith',
-  'Family',
-  'Communication',
-  'Emotional maturity',
-  'Loyalty',
-  'Shared goals',
-  'Service',
-  'Growth',
-] as const;
+const VALUES_OPTIONS = CORE_VALUES_OPTIONS;
 
 function ProgressBar({ step }: { step: number }) {
   const progress = (step / TOTAL_STEPS) * 100;
@@ -97,6 +90,15 @@ function readStringAnswer(
   return typeof value === 'string' ? value : null;
 }
 
+function readRelationshipIntention(
+  answers: ProfileAnswersMap
+): RelationshipGoalValue | null {
+  const raw = readStringAnswer(answers, PROFILE_ANSWER_KEYS.relationshipIntention);
+  if (!raw) return null;
+  const mapped = mapLegacyRelationshipGoal(raw);
+  return mapped.mapped;
+}
+
 function readStringArrayAnswer(
   answers: ProfileAnswersMap,
   key: (typeof PROFILE_ANSWER_KEYS)[keyof typeof PROFILE_ANSWER_KEYS]
@@ -115,8 +117,8 @@ export default function OnboardingShell({
   const [step, setStep] = useState(() =>
     Math.min(TOTAL_STEPS, Math.max(1, initialStep))
   );
-  const [intention, setIntention] = useState<string | null>(() =>
-    readStringAnswer(initialAnswers, PROFILE_ANSWER_KEYS.relationshipIntention)
+  const [intention, setIntention] = useState<RelationshipGoalValue | null>(() =>
+    readRelationshipIntention(initialAnswers)
   );
   const [selectedValues, setSelectedValues] = useState<string[]>(() =>
     readStringArrayAnswer(initialAnswers, PROFILE_ANSWER_KEYS.coreValues)
@@ -180,7 +182,7 @@ export default function OnboardingShell({
     })();
   };
 
-  const selectIntention = (option: string) => {
+  const selectIntention = (option: RelationshipGoalValue) => {
     if (isPending || isFinishing) return;
     setIntention(option);
     setSaveError(null);
@@ -332,11 +334,11 @@ export default function OnboardingShell({
             <div className="space-y-3">
               {INTENTION_OPTIONS.map((option) => (
                 <OptionButton
-                  key={option}
-                  label={option}
-                  selected={intention === option}
+                  key={option.value}
+                  label={option.label}
+                  selected={intention === option.value}
                   disabled={isFinishing}
-                  onClick={() => selectIntention(option)}
+                  onClick={() => selectIntention(option.value)}
                 />
               ))}
             </div>
@@ -405,10 +407,10 @@ export default function OnboardingShell({
               <button
                 type="button"
                 disabled={isFinishing}
-                onClick={() => void handleFinish('/profile/edit')}
+                onClick={() => void handleFinish('/profile')}
                 className="inline-flex w-full items-center justify-center rounded-2xl bg-[#D62828] px-8 py-4 text-lg font-semibold text-white transition hover:bg-[#A61F1F] disabled:opacity-60"
               >
-                {isFinishing ? 'Saving...' : 'Edit Profile'}
+                {isFinishing ? 'Saving...' : 'Manage My Profile'}
               </button>
               <button
                 type="button"
@@ -416,15 +418,7 @@ export default function OnboardingShell({
                 onClick={() => void handleFinish('/profile/preview')}
                 className="inline-flex w-full items-center justify-center rounded-2xl bg-[#0B2D5C] px-8 py-4 text-lg font-semibold text-white transition hover:bg-[#0A2540] disabled:opacity-60"
               >
-                {isFinishing ? 'Saving...' : 'Preview Profile'}
-              </button>
-              <button
-                type="button"
-                disabled={isFinishing}
-                onClick={() => void handleFinish('/profile')}
-                className="inline-flex w-full items-center justify-center rounded-2xl border border-[#0B2D5C]/20 bg-white px-8 py-4 text-lg font-semibold text-[#0B2D5C] transition hover:bg-[#F8F6F2] disabled:opacity-60"
-              >
-                {isFinishing ? 'Saving...' : 'Go to My Profile'}
+                {isFinishing ? 'Saving...' : 'View My Profile'}
               </button>
             </div>
           </section>
