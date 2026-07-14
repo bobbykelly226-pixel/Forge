@@ -7,15 +7,13 @@ import { setDiscoveryVisibilityAction } from '@/app/actions/discovery';
 
 type Props = {
   enabled: boolean;
-  eligible: boolean;
-  completionPercent: number;
+  canEnable: boolean;
   message: string | null;
 };
 
 export default function DiscoveryVisibilityToggle({
   enabled: initialEnabled,
-  eligible,
-  completionPercent,
+  canEnable,
   message,
 }: Props) {
   const router = useRouter();
@@ -26,11 +24,8 @@ export default function DiscoveryVisibilityToggle({
 
   const onToggle = (next: boolean) => {
     if (pending) return;
-    if (next && !eligible) {
-      setError(
-        message ||
-          'Complete your profile checklist before showing yourself in Discovery.'
-      );
+    if (next && !canEnable) {
+      setError(message || 'Discovery visibility is unavailable for this account.');
       return;
     }
 
@@ -67,15 +62,15 @@ export default function DiscoveryVisibilityToggle({
             Show Me in Discovery
           </h2>
           <p className="mt-2 text-sm leading-relaxed text-[#5A6575]">
-            Allow other eligible Forge members to discover your profile. You can turn this off at
-            any time.
+            Allow other Forge members to discover your profile. You can turn this off at any time.
+            Profile completion is optional — share only what you are ready to share.
           </p>
         </div>
         <button
           type="button"
           role="switch"
           aria-checked={enabled}
-          disabled={pending || (!eligible && !enabled)}
+          disabled={pending || (!canEnable && !enabled)}
           onClick={() => onToggle(!enabled)}
           className={`relative h-8 w-14 shrink-0 rounded-full transition ${
             enabled ? 'bg-[#D62828]' : 'bg-[#0B2D5C]/20'
@@ -90,10 +85,9 @@ export default function DiscoveryVisibilityToggle({
         </button>
       </div>
 
-      {!eligible ? (
+      {!canEnable ? (
         <p className="mt-4 rounded-2xl bg-[#F8F6F2] px-4 py-3 text-sm text-[#5A6575]" role="status">
-          Your profile is {completionPercent}% complete. Finish the checklist before enabling
-          Discovery visibility.
+          Discovery visibility is unavailable for this account.
         </p>
       ) : null}
 

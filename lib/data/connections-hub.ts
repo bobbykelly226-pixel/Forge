@@ -28,11 +28,11 @@ export type HubProfileCard = {
   id: string;
   firstName: string;
   age: number | null;
-  location: string;
+  location: string | null;
   alignmentLabel: string;
   confidence: string;
   hasImportantFactors: boolean;
-  aboutPreview: string;
+  aboutPreview: string | null;
   characterSignals: string[];
   portraitGradient: string;
   photoUrl: string | null;
@@ -110,13 +110,11 @@ function toHubCard(profile: PublicDiscoveryProfile | null, id: string): HubProfi
     id: profile.id,
     firstName: firstNameFromFullName(profile.full_name),
     age: profile.age,
-    location: profile.location?.trim() || 'Location shared privately',
+    location: profile.location?.trim() || null,
     alignmentLabel: DISCOVERY_NEUTRAL_ALIGNMENT_LABEL,
     confidence: DISCOVERY_NEUTRAL_CONFIDENCE,
     hasImportantFactors: false,
-    aboutPreview:
-      profile.short_bio?.trim() ||
-      'This Forge member is part of your Connections activity.',
+    aboutPreview: profile.short_bio?.trim() || null,
     characterSignals: [],
     portraitGradient: stablePortraitGradient(profile.id),
     photoUrl: profile.profile_photo_url,

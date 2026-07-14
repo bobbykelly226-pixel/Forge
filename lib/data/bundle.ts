@@ -100,6 +100,7 @@ export async function loadCurrentUserProfileBundle(): Promise<
  * Never includes private details or private answer payloads.
  */
 export type SelfProfilePreview = {
+  id: string;
   full_name: string | null;
   age: number | null;
   location: string | null;
@@ -150,6 +151,7 @@ export async function loadSelfProfilePreview(): Promise<
   return {
     success: true,
     data: {
+      id: profile.id,
       full_name: profile.full_name,
       age: profile.age,
       location: profile.location,

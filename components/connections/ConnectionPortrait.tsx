@@ -62,9 +62,11 @@ export function ConnectionIdentity({
       >
         {title}
       </h3>
-      <p className={`mt-1 text-[#5A6575] ${compact ? 'text-sm' : 'text-[15px]'}`}>
-        {profile.location}
-      </p>
+      {profile.location ? (
+        <p className={`mt-1 text-[#5A6575] ${compact ? 'text-sm' : 'text-[15px]'}`}>
+          {profile.location}
+        </p>
+      ) : null}
     </div>
   );
 }

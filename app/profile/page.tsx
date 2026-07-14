@@ -93,7 +93,9 @@ export default async function MyProfileHubPage() {
     return { ...card, href: '/profile/edit' };
   });
 
-  const discoveryEligible = completionPercent === 100;
+  const discoveryCanEnable =
+    profile?.status !== 'deactivated' && profile?.status !== 'hidden';
+
   return (
     <ForgeAppCanvas
       className={`${display.variable} ${sans.variable}`}
@@ -111,10 +113,10 @@ export default async function MyProfileHubPage() {
         onboardingCompleted={Boolean(appState?.onboarding_completed)}
         discoveryVisibility={{
           enabled: Boolean(profile?.is_discoverable),
-          eligible: discoveryEligible,
-          message: discoveryEligible
+          canEnable: discoveryCanEnable,
+          message: discoveryCanEnable
             ? null
-            : 'Complete your profile checklist before showing yourself in Discovery.',
+            : 'Discovery visibility is unavailable for this account.',
         }}
       />
     </ForgeAppCanvas>

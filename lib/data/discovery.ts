@@ -2,10 +2,6 @@ import { createClient } from '@/lib/supabase/server';
 import type { DataAccessResult } from '@/lib/data/profile';
 import { ensureFoundationalRecords } from '@/lib/data/profile';
 import type { PublicDiscoveryProfile } from '@/lib/discovery/presentation';
-import {
-  calculateProfileCompletionPercent,
-  getProfileCompletionSections,
-} from '@/lib/profile-completion';
 import { loadCurrentUserProfileBundle } from '@/lib/data/bundle';
 
 async function requireUser() {
@@ -26,10 +22,15 @@ async function requireUser() {
 
 export type DiscoveryVisibilityState = {
   enabled: boolean;
-  eligible: boolean;
+  /** Safety only — completion never gates this. */
+  canEnable: boolean;
   completionPercent: number;
   message: string | null;
 };
+
+function isAdministrativelyRestricted(status: string | null | undefined): boolean {
+  return status === 'deactivated' || status === 'hidden';
+}
 
 export async function getDiscoveryVisibilityState(): Promise<
   DataAccessResult<DiscoveryVisibilityState>
@@ -46,17 +47,17 @@ export async function getDiscoveryVisibilityState(): Promise<
 
   const { profile, completionPercent } = bundle.data;
   const enabled = Boolean(profile?.is_discoverable);
-  const eligible = completionPercent === 100 && Boolean(profile?.full_name?.trim());
+  const canEnable = !isAdministrativelyRestricted(profile?.status);
 
   return {
     success: true,
     data: {
       enabled,
-      eligible,
+      canEnable,
       completionPercent,
-      message: eligible
+      message: canEnable
         ? null
-        : 'Complete your profile checklist before showing yourself in Discovery.',
+        : 'Discovery visibility is unavailable for this account.',
     },
   };
 }
@@ -67,19 +68,6 @@ export async function setDiscoveryVisibility(
   const { supabase, user } = await requireUser();
   if (!user) {
     return { success: false, message: 'You must be signed in.' };
-  }
-
-  if (enabled) {
-    const bundle = await loadCurrentUserProfileBundle();
-    if (!bundle.success) {
-      return { success: false, message: bundle.message };
-    }
-    if (bundle.data.completionPercent < 100) {
-      return {
-        success: false,
-        message: 'Complete your profile before showing yourself in Discovery.',
-      };
-    }
   }
 
   const { data, error } = await supabase.rpc('set_my_discovery_visibility', {
@@ -97,7 +85,7 @@ export async function setDiscoveryVisibility(
   const payload = data as {
     ok?: boolean;
     enabled?: boolean;
-    eligible?: boolean;
+    can_enable?: boolean;
     message?: string;
   };
 
@@ -106,7 +94,7 @@ export async function setDiscoveryVisibility(
       success: false,
       message:
         payload?.message ||
-        'Complete your profile before showing yourself in Discovery.',
+        'Discovery visibility is unavailable for this account.',
     };
   }
 
@@ -116,8 +104,8 @@ export async function setDiscoveryVisibility(
       success: true,
       data: {
         enabled: Boolean(payload.enabled),
-        eligible: Boolean(payload.eligible),
-        completionPercent: enabled ? 100 : 0,
+        canEnable: payload.can_enable !== false,
+        completionPercent: 0,
         message: payload.message ?? null,
       },
     };
@@ -275,6 +263,3 @@ export async function loadActionStateForProfiles(
 
   return { success: true, data: result };
 }
-
-/** Re-export completion helpers used by discoverability eligibility checks. */
-export { calculateProfileCompletionPercent, getProfileCompletionSections };

@@ -2,7 +2,10 @@
  * Shared helpers for Discovery presentation (no matching scores).
  */
 
-import { DISCOVERY_NEUTRAL_ALIGNMENT_LABEL, DISCOVERY_NEUTRAL_CONFIDENCE } from './config';
+import {
+  DISCOVERY_NEUTRAL_ALIGNMENT_LABEL,
+  DISCOVERY_NEUTRAL_CONFIDENCE,
+} from './config';
 
 export type PublicDiscoveryProfile = {
   id: string;
@@ -32,15 +35,21 @@ export type DiscoveryFeedCardModel = {
   id: string;
   firstName: string;
   age: number | null;
-  location: string;
+  location: string | null;
   alignmentLabel: string;
   confidence: string;
   hasImportantFactors: boolean;
   importantFactorsSummary?: string;
-  aboutPreview: string;
+  /** Null when the member has not written an About section — do not invent copy. */
+  aboutPreview: string | null;
   characterSignals: string[];
   portraitGradient: string;
   photoUrl: string | null;
+};
+
+export type PublicProfileDetail = {
+  label: string;
+  value: string;
 };
 
 const PORTRAIT_GRADIENTS = [
@@ -49,6 +58,10 @@ const PORTRAIT_GRADIENTS = [
   'linear-gradient(145deg, #2A4060 0%, #8FA3BC 45%, #D9C4B0 100%)',
   'linear-gradient(155deg, #1F3348 0%, #6B7C8C 48%, #C9B8A4 100%)',
 ];
+
+function hasMeaningfulText(value: string | null | undefined): value is string {
+  return typeof value === 'string' && value.trim().length > 0;
+}
 
 export function firstNameFromFullName(fullName: string | null | undefined): string {
   const trimmed = fullName?.trim() ?? '';
@@ -64,18 +77,57 @@ export function stablePortraitGradient(profileId: string): string {
   return PORTRAIT_GRADIENTS[hash % PORTRAIT_GRADIENTS.length]!;
 }
 
+/** Collect only non-empty public detail fields — never invent placeholders. */
+export function collectPublicProfileDetails(
+  profile: Pick<
+    PublicDiscoveryProfile,
+    | 'relationship_goal'
+    | 'faith_importance'
+    | 'children'
+    | 'has_children'
+    | 'education'
+    | 'career'
+    | 'pets'
+    | 'smoking'
+    | 'drinking'
+    | 'relocation'
+    | 'service_background'
+  >
+): PublicProfileDetail[] {
+  const rows: Array<{ label: string; value: string | null }> = [
+    { label: 'Relationship goal', value: profile.relationship_goal },
+    { label: 'Faith', value: profile.faith_importance },
+    { label: 'Children', value: profile.children },
+    { label: 'Has children', value: profile.has_children },
+    { label: 'Education', value: profile.education },
+    { label: 'Career', value: profile.career },
+    { label: 'Pets', value: profile.pets },
+    { label: 'Smoking', value: profile.smoking },
+    { label: 'Drinking', value: profile.drinking },
+    { label: 'Relocation', value: profile.relocation },
+    { label: 'Service', value: profile.service_background },
+  ];
+
+  return rows
+    .filter((row): row is { label: string; value: string } => hasMeaningfulText(row.value))
+    .map((row) => ({ label: row.label, value: row.value.trim() }));
+}
+
+export function nonEmptyStringList(values: string[] | null | undefined): string[] {
+  if (!Array.isArray(values)) return [];
+  return values.map((item) => item.trim()).filter((item) => item.length > 0);
+}
+
 export function toDiscoveryFeedCard(profile: PublicDiscoveryProfile): DiscoveryFeedCardModel {
   return {
     id: profile.id,
     firstName: firstNameFromFullName(profile.full_name),
     age: profile.age,
-    location: profile.location?.trim() || 'Location shared privately',
+    location: hasMeaningfulText(profile.location) ? profile.location.trim() : null,
     alignmentLabel: DISCOVERY_NEUTRAL_ALIGNMENT_LABEL,
     confidence: DISCOVERY_NEUTRAL_CONFIDENCE,
     hasImportantFactors: false,
-    aboutPreview:
-      profile.short_bio?.trim() ||
-      'This Forge member is available to discover. Open their profile to learn more.',
+    aboutPreview: hasMeaningfulText(profile.short_bio) ? profile.short_bio.trim() : null,
     characterSignals: [],
     portraitGradient: stablePortraitGradient(profile.id),
     photoUrl: profile.profile_photo_url,

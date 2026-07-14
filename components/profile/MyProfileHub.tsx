@@ -34,7 +34,7 @@ export type MyProfileHubProps = {
   onboardingCompleted: boolean;
   discoveryVisibility: {
     enabled: boolean;
-    eligible: boolean;
+    canEnable: boolean;
     message: string | null;
   };
 };
@@ -257,8 +257,7 @@ export default function MyProfileHub({
                   <div className="mt-5">
                     <DiscoveryVisibilityToggle
                       enabled={discoveryVisibility.enabled}
-                      eligible={discoveryVisibility.eligible}
-                      completionPercent={completionPercent}
+                      canEnable={discoveryVisibility.canEnable}
                       message={discoveryVisibility.message}
                     />
                   </div>

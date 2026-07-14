@@ -625,6 +625,10 @@ export type Database = {
       }
     }
     Functions: {
+      can_activate_discovery_visibility: {
+        Args: { p_user_id: string }
+        Returns: boolean
+      }
       count_open_to_chat_sent_today: {
         Args: { p_user_id?: string }
         Returns: number

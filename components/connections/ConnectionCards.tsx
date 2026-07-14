@@ -67,7 +67,9 @@ export function OpenToChatRequestCard({ profile }: { profile: IncomingOpenToChat
         <div className="min-w-0 flex-1">
           <ConnectionIdentity profile={profile} />
           <ConnectionAlignment profile={profile} />
-          <p className="mt-3 text-[15px] leading-relaxed text-[#5A6575]">{profile.aboutPreview}</p>
+          {profile.aboutPreview ? (
+            <p className="mt-3 text-[15px] leading-relaxed text-[#5A6575]">{profile.aboutPreview}</p>
+          ) : null}
           {hasNote ? (
             <div className="mt-4 rounded-2xl border border-[#0B2D5C]/08 bg-[#FBF9F6] px-4 py-4">
               <p className="text-sm font-semibold text-[#0B2D5C]">
