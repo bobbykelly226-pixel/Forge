@@ -45,11 +45,7 @@ export default async function AuthResultPage({
         </p>
         <div className="flex flex-col gap-3">
           <Link
-            href={
-              copy.offerResend
-                ? `${copy.primaryHref}?resend=1`
-                : copy.primaryHref
-            }
+            href={copy.primaryHref}
             className="inline-flex w-full items-center justify-center rounded-2xl bg-[#D62828] px-8 py-4 text-lg font-semibold text-white transition hover:bg-[#A61F1F]"
           >
             {copy.primaryLabel}
