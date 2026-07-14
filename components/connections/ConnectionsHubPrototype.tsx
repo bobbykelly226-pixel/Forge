@@ -8,7 +8,6 @@ import ForgeDesktopAppNav from '@/components/ForgeDesktopAppNav';
 import {
   EmptyState,
   ForYouOverviewCard,
-  InterestReceivedCard,
   MutualConnectionCard,
   OpenToChatRequestCard,
   SavedProfileCard,
@@ -17,67 +16,64 @@ import {
 } from '@/components/connections/ConnectionCards';
 import ConnectionsTabs from '@/components/connections/ConnectionsTabs';
 import { useConnectionsHub } from '@/components/connections/ConnectionsHubProvider';
-import {
-  INTEREST_RECEIVED,
-  MUTUAL_CONNECTIONS,
-  OPEN_TO_CHAT_REQUESTS,
-  SAVED_PROFILES,
-  SENT_ACTIVITY,
-} from '@/lib/connections-mock';
 
-export default function ConnectionsHubPrototype() {
+export default function ConnectionsHubPrototype({
+  loadError = null,
+}: {
+  loadError?: string | null;
+}) {
   const {
     activeTab,
+    openToChat,
+    interestReceived,
+    mutual,
+    saved,
+    sent,
     getOpenToChatStatus,
     getInterestStatus,
     isSavedRemoved,
     isSentWithdrawn,
   } = useConnectionsHub();
-  const [prototypeNote, setPrototypeNote] = useState<string | null>(null);
+  const [desktopNote, setDesktopNote] = useState<string | null>(null);
 
   const flashNote = (message: string) => {
-    setPrototypeNote(message);
-    window.setTimeout(() => setPrototypeNote(null), 2200);
+    setDesktopNote(message);
+    window.setTimeout(() => setDesktopNote(null), 2200);
   };
 
   const visibleOpenToChat = useMemo(
-    () =>
-      OPEN_TO_CHAT_REQUESTS.filter(
-        (profile) => getOpenToChatStatus(profile.id) !== 'declined'
-      ),
-    [getOpenToChatStatus]
+    () => openToChat.filter((profile) => getOpenToChatStatus(profile.id) !== 'declined'),
+    [getOpenToChatStatus, openToChat]
   );
 
   const visibleInterest = useMemo(
     () =>
-      INTEREST_RECEIVED.filter(
-        (profile) => getInterestStatus(profile.id) === 'pending'
-      ),
-    [getInterestStatus]
+      interestReceived.filter((profile) => getInterestStatus(profile.id) === 'pending'),
+    [getInterestStatus, interestReceived]
   );
 
   const visibleMutual = useMemo(() => {
-    const base = MUTUAL_CONNECTIONS.filter(
-      (profile) => getInterestStatus(profile.id) !== 'declined'
-    );
-    const newlyMutual = INTEREST_RECEIVED.filter(
+    const base = mutual.filter((profile) => getInterestStatus(profile.id) !== 'declined');
+    const newlyMutual = interestReceived.filter(
       (profile) => getInterestStatus(profile.id) === 'mutual'
     );
     const ids = new Set(base.map((p) => p.id));
     return [...base, ...newlyMutual.filter((p) => !ids.has(p.id))];
-  }, [getInterestStatus]);
+  }, [getInterestStatus, interestReceived, mutual]);
 
   const visibleSaved = useMemo(
-    () => SAVED_PROFILES.filter((profile) => !isSavedRemoved(profile.id)),
-    [isSavedRemoved]
+    () => saved.filter((profile) => !isSavedRemoved(profile.id)),
+    [isSavedRemoved, saved]
   );
 
   const visibleSent = useMemo(
-    () => SENT_ACTIVITY.filter((entry) => !isSentWithdrawn(entry.id)),
-    [isSentWithdrawn]
+    () => sent.filter((entry) => !isSentWithdrawn(entry.id)),
+    [isSentWithdrawn, sent]
   );
 
-  const forYouOpenToChat = visibleOpenToChat.slice(0, 2);
+  const forYouOpenToChat = visibleOpenToChat
+    .filter((profile) => getOpenToChatStatus(profile.id) === 'pending')
+    .slice(0, 2);
   const hasForYouContent =
     forYouOpenToChat.length > 0 ||
     visibleInterest.length > 0 ||
@@ -268,9 +264,6 @@ export default function ConnectionsHubPrototype() {
                     alt="Forge"
                     className="h-12 w-auto sm:h-14"
                   />
-                  <p className="rounded-full border border-[#0B2D5C]/12 bg-white/70 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.16em] text-[#0B2D5C]/65">
-                    Prototype
-                  </p>
                 </div>
 
                 <h1
@@ -283,6 +276,15 @@ export default function ConnectionsHubPrototype() {
                   Review conversations, mutual interest, and profiles you chose to revisit.
                 </p>
               </header>
+
+              {loadError && (
+                <p
+                  className="mt-4 rounded-2xl border border-[#D62828]/25 bg-[#FBF6EE] px-4 py-3 text-sm text-[#5A6575]"
+                  role="alert"
+                >
+                  {loadError}
+                </p>
+              )}
 
               <div
                 className="mt-6 shrink-0 lg:hidden"
@@ -307,20 +309,14 @@ export default function ConnectionsHubPrototype() {
                 {tabPanels[activeTab]}
               </div>
 
-              {prototypeNote && (
+              {desktopNote && (
                 <p
                   className="fixed inset-x-4 bottom-[5.75rem] z-30 mx-auto max-w-lg rounded-2xl border border-[#0B2D5C]/10 bg-[#0B2D5C] px-4 py-3 text-center text-sm text-white shadow-[0_12px_32px_rgba(11,45,92,0.25)] lg:bottom-8 lg:left-auto lg:right-8 lg:max-w-sm"
                   role="status"
                 >
-                  {prototypeNote}
+                  {desktopNote}
                 </p>
               )}
-
-              <p className="mt-10 text-xs leading-relaxed text-[#8A93A0] lg:mt-12">
-                Forge Connections Hub — UI/UX prototype.
-                <br />
-                No matching, messaging, notifications, or persistent data.
-              </p>
             </div>
           </div>
         </div>

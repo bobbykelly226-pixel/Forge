@@ -33,3 +33,30 @@ export {
   type CurrentUserProfileBundle,
   type SelfProfilePreview,
 } from './bundle';
+
+export {
+  getDiscoveryProfile,
+  getDiscoveryVisibilityState,
+  listDiscoveryFeedProfiles,
+  loadActionStateForProfiles,
+  setDiscoveryVisibility,
+  type DiscoveryVisibilityState,
+  type ProfileActionState,
+} from './discovery';
+
+export {
+  getOpenToChatEducationSeen,
+  markOpenToChatEducationSeen,
+  passOnProfile,
+  removeSavedProfile,
+  respondOpenToChat,
+  saveProfileForLater,
+  sendInterest,
+  sendOpenToChat,
+  withdrawInterest,
+} from './relationships';
+
+export {
+  loadConnectionsHub,
+  type ConnectionsHubData,
+} from './connections-hub';

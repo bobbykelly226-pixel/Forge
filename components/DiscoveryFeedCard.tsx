@@ -13,10 +13,10 @@ import {
 } from 'lucide-react';
 
 import DiscoveryActionTiles from '@/components/discovery/DiscoveryActionTiles';
-import type { DiscoveryFeedProfile } from '@/lib/discovery-feed-mock';
+import type { DiscoveryFeedCardModel } from '@/lib/discovery/presentation';
 
 type DiscoveryFeedCardProps = {
-  profile: DiscoveryFeedProfile;
+  profile: DiscoveryFeedCardModel;
   index: number;
 };
 
@@ -50,7 +50,7 @@ export default function DiscoveryFeedCard({ profile, index }: DiscoveryFeedCardP
   const router = useRouter();
 
   const openProfile = () => {
-    router.push('/discovery/profile');
+    router.push(`/discovery/profile/${profile.id}`);
   };
 
   const handleOpenProfileKey = (event: KeyboardEvent<HTMLElement>) => {
@@ -88,7 +88,9 @@ export default function DiscoveryFeedCard({ profile, index }: DiscoveryFeedCardP
             <div
               className="absolute inset-0"
               style={{
-                backgroundImage: profile.portraitGradient,
+                backgroundImage: profile.photoUrl
+                  ? `url(${profile.photoUrl})`
+                  : profile.portraitGradient,
                 backgroundSize: 'cover',
                 backgroundPosition: 'center',
                 backgroundRepeat: 'no-repeat',
@@ -108,7 +110,8 @@ export default function DiscoveryFeedCard({ profile, index }: DiscoveryFeedCardP
                 className="text-[2rem] leading-none tracking-[-0.02em] text-white sm:text-[2.25rem] lg:text-[2.35rem]"
                 style={{ fontFamily: 'var(--font-discovery-display), Georgia, serif' }}
               >
-                {profile.firstName}, {profile.age}
+                {profile.firstName}
+                {profile.age != null ? `, ${profile.age}` : ''}
               </h2>
               <p className="mt-2 inline-flex items-center gap-1.5 text-sm text-white/90 sm:text-base lg:text-[15px]">
                 <MapPin className="h-3.5 w-3.5 shrink-0" strokeWidth={1.75} aria-hidden="true" />

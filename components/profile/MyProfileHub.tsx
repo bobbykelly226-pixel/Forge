@@ -21,6 +21,7 @@ import {
 import DiscoveryDesktopTopBar from '@/components/DiscoveryDesktopTopBar';
 import ForgeAppBottomNav from '@/components/ForgeAppBottomNav';
 import ForgeDesktopAppNav from '@/components/ForgeDesktopAppNav';
+import DiscoveryVisibilityToggle from '@/components/profile/DiscoveryVisibilityToggle';
 import type { ProfileHubCard } from '@/lib/profile-v2-mock';
 
 export type MyProfileHubProps = {
@@ -31,6 +32,11 @@ export type MyProfileHubProps = {
   checklist: Array<{ id: string; label: string; complete: boolean }>;
   sectionCards: Array<ProfileHubCard & { statusLabel?: string }>;
   onboardingCompleted: boolean;
+  discoveryVisibility: {
+    enabled: boolean;
+    eligible: boolean;
+    message: string | null;
+  };
 };
 
 const CARD_ICONS: Record<ProfileHubCard['icon'], LucideIcon> = {
@@ -90,6 +96,7 @@ export default function MyProfileHub({
   checklist,
   sectionCards,
   onboardingCompleted,
+  discoveryVisibility,
 }: MyProfileHubProps) {
   const flashNote = (message: string) => {
     void message;
@@ -246,6 +253,15 @@ export default function MyProfileHub({
                       ))}
                     </ul>
                   </section>
+
+                  <div className="mt-5">
+                    <DiscoveryVisibilityToggle
+                      enabled={discoveryVisibility.enabled}
+                      eligible={discoveryVisibility.eligible}
+                      completionPercent={completionPercent}
+                      message={discoveryVisibility.message}
+                    />
+                  </div>
                 </div>
 
                 {/* Right: section cards */}

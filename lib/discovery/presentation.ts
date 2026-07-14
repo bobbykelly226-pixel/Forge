@@ -1,0 +1,96 @@
+/**
+ * Shared helpers for Discovery presentation (no matching scores).
+ */
+
+import { DISCOVERY_NEUTRAL_ALIGNMENT_LABEL, DISCOVERY_NEUTRAL_CONFIDENCE } from './config';
+
+export type PublicDiscoveryProfile = {
+  id: string;
+  full_name: string | null;
+  age: number | null;
+  location: string | null;
+  relationship_goal: string | null;
+  faith_importance: string | null;
+  service_background: string | null;
+  short_bio: string | null;
+  more_about: string | null;
+  children: string | null;
+  has_children: string | null;
+  education: string | null;
+  pets: string | null;
+  smoking: string | null;
+  drinking: string | null;
+  career: string | null;
+  relocation: string | null;
+  things_i_enjoy: string[] | null;
+  favorite_music_artists: string[] | null;
+  favorite_music_songs: string[] | null;
+  profile_photo_url: string | null;
+};
+
+export type DiscoveryFeedCardModel = {
+  id: string;
+  firstName: string;
+  age: number | null;
+  location: string;
+  alignmentLabel: string;
+  confidence: string;
+  hasImportantFactors: boolean;
+  aboutPreview: string;
+  characterSignals: string[];
+  portraitGradient: string;
+  photoUrl: string | null;
+};
+
+const PORTRAIT_GRADIENTS = [
+  'linear-gradient(160deg, #1B2F4A 0%, #3E566F 38%, #A8927D 72%, #E6D5C3 100%)',
+  'linear-gradient(150deg, #243447 0%, #5C6B7A 42%, #B8A48F 78%, #E8DCCF 100%)',
+  'linear-gradient(145deg, #2A4060 0%, #8FA3BC 45%, #D9C4B0 100%)',
+  'linear-gradient(155deg, #1F3348 0%, #6B7C8C 48%, #C9B8A4 100%)',
+];
+
+export function firstNameFromFullName(fullName: string | null | undefined): string {
+  const trimmed = fullName?.trim() ?? '';
+  if (!trimmed) return 'Member';
+  return trimmed.split(/\s+/)[0] ?? trimmed;
+}
+
+export function stablePortraitGradient(profileId: string): string {
+  let hash = 0;
+  for (let i = 0; i < profileId.length; i += 1) {
+    hash = (hash + profileId.charCodeAt(i) * (i + 1)) % 997;
+  }
+  return PORTRAIT_GRADIENTS[hash % PORTRAIT_GRADIENTS.length]!;
+}
+
+export function toDiscoveryFeedCard(profile: PublicDiscoveryProfile): DiscoveryFeedCardModel {
+  return {
+    id: profile.id,
+    firstName: firstNameFromFullName(profile.full_name),
+    age: profile.age,
+    location: profile.location?.trim() || 'Location shared privately',
+    alignmentLabel: DISCOVERY_NEUTRAL_ALIGNMENT_LABEL,
+    confidence: DISCOVERY_NEUTRAL_CONFIDENCE,
+    hasImportantFactors: false,
+    aboutPreview:
+      profile.short_bio?.trim() ||
+      'This Forge member is available to discover. Open their profile to learn more.',
+    characterSignals: [],
+    portraitGradient: stablePortraitGradient(profile.id),
+    photoUrl: profile.profile_photo_url,
+  };
+}
+
+export function relativeTimeLabel(iso: string | null | undefined): string {
+  if (!iso) return 'Recently';
+  const then = new Date(iso).getTime();
+  if (Number.isNaN(then)) return 'Recently';
+  const diffMs = Date.now() - then;
+  const minutes = Math.floor(diffMs / 60_000);
+  if (minutes < 60) return 'Just now';
+  const hours = Math.floor(minutes / 60);
+  if (hours < 24) return `${hours} hour${hours === 1 ? '' : 's'} ago`;
+  const days = Math.floor(hours / 24);
+  if (days < 14) return `${days} day${days === 1 ? '' : 's'} ago`;
+  return 'Recently';
+}

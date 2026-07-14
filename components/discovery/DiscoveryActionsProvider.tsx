@@ -4,6 +4,7 @@ import {
   createContext,
   useCallback,
   useContext,
+  useEffect,
   useMemo,
   useRef,
   useState,
@@ -14,16 +15,21 @@ import ActionConflictDrawer from '@/components/discovery/ActionConflictDrawer';
 import NotForMeDrawer from '@/components/discovery/NotForMeDrawer';
 import OpenToChatDrawer from '@/components/OpenToChatDrawer';
 import {
+  markOpenToChatEducationSeenAction,
+  passOnProfileAction,
+  removeSavedAction,
+  saveForLaterAction,
+  sendInterestAction,
+  sendOpenToChatAction,
+  withdrawInterestAction,
+} from '@/app/actions/relationships';
+import {
   createEmptyActionState,
   type DiscoveryActionConflict,
   type DiscoveryProfileActionState,
   type NotForMePrompt,
   type OpenToChatPrompt,
 } from '@/lib/discovery-actions-types';
-import {
-  hasCompletedOpenToChatEducation,
-  markOpenToChatEducationComplete,
-} from '@/lib/open-to-chat-session';
 
 type StatusMessage = {
   text: string;
@@ -54,14 +60,35 @@ export function useDiscoveryActions() {
   return ctx;
 }
 
-export function DiscoveryActionsProvider({ children }: { children: ReactNode }) {
-  const [byProfileId, setByProfileId] = useState<Record<string, DiscoveryProfileActionState>>({});
+type ProviderProps = {
+  children: ReactNode;
+  initialActionState?: Record<string, DiscoveryProfileActionState>;
+  initialEducationSeen?: boolean;
+};
+
+export function DiscoveryActionsProvider({
+  children,
+  initialActionState = {},
+  initialEducationSeen = false,
+}: ProviderProps) {
+  const [byProfileId, setByProfileId] =
+    useState<Record<string, DiscoveryProfileActionState>>(initialActionState);
+  const [educationSeen, setEducationSeen] = useState(initialEducationSeen);
   const [conflict, setConflict] = useState<DiscoveryActionConflict | null>(null);
   const [notForMePrompt, setNotForMePrompt] = useState<NotForMePrompt | null>(null);
   const [openToChatPrompt, setOpenToChatPrompt] = useState<OpenToChatPrompt | null>(null);
   const [statusMessage, setStatusMessage] = useState<StatusMessage | null>(null);
+  const [pending, setPending] = useState(false);
   const openToChatTriggers = useRef<Record<string, HTMLButtonElement | null>>({});
   const statusTimerRef = useRef<number | null>(null);
+
+  useEffect(() => {
+    setByProfileId(initialActionState);
+  }, [initialActionState]);
+
+  useEffect(() => {
+    setEducationSeen(initialEducationSeen);
+  }, [initialEducationSeen]);
 
   const getState = useCallback(
     (profileId: string): DiscoveryProfileActionState =>
@@ -126,7 +153,7 @@ export function DiscoveryActionsProvider({ children }: { children: ReactNode }) 
         return;
       }
 
-      const showEducation = !hasCompletedOpenToChatEducation();
+      const showEducation = !educationSeen;
       setOpenToChatPrompt({
         profileId,
         profileName,
@@ -135,57 +162,62 @@ export function DiscoveryActionsProvider({ children }: { children: ReactNode }) 
         educateOnly: false,
       });
     },
-    [getState]
+    [educationSeen, getState]
   );
 
   const applyInterested = useCallback(
-    (profileId: string, profileName: string) => {
-      patchState(profileId, { interested: true, openToChatSent: false, openToChatNote: null });
+    async (profileId: string, profileName: string) => {
+      if (pending) return;
+      setPending(true);
+      const previous = getState(profileId);
+      patchState(profileId, { interested: true });
+      const result = await sendInterestAction(profileId);
+      setPending(false);
+      if (!result.success) {
+        patchState(profileId, { interested: previous.interested });
+        announce(result.message);
+        return;
+      }
       announce(
         `You've expressed interest in ${profileName}.`,
-        `If ${profileName} is also interested, Forge will let you both know.`
+        result.data.mutual
+          ? 'You both expressed interest — you are now connected.'
+          : `If ${profileName} is also interested, Forge will let you both know.`
       );
     },
-    [announce, patchState]
-  );
-
-  const applyOpenToChatSent = useCallback(
-    (profileId: string, profileName: string, note: string | null) => {
-      patchState(profileId, {
-        openToChatSent: true,
-        interested: false,
-        openToChatNote: note,
-      });
-      markOpenToChatEducationComplete();
-      announce(
-        `Open to Chat sent to ${profileName}.`,
-        note ? 'Your note was included with the request.' : 'Your request was sent without a note.'
-      );
-    },
-    [announce, patchState]
+    [announce, getState, patchState, pending]
   );
 
   const handleInterested = useCallback(
     (profileId: string, profileName: string) => {
       const state = getState(profileId);
-      if (state.interested) return;
+      if (state.interested || pending) return;
 
       if (state.openToChatSent) {
         setConflict({ type: 'chat-to-interested', profileId, profileName });
         return;
       }
 
-      applyInterested(profileId, profileName);
+      void applyInterested(profileId, profileName);
     },
-    [applyInterested, getState]
+    [applyInterested, getState, pending]
   );
 
   const handleUndoInterested = useCallback(
-    (profileId: string, profileName: string) => {
+    async (profileId: string, profileName: string) => {
+      if (pending) return;
+      setPending(true);
       patchState(profileId, { interested: false });
+      const result = await withdrawInterestAction(profileId);
+      setPending(false);
+      if (!result.success) {
+        patchState(profileId, { interested: true });
+        announce(result.message);
+        return;
+      }
       announce(`Interest in ${profileName} was removed.`);
     },
-    [announce, patchState]
+    [announce, patchState, pending]
   );
 
   const handleInterestedInfo = useCallback(
@@ -221,27 +253,45 @@ export function DiscoveryActionsProvider({ children }: { children: ReactNode }) 
   );
 
   const handleSaveForLater = useCallback(
-    (profileId: string, profileName: string) => {
+    async (profileId: string, profileName: string) => {
+      if (pending) return;
       const state = getState(profileId);
+      setPending(true);
       if (state.saved) {
         patchState(profileId, { saved: false });
+        const result = await removeSavedAction(profileId);
+        setPending(false);
+        if (!result.success) {
+          patchState(profileId, { saved: true });
+          announce(result.message);
+          return;
+        }
         announce(`${profileName} was removed from Saved.`);
         return;
       }
 
-      patchState(profileId, { saved: true });
+      patchState(profileId, { saved: true, passed: false });
+      const result = await saveForLaterAction(profileId);
+      setPending(false);
+      if (!result.success) {
+        patchState(profileId, { saved: false });
+        announce(result.message);
+        return;
+      }
       announce(`${profileName} was saved for later.`, 'Only you can see saved profiles.');
     },
-    [announce, getState, patchState]
+    [announce, getState, patchState, pending]
   );
 
   const handleNotForMe = useCallback((profileId: string, profileName: string) => {
     setNotForMePrompt({ profileId, profileName });
   }, []);
 
-  const confirmNotForMe = useCallback(() => {
-    if (!notForMePrompt) return;
+  const confirmNotForMe = useCallback(async () => {
+    if (!notForMePrompt || pending) return;
     const { profileId } = notForMePrompt;
+    const previous = getState(profileId);
+    setPending(true);
     patchState(profileId, {
       interested: false,
       openToChatSent: false,
@@ -249,9 +299,17 @@ export function DiscoveryActionsProvider({ children }: { children: ReactNode }) 
       saved: false,
       passed: true,
     });
+    const result = await passOnProfileAction(profileId);
+    setPending(false);
+    if (!result.success) {
+      patchState(profileId, previous);
+      setNotForMePrompt(null);
+      announce(result.message);
+      return;
+    }
     setNotForMePrompt(null);
     announce('Introduction passed.');
-  }, [announce, notForMePrompt, patchState]);
+  }, [announce, getState, notForMePrompt, patchState, pending]);
 
   const confirmConflict = useCallback(() => {
     if (!conflict) return;
@@ -263,7 +321,7 @@ export function DiscoveryActionsProvider({ children }: { children: ReactNode }) 
       return;
     }
 
-    applyInterested(conflict.profileId, conflict.profileName);
+    void applyInterested(conflict.profileId, conflict.profileName);
     setConflict(null);
   }, [applyInterested, conflict, launchOpenToChat, patchState]);
 
@@ -274,12 +332,33 @@ export function DiscoveryActionsProvider({ children }: { children: ReactNode }) 
   }, [openToChatPrompt, returnFocusToOpenToChat]);
 
   const handleOpenToChatSent = useCallback(
-    (note: string | null) => {
-      if (!openToChatPrompt) return;
-      applyOpenToChatSent(openToChatPrompt.profileId, openToChatPrompt.profileName, note);
+    async (note: string | null): Promise<boolean> => {
+      if (!openToChatPrompt || pending) return false;
+      setPending(true);
+      const result = await sendOpenToChatAction(openToChatPrompt.profileId, note);
+      setPending(false);
+      if (!result.success) {
+        announce(result.message);
+        return false;
+      }
+      patchState(openToChatPrompt.profileId, {
+        openToChatSent: true,
+        openToChatNote: note,
+      });
+      setEducationSeen(true);
+      announce(
+        `Open to Chat sent to ${openToChatPrompt.profileName}.`,
+        note ? 'Your note was included with the request.' : 'Your request was sent without a note.'
+      );
+      return true;
     },
-    [applyOpenToChatSent, openToChatPrompt]
+    [announce, openToChatPrompt, patchState, pending]
   );
+
+  const handleEducationContinued = useCallback(() => {
+    setEducationSeen(true);
+    void markOpenToChatEducationSeenAction();
+  }, []);
 
   const value = useMemo<DiscoveryActionsContextValue>(
     () => ({
@@ -287,11 +366,15 @@ export function DiscoveryActionsProvider({ children }: { children: ReactNode }) 
       isPassed,
       statusMessage,
       handleInterested,
-      handleUndoInterested,
+      handleUndoInterested: (profileId, profileName) => {
+        void handleUndoInterested(profileId, profileName);
+      },
       handleInterestedInfo,
       handleOpenToChat,
       handleOpenToChatInfo,
-      handleSaveForLater,
+      handleSaveForLater: (profileId, profileName) => {
+        void handleSaveForLater(profileId, profileName);
+      },
       handleNotForMe,
       registerOpenToChatTrigger,
     }),
@@ -342,14 +425,16 @@ export function DiscoveryActionsProvider({ children }: { children: ReactNode }) 
         open={notForMePrompt !== null}
         prompt={notForMePrompt}
         onClose={() => setNotForMePrompt(null)}
-        onConfirm={confirmNotForMe}
+        onConfirm={() => {
+          void confirmNotForMe();
+        }}
       />
 
       <OpenToChatDrawer
         open={openToChatPrompt !== null}
         onClose={closeOpenToChatDrawer}
         onSent={handleOpenToChatSent}
-        onEducationContinued={markOpenToChatEducationComplete}
+        onEducationContinued={handleEducationContinued}
         profileName={openToChatPrompt?.profileName ?? 'them'}
         initialStep={openToChatPrompt?.initialStep ?? 'educate'}
         showFirstTimeBanner={openToChatPrompt?.showFirstTimeBanner ?? false}

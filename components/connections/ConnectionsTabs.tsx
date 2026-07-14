@@ -2,15 +2,17 @@
 
 import { useCallback, useRef, type KeyboardEvent } from 'react';
 
-import { useConnectionsHub, type ConnectionsTabId } from '@/components/connections/ConnectionsHubProvider';
-import { CONNECTIONS_TAB_COUNTS } from '@/lib/connections-mock';
+import {
+  useConnectionsHub,
+  type ConnectionsTabId,
+} from '@/components/connections/ConnectionsHubProvider';
 
-const TABS: { id: ConnectionsTabId; label: string; count: number }[] = [
-  { id: 'forYou', label: 'For You', count: CONNECTIONS_TAB_COUNTS.forYou },
-  { id: 'openToChat', label: 'Open to Chat', count: CONNECTIONS_TAB_COUNTS.openToChat },
-  { id: 'mutual', label: 'Mutual', count: CONNECTIONS_TAB_COUNTS.mutual },
-  { id: 'saved', label: 'Saved', count: CONNECTIONS_TAB_COUNTS.saved },
-  { id: 'sent', label: 'Sent', count: CONNECTIONS_TAB_COUNTS.sent },
+const TAB_DEFS: { id: ConnectionsTabId; label: string }[] = [
+  { id: 'forYou', label: 'For You' },
+  { id: 'openToChat', label: 'Open to Chat' },
+  { id: 'mutual', label: 'Mutual' },
+  { id: 'saved', label: 'Saved' },
+  { id: 'sent', label: 'Sent' },
 ];
 
 type ConnectionsTabsProps = {
@@ -18,8 +20,13 @@ type ConnectionsTabsProps = {
 };
 
 export default function ConnectionsTabs({ layout = 'horizontal' }: ConnectionsTabsProps) {
-  const { activeTab, setActiveTab } = useConnectionsHub();
+  const { activeTab, setActiveTab, tabCounts } = useConnectionsHub();
   const tabListRef = useRef<HTMLDivElement>(null);
+
+  const tabs = TAB_DEFS.map((tab) => ({
+    ...tab,
+    count: tabCounts[tab.id],
+  }));
 
   const focusTab = useCallback((tabId: ConnectionsTabId) => {
     const button = tabListRef.current?.querySelector<HTMLButtonElement>(
@@ -30,32 +37,32 @@ export default function ConnectionsTabs({ layout = 'horizontal' }: ConnectionsTa
 
   const handleKeyDown = useCallback(
     (event: KeyboardEvent<HTMLDivElement>) => {
-      const currentIndex = TABS.findIndex((tab) => tab.id === activeTab);
+      const currentIndex = tabs.findIndex((tab) => tab.id === activeTab);
       if (currentIndex === -1) return;
 
       let nextIndex = currentIndex;
 
       if (event.key === 'ArrowRight' || event.key === 'ArrowDown') {
         event.preventDefault();
-        nextIndex = (currentIndex + 1) % TABS.length;
+        nextIndex = (currentIndex + 1) % tabs.length;
       } else if (event.key === 'ArrowLeft' || event.key === 'ArrowUp') {
         event.preventDefault();
-        nextIndex = (currentIndex - 1 + TABS.length) % TABS.length;
+        nextIndex = (currentIndex - 1 + tabs.length) % tabs.length;
       } else if (event.key === 'Home') {
         event.preventDefault();
         nextIndex = 0;
       } else if (event.key === 'End') {
         event.preventDefault();
-        nextIndex = TABS.length - 1;
+        nextIndex = tabs.length - 1;
       } else {
         return;
       }
 
-      const nextTab = TABS[nextIndex];
+      const nextTab = tabs[nextIndex];
       setActiveTab(nextTab.id);
       focusTab(nextTab.id);
     },
-    [activeTab, focusTab, setActiveTab]
+    [activeTab, focusTab, setActiveTab, tabs]
   );
 
   const isVertical = layout === 'vertical';
@@ -72,7 +79,7 @@ export default function ConnectionsTabs({ layout = 'horizontal' }: ConnectionsTa
           : 'scrollbar-none -mx-1 flex gap-2 overflow-x-auto px-1 pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden'
       }
     >
-      {TABS.map((tab) => {
+      {tabs.map((tab) => {
         const isActive = tab.id === activeTab;
         return (
           <button

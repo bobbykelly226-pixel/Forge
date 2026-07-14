@@ -625,10 +625,119 @@ export type Database = {
       }
     }
     Functions: {
+      count_open_to_chat_sent_today: {
+        Args: { p_user_id?: string }
+        Returns: number
+      }
       ensure_foundational_user_records: {
         Args: { p_user_id?: string }
         Returns: Json
       }
+      forge_ensure_connection: {
+        Args: {
+          p_source: Database["public"]["Enums"]["connection_source"]
+          p_user_1: string
+          p_user_2: string
+        }
+        Returns: string
+      }
+      forge_order_pair: {
+        Args: { p_user_a: string; p_user_b: string }
+        Returns: {
+          user_a_id: string
+          user_b_id: string
+        }[]
+      }
+      forge_users_blocked: {
+        Args: { p_user_a: string; p_user_b: string }
+        Returns: boolean
+      }
+      get_eligible_discovery_profile: {
+        Args: { p_profile_id: string }
+        Returns: {
+          age: number | null
+          career: string | null
+          children: string | null
+          drinking: string | null
+          education: string | null
+          faith_importance: string | null
+          favorite_music_artists: string[] | null
+          favorite_music_songs: string[] | null
+          full_name: string | null
+          has_children: string | null
+          id: string | null
+          location: string | null
+          more_about: string | null
+          pets: string | null
+          profile_photo_url: string | null
+          relationship_goal: string | null
+          relocation: string | null
+          service_background: string | null
+          short_bio: string | null
+          smoking: string | null
+          things_i_enjoy: string[] | null
+        }[]
+        SetofOptions: {
+          from: "*"
+          to: "discoverable_profiles"
+          isOneToOne: false
+          isSetofReturn: true
+        }
+      }
+      list_eligible_discovery_profiles: {
+        Args: { p_limit?: number }
+        Returns: {
+          age: number | null
+          career: string | null
+          children: string | null
+          drinking: string | null
+          education: string | null
+          faith_importance: string | null
+          favorite_music_artists: string[] | null
+          favorite_music_songs: string[] | null
+          full_name: string | null
+          has_children: string | null
+          id: string | null
+          location: string | null
+          more_about: string | null
+          pets: string | null
+          profile_photo_url: string | null
+          relationship_goal: string | null
+          relocation: string | null
+          service_background: string | null
+          short_bio: string | null
+          smoking: string | null
+          things_i_enjoy: string[] | null
+        }[]
+        SetofOptions: {
+          from: "*"
+          to: "discoverable_profiles"
+          isOneToOne: false
+          isSetofReturn: true
+        }
+      }
+      mark_open_to_chat_education_seen: { Args: never; Returns: Json }
+      pass_on_profile: { Args: { p_profile_id: string }; Returns: Json }
+      profile_meets_discovery_requirements: {
+        Args: { p_user_id: string }
+        Returns: boolean
+      }
+      remove_saved_profile: { Args: { p_profile_id: string }; Returns: Json }
+      respond_open_to_chat: {
+        Args: { p_action: string; p_request_id: string }
+        Returns: Json
+      }
+      save_profile_for_later: { Args: { p_profile_id: string }; Returns: Json }
+      send_interest: { Args: { p_recipient_id: string }; Returns: Json }
+      send_open_to_chat: {
+        Args: { p_note?: string; p_recipient_id: string }
+        Returns: Json
+      }
+      set_my_discovery_visibility: {
+        Args: { p_enabled: boolean }
+        Returns: Json
+      }
+      withdraw_interest: { Args: { p_recipient_id: string }; Returns: Json }
     }
     Enums: {
       answer_visibility: "private" | "shared_with_matches" | "public_summary"
@@ -637,7 +746,12 @@ export type Database = {
       connection_source: "mutual_interest" | "open_to_chat"
       connection_status: "active" | "ended"
       interest_status: "pending" | "mutual" | "withdrawn"
-      open_to_chat_status: "pending" | "accepted" | "declined" | "expired"
+      open_to_chat_status:
+        | "pending"
+        | "accepted"
+        | "declined"
+        | "expired"
+        | "deferred"
       photo_moderation_status: "pending" | "approved" | "rejected"
       profile_status: "draft" | "active" | "paused" | "hidden" | "deactivated"
     }
@@ -773,7 +887,13 @@ export const Constants = {
       connection_source: ["mutual_interest", "open_to_chat"],
       connection_status: ["active", "ended"],
       interest_status: ["pending", "mutual", "withdrawn"],
-      open_to_chat_status: ["pending", "accepted", "declined", "expired"],
+      open_to_chat_status: [
+        "pending",
+        "accepted",
+        "declined",
+        "expired",
+        "deferred",
+      ],
       photo_moderation_status: ["pending", "approved", "rejected"],
       profile_status: ["draft", "active", "paused", "hidden", "deactivated"],
     },
