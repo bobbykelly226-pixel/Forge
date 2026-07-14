@@ -40,7 +40,8 @@ export async function proxy(request: NextRequest) {
 
   const isProtectedRoute =
     pathname.startsWith('/app') ||
-    pathname.startsWith('/profile') ||
+    pathname.startsWith('/profile/edit') ||
+    pathname.startsWith('/profile/preview') ||
     pathname.startsWith('/onboarding');
 
   if (!user && isProtectedRoute) {

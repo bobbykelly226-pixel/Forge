@@ -74,6 +74,7 @@ export async function saveProfile(formData: FormData): Promise<ProfileActionResu
   }
 
   revalidatePath('/profile');
+  revalidatePath('/profile/edit');
   revalidatePath('/profile/preview');
   revalidatePath('/app');
 

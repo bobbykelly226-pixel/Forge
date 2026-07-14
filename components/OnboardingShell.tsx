@@ -343,7 +343,7 @@ export default function OnboardingShell({
             </p>
             <div className="flex flex-col gap-3">
               <Link
-                href="/profile"
+                href="/profile/edit"
                 className="inline-flex w-full items-center justify-center rounded-2xl bg-[#D62828] px-8 py-4 text-lg font-semibold text-white transition hover:bg-[#A61F1F]"
               >
                 Edit Profile

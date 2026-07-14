@@ -1,24 +1,21 @@
 'use client';
 
 import Link from 'next/link';
-import { Compass, Link2, Sparkles } from 'lucide-react';
+import { Compass, Link2, UserRound } from 'lucide-react';
 
 const NAV_ITEMS = [
   { id: 'discovery', label: 'Discovery', href: '/discovery', icon: Compass },
   { id: 'connections', label: 'Connections', href: '/connections', icon: Link2 },
-  {
-    id: 'character-signals',
-    label: 'Character Signals',
-    href: '/character-signals',
-    icon: Sparkles,
-  },
+  { id: 'profile', label: 'Profile', href: '/profile', icon: UserRound },
 ] as const;
 
 type ForgeDesktopAppNavProps = {
-  active: 'discovery' | 'connections' | 'character-signals';
+  active: 'discovery' | 'connections' | 'profile' | 'character-signals';
 };
 
 export default function ForgeDesktopAppNav({ active }: ForgeDesktopAppNavProps) {
+  const resolvedActive = active === 'character-signals' ? 'profile' : active;
+
   return (
     <nav aria-label="App sections" className="mt-8 border-t border-[#0B2D5C]/08 pt-6">
       <p className="mb-3 text-[11px] font-semibold uppercase tracking-[0.16em] text-[#D62828]">
@@ -26,7 +23,7 @@ export default function ForgeDesktopAppNav({ active }: ForgeDesktopAppNavProps) 
       </p>
       <div className="flex flex-col gap-2">
         {NAV_ITEMS.map((item) => {
-          const isActive = item.id === active;
+          const isActive = item.id === resolvedActive;
           const Icon = item.icon;
           return (
             <Link
