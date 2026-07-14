@@ -1,24 +1,39 @@
-import { createClient } from '@/lib/supabase/server';
-import type { Profile } from '@/lib/types/profile';
-import { redirect } from 'next/navigation';
+import { Fraunces, Manrope } from 'next/font/google';
 
-import ProfileForm from './ProfileForm';
+import ForgeAppCanvas from '@/components/ForgeAppCanvas';
+import MyProfileHubPrototype from '@/components/profile/MyProfileHubPrototype';
 
-export default async function ProfilePage() {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+const display = Fraunces({
+  subsets: ['latin'],
+  variable: '--font-discovery-display',
+  display: 'swap',
+});
 
-  if (!user) {
-    redirect('/login?redirectTo=/profile');
-  }
+const sans = Manrope({
+  subsets: ['latin'],
+  variable: '--font-discovery-sans',
+  display: 'swap',
+});
 
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('*')
-    .eq('id', user.id)
-    .maybeSingle();
+export const metadata = {
+  title: 'My Profile | Forge',
+  description:
+    'Your home inside Forge — manage how you show up across Discovery and Connections. Prototype only.',
+  robots: {
+    index: false,
+    follow: false,
+  },
+};
 
-  return <ProfileForm profile={profile as Profile | null} />;
+export default function MyProfileHubPage() {
+  return (
+    <ForgeAppCanvas
+      className={`${display.variable} ${sans.variable}`}
+      style={{
+        fontFamily: 'var(--font-discovery-sans), ui-sans-serif, system-ui, sans-serif',
+      }}
+    >
+      <MyProfileHubPrototype />
+    </ForgeAppCanvas>
+  );
 }

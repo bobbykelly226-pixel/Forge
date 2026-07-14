@@ -7,6 +7,12 @@ import AlignmentDetailsDrawer from '@/components/AlignmentDetailsDrawer';
 import PublicCharacterSignalsSection from '@/components/character-signals/PublicCharacterSignalsSection';
 import DiscoveryActionTiles from '@/components/discovery/DiscoveryActionTiles';
 import { useDiscoveryActions } from '@/components/discovery/DiscoveryActionsProvider';
+import {
+  FavoriteMusicSection,
+  ThingsIEnjoySection,
+  VideoIntroductionSection,
+  VoiceIntroductionSection,
+} from '@/components/discovery-profile/DiscoveryProfileV2Sections';
 import ImportantAlignmentFactorsDrawer from '@/components/ImportantAlignmentFactorsDrawer';
 
 const PROFILE_ID = 'jessica';
@@ -417,8 +423,28 @@ export default function DiscoveryProfilePrototype() {
           </section>
         </SectionReveal>
 
-        {/* 9. Why Forge surfaced */}
+        {/* 9. Things I Enjoy */}
+        <SectionReveal delayMs={380}>
+          <ThingsIEnjoySection />
+        </SectionReveal>
+
+        {/* 10. Favorite Music */}
         <SectionReveal delayMs={400}>
+          <FavoriteMusicSection />
+        </SectionReveal>
+
+        {/* 11. Voice Introduction */}
+        <SectionReveal delayMs={420}>
+          <VoiceIntroductionSection />
+        </SectionReveal>
+
+        {/* 12. Video Introduction */}
+        <SectionReveal delayMs={440}>
+          <VideoIntroductionSection />
+        </SectionReveal>
+
+        {/* 13. Why Forge surfaced */}
+        <SectionReveal delayMs={460}>
           <section className={`${cardClassName} mt-4`} aria-labelledby="why-title">
             <h2
               id="why-title"
@@ -476,13 +502,13 @@ export default function DiscoveryProfilePrototype() {
           </section>
         </SectionReveal>
 
-        {/* 10. Character Signals */}
-        <SectionReveal delayMs={440}>
+        {/* 14. Character Signals */}
+        <SectionReveal delayMs={480}>
           <PublicCharacterSignalsSection cardClassName={cardClassName} />
         </SectionReveal>
 
-        {/* 11. Actions */}
-        <SectionReveal delayMs={480}>
+        {/* 15. Actions */}
+        <SectionReveal delayMs={500}>
           <section className="mt-10" aria-label="Discovery actions">
             <DiscoveryActionTiles
               profileId={PROFILE_ID}

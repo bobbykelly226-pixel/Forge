@@ -7,7 +7,7 @@ const NAV_ITEMS = [
   { id: 'discovery', label: 'Discovery', href: '/discovery', icon: Compass },
   { id: 'connections', label: 'Connections', href: '/connections', icon: Link2 },
   { id: 'messages', label: 'Messages', href: '#messages', icon: MessageCircle },
-  { id: 'profile', label: 'Profile', href: '/character-signals', icon: UserRound },
+  { id: 'profile', label: 'Profile', href: '/profile', icon: UserRound },
 ] as const;
 
 export type ForgeAppNavId = (typeof NAV_ITEMS)[number]['id'];

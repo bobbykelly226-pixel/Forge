@@ -51,7 +51,7 @@ export default async function AppPage() {
               Start Onboarding
             </Link>
             <Link
-              href="/profile"
+              href="/profile/edit"
               className="inline-flex w-full items-center justify-center bg-[#0B2D5C] hover:bg-[#0A2540] text-white px-8 py-4 rounded-2xl font-semibold text-lg transition"
             >
               Edit Profile

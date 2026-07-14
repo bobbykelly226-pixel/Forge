@@ -71,7 +71,7 @@ export default function CharacterSignalsPrototype() {
                 Manage which positive qualities appear on your profile.
               </p>
 
-              <ForgeDesktopAppNav active="character-signals" />
+              <ForgeDesktopAppNav active="profile" />
             </div>
           </aside>
 
