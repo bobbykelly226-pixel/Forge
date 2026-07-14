@@ -12,9 +12,10 @@ import {
   ImportantFactorsBadge,
 } from '@/components/connections/ConnectionPortrait';
 import { useConnectionsHub } from '@/components/connections/ConnectionsHubProvider';
-import type { ConnectionProfile, SentActivityEntry } from '@/lib/connections-mock';
-import { getProfileById } from '@/lib/connections-mock';
+import type { ConnectionProfile, OpenToChatIncomingRequest, SentActivityEntry } from '@/lib/connections-mock';
+import { getIncomingOpenToChatNote, getProfileById } from '@/lib/connections-mock';
 import { RECOGNITION_RECIPIENTS } from '@/lib/character-signals-mock';
+import ViewOpenToChatNoteDrawer from '@/components/connections/ViewOpenToChatNoteDrawer';
 
 const cardShell =
   'overflow-hidden rounded-[1.75rem] border border-[#0B2D5C]/08 bg-white/90 shadow-[0_12px_40px_rgba(11,45,92,0.06)] backdrop-blur-sm';
@@ -30,7 +31,7 @@ function ViewProfileLink({ className = '' }: { className?: string }) {
   );
 }
 
-export function OpenToChatRequestCard({ profile }: { profile: ConnectionProfile }) {
+export function OpenToChatRequestCard({ profile }: { profile: OpenToChatIncomingRequest }) {
   const {
     getOpenToChatStatus,
     acceptOpenToChat,
@@ -45,6 +46,7 @@ export function OpenToChatRequestCard({ profile }: { profile: ConnectionProfile 
 
   const isAccepted = status === 'accepted';
   const isSavedLater = status === 'saved_later';
+  const hasNote = Boolean(profile.note && profile.note.trim().length > 0);
 
   return (
     <article className={cardShell}>
@@ -54,6 +56,21 @@ export function OpenToChatRequestCard({ profile }: { profile: ConnectionProfile 
           <ConnectionIdentity profile={profile} />
           <ConnectionAlignment profile={profile} />
           <p className="mt-3 text-[15px] leading-relaxed text-[#5A6575]">{profile.aboutPreview}</p>
+          {hasNote ? (
+            <div className="mt-4 rounded-2xl border border-[#0B2D5C]/08 bg-[#FBF9F6] px-4 py-4">
+              <p className="text-sm font-semibold text-[#0B2D5C]">
+                {profile.firstName} included a note
+              </p>
+              <blockquote className="mt-2 whitespace-pre-wrap text-[15px] leading-relaxed text-[#3D4654]">
+                “{profile.note}”
+              </blockquote>
+            </div>
+          ) : (
+            <p className="mt-3 text-[15px] leading-relaxed text-[#5A6575]">
+              {profile.firstName} is open to a conversation and would like to learn more before
+              deciding.
+            </p>
+          )}
           <p className="mt-2 text-xs text-[#8A93A0]">Received 2 days ago</p>
           {isSavedLater && (
             <p className="mt-3 inline-flex rounded-full bg-[#E8EEF6] px-3 py-1 text-xs font-semibold text-[#0B2D5C]">
@@ -362,46 +379,80 @@ export function SavedProfileCard({ profile }: { profile: ConnectionProfile }) {
 export function SentActivityCard({ entry }: { entry: SentActivityEntry }) {
   const { isSentWithdrawn, withdrawSentActivity } = useConnectionsHub();
   const profile = getProfileById(entry.profileId);
+  const [noteOpen, setNoteOpen] = useState(false);
+  const noteTriggerRef = useRef<HTMLButtonElement>(null);
 
   if (!profile || isSentWithdrawn(entry.id)) return null;
 
   const typeLabel = entry.type === 'interested' ? 'Interested' : 'Open to Chat';
+  const isOpenToChat = entry.type === 'open_to_chat';
+  const hasNote = isOpenToChat && typeof entry.note === 'string' && entry.note.trim().length > 0;
+  const noteLabel = isOpenToChat ? (hasNote ? 'Note included' : 'No note') : null;
 
   return (
-    <article className={cardShell}>
-      <div className="flex items-start gap-4 p-5 sm:p-6">
-        <ConnectionPortrait profile={profile} size="sm" />
-        <div className="min-w-0 flex-1">
-          <h3
-            className="text-lg text-[#0B2D5C]"
-            style={{ fontFamily: 'var(--font-discovery-display), Georgia, serif' }}
-          >
-            {profile.firstName}
-          </h3>
-          <div className="mt-2 flex flex-wrap gap-2">
-            <span className="rounded-full bg-[#F8F6F2] px-3 py-1 text-xs font-semibold text-[#0B2D5C]">
-              {typeLabel}
-            </span>
-            <span className="rounded-full border border-[#0B2D5C]/12 px-3 py-1 text-xs font-medium text-[#5A6575]">
-              {entry.statusLabel}
-            </span>
-          </div>
-          <p className="mt-2 text-xs text-[#8A93A0]">{entry.relativeTime}</p>
-          <div className="mt-4 flex flex-wrap gap-2" onClick={(e) => e.stopPropagation()}>
-            <ViewProfileLink />
-            {entry.canWithdraw && (
-              <button
-                type="button"
-                onClick={() => withdrawSentActivity(entry.id, profile.firstName)}
-                className="inline-flex items-center justify-center rounded-2xl border border-[#0B2D5C]/12 px-4 py-2.5 text-sm font-medium text-[#6B7585] transition hover:text-[#0B2D5C]"
-              >
-                Withdraw
-              </button>
-            )}
+    <>
+      <article className={cardShell}>
+        <div className="flex items-start gap-4 p-5 sm:p-6">
+          <ConnectionPortrait profile={profile} size="sm" />
+          <div className="min-w-0 flex-1">
+            <h3
+              className="text-lg text-[#0B2D5C]"
+              style={{ fontFamily: 'var(--font-discovery-display), Georgia, serif' }}
+            >
+              {profile.firstName}
+            </h3>
+            <div className="mt-2 flex flex-wrap gap-2">
+              <span className="rounded-full bg-[#F8F6F2] px-3 py-1 text-xs font-semibold text-[#0B2D5C]">
+                {typeLabel}
+              </span>
+              <span className="rounded-full border border-[#0B2D5C]/12 px-3 py-1 text-xs font-medium text-[#5A6575]">
+                {entry.statusLabel}
+              </span>
+              {noteLabel && (
+                <span className="rounded-full border border-[#0B2D5C]/12 px-3 py-1 text-xs font-medium text-[#5A6575]">
+                  {noteLabel}
+                </span>
+              )}
+            </div>
+            <p className="mt-2 text-xs text-[#8A93A0]">{entry.relativeTime}</p>
+            <div className="mt-4 flex flex-wrap gap-2" onClick={(e) => e.stopPropagation()}>
+              <ViewProfileLink />
+              {hasNote && entry.note && (
+                <button
+                  ref={noteTriggerRef}
+                  type="button"
+                  onClick={() => setNoteOpen(true)}
+                  className="inline-flex items-center justify-center rounded-2xl border border-[#0B2D5C]/12 px-4 py-2.5 text-sm font-medium text-[#0B2D5C] transition hover:bg-[#FBF9F6]"
+                >
+                  View Note
+                </button>
+              )}
+              {entry.canWithdraw && (
+                <button
+                  type="button"
+                  onClick={() => withdrawSentActivity(entry.id, profile.firstName)}
+                  className="inline-flex items-center justify-center rounded-2xl border border-[#0B2D5C]/12 px-4 py-2.5 text-sm font-medium text-[#6B7585] transition hover:text-[#0B2D5C]"
+                >
+                  Withdraw
+                </button>
+              )}
+            </div>
           </div>
         </div>
-      </div>
-    </article>
+      </article>
+
+      {hasNote && entry.note && (
+        <ViewOpenToChatNoteDrawer
+          open={noteOpen}
+          profileName={profile.firstName}
+          note={entry.note}
+          onClose={() => {
+            setNoteOpen(false);
+            window.requestAnimationFrame(() => noteTriggerRef.current?.focus());
+          }}
+        />
+      )}
+    </>
   );
 }
 
@@ -432,6 +483,9 @@ export function ForYouOverviewCard({
 
   const conversationReady =
     variant === 'mutual' && isMutualConversationReady(profile.id);
+  const incomingNote =
+    variant === 'open_to_chat' ? getIncomingOpenToChatNote(profile.id) : null;
+  const hasIncomingNote = Boolean(incomingNote && incomingNote.trim().length > 0);
 
   return (
     <article className={`${cardShell} p-5 sm:p-6`}>
@@ -440,12 +494,22 @@ export function ForYouOverviewCard({
         <div className="min-w-0 flex-1">
           <ConnectionIdentity profile={profile} compact />
           {variant !== 'interest' && <ConnectionAlignment profile={profile} showConfidence />}
-          {variant === 'open_to_chat' && (
-            <p className="mt-3 text-sm leading-relaxed text-[#5A6575]">
-              {profile.firstName} is open to a conversation and would like to learn more before
-              deciding.
-            </p>
-          )}
+          {variant === 'open_to_chat' &&
+            (hasIncomingNote ? (
+              <div className="mt-3 rounded-2xl border border-[#0B2D5C]/08 bg-[#FBF9F6] px-3.5 py-3">
+                <p className="text-xs font-semibold text-[#0B2D5C]">
+                  {profile.firstName} included a note
+                </p>
+                <p className="mt-1 line-clamp-2 text-sm leading-relaxed text-[#5A6575]">
+                  “{incomingNote}”
+                </p>
+              </div>
+            ) : (
+              <p className="mt-3 text-sm leading-relaxed text-[#5A6575]">
+                {profile.firstName} is open to a conversation and would like to learn more before
+                deciding.
+              </p>
+            ))}
           {variant === 'interest' && (
             <p className="mt-3 text-sm leading-relaxed text-[#5A6575]">
               {profile.firstName} expressed interest in connecting if the feeling is mutual.

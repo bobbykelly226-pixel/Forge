@@ -35,6 +35,13 @@ export type SentActivityEntry = {
   statusLabel: string;
   relativeTime: string;
   canWithdraw: boolean;
+  /** Open to Chat only: trimmed note text, or null when sent without a note */
+  note?: string | null;
+};
+
+/** Incoming Open to Chat requests may include an optional introduction note */
+export type OpenToChatIncomingRequest = ConnectionProfile & {
+  note: string | null;
 };
 
 export const CONNECTIONS_TAB_COUNTS = {
@@ -45,7 +52,7 @@ export const CONNECTIONS_TAB_COUNTS = {
   sent: 3,
 } as const;
 
-export const OPEN_TO_CHAT_REQUESTS: ConnectionProfile[] = [
+export const OPEN_TO_CHAT_REQUESTS: OpenToChatIncomingRequest[] = [
   {
     id: 'jessica',
     firstName: 'Jessica',
@@ -60,6 +67,7 @@ export const OPEN_TO_CHAT_REQUESTS: ConnectionProfile[] = [
     characterSignals: ['Respectful Communicator', 'Good Listener', 'Genuine and Present'],
     portraitGradient:
       'linear-gradient(160deg, #1B2F4A 0%, #3E566F 38%, #A8927D 72%, #E6D5C3 100%)',
+    note: 'Hi Bobby, I enjoyed reading your profile and wanted to say hello.',
   },
   {
     id: 'maria',
@@ -75,6 +83,7 @@ export const OPEN_TO_CHAT_REQUESTS: ConnectionProfile[] = [
     characterSignals: ['Empathetic', 'Clear Communicator'],
     portraitGradient:
       'linear-gradient(145deg, #2A4060 0%, #8FA3BC 45%, #D9C4B0 100%)',
+    note: null,
   },
 ];
 
@@ -182,6 +191,7 @@ export const SENT_ACTIVITY: SentActivityEntry[] = [
     statusLabel: 'Pending',
     relativeTime: '2 days ago',
     canWithdraw: true,
+    note: 'Hi Jessica, I enjoyed reading your profile and wanted to say hello.',
   },
   {
     id: 'sent-ashley-int',
@@ -196,10 +206,11 @@ export const SENT_ACTIVITY: SentActivityEntry[] = [
     id: 'sent-morgan-o2c',
     profileId: 'morgan',
     type: 'open_to_chat',
-    status: 'accepted',
-    statusLabel: 'Accepted',
-    relativeTime: '1 week ago',
-    canWithdraw: false,
+    status: 'pending',
+    statusLabel: 'Pending',
+    relativeTime: '5 days ago',
+    canWithdraw: true,
+    note: null,
   },
 ];
 
@@ -230,4 +241,9 @@ export function getProfileById(id: string): ConnectionProfile | undefined {
     ...Object.values(SENT_PROFILE_LOOKUP),
   ];
   return all.find((p) => p.id === id);
+}
+
+export function getIncomingOpenToChatNote(profileId: string): string | null {
+  const request = OPEN_TO_CHAT_REQUESTS.find((entry) => entry.id === profileId);
+  return request?.note ?? null;
 }

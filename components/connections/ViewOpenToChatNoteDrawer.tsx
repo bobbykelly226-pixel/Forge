@@ -8,13 +8,11 @@ import {
   type KeyboardEvent as ReactKeyboardEvent,
 } from 'react';
 
-type AcceptChatDrawerProps = {
+type ViewOpenToChatNoteDrawerProps = {
   open: boolean;
   profileName: string;
-  mode: 'confirm' | 'success';
-  note?: string | null;
+  note: string;
   onClose: () => void;
-  onConfirm: () => void;
 };
 
 function getFocusableElements(container: HTMLElement): HTMLElement[] {
@@ -26,14 +24,13 @@ function getFocusableElements(container: HTMLElement): HTMLElement[] {
   );
 }
 
-export default function AcceptChatDrawer({
+/** Lightweight Sent-tab note preview — no read receipts or delivery status. */
+export default function ViewOpenToChatNoteDrawer({
   open,
   profileName,
-  mode,
-  note = null,
+  note,
   onClose,
-  onConfirm,
-}: AcceptChatDrawerProps) {
+}: ViewOpenToChatNoteDrawerProps) {
   const titleId = useId();
   const descriptionId = useId();
   const panelRef = useRef<HTMLDivElement>(null);
@@ -77,7 +74,6 @@ export default function AcceptChatDrawer({
 
     const previousOverflow = document.body.style.overflow;
     document.body.style.overflow = 'hidden';
-
     const focusTimer = window.setTimeout(() => primaryRef.current?.focus(), 30);
 
     const onDocumentKeyDown = (event: KeyboardEvent) => {
@@ -93,9 +89,6 @@ export default function AcceptChatDrawer({
   }, [open, onClose]);
 
   if (!open) return null;
-
-  const isSuccess = mode === 'success';
-  const hasNote = Boolean(note && note.trim().length > 0);
 
   return (
     <div
@@ -117,66 +110,31 @@ export default function AcceptChatDrawer({
         onKeyDown={handleKeyDown}
         className="relative z-[86] w-full max-w-md overflow-hidden rounded-t-[1.75rem] bg-[#F8F6F2] shadow-[0_-18px_60px_rgba(11,45,92,0.22)] outline-none sm:rounded-[1.75rem]"
       >
-        <div className="max-h-[88vh] overflow-y-auto px-5 py-6 sm:px-7 sm:py-7">
+        <div className="px-5 py-6 sm:px-7 sm:py-7">
           <h2
             id={titleId}
             className="text-[1.45rem] leading-tight tracking-[-0.02em] text-[#0B2D5C]"
             style={{ fontFamily: 'var(--font-discovery-display), Georgia, serif' }}
           >
-            {isSuccess ? 'Conversation opened' : `Open a conversation with ${profileName}?`}
+            Your note to {profileName}
           </h2>
-          <div id={descriptionId} className="mt-3 space-y-3 text-[15px] leading-relaxed text-[#5A6575]">
-            {isSuccess ? (
-              <>
-                <p>You and {profileName} can now begin talking.</p>
-                <p className="text-sm text-[#8A93A0]">
-                  Prototype only — no real messaging was opened.
-                </p>
-              </>
-            ) : (
-              <>
-                {hasNote && (
-                  <div className="rounded-2xl border border-[#0B2D5C]/08 bg-white px-4 py-4">
-                    <p className="text-sm font-semibold text-[#0B2D5C]">{profileName}&apos;s note</p>
-                    <blockquote className="mt-2 whitespace-pre-wrap text-[15px] leading-relaxed text-[#3D4654]">
-                      “{note}”
-                    </blockquote>
-                  </div>
-                )}
-                <p>Accepting allows both of you to begin a conversation.</p>
-              </>
-            )}
-          </div>
-          <div className="mt-6 flex flex-col gap-3">
-            {isSuccess ? (
-              <button
-                ref={primaryRef}
-                type="button"
-                onClick={onClose}
-                className="inline-flex w-full items-center justify-center rounded-2xl bg-[#0B2D5C] px-6 py-3.5 text-base font-semibold text-white transition hover:bg-[#0A2540]"
-              >
-                Return to Connections
-              </button>
-            ) : (
-              <>
-                <button
-                  ref={primaryRef}
-                  type="button"
-                  onClick={onConfirm}
-                  className="inline-flex w-full items-center justify-center rounded-2xl bg-[#0B2D5C] px-6 py-3.5 text-base font-semibold text-white transition hover:bg-[#0A2540]"
-                >
-                  Open Conversation
-                </button>
-                <button
-                  type="button"
-                  onClick={onClose}
-                  className="inline-flex w-full items-center justify-center rounded-2xl border border-[#0B2D5C]/20 bg-white px-6 py-3.5 text-base font-semibold text-[#0B2D5C] transition hover:bg-[#F8F6F2]"
-                >
-                  Go Back
-                </button>
-              </>
-            )}
-          </div>
+          <blockquote
+            id={descriptionId}
+            className="mt-4 whitespace-pre-wrap rounded-2xl border border-[#0B2D5C]/08 bg-white px-4 py-4 text-[15px] leading-relaxed text-[#3D4654]"
+          >
+            “{note}”
+          </blockquote>
+          <p className="mt-3 text-xs text-[#8A93A0]">
+            Prototype only — no delivery or read status is shown.
+          </p>
+          <button
+            ref={primaryRef}
+            type="button"
+            onClick={onClose}
+            className="mt-6 inline-flex w-full items-center justify-center rounded-2xl bg-[#0B2D5C] px-6 py-3.5 text-base font-semibold text-white transition hover:bg-[#0A2540]"
+          >
+            Close
+          </button>
         </div>
       </div>
     </div>

@@ -17,6 +17,11 @@ import type {
   DiscoveryActionConflict,
   OpenToChatPrompt,
 } from '@/lib/discovery-actions-types';
+import { getIncomingOpenToChatNote } from '@/lib/connections-mock';
+import {
+  hasCompletedOpenToChatEducation,
+  markOpenToChatEducationComplete,
+} from '@/lib/open-to-chat-session';
 
 export type OpenToChatRequestStatus = 'pending' | 'saved_later' | 'accepted' | 'declined';
 export type InterestReceivedStatus = 'pending' | 'mutual' | 'declined';
@@ -26,12 +31,14 @@ export type ConnectionsTabId = 'forYou' | 'openToChat' | 'mutual' | 'saved' | 's
 export type SavedProfileActionState = {
   interested: boolean;
   openToChatSent: boolean;
+  openToChatNote: string | null;
 };
 
 type AcceptDrawerState = {
   profileId: string;
   profileName: string;
   mode: 'confirm' | 'success';
+  note: string | null;
 } | null;
 
 type StatusMessage = {
@@ -70,6 +77,7 @@ type ConnectionsHubContextValue = {
 const EMPTY_SAVED_ACTION: SavedProfileActionState = {
   interested: false,
   openToChatSent: false,
+  openToChatNote: null,
 };
 
 const ConnectionsHubContext = createContext<ConnectionsHubContextValue | null>(null);
@@ -96,7 +104,6 @@ export function ConnectionsHubProvider({ children }: { children: ReactNode }) {
   const [savedRemoved, setSavedRemoved] = useState<Record<string, boolean>>({});
   const [sentWithdrawn, setSentWithdrawn] = useState<Record<string, boolean>>({});
   const [savedActions, setSavedActions] = useState<Record<string, SavedProfileActionState>>({});
-  const [sessionOpenToChatEducated, setSessionOpenToChatEducated] = useState(false);
   const [conflict, setConflict] = useState<DiscoveryActionConflict | null>(null);
   const [openToChatPrompt, setOpenToChatPrompt] = useState<OpenToChatPrompt | null>(null);
   const [acceptDrawer, setAcceptDrawer] = useState<AcceptDrawerState>(null);
@@ -168,7 +175,12 @@ export function ConnectionsHubProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const acceptOpenToChat = useCallback((profileId: string, profileName: string) => {
-    setAcceptDrawer({ profileId, profileName, mode: 'confirm' });
+    setAcceptDrawer({
+      profileId,
+      profileName,
+      mode: 'confirm',
+      note: getIncomingOpenToChatNote(profileId),
+    });
   }, []);
 
   const confirmAcceptOpenToChat = useCallback(() => {
@@ -178,6 +190,7 @@ export function ConnectionsHubProvider({ children }: { children: ReactNode }) {
       profileId: acceptDrawer.profileId,
       profileName: acceptDrawer.profileName,
       mode: 'success',
+      note: acceptDrawer.note,
     });
     announce(`Conversation opened with ${acceptDrawer.profileName}.`);
   }, [acceptDrawer, announce]);
@@ -250,7 +263,11 @@ export function ConnectionsHubProvider({ children }: { children: ReactNode }) {
 
   const applySavedInterested = useCallback(
     (profileId: string, profileName: string) => {
-      patchSavedAction(profileId, { interested: true, openToChatSent: false });
+      patchSavedAction(profileId, {
+        interested: true,
+        openToChatSent: false,
+        openToChatNote: null,
+      });
       announce(
         `You've expressed interest in ${profileName}.`,
         `If ${profileName} is also interested, Forge will let you both know.`
@@ -264,15 +281,16 @@ export function ConnectionsHubProvider({ children }: { children: ReactNode }) {
       const state = getSavedActionState(profileId);
       if (state.openToChatSent) return;
 
-      const showEducation = !sessionOpenToChatEducated;
+      const showEducation = !hasCompletedOpenToChatEducation();
       setOpenToChatPrompt({
         profileId,
         profileName,
-        mode: showEducation ? 'educate' : 'confirm',
+        initialStep: showEducation ? 'educate' : 'note',
         showFirstTimeBanner: showEducation,
+        educateOnly: false,
       });
     },
-    [getSavedActionState, sessionOpenToChatEducated]
+    [getSavedActionState]
   );
 
   const handleSavedInterested = useCallback(
@@ -333,15 +351,22 @@ export function ConnectionsHubProvider({ children }: { children: ReactNode }) {
     if (profileId) returnFocusToSavedOpenToChat(profileId);
   }, [openToChatPrompt, returnFocusToSavedOpenToChat]);
 
-  const handleOpenToChatSent = useCallback(() => {
-    if (!openToChatPrompt) return;
-    patchSavedAction(openToChatPrompt.profileId, {
-      openToChatSent: true,
-      interested: false,
-    });
-    setSessionOpenToChatEducated(true);
-    announce(`Open to Chat sent to ${openToChatPrompt.profileName}.`);
-  }, [announce, openToChatPrompt, patchSavedAction]);
+  const handleOpenToChatSent = useCallback(
+    (note: string | null) => {
+      if (!openToChatPrompt) return;
+      patchSavedAction(openToChatPrompt.profileId, {
+        openToChatSent: true,
+        interested: false,
+        openToChatNote: note,
+      });
+      markOpenToChatEducationComplete();
+      announce(
+        `Open to Chat sent to ${openToChatPrompt.profileName}.`,
+        note ? 'Your note was included with the request.' : 'Your request was sent without a note.'
+      );
+    },
+    [announce, openToChatPrompt, patchSavedAction]
+  );
 
   const value = useMemo<ConnectionsHubContextValue>(
     () => ({
@@ -398,6 +423,10 @@ export function ConnectionsHubProvider({ children }: { children: ReactNode }) {
     ]
   );
 
+  const promptState = openToChatPrompt
+    ? getSavedActionState(openToChatPrompt.profileId)
+    : null;
+
   return (
     <ConnectionsHubContext.Provider value={value}>
       {children}
@@ -421,6 +450,7 @@ export function ConnectionsHubProvider({ children }: { children: ReactNode }) {
         open={acceptDrawer !== null}
         profileName={acceptDrawer?.profileName ?? ''}
         mode={acceptDrawer?.mode ?? 'confirm'}
+        note={acceptDrawer?.note ?? null}
         onClose={closeAcceptDrawer}
         onConfirm={confirmAcceptOpenToChat}
       />
@@ -436,9 +466,12 @@ export function ConnectionsHubProvider({ children }: { children: ReactNode }) {
         open={openToChatPrompt !== null}
         onClose={closeOpenToChatDrawer}
         onSent={handleOpenToChatSent}
+        onEducationContinued={markOpenToChatEducationComplete}
         profileName={openToChatPrompt?.profileName ?? 'them'}
-        mode={openToChatPrompt?.mode ?? 'educate'}
+        initialStep={openToChatPrompt?.initialStep ?? 'educate'}
         showFirstTimeBanner={openToChatPrompt?.showFirstTimeBanner ?? false}
+        educateOnly={openToChatPrompt?.educateOnly ?? false}
+        alreadySent={promptState?.openToChatSent ?? false}
       />
     </ConnectionsHubContext.Provider>
   );
