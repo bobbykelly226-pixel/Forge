@@ -2,20 +2,51 @@
 
 import { saveProfile } from '@/app/actions/profile';
 import Header from '@/components/Header';
+import LocationPicker, {
+  type LocationPickerValue,
+} from '@/components/profile/LocationPicker';
+import {
+  ChoiceChips,
+  MultiChoiceChips,
+} from '@/components/profile/StructuredChoices';
 import {
   createUniqueProfilePhotoPath,
   isAllowedProfilePhotoType,
   PROFILE_PHOTO_BUCKET,
   validateProfilePhoto,
 } from '@/lib/profile-photo';
+import {
+  CHILDREN_COUNT_OPTIONS,
+  EDUCATION_OPTIONS,
+  FAITH_IDENTITY_OPTIONS,
+  FAITH_IMPORTANCE_OPTIONS,
+  HAS_CHILDREN_OPTIONS,
+  OPEN_TO_PARTNER_WITH_CHILDREN_OPTIONS,
+  PETS_OPTIONS,
+  RELATIONSHIP_GOAL_OPTIONS,
+  RELOCATION_OPTIONS,
+  SERVICE_BACKGROUND_OPTIONS,
+  SMOKING_OPTIONS,
+  DRINKING_OPTIONS,
+  WANTS_CHILDREN_OPTIONS,
+} from '@/lib/profile/structured-options';
 import { createClient } from '@/lib/supabase/client';
 import type { Profile } from '@/lib/types/profile';
 import { THINGS_I_ENJOY_OPTIONS } from '@/lib/types/profile-answers';
 import Link from 'next/link';
 import { useState } from 'react';
 
+type PrivateLocationSeed = {
+  postal_code: string | null;
+  latitude: number | null;
+  longitude: number | null;
+  location_place_id: string | null;
+  location_provider: string | null;
+};
+
 type ProfileFormProps = {
   profile: Profile | null;
+  privateDetails?: PrivateLocationSeed | null;
 };
 
 const inputClassName =
@@ -23,31 +54,101 @@ const inputClassName =
 
 const labelClassName = 'block text-sm font-medium text-[#0B2D5C] mb-2';
 
+const sectionClassName =
+  'space-y-5 border-t border-[#0B2D5C]/10 pt-8 first:border-t-0 first:pt-0';
+
 function getInitials(name: string | null | undefined): string {
-  if (!name) {
-    return 'F';
-  }
-
+  if (!name) return 'F';
   const parts = name.trim().split(/\s+/).filter(Boolean);
-  if (parts.length === 0) {
-    return 'F';
-  }
-
-  if (parts.length === 1) {
-    return parts[0].charAt(0).toUpperCase();
-  }
-
-  return `${parts[0].charAt(0)}${parts[parts.length - 1].charAt(0)}`.toUpperCase();
+  if (parts.length === 0) return 'F';
+  if (parts.length === 1) return parts[0]!.charAt(0).toUpperCase();
+  return `${parts[0]!.charAt(0)}${parts[parts.length - 1]!.charAt(0)}`.toUpperCase();
 }
 
-export default function ProfileForm({ profile }: ProfileFormProps) {
+function buildInitialLocation(
+  profile: Profile | null,
+  privateDetails?: PrivateLocationSeed | null
+): LocationPickerValue {
+  const city = profile?.location_city ?? '';
+  const region = profile?.location_region ?? '';
+  const label =
+    city && region ? `${city}, ${region}` : profile?.location ?? city ?? '';
+  return {
+    city,
+    region,
+    country: profile?.location_country ?? (city || region ? 'US' : ''),
+    postalCode: privateDetails?.postal_code ?? '',
+    latitude:
+      privateDetails?.latitude != null ? String(privateDetails.latitude) : '',
+    longitude:
+      privateDetails?.longitude != null ? String(privateDetails.longitude) : '',
+    placeId: privateDetails?.location_place_id ?? '',
+    provider: privateDetails?.location_provider ?? '',
+    label,
+  };
+}
+
+function SectionTitle({
+  eyebrow,
+  title,
+  description,
+}: {
+  eyebrow: string;
+  title: string;
+  description: string;
+}) {
+  return (
+    <div className="mb-2">
+      <p className="text-xs font-semibold uppercase tracking-[0.14em] text-[#D62828]">
+        {eyebrow}
+      </p>
+      <h2 className="mt-2 text-2xl font-bold text-[#0B2D5C]">{title}</h2>
+      <p className="mt-2 text-sm text-[#666666] leading-relaxed">{description}</p>
+    </div>
+  );
+}
+
+export default function ProfileForm({ profile, privateDetails }: ProfileFormProps) {
   const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
   const [message, setMessage] = useState('');
-  const [photoPreview, setPhotoPreview] = useState<string | null>(profile?.profile_photo_url ?? null);
+  const [photoPreview, setPhotoPreview] = useState<string | null>(
+    profile?.profile_photo_url ?? null
+  );
   const [selectedPhotoFile, setSelectedPhotoFile] = useState<File | null>(null);
+
+  const [relationshipGoal, setRelationshipGoal] = useState(
+    profile?.relationship_goal ?? ''
+  );
+  const [hasChildren, setHasChildren] = useState(profile?.has_children ?? '');
+  const [childrenCount, setChildrenCount] = useState(profile?.children_count ?? '');
+  const [wantsChildren, setWantsChildren] = useState(profile?.children ?? '');
+  const [openToPartnerChildren, setOpenToPartnerChildren] = useState(
+    profile?.open_to_partner_with_children ?? ''
+  );
+  const [faithIdentity, setFaithIdentity] = useState(profile?.faith_identity ?? '');
+  const [faithTradition, setFaithTradition] = useState(profile?.faith_tradition ?? '');
+  const [faithOther, setFaithOther] = useState(profile?.faith_other ?? '');
+  const [faithImportance, setFaithImportance] = useState(
+    profile?.faith_importance ?? ''
+  );
+  const [smoking, setSmoking] = useState(profile?.smoking ?? '');
+  const [drinking, setDrinking] = useState(profile?.drinking ?? '');
+  const [education, setEducation] = useState(profile?.education ?? '');
+  const [pets, setPets] = useState(profile?.pets ?? '');
+  const [relocation, setRelocation] = useState(profile?.relocation ?? '');
+  const [serviceBackgrounds, setServiceBackgrounds] = useState<string[]>(
+    profile?.service_backgrounds ?? []
+  );
+
+  const unmapped = (profile?.unmapped_legacy_fields ?? {}) as Record<string, string>;
+  const unmappedEntries = Object.entries(unmapped).filter(
+    ([, value]) => typeof value === 'string' && value.trim().length > 0
+  );
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+    if (status === 'loading') return;
+
     setStatus('loading');
     setMessage('');
 
@@ -111,7 +212,9 @@ export default function ProfileForm({ profile }: ProfileFormProps) {
       succeeded = true;
     } catch (error) {
       const errorMessage =
-        error instanceof Error ? error.message : 'An unexpected error occurred. Please try again.';
+        error instanceof Error
+          ? error.message
+          : 'An unexpected error occurred. Please try again.';
       setMessage(errorMessage);
     } finally {
       setStatus(succeeded ? 'success' : 'error');
@@ -120,9 +223,7 @@ export default function ProfileForm({ profile }: ProfileFormProps) {
 
   const handlePhotoChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
-    if (!file) {
-      return;
-    }
+    if (!file) return;
 
     const validationError = validateProfilePhoto(file);
     if (validationError) {
@@ -139,6 +240,18 @@ export default function ProfileForm({ profile }: ProfileFormProps) {
   };
 
   const initials = getInitials(profile?.full_name);
+  const showChildrenCount = hasChildren === 'yes';
+  const showFaithTradition = [
+    'christian',
+    'catholic',
+    'protestant',
+    'jewish',
+    'muslim',
+    'hindu',
+    'buddhist',
+    'other',
+  ].includes(faithIdentity);
+  const showFaithOther = faithIdentity === 'other';
 
   return (
     <div className="min-h-screen bg-[#F8F6F2] text-[#222222]">
@@ -153,317 +266,406 @@ export default function ProfileForm({ profile }: ProfileFormProps) {
             {profile ? 'Update Your Profile' : 'Create Your Profile'}
           </h1>
           <p className="text-lg text-[#444444] leading-relaxed">
-            Share the basics that help Forge understand who you are and what you are looking for.
+            Share what you are comfortable sharing. Every field is optional except your name —
+            unanswered answers stay unanswered.
           </p>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-6 bg-white border border-[#0B2D5C]/10 rounded-3xl p-7 sm:p-10 shadow-sm">
-          <div className="text-center">
-            <label htmlFor="profile_photo" className={labelClassName}>
-              Profile photo
-            </label>
+        <form
+          onSubmit={handleSubmit}
+          className="space-y-8 bg-white border border-[#0B2D5C]/10 rounded-3xl p-7 sm:p-10 shadow-sm"
+        >
+          {unmappedEntries.length > 0 ? (
+            <div
+              className="rounded-2xl border border-[#0B2D5C]/15 bg-[#F8F6F2] px-5 py-4 text-sm text-[#444444]"
+              role="status"
+            >
+              <p className="font-semibold text-[#0B2D5C] mb-2">
+                Some earlier answers need a quick review
+              </p>
+              <p className="mb-3">
+                These saved values could not be matched to the new choices. Your original answers
+                were preserved — pick a new option when you are ready.
+              </p>
+              <ul className="list-disc pl-5 space-y-1">
+                {unmappedEntries.map(([field, value]) => (
+                  <li key={field}>
+                    <span className="font-medium capitalize">{field.replaceAll('_', ' ')}</span>: “
+                    {value}”
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ) : null}
 
-            <div className="flex flex-col items-center gap-4 mb-2">
-              {photoPreview ? (
-                <img
-                  src={photoPreview}
-                  alt="Profile photo preview"
-                  className="w-32 h-32 rounded-full object-cover border-4 border-[#F8F6F2] shadow-md"
+          <section className={sectionClassName}>
+            <SectionTitle
+              eyebrow="Basics"
+              title="Who you are"
+              description="A clear name and photo help people recognize you. Everything else can wait."
+            />
+
+            <div className="text-center">
+              <label htmlFor="profile_photo" className={labelClassName}>
+                Profile photo
+              </label>
+              <div className="flex flex-col items-center gap-4 mb-2">
+                {photoPreview ? (
+                  <img
+                    src={photoPreview}
+                    alt="Profile photo preview"
+                    className="w-32 h-32 rounded-full object-cover border-4 border-[#F8F6F2] shadow-md"
+                  />
+                ) : (
+                  <div className="w-32 h-32 rounded-full bg-[#0B2D5C]/10 border-4 border-[#F8F6F2] shadow-md flex items-center justify-center">
+                    <span className="text-3xl font-bold text-[#0B2D5C]">{initials}</span>
+                  </div>
+                )}
+                <input
+                  id="profile_photo"
+                  type="file"
+                  accept="image/jpeg,image/png,image/webp,image/gif"
+                  onChange={handlePhotoChange}
+                  className="block w-full max-w-sm text-sm text-[#444444] file:mr-4 file:py-3 file:px-4 file:rounded-xl file:border-0 file:bg-[#0B2D5C] file:text-white file:font-semibold hover:file:bg-[#0A2540]"
                 />
-              ) : (
-                <div className="w-32 h-32 rounded-full bg-[#0B2D5C]/10 border-4 border-[#F8F6F2] shadow-md flex items-center justify-center">
-                  <span className="text-3xl font-bold text-[#0B2D5C]">{initials}</span>
-                </div>
-              )}
+              </div>
+              <p className="text-sm text-[#666666]">JPG, PNG, WEBP, or GIF. Max 5 MB.</p>
+            </div>
 
+            <div>
+              <label htmlFor="full_name" className={labelClassName}>
+                Full name
+              </label>
               <input
-                id="profile_photo"
-                type="file"
-                accept="image/jpeg,image/png,image/webp,image/gif"
-                onChange={handlePhotoChange}
-                className="block w-full max-w-sm text-sm text-[#444444] file:mr-4 file:py-3 file:px-4 file:rounded-xl file:border-0 file:bg-[#0B2D5C] file:text-white file:font-semibold hover:file:bg-[#0A2540]"
+                id="full_name"
+                name="full_name"
+                type="text"
+                defaultValue={profile?.full_name ?? ''}
+                required
+                className={inputClassName}
               />
             </div>
 
-            <p className="text-sm text-[#666666]">
-              JPG, PNG, WEBP, or GIF. Max 5 MB.
-            </p>
-          </div>
-
-          <div>
-            <label htmlFor="full_name" className={labelClassName}>
-              Full name
-            </label>
-            <input
-              id="full_name"
-              name="full_name"
-              type="text"
-              defaultValue={profile?.full_name ?? ''}
-              required
-              className={inputClassName}
-            />
-          </div>
-
-          <div>
-            <label htmlFor="age" className={labelClassName}>
-              Age
-            </label>
-            <input
-              id="age"
-              name="age"
-              type="number"
-              min={18}
-              max={120}
-              defaultValue={profile?.age ?? ''}
-              className={inputClassName}
-            />
-          </div>
-
-          <div>
-            <label htmlFor="location" className={labelClassName}>
-              Location
-            </label>
-            <input
-              id="location"
-              name="location"
-              type="text"
-              defaultValue={profile?.location ?? ''}
-              placeholder="City, State"
-              className={inputClassName}
-            />
-          </div>
-
-          <div>
-            <label htmlFor="relationship_goal" className={labelClassName}>
-              Relationship goal
-            </label>
-            <select
-              id="relationship_goal"
-              name="relationship_goal"
-              defaultValue={profile?.relationship_goal ?? ''}
-              className={inputClassName}
-            >
-              <option value="">Select one</option>
-              <option value="Marriage">Marriage</option>
-              <option value="Serious relationship">Serious relationship</option>
-              <option value="Intentional dating">Intentional dating</option>
-              <option value="Getting to know someone">Getting to know someone</option>
-            </select>
-          </div>
-
-          <div>
-            <label htmlFor="faith_importance" className={labelClassName}>
-              Faith importance
-            </label>
-            <select
-              id="faith_importance"
-              name="faith_importance"
-              defaultValue={profile?.faith_importance ?? ''}
-              className={inputClassName}
-            >
-              <option value="">Select one</option>
-              <option value="Very important">Very important</option>
-              <option value="Important">Important</option>
-              <option value="Somewhat important">Somewhat important</option>
-              <option value="Not important">Not important</option>
-            </select>
-          </div>
-
-          <div>
-            <label htmlFor="service_background" className={labelClassName}>
-              Service background
-            </label>
-            <input
-              id="service_background"
-              name="service_background"
-              type="text"
-              defaultValue={profile?.service_background ?? ''}
-              placeholder="Military, first responder, healthcare, volunteer, etc."
-              className={inputClassName}
-            />
-          </div>
-
-          <div>
-            <label htmlFor="short_bio" className={labelClassName}>
-              Short bio
-            </label>
-            <textarea
-              id="short_bio"
-              name="short_bio"
-              rows={4}
-              defaultValue={profile?.short_bio ?? ''}
-              placeholder="A few sentences about you and what matters to you."
-              className={`${inputClassName} resize-y min-h-[120px]`}
-            />
-          </div>
-
-          <div>
-            <label htmlFor="more_about" className={labelClassName}>
-              More about
-            </label>
-            <textarea
-              id="more_about"
-              name="more_about"
-              rows={4}
-              defaultValue={profile?.more_about ?? ''}
-              placeholder="Share more about yourself."
-              className={`${inputClassName} resize-y min-h-[120px]`}
-            />
-          </div>
-
-          <div>
-            <label htmlFor="children" className={labelClassName}>
-              Children
-            </label>
-            <input
-              id="children"
-              name="children"
-              type="text"
-              defaultValue={profile?.children ?? ''}
-              placeholder="Wants children"
-              className={inputClassName}
-            />
-          </div>
-
-          <div>
-            <label htmlFor="has_children" className={labelClassName}>
-              Has children
-            </label>
-            <input
-              id="has_children"
-              name="has_children"
-              type="text"
-              defaultValue={profile?.has_children ?? ''}
-              className={inputClassName}
-            />
-          </div>
-
-          <div>
-            <label htmlFor="education" className={labelClassName}>
-              Education
-            </label>
-            <input
-              id="education"
-              name="education"
-              type="text"
-              defaultValue={profile?.education ?? ''}
-              className={inputClassName}
-            />
-          </div>
-
-          <div>
-            <label htmlFor="pets" className={labelClassName}>
-              Pets
-            </label>
-            <input
-              id="pets"
-              name="pets"
-              type="text"
-              defaultValue={profile?.pets ?? ''}
-              className={inputClassName}
-            />
-          </div>
-
-          <div>
-            <label htmlFor="smoking" className={labelClassName}>
-              Smoking
-            </label>
-            <input
-              id="smoking"
-              name="smoking"
-              type="text"
-              defaultValue={profile?.smoking ?? ''}
-              className={inputClassName}
-            />
-          </div>
-
-          <div>
-            <label htmlFor="drinking" className={labelClassName}>
-              Drinking
-            </label>
-            <input
-              id="drinking"
-              name="drinking"
-              type="text"
-              defaultValue={profile?.drinking ?? ''}
-              className={inputClassName}
-            />
-          </div>
-
-          <div>
-            <label htmlFor="career" className={labelClassName}>
-              Career
-            </label>
-            <input
-              id="career"
-              name="career"
-              type="text"
-              defaultValue={profile?.career ?? ''}
-              className={inputClassName}
-            />
-          </div>
-
-          <div>
-            <label htmlFor="relocation" className={labelClassName}>
-              Relocation
-            </label>
-            <input
-              id="relocation"
-              name="relocation"
-              type="text"
-              defaultValue={profile?.relocation ?? ''}
-              className={inputClassName}
-            />
-          </div>
-
-          <fieldset>
-            <legend className={labelClassName}>Things I Enjoy</legend>
-            <div className="space-y-3">
-              {THINGS_I_ENJOY_OPTIONS.map((label) => (
-                <label key={label} className="flex items-center gap-3 text-[#222222]">
-                  <input
-                    type="checkbox"
-                    name="things_i_enjoy"
-                    value={label}
-                    defaultChecked={profile?.things_i_enjoy?.includes(label) ?? false}
-                    className="h-5 w-5 rounded border-[#0B2D5C]/30 text-[#0B2D5C] focus:ring-[#0B2D5C]/20"
-                  />
-                  <span>{label}</span>
-                </label>
-              ))}
+            <div>
+              <label htmlFor="age" className={labelClassName}>
+                Age
+              </label>
+              <input
+                id="age"
+                name="age"
+                type="number"
+                min={18}
+                max={120}
+                defaultValue={profile?.age ?? ''}
+                className={inputClassName}
+              />
             </div>
-          </fieldset>
 
-          <div>
-            <label htmlFor="favorite_music_artists" className={labelClassName}>
-              Favorite music artists
-            </label>
-            <textarea
-              id="favorite_music_artists"
-              name="favorite_music_artists"
-              rows={4}
-              defaultValue={(profile?.favorite_music_artists ?? []).join('\n')}
-              placeholder="One artist per line"
-              className={`${inputClassName} resize-y min-h-[120px]`}
-            />
-          </div>
+            <LocationPicker initial={buildInitialLocation(profile, privateDetails)} />
+          </section>
 
-          <div>
-            <label htmlFor="favorite_music_songs" className={labelClassName}>
-              Favorite music songs
-            </label>
-            <textarea
-              id="favorite_music_songs"
-              name="favorite_music_songs"
-              rows={4}
-              defaultValue={(profile?.favorite_music_songs ?? []).join('\n')}
-              placeholder="One song per line"
-              className={`${inputClassName} resize-y min-h-[120px]`}
+          <section className={sectionClassName}>
+            <SectionTitle
+              eyebrow="Relationship"
+              title="What you are looking for"
+              description="Use the same Forge relationship goals you see in onboarding."
             />
-          </div>
+            <ChoiceChips
+              name="relationship_goal"
+              legend="Relationship goal"
+              options={RELATIONSHIP_GOAL_OPTIONS}
+              value={relationshipGoal}
+              onChange={setRelationshipGoal}
+            />
+          </section>
+
+          <section className={sectionClassName}>
+            <SectionTitle
+              eyebrow="Family"
+              title="Children"
+              description="Answer only what feels right. Follow-up questions appear when they apply."
+            />
+            <ChoiceChips
+              name="has_children"
+              legend="Do you have children?"
+              options={HAS_CHILDREN_OPTIONS}
+              value={hasChildren}
+              onChange={(next) => {
+                setHasChildren(next);
+                if (next !== 'yes') setChildrenCount('');
+              }}
+            />
+            {showChildrenCount ? (
+              <ChoiceChips
+                name="children_count"
+                legend="How many children?"
+                options={CHILDREN_COUNT_OPTIONS}
+                value={childrenCount}
+                onChange={setChildrenCount}
+              />
+            ) : (
+              <input type="hidden" name="children_count" value="" />
+            )}
+            <ChoiceChips
+              name="children"
+              legend="Do you want children?"
+              options={WANTS_CHILDREN_OPTIONS}
+              value={wantsChildren}
+              onChange={setWantsChildren}
+            />
+            <ChoiceChips
+              name="open_to_partner_with_children"
+              legend="Are you open to a partner who has children?"
+              options={OPEN_TO_PARTNER_WITH_CHILDREN_OPTIONS}
+              value={openToPartnerChildren}
+              onChange={setOpenToPartnerChildren}
+            />
+          </section>
+
+          <section className={sectionClassName}>
+            <SectionTitle
+              eyebrow="Faith"
+              title="Faith and religion"
+              description="Identity and importance stay separate. Tradition is optional and never assumed."
+            />
+            <ChoiceChips
+              name="faith_identity"
+              legend="Faith or religious identity"
+              options={FAITH_IDENTITY_OPTIONS}
+              value={faithIdentity}
+              onChange={(next) => {
+                setFaithIdentity(next);
+                if (next !== 'other') setFaithOther('');
+                if (
+                  ![
+                    'christian',
+                    'catholic',
+                    'protestant',
+                    'jewish',
+                    'muslim',
+                    'hindu',
+                    'buddhist',
+                    'other',
+                  ].includes(next)
+                ) {
+                  setFaithTradition('');
+                }
+              }}
+            />
+            {showFaithOther ? (
+              <div>
+                <label htmlFor="faith_other" className={labelClassName}>
+                  Short description
+                </label>
+                <input
+                  id="faith_other"
+                  name="faith_other"
+                  type="text"
+                  maxLength={120}
+                  value={faithOther}
+                  onChange={(event) => setFaithOther(event.target.value)}
+                  placeholder="Optional"
+                  className={inputClassName}
+                />
+              </div>
+            ) : (
+              <input type="hidden" name="faith_other" value="" />
+            )}
+            {showFaithTradition ? (
+              <div>
+                <label htmlFor="faith_tradition" className={labelClassName}>
+                  Denomination or tradition
+                </label>
+                <input
+                  id="faith_tradition"
+                  name="faith_tradition"
+                  type="text"
+                  maxLength={120}
+                  value={faithTradition}
+                  onChange={(event) => setFaithTradition(event.target.value)}
+                  placeholder="Optional"
+                  className={inputClassName}
+                />
+              </div>
+            ) : (
+              <input type="hidden" name="faith_tradition" value="" />
+            )}
+            <ChoiceChips
+              name="faith_importance"
+              legend="How important is faith in daily life and relationships?"
+              options={FAITH_IMPORTANCE_OPTIONS}
+              value={faithImportance}
+              onChange={setFaithImportance}
+            />
+          </section>
+
+          <section className={sectionClassName}>
+            <SectionTitle
+              eyebrow="Lifestyle"
+              title="Everyday details"
+              description="Consistent choices help Discovery stay clear without forcing a complete form."
+            />
+            <ChoiceChips
+              name="smoking"
+              legend="Smoking"
+              options={SMOKING_OPTIONS}
+              value={smoking}
+              onChange={setSmoking}
+            />
+            <ChoiceChips
+              name="drinking"
+              legend="Drinking"
+              options={DRINKING_OPTIONS}
+              value={drinking}
+              onChange={setDrinking}
+            />
+            <ChoiceChips
+              name="education"
+              legend="Education"
+              options={EDUCATION_OPTIONS}
+              value={education}
+              onChange={setEducation}
+            />
+            <ChoiceChips
+              name="pets"
+              legend="Pets"
+              options={PETS_OPTIONS}
+              value={pets}
+              onChange={setPets}
+            />
+            <ChoiceChips
+              name="relocation"
+              legend="Relocation openness"
+              options={RELOCATION_OPTIONS}
+              value={relocation}
+              onChange={setRelocation}
+            />
+            <div>
+              <label htmlFor="career" className={labelClassName}>
+                Career
+              </label>
+              <p className="text-sm text-[#666666] mb-2">What kind of work do you do?</p>
+              <input
+                id="career"
+                name="career"
+                type="text"
+                maxLength={120}
+                defaultValue={profile?.career ?? ''}
+                placeholder="Optional free text"
+                className={inputClassName}
+              />
+            </div>
+          </section>
+
+          <section className={sectionClassName}>
+            <SectionTitle
+              eyebrow="Service"
+              title="Service background"
+              description="Select any that apply. This is never inferred from career."
+            />
+            <MultiChoiceChips
+              name="service_backgrounds"
+              legend="Service background"
+              options={SERVICE_BACKGROUND_OPTIONS}
+              values={serviceBackgrounds}
+              onChange={setServiceBackgrounds}
+            />
+          </section>
+
+          <section className={sectionClassName}>
+            <SectionTitle
+              eyebrow="About"
+              title="Your story"
+              description="Write in your own words. Voice and Video introductions remain Coming Soon."
+            />
+            <div>
+              <label htmlFor="short_bio" className={labelClassName}>
+                About
+              </label>
+              <textarea
+                id="short_bio"
+                name="short_bio"
+                rows={4}
+                defaultValue={profile?.short_bio ?? ''}
+                placeholder="A few sentences about you and what matters to you."
+                className={`${inputClassName} resize-y min-h-[120px]`}
+              />
+            </div>
+            <div>
+              <label htmlFor="more_about" className={labelClassName}>
+                More about
+              </label>
+              <textarea
+                id="more_about"
+                name="more_about"
+                rows={4}
+                defaultValue={profile?.more_about ?? ''}
+                placeholder="Share more about yourself."
+                className={`${inputClassName} resize-y min-h-[120px]`}
+              />
+            </div>
+            <div className="rounded-2xl border border-dashed border-[#0B2D5C]/20 bg-[#F8F6F2] px-5 py-4 text-sm text-[#666666]">
+              Voice Introduction and Video Introduction remain Coming Soon and are not part of
+              profile completion.
+            </div>
+          </section>
+
+          <section className={sectionClassName}>
+            <SectionTitle
+              eyebrow="Interests"
+              title="Things I enjoy and music"
+              description="These stay as flexible lists — unchanged from the current Forge profile."
+            />
+            <fieldset>
+              <legend className={labelClassName}>Things I Enjoy</legend>
+              <div className="space-y-3">
+                {THINGS_I_ENJOY_OPTIONS.map((label) => (
+                  <label key={label} className="flex items-center gap-3 text-[#222222]">
+                    <input
+                      type="checkbox"
+                      name="things_i_enjoy"
+                      value={label}
+                      defaultChecked={profile?.things_i_enjoy?.includes(label) ?? false}
+                      className="h-5 w-5 rounded border-[#0B2D5C]/30 text-[#0B2D5C] focus:ring-[#0B2D5C]/20"
+                    />
+                    <span>{label}</span>
+                  </label>
+                ))}
+              </div>
+            </fieldset>
+            <div>
+              <label htmlFor="favorite_music_artists" className={labelClassName}>
+                Favorite music artists
+              </label>
+              <textarea
+                id="favorite_music_artists"
+                name="favorite_music_artists"
+                rows={4}
+                defaultValue={(profile?.favorite_music_artists ?? []).join('\n')}
+                placeholder="One artist per line"
+                className={`${inputClassName} resize-y min-h-[120px]`}
+              />
+            </div>
+            <div>
+              <label htmlFor="favorite_music_songs" className={labelClassName}>
+                Favorite music songs
+              </label>
+              <textarea
+                id="favorite_music_songs"
+                name="favorite_music_songs"
+                rows={4}
+                defaultValue={(profile?.favorite_music_songs ?? []).join('\n')}
+                placeholder="One song per line"
+                className={`${inputClassName} resize-y min-h-[120px]`}
+              />
+            </div>
+          </section>
 
           {status === 'success' && (
-            <p className="text-sm text-green-700 bg-green-50 border border-green-200 rounded-2xl px-4 py-3" role="status">
+            <p
+              className="text-sm text-green-700 bg-green-50 border border-green-200 rounded-2xl px-4 py-3"
+              role="status"
+            >
               {message}
             </p>
           )}
@@ -492,7 +694,10 @@ export default function ProfileForm({ profile }: ProfileFormProps) {
               Preview Profile
             </Link>
           )}
-          <Link href="/app" className="text-[#0B2D5C] hover:text-[#D62828] font-medium transition py-2">
+          <Link
+            href="/app"
+            className="text-[#0B2D5C] hover:text-[#D62828] font-medium transition py-2"
+          >
             ← Back to App
           </Link>
         </div>

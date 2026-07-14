@@ -104,13 +104,22 @@ export type SelfProfilePreview = {
   full_name: string | null;
   age: number | null;
   location: string | null;
+  location_city: string | null;
+  location_region: string | null;
+  location_country: string | null;
   short_bio: string | null;
   more_about: string | null;
   relationship_goal: string | null;
+  faith_identity: string | null;
+  faith_tradition: string | null;
+  faith_other: string | null;
   faith_importance: string | null;
   service_background: string | null;
+  service_backgrounds: string[];
   children: string | null;
   has_children: string | null;
+  children_count: string | null;
+  open_to_partner_with_children: string | null;
   education: string | null;
   pets: string | null;
   smoking: string | null;
@@ -155,13 +164,22 @@ export async function loadSelfProfilePreview(): Promise<
       full_name: profile.full_name,
       age: profile.age,
       location: profile.location,
+      location_city: profile.location_city,
+      location_region: profile.location_region,
+      location_country: profile.location_country,
       short_bio: profile.short_bio,
       more_about: profile.more_about,
       relationship_goal: profile.relationship_goal,
+      faith_identity: profile.faith_identity,
+      faith_tradition: profile.faith_tradition,
+      faith_other: profile.faith_other,
       faith_importance: profile.faith_importance,
       service_background: profile.service_background,
+      service_backgrounds: profile.service_backgrounds ?? [],
       children: profile.children,
       has_children: profile.has_children,
+      children_count: profile.children_count,
+      open_to_partner_with_children: profile.open_to_partner_with_children,
       education: profile.education,
       pets: profile.pets,
       smoking: profile.smoking,

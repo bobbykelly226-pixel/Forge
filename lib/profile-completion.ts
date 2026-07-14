@@ -3,9 +3,14 @@
  *
  * Voice and Video Introduction are Coming Soon and intentionally excluded
  * so they do not count against completion.
+ *
+ * Prefer-not-to-say counts as a valid answered choice.
+ * Unanswered (null/empty) does not.
+ * Completion never gates Discovery.
  */
 
 import type { Tables } from '@/lib/supabase/database.types';
+import { isPreferNotToSay } from '@/lib/profile/structured-options';
 
 export type ProfileCompletionSectionId =
   | 'photos'
@@ -31,6 +36,9 @@ export type ProfileCompletionInput = {
     | 'relationship_goal'
     | 'children'
     | 'has_children'
+    | 'children_count'
+    | 'open_to_partner_with_children'
+    | 'faith_identity'
     | 'faith_importance'
     | 'education'
     | 'pets'
@@ -39,10 +47,13 @@ export type ProfileCompletionInput = {
     | 'career'
     | 'relocation'
     | 'service_background'
+    | 'service_backgrounds'
     | 'things_i_enjoy'
     | 'favorite_music_artists'
     | 'favorite_music_songs'
     | 'profile_photo_url'
+    | 'location'
+    | 'location_city'
   > | null;
   photoCount: number;
   /** True when Relationship Alignment answers exist (e.g. relationship_intention). */
@@ -53,6 +64,10 @@ export type ProfileCompletionInput = {
 
 function hasText(value: string | null | undefined): boolean {
   return typeof value === 'string' && value.trim().length > 0;
+}
+
+function hasAnsweredChoice(value: string | null | undefined): boolean {
+  return hasText(value); // prefer_not_to_say is a valid answered choice
 }
 
 function hasNonEmptyArray(value: string[] | null | undefined): boolean {
@@ -66,17 +81,20 @@ function hasCoreDetails(
     profile.relationship_goal,
     profile.children,
     profile.has_children,
-    profile.faith_importance,
+    profile.faith_identity ?? profile.faith_importance,
     profile.education,
     profile.pets,
     profile.smoking,
     profile.drinking,
     profile.career,
     profile.relocation,
-    profile.service_background,
+    hasNonEmptyArray(profile.service_backgrounds)
+      ? 'set'
+      : profile.service_background,
+    profile.location_city ?? profile.location,
   ];
   // Require a meaningful subset so partial drafts still progress
-  const filled = fields.filter((field) => hasText(field)).length;
+  const filled = fields.filter((field) => hasAnsweredChoice(field)).length;
   return filled >= 5;
 }
 
@@ -151,3 +169,8 @@ export const DEFERRED_PROFILE_COMPLETION_SECTIONS = [
   'voice',
   'video',
 ] as const;
+
+/** Prefer-not-to-say never invalidates completion progress. */
+export function countsTowardCompletion(value: string | null | undefined): boolean {
+  return hasAnsweredChoice(value) || isPreferNotToSay(value);
+}

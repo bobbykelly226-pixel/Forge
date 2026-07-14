@@ -11,6 +11,7 @@ import {
   collectPublicProfileDetails,
   firstNameFromFullName,
   nonEmptyStringList,
+  resolvePublicLocation,
   stablePortraitGradient,
   type PublicDiscoveryProfile,
 } from '@/lib/discovery/presentation';
@@ -51,7 +52,8 @@ export default function PublicProfilePresentation({
   const musicArtists = nonEmptyStringList(profile.favorite_music_artists);
   const musicSongs = nonEmptyStringList(profile.favorite_music_songs);
   const hasMusic = musicArtists.length > 0 || musicSongs.length > 0;
-  const hasLocation = Boolean(profile.location?.trim());
+  const locationLabel = resolvePublicLocation(profile);
+  const hasLocation = Boolean(locationLabel);
   const hasAbout = Boolean(profile.short_bio?.trim());
   const hasMoreAbout = Boolean(profile.more_about?.trim());
 
@@ -83,7 +85,7 @@ export default function PublicProfilePresentation({
             {hasLocation ? (
               <p className="mt-2 inline-flex items-center gap-1.5 text-sm text-white/90">
                 <MapPin className="h-3.5 w-3.5" aria-hidden="true" />
-                {profile.location}
+                {locationLabel}
               </p>
             ) : null}
           </div>

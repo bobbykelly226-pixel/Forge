@@ -17,6 +17,7 @@ import {
   type DataAccessResult,
   updateOnboardingProgress,
 } from '@/lib/data/profile';
+import { mapLegacyRelationshipGoal } from '@/lib/profile/legacy-mapping';
 
 const ALLOWED_KEYS = new Set<string>(Object.values(PROFILE_ANSWER_KEYS));
 
@@ -145,6 +146,27 @@ export async function upsertCurrentUserProfileAnswer(
   if (error) {
     console.error('upsert profile answer:', error.message);
     return { success: false, message: 'Could not save your answer. Please try again.' };
+  }
+
+  // Keep profiles.relationship_goal as the shared authoritative public field.
+  if (
+    questionKey === PROFILE_ANSWER_KEYS.relationshipIntention &&
+    typeof normalized === 'string'
+  ) {
+    const mapped = mapLegacyRelationshipGoal(normalized);
+    if (mapped.mapped) {
+      const { error: profileError } = await supabase
+        .from('profiles')
+        .update({ relationship_goal: mapped.mapped })
+        .eq('id', user.id);
+      if (profileError) {
+        console.error('sync relationship_goal:', profileError.message);
+        return {
+          success: false,
+          message: 'Could not sync your relationship goal. Please try again.',
+        };
+      }
+    }
   }
 
   return { success: true, data: { questionKey } };

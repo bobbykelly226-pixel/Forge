@@ -2,9 +2,9 @@
 
 Authoritative documentation for the Forge Backend Foundation persistence layer.
 
-**Remote migration status:** Applied to the linked Forge Supabase project via `supabase migration up --linked`. Remote migration history records `20260714000000` (`forge_backend_foundation`), `20260714060000` (`migrate_compatibility_to_profile_answers`), `20260714180000` (`discovery_connections_persistence`), `20260714190000` (`discovery_without_completion_gate`), and `20260714200000` (`fix_discovery_visibility_status_write`).
+**Remote migration status:** Applied to the linked Forge Supabase project via `supabase migration up --linked`. Remote migration history records `20260714000000` (`forge_backend_foundation`), `20260714060000` (`migrate_compatibility_to_profile_answers`), `20260714180000` (`discovery_connections_persistence`), `20260714190000` (`discovery_without_completion_gate`), `20260714200000` (`fix_discovery_visibility_status_write`), and `20260714210000` (`structured_profile_fields_and_location`).
 
-**Types status:** `lib/supabase/database.types.ts` was **generated from the linked, applied Forge Supabase schema** via `npx supabase gen types typescript --linked --schema public` after migration `20260714200000` was recorded remotely.
+**Types status:** `lib/supabase/database.types.ts` was **generated from the linked, applied Forge Supabase schema** via `npx supabase gen types typescript --linked --schema public` after migration `20260714210000` was recorded remotely.
 
 ---
 
