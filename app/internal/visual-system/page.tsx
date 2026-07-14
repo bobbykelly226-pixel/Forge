@@ -19,7 +19,7 @@ const sans = Manrope({
 export const metadata = {
   title: 'Forge Visual System | Buttons',
   description:
-    'Internal review surface for the corrected Forge metallic button system. Not rolled out to product routes.',
+    'Internal review surface for the Forge metallic button system. Visual material matching — not rolled out to product routes.',
   robots: {
     index: false,
     follow: false,
@@ -36,43 +36,55 @@ function Section({
   children: React.ReactNode;
 }) {
   return (
-    <section className="rounded-[1.25rem] border border-[#0B2D5C]/10 bg-white/90 p-6 shadow-[0_12px_32px_rgba(11,45,92,0.04)] sm:p-8">
+    <section className="border border-[#0B2D5C]/10 bg-white/90 p-5 sm:p-6">
       <h2
-        className="text-xl tracking-[-0.015em] text-[#0B2D5C]"
+        className="text-lg tracking-[-0.015em] text-[#0B2D5C]"
         style={{ fontFamily: 'var(--font-discovery-display), Georgia, serif' }}
       >
         {title}
       </h2>
-      <p className="mt-2 max-w-2xl text-sm leading-relaxed text-[#5A6575]">{description}</p>
-      <div className="mt-6">{children}</div>
+      <p className="mt-1.5 max-w-3xl text-sm leading-relaxed text-[#5A6575]">{description}</p>
+      <div className="mt-5">{children}</div>
     </section>
   );
 }
 
 function Label({ children }: { children: React.ReactNode }) {
   return (
-    <p className="mb-2 text-[11px] font-semibold uppercase tracking-[0.14em] text-[#8A93A0]">
+    <p className="mb-2 text-[10px] font-semibold uppercase tracking-[0.14em] text-[#8A93A0]">
       {children}
     </p>
   );
 }
 
-/** Plain navy gradient control — rejected comparison specimen only */
-function RejectedPlainButton({ children }: { children: React.ReactNode }) {
+function SurfaceRow({
+  label,
+  bg,
+  dark,
+  surface,
+}: {
+  label: string;
+  bg: string;
+  dark?: boolean;
+  surface: 'soft-slate' | 'white' | 'navy';
+}) {
   return (
-    <button
-      type="button"
-      className="inline-flex h-12 items-center justify-center px-8 text-[14px] font-semibold uppercase tracking-[0.09em] text-white"
-      style={{
-        borderRadius: '0.375rem',
-        border: '1.5px solid #9aa3af',
-        background:
-          'linear-gradient(180deg, color-mix(in srgb, #0B2D5C 78%, #ffffff) 0%, #0B2D5C 42%, #071e3d 100%)',
-        boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.28), 0 8px 18px rgba(11,45,92,0.16)',
-      }}
-    >
-      {children}
-    </button>
+    <div className="p-5 sm:p-6" style={{ background: bg }}>
+      <Label>
+        {dark ? <span className="text-white/55">{label}</span> : label}
+      </Label>
+      <div className="flex flex-wrap items-center gap-3">
+        <ForgeButton tier={1} surface={surface} onDark={dark}>
+          View My Profile
+        </ForgeButton>
+        <ForgeButton tier={2} surface={surface} onDark={dark}>
+          Browse Gallery
+        </ForgeButton>
+        <ForgeButton tier={3} surface={surface} onDark={dark}>
+          Learn More
+        </ForgeButton>
+      </div>
+    </div>
   );
 }
 
@@ -84,202 +96,137 @@ export default function VisualSystemPage() {
         fontFamily: 'var(--font-discovery-sans), ui-sans-serif, system-ui, sans-serif',
       }}
     >
-      <div className="mx-auto w-full max-w-5xl px-4 py-10 sm:px-6 lg:px-8 lg:py-14">
-        <header className="mb-10 max-w-3xl">
+      <div className="mx-auto w-full max-w-5xl px-4 py-10 sm:px-6 lg:px-8 lg:py-12">
+        <header className="mb-8 max-w-3xl">
           <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[#D62828]">
-            Internal · Visual System · Correction Review
+            Internal · Visual System · Metallic Reconstruction
           </p>
           <h1
-            className="mt-3 text-[2.15rem] leading-none tracking-[-0.03em] text-[#0B2D5C] sm:text-[2.5rem]"
+            className="mt-3 text-[2rem] leading-none tracking-[-0.03em] text-[#0B2D5C] sm:text-[2.35rem]"
             style={{ fontFamily: 'var(--font-discovery-display), Georgia, serif' }}
           >
             Forge Button System
           </h1>
-          <p className="mt-4 text-[15px] leading-relaxed text-[#5A6575]">
-            Micro-radius rectangle — outer frame exactly <strong>4px</strong>, recessed inner face
-            exactly <strong>3px</strong>. Polished silver metallic frame with graphite separator and
-            restrained glass highlight. Prior navy-gradient implementation is rejected; this page is
-            the correction review only. Not applied to product routes yet.
+          <p className="mt-3 text-[15px] leading-relaxed text-[#5A6575]">
+            Goal: match the approved metallic rendering as a manufactured object — substantial
+            polished silver chassis, bevel, graphite separator, recessed face, glass reflection —
+            not a navy rectangle with a thin outline. Review only; no product-route rollout.
           </p>
-          <p className="mt-3 text-sm text-[#8A93A0]">
+          <p className="mt-2 text-sm text-[#8A93A0]">
             <Link href="/" className="underline-offset-2 hover:underline">
               ← Back to app
             </Link>
           </p>
         </header>
 
-        <div className="flex flex-col gap-8">
-          {/* Rejected vs corrected */}
+        <div className="flex flex-col gap-6">
+          {/* SECTION 1 */}
           <Section
-            title="Corrected vs rejected"
-            description="Side-by-side: the corrected forged metallic Tier 1 versus a plain navy gradient button (the rejected look). The silver frame must be unmistakable."
+            title="1 · Approved reference target"
+            description="The attached approved rendering is the visual source of truth. Match material construction — polished metal, dimensional glass, engineered structure — not merely navy fill color. The uploaded reference is not shipped as a production asset."
           >
-            <div className="grid gap-8 sm:grid-cols-2">
-              <div>
-                <Label>Corrected — forged metallic Tier 1</Label>
-                <ForgeButton tier={1}>View My Profile</ForgeButton>
-                <p className="mt-3 text-xs leading-relaxed text-[#5A6575]">
-                  Visible polished silver perimeter, graphite separator, recessed navy face, upper
-                  glass only, 4px / 3px geometry, weight 500 / tracking 0.12em.
-                </p>
-              </div>
-              <div>
-                <Label>Rejected — plain navy gradient</Label>
-                <RejectedPlainButton>View My Profile</RejectedPlainButton>
-                <p className="mt-3 text-xs leading-relaxed text-[#5A6575]">
-                  Soft ~6px rounding, faint gray outline, broad glossy navy face — not Forge metallic.
-                </p>
-              </div>
+            <ul className="grid gap-2 text-sm text-[#5A6575] sm:grid-cols-2">
+              <li>• Substantial polished metallic perimeter (~4.5px chassis)</li>
+              <li>• Bright / mid / dark steel transitions (not flat gray)</li>
+              <li>• Inner metallic bevel + graphite separator</li>
+              <li>• Recessed colored face with upper glass reflection</li>
+              <li>• Micro-radius rectangle — outer 4px · inner 2.5px</li>
+              <li>• Premium manufactured-object quality</li>
+            </ul>
+          </Section>
+
+          {/* SECTION 2 */}
+          <Section
+            title="2 · Primary surface matrix"
+            description="Tier 1 / 2 / 3 at realistic size on Soft Slate, white, and deep navy. Official surface pairings."
+          >
+            <div className="overflow-hidden border border-[#0B2D5C]/10">
+              <SurfaceRow
+                label="Soft Slate — navy Tier 1 · white Tier 2 · navy Tier 3"
+                bg="var(--forge-app-background, #E8EBF0)"
+                surface="soft-slate"
+              />
+              <SurfaceRow
+                label="White — navy Tier 1 · Soft Slate Tier 2 · navy Tier 3"
+                bg="#ffffff"
+                surface="white"
+              />
+              <SurfaceRow
+                label="Deep navy — Soft Slate Tier 1 · translucent Tier 2 · near-white Tier 3"
+                bg="var(--forge-navy, #0B2D5C)"
+                surface="navy"
+                dark
+              />
             </div>
           </Section>
 
-          {/* Hierarchy */}
+          {/* SECTION 3 */}
           <Section
-            title="Hierarchy — Soft Slate"
-            description="Tier 1 forged · Tier 2 supports · Tier 3 gets out of the way. Side-by-side on Soft Slate."
-          >
-            <div className="flex flex-wrap items-center gap-4">
-              <ForgeButton tier={1}>View My Profile</ForgeButton>
-              <ForgeButton tier={2}>Browse Gallery</ForgeButton>
-              <ForgeButton tier={3}>Learn More</ForgeButton>
-            </div>
-          </Section>
-
-          {/* Surfaces */}
-          <Section
-            title="Tier 1 on Soft Slate"
-            description="Official light-surface Tier 1: polished silver frame, graphite separator, recessed Forge Navy (#0B2D5C) face, white text."
+            title="3 · Metallic detail (enlarged)"
+            description="Scaled specimen so chassis, bevel, graphite, face, glass, depth, and shadow are inspectable."
           >
             <div
-              className="rounded-xl p-8"
+              className="flex flex-col items-start gap-6 p-8 sm:flex-row sm:items-center"
               style={{ background: 'var(--forge-app-background, #E8EBF0)' }}
             >
-              <Label>Soft Slate canvas · navy face</Label>
-              <ForgeButton tier={1}>View My Profile</ForgeButton>
+              <div style={{ transform: 'scale(1.75)', transformOrigin: 'left center' }}>
+                <ForgeButton tier={1}>View My Profile</ForgeButton>
+              </div>
+              <ol className="max-w-sm space-y-1.5 text-xs leading-relaxed text-[#5A6575]">
+                <li>
+                  <strong className="text-[#0B2D5C]">1 Outer chassis</strong> — SVG + CSS metallic
+                  fill, ~4.5px visible silver on all sides
+                </li>
+                <li>
+                  <strong className="text-[#0B2D5C]">2 Inner bevel</strong> — light top / dark bottom
+                  metal edge
+                </li>
+                <li>
+                  <strong className="text-[#0B2D5C]">3 Graphite separator</strong> — #26303A ring
+                  between metal and face
+                </li>
+                <li>
+                  <strong className="text-[#0B2D5C]">4 Recessed face</strong> — Forge Navy #0B2D5C with
+                  tonal depth
+                </li>
+                <li>
+                  <strong className="text-[#0B2D5C]">5 Glass reflection</strong> — shaped upper ~48%
+                  highlight
+                </li>
+                <li>
+                  <strong className="text-[#0B2D5C]">6 Lower depth</strong> — inset shadow inside face
+                </li>
+                <li>
+                  <strong className="text-[#0B2D5C]">7 External shadow</strong> — restrained anchor
+                  beneath object
+                </li>
+              </ol>
             </div>
           </Section>
 
+          {/* SECTION 4 */}
           <Section
-            title="Tier 1 on white"
-            description="Same official navy-faced Tier 1 on a white surface — silver frame remains clearly visible."
+            title="4 · States"
+            description="Default, hover, pressed, focus, disabled, loading — plus real button and link."
           >
-            <div className="rounded-xl border border-[#0B2D5C]/08 bg-white p-8">
-              <Label>White surface · navy face</Label>
-              <ForgeButton tier={1}>View My Profile</ForgeButton>
-            </div>
-          </Section>
-
-          <Section
-            title="On deep navy"
-            description="Official dark-surface hierarchy. Tier 1 switches to Soft Slate face with navy text — navy-faced Tier 1 on navy is rejected."
-          >
-            <div
-              className="rounded-xl p-8"
-              style={{ background: 'var(--forge-navy, #0B2D5C)' }}
-            >
-              <div className="flex flex-wrap items-center gap-4">
-                <div>
-                  <Label>
-                    <span className="text-white/55">Tier 1 · Soft Slate face</span>
-                  </Label>
-                  <ForgeButton tier={1} onDark>
-                    View My Profile
-                  </ForgeButton>
-                </div>
-                <div>
-                  <Label>
-                    <span className="text-white/55">Tier 2 · light outline</span>
-                  </Label>
-                  <ForgeButton tier={2} onDark>
-                    Browse Gallery
-                  </ForgeButton>
-                </div>
-                <div>
-                  <Label>
-                    <span className="text-white/55">Tier 3 · near-white link</span>
-                  </Label>
-                  <ForgeButton tier={3} onDark>
-                    Learn More
-                  </ForgeButton>
-                </div>
-              </div>
-            </div>
-          </Section>
-
-          {/* Tier 2 surfaces */}
-          <Section
-            title="Tier 2 surfaces"
-            description="Quiet Premium supporting action — same 4px silhouette and 48px height as Tier 1; no metallic frame."
-          >
-            <div className="grid gap-6 sm:grid-cols-2">
-              <div
-                className="rounded-xl p-6"
-                style={{ background: 'var(--forge-app-background, #E8EBF0)' }}
-              >
-                <Label>On Soft Slate</Label>
-                <ForgeButton tier={2}>Browse Gallery</ForgeButton>
-              </div>
-              <div className="rounded-xl border border-[#0B2D5C]/08 bg-white p-6">
-                <Label>On white</Label>
-                <ForgeButton tier={2}>Browse Gallery</ForgeButton>
-              </div>
-            </div>
-          </Section>
-
-          {/* Tier 3 */}
-          <Section
-            title="Tier 3"
-            description="Typography-only with restrained underline and generous invisible touch target. Readable on light and deep navy."
-          >
-            <div className="flex flex-wrap items-center gap-8">
-              <div>
-                <Label>On Soft Slate</Label>
-                <ForgeButton tier={3}>Learn More</ForgeButton>
-              </div>
-              <div
-                className="rounded-xl px-6 py-4"
-                style={{ background: 'var(--forge-navy, #0B2D5C)' }}
-              >
-                <Label>
-                  <span className="text-white/55">On deep navy</span>
-                </Label>
-                <ForgeButton tier={3} onDark>
-                  Learn More
-                </ForgeButton>
-              </div>
-            </div>
-          </Section>
-
-          {/* States */}
-          <Section
-            title="States"
-            description="Default, hover/pressed guidance, keyboard focus, disabled, and loading — all on the corrected geometry."
-          >
-            <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
               <div>
                 <Label>Default</Label>
                 <ForgeButton tier={1}>View My Profile</ForgeButton>
               </div>
               <div>
-                <Label>Hover guidance</Label>
-                <p className="mb-3 text-xs text-[#5A6575]">
-                  Slightly stronger silver edge, restrained face brightness, ~0.5px lift — no scale,
-                  no glow.
-                </p>
+                <Label>Hover</Label>
+                <p className="mb-2 text-[11px] text-[#5A6575]">Stronger silver · ≤0.5px lift</p>
                 <ForgeButton tier={1}>Hover Me</ForgeButton>
               </div>
               <div>
-                <Label>Pressed guidance</Label>
-                <p className="mb-3 text-xs text-[#5A6575]">
-                  Moves ~1px down; outer shadow reduces; silhouette stays exact 4px rectangle.
-                </p>
+                <Label>Pressed</Label>
+                <p className="mb-2 text-[11px] text-[#5A6575]">+1px down · reduced shadow</p>
                 <ForgeButton tier={1}>Press Me</ForgeButton>
               </div>
               <div>
-                <Label>Keyboard focus</Label>
-                <p className="mb-3 text-xs text-[#5A6575]">
-                  Tab to this button — external 2px outline, offset 3px; no rounded wrapper.
-                </p>
+                <Label>Focus</Label>
+                <p className="mb-2 text-[11px] text-[#5A6575]">Tab here — external ring</p>
                 <ForgeButton tier={1}>Focus Target</ForgeButton>
               </div>
               <div>
@@ -294,15 +241,6 @@ export default function VisualSystemPage() {
                   Saving
                 </ForgeButton>
               </div>
-            </div>
-          </Section>
-
-          {/* Implementations */}
-          <Section
-            title="Button and link implementations"
-            description="Real button and Next.js Link share the same geometry and metallic construction."
-          >
-            <div className="flex flex-wrap items-center gap-4">
               <div>
                 <Label>Real button</Label>
                 <ForgeButton tier={1} type="button">
@@ -318,123 +256,73 @@ export default function VisualSystemPage() {
             </div>
           </Section>
 
-          {/* Sizes */}
+          {/* SECTION 5 */}
           <Section
-            title="Sizes"
-            description="Small, standard (48px), and large — outer radius stays 4px and inner face stays 3px at every size."
+            title="5 · Responsive"
+            description="Content-width, large, and full-width mobile — same 4px outer / 2.5px inner / 4.5px chassis."
           >
-            <div className="flex flex-wrap items-end gap-4">
+            <div className="flex flex-col gap-4">
               <div>
-                <Label>Small</Label>
-                <ForgeButton tier={1} size="sm">
-                  Small
-                </ForgeButton>
-              </div>
-              <div>
-                <Label>Standard · 48px</Label>
-                <ForgeButton tier={1} size="md">
-                  Standard
-                </ForgeButton>
+                <Label>Content width</Label>
+                <ForgeButton tier={1}>View My Profile</ForgeButton>
               </div>
               <div>
                 <Label>Large</Label>
                 <ForgeButton tier={1} size="lg">
-                  Large
+                  View My Profile
                 </ForgeButton>
+              </div>
+              <div className="max-w-sm">
+                <Label>Full-width mobile stack</Label>
+                <div className="flex flex-col gap-2.5">
+                  <ForgeButton tier={1} block>
+                    View My Profile
+                  </ForgeButton>
+                  <ForgeButton tier={2} block surface="soft-slate">
+                    Browse Gallery
+                  </ForgeButton>
+                  <ForgeButton tier={3} block>
+                    Learn More
+                  </ForgeButton>
+                </div>
               </div>
             </div>
           </Section>
 
-          {/* Mobile full-width */}
-          <Section
-            title="Full-width mobile stack"
-            description="Full-width Tier 1 / 2 / 3 stack — radius remains 4px / 3px; must not read as a pill."
-          >
-            <div className="mx-auto flex w-full max-w-sm flex-col gap-3">
-              <ForgeButton tier={1} block>
-                View My Profile
-              </ForgeButton>
-              <ForgeButton tier={2} block>
-                Browse Gallery
-              </ForgeButton>
-              <ForgeButton tier={3} block>
-                Learn More
-              </ForgeButton>
-            </div>
-          </Section>
-
-          {/* Material studies */}
+          {/* Material studies — compact */}
           <Section
             title="Material studies"
-            description="Silver-frame construction across face colors. Navy and Soft Slate are official treatments; graphite is optional study; red is reference-only — not a product primary or destructive default."
+            description="Silver chassis across face colors. Red is reference-only — not a product primary or default destructive."
           >
-            <div className="grid gap-6 sm:grid-cols-2">
-              <div
-                className="rounded-xl p-6"
-                style={{ background: 'var(--forge-app-background, #E8EBF0)' }}
-              >
-                <Label>Navy — official on Soft Slate / white</Label>
-                <ForgeButton tier={1} face="navy">
-                  View My Profile
-                </ForgeButton>
-              </div>
-              <div
-                className="rounded-xl p-6"
-                style={{ background: 'var(--forge-navy, #0B2D5C)' }}
-              >
-                <Label>
-                  <span className="text-white/55">Soft Slate — official on deep navy</span>
-                </Label>
+            <div
+              className="flex flex-wrap items-center gap-3 p-5"
+              style={{ background: 'var(--forge-app-background, #E8EBF0)' }}
+            >
+              <ForgeButton tier={1} face="navy">
+                Navy
+              </ForgeButton>
+              <div className="rounded px-3 py-2" style={{ background: 'var(--forge-navy)' }}>
                 <ForgeButton tier={1} face="soft-slate">
-                  View My Profile
+                  Soft Slate
                 </ForgeButton>
               </div>
-              <div className="rounded-xl border border-[#0B2D5C]/08 bg-white p-6">
-                <Label>Graphite — optional material study</Label>
-                <ForgeButton tier={1} face="graphite">
-                  View My Profile
-                </ForgeButton>
-              </div>
-              <div className="rounded-xl border border-[#D62828]/15 bg-white p-6">
-                <Label>Red (reference only)</Label>
+              <ForgeButton tier={1} face="graphite">
+                Graphite
+              </ForgeButton>
+              <div>
                 <ForgeButton tier={1} face="red">
-                  View My Profile
+                  Red
                 </ForgeButton>
-                <p className="mt-3 text-xs leading-relaxed text-[#5A6575]">
-                  Reference-only material study. Do not use as ordinary primary. Do not use as the
-                  default destructive treatment. Not a standard glossy product action.
+                <p className="mt-1 text-[10px] text-[#8A93A0]">
+                  Red (reference only) — Do not use as ordinary primary
                 </p>
               </div>
             </div>
           </Section>
 
-          {/* Geometry lock */}
-          <Section
-            title="Geometry lock"
-            description="Documented exact values for this review version — do not approximate."
-          >
-            <ul className="space-y-2 text-sm text-[#5A6575]">
-              <li>
-                Tier 1 outer metallic frame: <code className="text-[#0B2D5C]">border-radius: 4px</code>
-              </li>
-              <li>
-                Tier 1 recessed inner face: <code className="text-[#0B2D5C]">border-radius: 3px</code>
-              </li>
-              <li>
-                Tier 2: <code className="text-[#0B2D5C]">border-radius: 4px</code>
-              </li>
-              <li>
-                Standard height: <code className="text-[#0B2D5C]">48px</code> · horizontal padding:{' '}
-                <code className="text-[#0B2D5C]">32px</code>
-              </li>
-              <li>
-                Typography: <code className="text-[#0B2D5C]">14px / 500 / uppercase / 0.12em</code>
-              </li>
-            </ul>
-          </Section>
-
           <p className="text-center text-xs text-[#8A93A0]">
-            Scope lock: /internal/visual-system only. No product-route rollout until manual approval.
+            Scope lock: /internal/visual-system only. Manual approval required before product
+            rollout.
           </p>
         </div>
       </div>

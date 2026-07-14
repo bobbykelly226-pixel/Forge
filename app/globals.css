@@ -154,16 +154,16 @@
 }
 
 /* ------------------------------------------------------------------ */
-/* Forge Button System — APPROVED geometry + metallic construction     */
-/* Outer frame: exactly 4px · Inner face: exactly 3px · NOT pills      */
-/* Tier 1 = forged metallic badge · Tier 2 = quiet outline · Tier 3 = link */
+/* Forge Button System — substantial metallic chassis (visual SoT)     */
+/* Outer chassis radius: 4px · Inner face: 2.5px · Chassis: 4.5px      */
+/* Tier 1 = forged metallic object · Tier 2 = quiet outline · Tier 3 = link */
 /* ------------------------------------------------------------------ */
 
 .forge-btn {
   --forge-btn-outer-radius: 4px;
-  --forge-btn-inner-radius: 3px;
-  --forge-btn-radius: 4px; /* Tier 2 / shared silhouette token */
-  --forge-btn-frame-thickness: 2.5px;
+  --forge-btn-inner-radius: 2.5px;
+  --forge-btn-radius: 4px;
+  --forge-btn-chassis-thickness: 4.5px;
   --forge-btn-height: 48px;
   --forge-btn-pad-x: 32px;
   box-sizing: border-box;
@@ -209,13 +209,15 @@
 @media (prefers-reduced-motion: reduce) {
   .forge-btn,
   .forge-btn__face,
-  .forge-btn__spinner {
+  .forge-btn__spinner,
+  .forge-btn__chassis,
+  .forge-btn__glass {
     transition: none !important;
     animation: none !important;
   }
 }
 
-/* Shared label / face shell */
+/* Shared face / label */
 .forge-btn__face {
   box-sizing: border-box;
   position: relative;
@@ -228,12 +230,12 @@
   padding: 0 var(--forge-btn-pad-x);
   border-radius: var(--forge-btn-inner-radius);
   overflow: hidden;
-  z-index: 1;
+  z-index: 2;
 }
 
 .forge-btn__label {
   position: relative;
-  z-index: 2;
+  z-index: 3;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -257,92 +259,137 @@
 }
 
 /* ------------------------------------------------------------------ */
-/* Tier 1 — forged metallic badge                                      */
-/* Layers: silver exterior → light/dark silver → graphite separator →  */
-/* recessed face → upper glass → lower depth → outer shadow            */
+/* Tier 1 — substantial polished metallic chassis                      */
+/* Layers: SVG metal fill → CSS chassis edge → inner bevel →           */
+/* graphite separator → recessed face → glass → lower depth → shadow   */
 /* ------------------------------------------------------------------ */
 
 .forge-btn--tier1 {
-  /* Polished silver exterior frame (full perimeter) */
-  background:
+  --forge-btn-chassis-thickness: 4.5px;
+  padding: var(--forge-btn-chassis-thickness);
+  color: #ffffff;
+  background-color: #929ca7;
+  /* Fallback layered metal if SVG is unavailable */
+  background-image:
+    radial-gradient(ellipse 70% 55% at 10% 0%, #ffffff 0%, transparent 52%),
+    radial-gradient(ellipse 55% 40% at 55% 100%, #e8edf2 0%, transparent 55%),
     linear-gradient(
-      160deg,
+      145deg,
       #ffffff 0%,
-      #f2f4f7 12%,
-      #d5dbe3 28%,
-      #9aa3af 46%,
-      #c8ced6 62%,
-      #eef1f4 78%,
-      #b8c0ca 90%,
-      #f7f8fa 100%
+      #f6f8fa 9%,
+      #e8edf2 18%,
+      #c7ced6 30%,
+      #68727d 44%,
+      #aeb7c1 56%,
+      #e8edf2 70%,
+      #929ca7 84%,
+      #4c5661 100%
     );
   box-shadow:
-    0 1px 0 rgba(255, 255, 255, 0.55),
-    0 6px 14px rgba(11, 45, 92, 0.14),
-    0 2px 4px rgba(26, 35, 50, 0.12),
-    inset 0 1px 0 rgba(255, 255, 255, 0.85),
-    inset 0 -1px 0 rgba(90, 101, 117, 0.35);
-  padding: var(--forge-btn-frame-thickness);
-  color: #ffffff;
+    /* LAYER 7 — external shadow */
+    0 1px 1px rgba(26, 35, 50, 0.22),
+    0 3px 8px rgba(11, 45, 92, 0.16),
+    0 8px 18px rgba(11, 45, 92, 0.1),
+    /* chassis rim light / dark */
+    inset 0 1px 0 rgba(255, 255, 255, 0.92),
+    inset 1px 0 0 rgba(255, 255, 255, 0.45),
+    inset 0 -1px 0 rgba(48, 57, 67, 0.55),
+    inset -1px 0 0 rgba(76, 86, 97, 0.4);
 }
 
-/* Graphite separator ring between silver frame and face */
-.forge-btn--tier1::before {
-  content: '';
+/* LAYER 1 — SVG metallic chassis fill (decorative) */
+.forge-btn__chassis {
   position: absolute;
-  inset: var(--forge-btn-frame-thickness);
-  border-radius: var(--forge-btn-inner-radius);
-  box-shadow:
-    0 0 0 1px rgba(42, 49, 60, 0.55),
-    inset 0 0 0 0.5px rgba(26, 35, 50, 0.35);
+  inset: 0;
+  border-radius: var(--forge-btn-outer-radius);
+  overflow: hidden;
   pointer-events: none;
-  z-index: 2;
+  z-index: 0;
 }
 
+.forge-btn__chassis-svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+/* LAYER 2 — inner metallic bevel + LAYER 3 — graphite separator */
+.forge-btn__bevel {
+  position: absolute;
+  inset: var(--forge-btn-chassis-thickness);
+  border-radius: var(--forge-btn-inner-radius);
+  pointer-events: none;
+  z-index: 3;
+  box-shadow:
+    /* fine metal bevel — light top / dark bottom */
+    inset 0 1px 0 rgba(255, 255, 255, 0.72),
+    inset 0 -1px 0 rgba(48, 57, 67, 0.55),
+    inset 1px 0 0 rgba(232, 237, 242, 0.35),
+    inset -1px 0 0 rgba(104, 114, 125, 0.35),
+    /* graphite separator ring */
+    0 0 0 1px #26303a,
+    0 0 0 1.5px rgba(29, 37, 46, 0.65);
+}
+
+/* LAYER 4 — recessed face + LAYER 6 — lower depth */
 .forge-btn--tier1 .forge-btn__face {
-  /* Recessed Forge Navy face — #0B2D5C */
   background:
     linear-gradient(
       180deg,
-      color-mix(in srgb, var(--forge-navy) 92%, #ffffff) 0%,
-      var(--forge-navy) 38%,
-      var(--forge-navy) 72%,
+      color-mix(in srgb, var(--forge-navy) 90%, #ffffff) 0%,
+      var(--forge-navy) 36%,
+      var(--forge-navy) 68%,
       var(--forge-navy-deep) 100%
     );
   box-shadow:
-    inset 0 2px 3px rgba(0, 0, 0, 0.28),
-    inset 0 -1px 0 rgba(255, 255, 255, 0.06);
+    inset 0 3px 5px rgba(0, 0, 0, 0.34),
+    inset 0 -1px 0 rgba(255, 255, 255, 0.05),
+    inset 0 1px 0 rgba(255, 255, 255, 0.04);
   color: #ffffff;
+  z-index: 2;
 }
 
-/* Restrained upper glass reflection — upper portion only */
-.forge-btn--tier1 .forge-btn__face::before {
-  content: '';
+/* LAYER 5 — shaped glass reflection (upper portion only) */
+.forge-btn__glass {
   position: absolute;
   left: 0;
   right: 0;
   top: 0;
-  height: 38%;
-  border-radius: var(--forge-btn-inner-radius) var(--forge-btn-inner-radius) 0 0;
-  background: linear-gradient(
-    180deg,
-    rgba(255, 255, 255, 0.16) 0%,
-    rgba(255, 255, 255, 0.05) 55%,
-    rgba(255, 255, 255, 0) 100%
-  );
+  height: 48%;
+  border-radius: var(--forge-btn-inner-radius) var(--forge-btn-inner-radius) 40% 40%;
   pointer-events: none;
   z-index: 1;
+  background:
+    linear-gradient(
+      185deg,
+      rgba(255, 255, 255, 0.22) 0%,
+      rgba(255, 255, 255, 0.1) 42%,
+      rgba(255, 255, 255, 0.03) 72%,
+      rgba(255, 255, 255, 0) 100%
+    ),
+    radial-gradient(
+      ellipse 90% 70% at 30% 0%,
+      rgba(255, 255, 255, 0.16) 0%,
+      rgba(255, 255, 255, 0) 70%
+    );
 }
 
 .forge-btn--tier1:hover:not(:disabled):not([aria-disabled='true']):not([data-loading='true']) {
-  filter: brightness(1.03);
-  box-shadow:
-    0 1px 0 rgba(255, 255, 255, 0.65),
-    0 7px 16px rgba(11, 45, 92, 0.16),
-    0 2px 5px rgba(26, 35, 50, 0.14),
-    inset 0 1px 0 rgba(255, 255, 255, 0.92),
-    inset 0 -1px 0 rgba(90, 101, 117, 0.4);
+  filter: brightness(1.035);
   transform: translateY(-0.5px);
+  box-shadow:
+    0 1px 1px rgba(26, 35, 50, 0.2),
+    0 4px 10px rgba(11, 45, 92, 0.18),
+    0 10px 22px rgba(11, 45, 92, 0.12),
+    inset 0 1px 0 rgba(255, 255, 255, 1),
+    inset 1px 0 0 rgba(255, 255, 255, 0.55),
+    inset 0 -1px 0 rgba(48, 57, 67, 0.5),
+    inset -1px 0 0 rgba(76, 86, 97, 0.38);
+}
+
+.forge-btn--tier1:hover:not(:disabled):not([aria-disabled='true']):not([data-loading='true'])
+  .forge-btn__glass {
+  filter: brightness(1.1);
 }
 
 .forge-btn--tier1:active:not(:disabled):not([aria-disabled='true']):not([data-loading='true']),
@@ -350,13 +397,21 @@
   transform: translateY(1px);
   filter: brightness(0.98);
   box-shadow:
-    0 1px 0 rgba(255, 255, 255, 0.35),
-    0 2px 6px rgba(11, 45, 92, 0.12),
+    0 1px 1px rgba(26, 35, 50, 0.18),
+    0 2px 5px rgba(11, 45, 92, 0.12),
     inset 0 1px 0 rgba(255, 255, 255, 0.55),
-    inset 0 -1px 0 rgba(90, 101, 117, 0.3);
+    inset 0 -1px 0 rgba(48, 57, 67, 0.45);
 }
 
-/* Soft Slate / pale face — official Tier 1 on deep navy surfaces */
+.forge-btn--tier1:active:not(:disabled):not([aria-disabled='true']):not([data-loading='true'])
+  .forge-btn__face,
+.forge-btn--tier1[data-pressed='true'] .forge-btn__face {
+  box-shadow:
+    inset 0 4px 7px rgba(0, 0, 0, 0.4),
+    inset 0 -1px 0 rgba(255, 255, 255, 0.04);
+}
+
+/* Soft Slate face — official Tier 1 on deep navy */
 .forge-btn--tier1-face-soft-slate,
 .forge-btn--tier1-on-dark {
   color: var(--forge-navy);
@@ -364,27 +419,27 @@
 
 .forge-btn--tier1-face-soft-slate .forge-btn__face,
 .forge-btn--tier1-on-dark .forge-btn__face {
-  background:
-    linear-gradient(
-      180deg,
-      #f4f6f8 0%,
-      var(--forge-app-background) 42%,
-      #dde2e9 100%
-    );
+  background: linear-gradient(180deg, #f4f6f8 0%, #e8ebf0 40%, #dde3ea 100%);
   box-shadow:
-    inset 0 2px 3px rgba(90, 101, 117, 0.18),
-    inset 0 -1px 0 rgba(255, 255, 255, 0.55);
+    inset 0 3px 5px rgba(90, 101, 117, 0.22),
+    inset 0 -1px 0 rgba(255, 255, 255, 0.6);
   color: var(--forge-navy);
 }
 
-.forge-btn--tier1-face-soft-slate .forge-btn__face::before,
-.forge-btn--tier1-on-dark .forge-btn__face::before {
-  background: linear-gradient(
-    180deg,
-    rgba(255, 255, 255, 0.55) 0%,
-    rgba(255, 255, 255, 0.18) 55%,
-    rgba(255, 255, 255, 0) 100%
-  );
+.forge-btn--tier1-face-soft-slate .forge-btn__glass,
+.forge-btn--tier1-on-dark .forge-btn__glass {
+  background:
+    linear-gradient(
+      185deg,
+      rgba(255, 255, 255, 0.7) 0%,
+      rgba(255, 255, 255, 0.28) 45%,
+      rgba(255, 255, 255, 0) 100%
+    ),
+    radial-gradient(
+      ellipse 90% 70% at 28% 0%,
+      rgba(255, 255, 255, 0.55) 0%,
+      rgba(255, 255, 255, 0) 70%
+    );
 }
 
 /* Material studies — review only */
@@ -393,18 +448,18 @@
 }
 
 .forge-btn--tier1-face-white .forge-btn__face {
-  background: linear-gradient(180deg, #ffffff 0%, #f7f8fa 50%, #eef1f4 100%);
+  background: linear-gradient(180deg, #ffffff 0%, #f7f8fa 52%, #eef1f4 100%);
   box-shadow:
-    inset 0 2px 3px rgba(90, 101, 117, 0.12),
-    inset 0 -1px 0 rgba(255, 255, 255, 0.7);
+    inset 0 3px 5px rgba(90, 101, 117, 0.14),
+    inset 0 -1px 0 rgba(255, 255, 255, 0.75);
   color: var(--forge-navy);
 }
 
-.forge-btn--tier1-face-white .forge-btn__face::before {
+.forge-btn--tier1-face-white .forge-btn__glass {
   background: linear-gradient(
-    180deg,
-    rgba(255, 255, 255, 0.7) 0%,
-    rgba(255, 255, 255, 0.2) 55%,
+    185deg,
+    rgba(255, 255, 255, 0.85) 0%,
+    rgba(255, 255, 255, 0.3) 50%,
     rgba(255, 255, 255, 0) 100%
   );
 }
@@ -423,50 +478,58 @@
 }
 
 .forge-btn--tier1-face-red .forge-btn__face {
-  background:
-    linear-gradient(
-      180deg,
-      color-mix(in srgb, var(--forge-red) 88%, #ffffff) 0%,
-      var(--forge-red) 40%,
-      var(--forge-red-deep) 100%
-    );
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--forge-red) 88%, #ffffff) 0%,
+    var(--forge-red) 40%,
+    var(--forge-red-deep) 100%
+  );
   color: #ffffff;
 }
 
-/* Disabled — flattened depth, quieter frame (not opacity-only).
-   Loading retains metallic construction (excluded via :not([data-loading])). */
+/* Disabled — quieter metal, flattened depth (not opacity-only) */
 .forge-btn--tier1:disabled:not([data-loading='true']),
 .forge-btn--tier1[aria-disabled='true']:not([data-loading='true']) {
   filter: none;
   transform: none;
-  background: linear-gradient(160deg, #e8ebf0 0%, #c5ccd6 40%, #d7dde5 70%, #eef1f4 100%);
+  background-image: linear-gradient(145deg, #e8ebf0 0%, #c7ced6 40%, #aeb7c1 70%, #eef1f4 100%);
   box-shadow:
-    0 1px 0 rgba(255, 255, 255, 0.4),
-    0 2px 4px rgba(11, 45, 92, 0.06),
-    inset 0 1px 0 rgba(255, 255, 255, 0.5);
+    0 1px 2px rgba(11, 45, 92, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.55);
+}
+
+.forge-btn--tier1:disabled:not([data-loading='true']) .forge-btn__chassis,
+.forge-btn--tier1[aria-disabled='true']:not([data-loading='true']) .forge-btn__chassis {
+  opacity: 0.45;
+}
+
+.forge-btn--tier1:disabled:not([data-loading='true']) .forge-btn__bevel,
+.forge-btn--tier1[aria-disabled='true']:not([data-loading='true']) .forge-btn__bevel {
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.35),
+    0 0 0 1px #5a6575;
 }
 
 .forge-btn--tier1:disabled:not([data-loading='true']) .forge-btn__face,
 .forge-btn--tier1[aria-disabled='true']:not([data-loading='true']) .forge-btn__face {
-  background: color-mix(in srgb, var(--forge-navy) 55%, #8a93a0);
-  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.12);
-  color: rgba(255, 255, 255, 0.78);
+  background: color-mix(in srgb, var(--forge-navy) 52%, #8a93a0);
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.14);
+  color: rgba(255, 255, 255, 0.8);
 }
 
-.forge-btn--tier1:disabled:not([data-loading='true']) .forge-btn__face::before,
-.forge-btn--tier1[aria-disabled='true']:not([data-loading='true']) .forge-btn__face::before {
-  opacity: 0.25;
+.forge-btn--tier1:disabled:not([data-loading='true']) .forge-btn__glass,
+.forge-btn--tier1[aria-disabled='true']:not([data-loading='true']) .forge-btn__glass {
+  opacity: 0.2;
 }
 
 .forge-btn--tier1-on-dark:disabled:not([data-loading='true']) .forge-btn__face,
 .forge-btn--tier1-on-dark[aria-disabled='true']:not([data-loading='true']) .forge-btn__face,
 .forge-btn--tier1-face-soft-slate:disabled:not([data-loading='true']) .forge-btn__face,
 .forge-btn--tier1-face-soft-slate[aria-disabled='true']:not([data-loading='true']) .forge-btn__face {
-  background: color-mix(in srgb, var(--forge-app-background) 70%, #8a93a0);
+  background: color-mix(in srgb, var(--forge-app-background) 68%, #8a93a0);
   color: color-mix(in srgb, var(--forge-navy) 55%, #8a93a0);
 }
 
-/* Loading — preserve geometry; announce via aria-busy */
 .forge-btn--tier1[data-loading='true'] {
   cursor: wait;
   pointer-events: none;
@@ -477,7 +540,7 @@
 }
 
 /* ------------------------------------------------------------------ */
-/* Tier 2 — Quiet Premium supporting action (same silhouette family)   */
+/* Tier 2 — Quiet Premium · surface-aware fills (no chrome)            */
 /* ------------------------------------------------------------------ */
 
 .forge-btn--tier2 {
@@ -485,8 +548,8 @@
   min-height: var(--forge-btn-height);
   padding: 0 var(--forge-btn-pad-x);
   border-radius: var(--forge-btn-radius);
-  border: 1px solid color-mix(in srgb, var(--forge-navy) 28%, var(--forge-silver));
-  background: color-mix(in srgb, #ffffff 70%, transparent);
+  border: 1px solid color-mix(in srgb, var(--forge-navy) 32%, var(--forge-silver));
+  background: #ffffff;
   color: var(--forge-navy);
   box-shadow: none;
 }
@@ -499,20 +562,39 @@
   overflow: visible;
 }
 
-.forge-btn--tier2 .forge-btn__face::before {
+.forge-btn--tier2 .forge-btn__chassis,
+.forge-btn--tier2 .forge-btn__bevel,
+.forge-btn--tier2 .forge-btn__glass {
   display: none;
 }
 
-.forge-btn--tier2:hover:not(:disabled):not([aria-disabled='true']) {
-  background: var(--forge-surface);
+/* Soft Slate canvas — white / pale face */
+.forge-btn--tier2-on-soft-slate {
+  background: #ffffff;
+  border-color: color-mix(in srgb, var(--forge-navy) 28%, #c7ced6);
+}
+
+.forge-btn--tier2-on-soft-slate:hover:not(:disabled):not([aria-disabled='true']) {
+  background: #f7f8fa;
   border-color: color-mix(in srgb, var(--forge-navy) 42%, var(--forge-silver));
+  transform: translateY(-0.5px);
+}
+
+/* White surface — Soft Slate face (not white-on-white) */
+.forge-btn--tier2-on-white {
+  background: var(--forge-app-background, #e8ebf0);
+  border-color: color-mix(in srgb, var(--forge-navy) 35%, #aeb7c1);
+}
+
+.forge-btn--tier2-on-white:hover:not(:disabled):not([aria-disabled='true']) {
+  background: #eef2f7;
+  border-color: color-mix(in srgb, var(--forge-navy) 48%, var(--forge-silver));
   transform: translateY(-0.5px);
 }
 
 .forge-btn--tier2:active:not(:disabled):not([aria-disabled='true']),
 .forge-btn--tier2[data-pressed='true'] {
   transform: translateY(1px);
-  background: var(--forge-surface-muted);
 }
 
 .forge-btn--tier2:disabled,
@@ -523,16 +605,17 @@
   transform: none;
 }
 
+/* Deep navy — translucent + silver/light outline (not filled navy) */
 .forge-btn--tier2-on-dark {
-  color: rgba(255, 255, 255, 0.94);
-  background: rgba(255, 255, 255, 0.04);
-  border-color: rgba(232, 235, 240, 0.72);
+  color: #f7f9fc;
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(232, 235, 240, 0.75);
   box-shadow: none;
 }
 
 .forge-btn--tier2-on-dark:hover:not(:disabled):not([aria-disabled='true']) {
   background: rgba(255, 255, 255, 0.1);
-  border-color: #ffffff;
+  border-color: rgba(247, 249, 252, 0.92);
 }
 
 .forge-btn--tier2-on-dark:focus-visible {
@@ -543,7 +626,7 @@
 .forge-btn--tier2-on-dark[aria-disabled='true'] {
   background: rgba(255, 255, 255, 0.03);
   border-color: rgba(232, 235, 240, 0.35);
-  color: rgba(255, 255, 255, 0.45);
+  color: rgba(247, 249, 252, 0.45);
 }
 
 /* ------------------------------------------------------------------ */
@@ -570,7 +653,9 @@
   overflow: visible;
 }
 
-.forge-btn--tier3 .forge-btn__face::before {
+.forge-btn--tier3 .forge-btn__chassis,
+.forge-btn--tier3 .forge-btn__bevel,
+.forge-btn--tier3 .forge-btn__glass {
   display: none;
 }
 
@@ -600,7 +685,7 @@
 }
 
 .forge-btn--tier3-on-dark {
-  color: rgba(255, 255, 255, 0.94);
+  color: #f7f9fc;
 }
 
 .forge-btn--tier3-on-dark:hover:not(:disabled):not([aria-disabled='true']) {
@@ -613,10 +698,10 @@
 
 .forge-btn--tier3-on-dark:disabled,
 .forge-btn--tier3-on-dark[aria-disabled='true'] {
-  color: rgba(255, 255, 255, 0.4);
+  color: rgba(247, 249, 252, 0.4);
 }
 
-/* Sizes — radius stays 4px / 3px on every size and full-width */
+/* Sizes — radius / chassis thickness unchanged on every size + full-width */
 .forge-btn--block {
   width: 100%;
   border-radius: var(--forge-btn-outer-radius);
