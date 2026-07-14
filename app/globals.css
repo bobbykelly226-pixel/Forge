@@ -49,6 +49,8 @@
 }
 
 :root {
+  /* Soft Slate — permanent Forge application canvas only */
+  --forge-app-background: #E8EBF0;
   --background: oklch(1 0 0);
   --foreground: oklch(0.145 0 0);
   --card: oklch(1 0 0);
@@ -127,4 +129,9 @@
   html {
     @apply font-sans;
   }
+}
+
+/* Soft Slate application canvas — marketing pages do not use this class */
+.forge-app-canvas {
+  background-color: var(--forge-app-background);
 }
