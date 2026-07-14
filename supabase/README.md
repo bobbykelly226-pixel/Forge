@@ -38,3 +38,7 @@ Until types are regenerated from an applied schema, `lib/supabase/database.types
 ## Legacy notes
 
 Early migrations (`20260708*`, `20260709*`) established V1 `profiles`, `profile-photos` storage, and `compatibility_answers`. The Forge Backend Foundation migration evolves this into the production data model while preserving those tables and existing V1 app writes.
+
+## Applied status
+
+Foundation migration `20260714000000_forge_backend_foundation` has been applied to the linked Forge project via `supabase migration up --linked` and is recorded in remote migration history.

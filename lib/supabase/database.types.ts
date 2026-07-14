@@ -1,13 +1,11 @@
 /**
- * Schema-aligned Supabase Database types for the Forge Backend Foundation.
+ * AUTO-GENERATED from the linked Forge Supabase project after applying
+ * migration 20260714000000_forge_backend_foundation.
  *
- * TEMPORARY STATUS — NOT CLI-GENERATED:
- * These types were hand-authored from
- * supabase/migrations/20260714000000_forge_backend_foundation.sql
- * (plus prior V1 migrations). They were NOT generated from an applied
- * remote or local Supabase database schema.
+ * Generated with:
+ *   npx supabase gen types typescript --linked --schema public
  *
- * After applying the migration to a linked project, replace this file with:
+ * Do not hand-edit table/view/enum definitions. Regenerate with:
  *   npm run supabase:types
  */
 
@@ -17,748 +15,778 @@ export type Json =
   | boolean
   | null
   | { [key: string]: Json | undefined }
-  | Json[];
-
-export type ProfileStatus =
-  | 'draft'
-  | 'active'
-  | 'paused'
-  | 'hidden'
-  | 'deactivated';
-
-export type AnswerVisibility = 'private' | 'shared_with_matches' | 'public_summary';
-
-export type PhotoModerationStatus = 'pending' | 'approved' | 'rejected';
-
-export type InterestStatus = 'pending' | 'mutual' | 'withdrawn';
-
-export type OpenToChatStatus = 'pending' | 'accepted' | 'declined' | 'expired';
-
-export type ConnectionSource = 'mutual_interest' | 'open_to_chat';
-
-export type ConnectionStatus = 'active' | 'ended';
-
-export type CharacterSignalStatus = 'pending' | 'approved' | 'declined';
-
-export type CharacterSignalInteraction = 'in_app' | 'in_person';
+  | Json[]
 
 export type Database = {
+  // Allows to automatically instantiate createClient with right options
+  // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
+  __InternalSupabase: {
+    PostgrestVersion: "14.5"
+  }
   public: {
     Tables: {
-      profiles: {
-        Row: {
-          id: string;
-          full_name: string | null;
-          age: number | null;
-          location: string | null;
-          relationship_goal: string | null;
-          faith_importance: string | null;
-          service_background: string | null;
-          short_bio: string | null;
-          profile_photo_url: string | null;
-          more_about: string | null;
-          children: string | null;
-          has_children: string | null;
-          education: string | null;
-          pets: string | null;
-          smoking: string | null;
-          drinking: string | null;
-          career: string | null;
-          relocation: string | null;
-          things_i_enjoy: string[];
-          favorite_music_artists: string[];
-          favorite_music_songs: string[];
-          status: ProfileStatus;
-          is_discoverable: boolean;
-          onboarding_completed_at: string | null;
-          profile_completed_at: string | null;
-          last_active_at: string | null;
-          created_at: string;
-          updated_at: string;
-        };
-        Insert: {
-          id: string;
-          full_name?: string | null;
-          age?: number | null;
-          location?: string | null;
-          relationship_goal?: string | null;
-          faith_importance?: string | null;
-          service_background?: string | null;
-          short_bio?: string | null;
-          profile_photo_url?: string | null;
-          more_about?: string | null;
-          children?: string | null;
-          has_children?: string | null;
-          education?: string | null;
-          pets?: string | null;
-          smoking?: string | null;
-          drinking?: string | null;
-          career?: string | null;
-          relocation?: string | null;
-          things_i_enjoy?: string[];
-          favorite_music_artists?: string[];
-          favorite_music_songs?: string[];
-          status?: ProfileStatus;
-          is_discoverable?: boolean;
-          onboarding_completed_at?: string | null;
-          profile_completed_at?: string | null;
-          last_active_at?: string | null;
-          created_at?: string;
-          updated_at?: string;
-        };
-        Update: {
-          id?: string;
-          full_name?: string | null;
-          age?: number | null;
-          location?: string | null;
-          relationship_goal?: string | null;
-          faith_importance?: string | null;
-          service_background?: string | null;
-          short_bio?: string | null;
-          profile_photo_url?: string | null;
-          more_about?: string | null;
-          children?: string | null;
-          has_children?: string | null;
-          education?: string | null;
-          pets?: string | null;
-          smoking?: string | null;
-          drinking?: string | null;
-          career?: string | null;
-          relocation?: string | null;
-          things_i_enjoy?: string[];
-          favorite_music_artists?: string[];
-          favorite_music_songs?: string[];
-          status?: ProfileStatus;
-          is_discoverable?: boolean;
-          onboarding_completed_at?: string | null;
-          profile_completed_at?: string | null;
-          last_active_at?: string | null;
-          created_at?: string;
-          updated_at?: string;
-        };
-        Relationships: [
-          {
-            foreignKeyName: 'profiles_id_fkey';
-            columns: ['id'];
-            isOneToOne: true;
-            referencedRelation: 'users';
-            referencedColumns: ['id'];
-          },
-        ];
-      };
-      profile_private_details: {
-        Row: {
-          user_id: string;
-          date_of_birth: string | null;
-          postal_code: string | null;
-          latitude: number | null;
-          longitude: number | null;
-          created_at: string;
-          updated_at: string;
-        };
-        Insert: {
-          user_id: string;
-          date_of_birth?: string | null;
-          postal_code?: string | null;
-          latitude?: number | null;
-          longitude?: number | null;
-          created_at?: string;
-          updated_at?: string;
-        };
-        Update: {
-          user_id?: string;
-          date_of_birth?: string | null;
-          postal_code?: string | null;
-          latitude?: number | null;
-          longitude?: number | null;
-          created_at?: string;
-          updated_at?: string;
-        };
-        Relationships: [
-          {
-            foreignKeyName: 'profile_private_details_user_id_fkey';
-            columns: ['user_id'];
-            isOneToOne: true;
-            referencedRelation: 'users';
-            referencedColumns: ['id'];
-          },
-        ];
-      };
-      profile_preferences: {
-        Row: {
-          user_id: string;
-          gender_identity: string | null;
-          interested_in: string[];
-          preferred_age_min: number | null;
-          preferred_age_max: number | null;
-          max_distance_miles: number | null;
-          discovery_enabled: boolean;
-          open_to_chat_available: boolean;
-          created_at: string;
-          updated_at: string;
-        };
-        Insert: {
-          user_id: string;
-          gender_identity?: string | null;
-          interested_in?: string[];
-          preferred_age_min?: number | null;
-          preferred_age_max?: number | null;
-          max_distance_miles?: number | null;
-          discovery_enabled?: boolean;
-          open_to_chat_available?: boolean;
-          created_at?: string;
-          updated_at?: string;
-        };
-        Update: {
-          user_id?: string;
-          gender_identity?: string | null;
-          interested_in?: string[];
-          preferred_age_min?: number | null;
-          preferred_age_max?: number | null;
-          max_distance_miles?: number | null;
-          discovery_enabled?: boolean;
-          open_to_chat_available?: boolean;
-          created_at?: string;
-          updated_at?: string;
-        };
-        Relationships: [
-          {
-            foreignKeyName: 'profile_preferences_user_id_fkey';
-            columns: ['user_id'];
-            isOneToOne: true;
-            referencedRelation: 'users';
-            referencedColumns: ['id'];
-          },
-        ];
-      };
-      profile_answers: {
-        Row: {
-          id: string;
-          user_id: string;
-          question_key: string;
-          answer: Json;
-          importance_level: number | null;
-          is_non_negotiable: boolean;
-          visibility: AnswerVisibility;
-          created_at: string;
-          updated_at: string;
-        };
-        Insert: {
-          id?: string;
-          user_id: string;
-          question_key: string;
-          answer: Json;
-          importance_level?: number | null;
-          is_non_negotiable?: boolean;
-          visibility?: AnswerVisibility;
-          created_at?: string;
-          updated_at?: string;
-        };
-        Update: {
-          id?: string;
-          user_id?: string;
-          question_key?: string;
-          answer?: Json;
-          importance_level?: number | null;
-          is_non_negotiable?: boolean;
-          visibility?: AnswerVisibility;
-          created_at?: string;
-          updated_at?: string;
-        };
-        Relationships: [
-          {
-            foreignKeyName: 'profile_answers_user_id_fkey';
-            columns: ['user_id'];
-            isOneToOne: false;
-            referencedRelation: 'users';
-            referencedColumns: ['id'];
-          },
-        ];
-      };
-      profile_photos: {
-        Row: {
-          id: string;
-          user_id: string;
-          storage_path: string;
-          display_order: number;
-          is_primary: boolean;
-          moderation_status: PhotoModerationStatus;
-          created_at: string;
-          updated_at: string;
-        };
-        Insert: {
-          id?: string;
-          user_id: string;
-          storage_path: string;
-          display_order: number;
-          is_primary?: boolean;
-          moderation_status?: PhotoModerationStatus;
-          created_at?: string;
-          updated_at?: string;
-        };
-        Update: {
-          id?: string;
-          user_id?: string;
-          storage_path?: string;
-          display_order?: number;
-          is_primary?: boolean;
-          moderation_status?: PhotoModerationStatus;
-          created_at?: string;
-          updated_at?: string;
-        };
-        Relationships: [
-          {
-            foreignKeyName: 'profile_photos_user_id_fkey';
-            columns: ['user_id'];
-            isOneToOne: false;
-            referencedRelation: 'users';
-            referencedColumns: ['id'];
-          },
-        ];
-      };
-      user_app_state: {
-        Row: {
-          user_id: string;
-          onboarding_step: string | null;
-          onboarding_completed: boolean;
-          open_to_chat_education_seen: boolean;
-          created_at: string;
-          updated_at: string;
-        };
-        Insert: {
-          user_id: string;
-          onboarding_step?: string | null;
-          onboarding_completed?: boolean;
-          open_to_chat_education_seen?: boolean;
-          created_at?: string;
-          updated_at?: string;
-        };
-        Update: {
-          user_id?: string;
-          onboarding_step?: string | null;
-          onboarding_completed?: boolean;
-          open_to_chat_education_seen?: boolean;
-          created_at?: string;
-          updated_at?: string;
-        };
-        Relationships: [
-          {
-            foreignKeyName: 'user_app_state_user_id_fkey';
-            columns: ['user_id'];
-            isOneToOne: true;
-            referencedRelation: 'users';
-            referencedColumns: ['id'];
-          },
-        ];
-      };
-      saved_profiles: {
-        Row: {
-          id: string;
-          saver_id: string;
-          saved_id: string;
-          created_at: string;
-        };
-        Insert: {
-          id?: string;
-          saver_id: string;
-          saved_id: string;
-          created_at?: string;
-        };
-        Update: {
-          id?: string;
-          saver_id?: string;
-          saved_id?: string;
-          created_at?: string;
-        };
-        Relationships: [
-          {
-            foreignKeyName: 'saved_profiles_saver_id_fkey';
-            columns: ['saver_id'];
-            isOneToOne: false;
-            referencedRelation: 'users';
-            referencedColumns: ['id'];
-          },
-          {
-            foreignKeyName: 'saved_profiles_saved_id_fkey';
-            columns: ['saved_id'];
-            isOneToOne: false;
-            referencedRelation: 'users';
-            referencedColumns: ['id'];
-          },
-        ];
-      };
-      passed_profiles: {
-        Row: {
-          id: string;
-          passer_id: string;
-          passed_id: string;
-          created_at: string;
-        };
-        Insert: {
-          id?: string;
-          passer_id: string;
-          passed_id: string;
-          created_at?: string;
-        };
-        Update: {
-          id?: string;
-          passer_id?: string;
-          passed_id?: string;
-          created_at?: string;
-        };
-        Relationships: [
-          {
-            foreignKeyName: 'passed_profiles_passer_id_fkey';
-            columns: ['passer_id'];
-            isOneToOne: false;
-            referencedRelation: 'users';
-            referencedColumns: ['id'];
-          },
-          {
-            foreignKeyName: 'passed_profiles_passed_id_fkey';
-            columns: ['passed_id'];
-            isOneToOne: false;
-            referencedRelation: 'users';
-            referencedColumns: ['id'];
-          },
-        ];
-      };
-      interests: {
-        Row: {
-          id: string;
-          sender_id: string;
-          recipient_id: string;
-          status: InterestStatus;
-          created_at: string;
-          updated_at: string;
-        };
-        Insert: {
-          id?: string;
-          sender_id: string;
-          recipient_id: string;
-          status?: InterestStatus;
-          created_at?: string;
-          updated_at?: string;
-        };
-        Update: {
-          id?: string;
-          sender_id?: string;
-          recipient_id?: string;
-          status?: InterestStatus;
-          created_at?: string;
-          updated_at?: string;
-        };
-        Relationships: [
-          {
-            foreignKeyName: 'interests_sender_id_fkey';
-            columns: ['sender_id'];
-            isOneToOne: false;
-            referencedRelation: 'users';
-            referencedColumns: ['id'];
-          },
-          {
-            foreignKeyName: 'interests_recipient_id_fkey';
-            columns: ['recipient_id'];
-            isOneToOne: false;
-            referencedRelation: 'users';
-            referencedColumns: ['id'];
-          },
-        ];
-      };
-      open_to_chat_requests: {
-        Row: {
-          id: string;
-          sender_id: string;
-          recipient_id: string;
-          note: string | null;
-          status: OpenToChatStatus;
-          expires_at: string | null;
-          responded_at: string | null;
-          created_at: string;
-          updated_at: string;
-        };
-        Insert: {
-          id?: string;
-          sender_id: string;
-          recipient_id: string;
-          note?: string | null;
-          status?: OpenToChatStatus;
-          expires_at?: string | null;
-          responded_at?: string | null;
-          created_at?: string;
-          updated_at?: string;
-        };
-        Update: {
-          id?: string;
-          sender_id?: string;
-          recipient_id?: string;
-          note?: string | null;
-          status?: OpenToChatStatus;
-          expires_at?: string | null;
-          responded_at?: string | null;
-          created_at?: string;
-          updated_at?: string;
-        };
-        Relationships: [
-          {
-            foreignKeyName: 'open_to_chat_requests_sender_id_fkey';
-            columns: ['sender_id'];
-            isOneToOne: false;
-            referencedRelation: 'users';
-            referencedColumns: ['id'];
-          },
-          {
-            foreignKeyName: 'open_to_chat_requests_recipient_id_fkey';
-            columns: ['recipient_id'];
-            isOneToOne: false;
-            referencedRelation: 'users';
-            referencedColumns: ['id'];
-          },
-        ];
-      };
-      connections: {
-        Row: {
-          id: string;
-          user_a_id: string;
-          user_b_id: string;
-          source: ConnectionSource;
-          status: ConnectionStatus;
-          created_at: string;
-          updated_at: string;
-        };
-        Insert: {
-          id?: string;
-          user_a_id: string;
-          user_b_id: string;
-          source: ConnectionSource;
-          status?: ConnectionStatus;
-          created_at?: string;
-          updated_at?: string;
-        };
-        Update: {
-          id?: string;
-          user_a_id?: string;
-          user_b_id?: string;
-          source?: ConnectionSource;
-          status?: ConnectionStatus;
-          created_at?: string;
-          updated_at?: string;
-        };
-        Relationships: [
-          {
-            foreignKeyName: 'connections_user_a_id_fkey';
-            columns: ['user_a_id'];
-            isOneToOne: false;
-            referencedRelation: 'users';
-            referencedColumns: ['id'];
-          },
-          {
-            foreignKeyName: 'connections_user_b_id_fkey';
-            columns: ['user_b_id'];
-            isOneToOne: false;
-            referencedRelation: 'users';
-            referencedColumns: ['id'];
-          },
-        ];
-      };
-      user_blocks: {
-        Row: {
-          id: string;
-          blocker_id: string;
-          blocked_id: string;
-          created_at: string;
-        };
-        Insert: {
-          id?: string;
-          blocker_id: string;
-          blocked_id: string;
-          created_at?: string;
-        };
-        Update: {
-          id?: string;
-          blocker_id?: string;
-          blocked_id?: string;
-          created_at?: string;
-        };
-        Relationships: [
-          {
-            foreignKeyName: 'user_blocks_blocker_id_fkey';
-            columns: ['blocker_id'];
-            isOneToOne: false;
-            referencedRelation: 'users';
-            referencedColumns: ['id'];
-          },
-          {
-            foreignKeyName: 'user_blocks_blocked_id_fkey';
-            columns: ['blocked_id'];
-            isOneToOne: false;
-            referencedRelation: 'users';
-            referencedColumns: ['id'];
-          },
-        ];
-      };
       character_signals: {
         Row: {
-          id: string;
-          giver_id: string;
-          receiver_id: string;
-          signal_key: string;
-          interaction_type: CharacterSignalInteraction | null;
-          interaction_context: string | null;
-          status: CharacterSignalStatus;
-          created_at: string;
-          responded_at: string | null;
-        };
+          created_at: string
+          giver_id: string
+          id: string
+          interaction_context: string | null
+          interaction_type:
+            | Database["public"]["Enums"]["character_signal_interaction"]
+            | null
+          receiver_id: string
+          responded_at: string | null
+          signal_key: string
+          status: Database["public"]["Enums"]["character_signal_status"]
+        }
         Insert: {
-          id?: string;
-          giver_id: string;
-          receiver_id: string;
-          signal_key: string;
-          interaction_type?: CharacterSignalInteraction | null;
-          interaction_context?: string | null;
-          status?: CharacterSignalStatus;
-          created_at?: string;
-          responded_at?: string | null;
-        };
+          created_at?: string
+          giver_id: string
+          id?: string
+          interaction_context?: string | null
+          interaction_type?:
+            | Database["public"]["Enums"]["character_signal_interaction"]
+            | null
+          receiver_id: string
+          responded_at?: string | null
+          signal_key: string
+          status?: Database["public"]["Enums"]["character_signal_status"]
+        }
         Update: {
-          id?: string;
-          giver_id?: string;
-          receiver_id?: string;
-          signal_key?: string;
-          interaction_type?: CharacterSignalInteraction | null;
-          interaction_context?: string | null;
-          status?: CharacterSignalStatus;
-          created_at?: string;
-          responded_at?: string | null;
-        };
-        Relationships: [
-          {
-            foreignKeyName: 'character_signals_giver_id_fkey';
-            columns: ['giver_id'];
-            isOneToOne: false;
-            referencedRelation: 'users';
-            referencedColumns: ['id'];
-          },
-          {
-            foreignKeyName: 'character_signals_receiver_id_fkey';
-            columns: ['receiver_id'];
-            isOneToOne: false;
-            referencedRelation: 'users';
-            referencedColumns: ['id'];
-          },
-        ];
-      };
+          created_at?: string
+          giver_id?: string
+          id?: string
+          interaction_context?: string | null
+          interaction_type?:
+            | Database["public"]["Enums"]["character_signal_interaction"]
+            | null
+          receiver_id?: string
+          responded_at?: string | null
+          signal_key?: string
+          status?: Database["public"]["Enums"]["character_signal_status"]
+        }
+        Relationships: []
+      }
       compatibility_answers: {
         Row: {
-          id: string;
-          user_id: string;
-          question_key: string;
-          answer_value: Json;
-          created_at: string;
-          updated_at: string;
-        };
+          answer_value: Json
+          created_at: string
+          id: string
+          question_key: string
+          updated_at: string
+          user_id: string
+        }
         Insert: {
-          id?: string;
-          user_id: string;
-          question_key: string;
-          answer_value: Json;
-          created_at?: string;
-          updated_at?: string;
-        };
+          answer_value: Json
+          created_at?: string
+          id?: string
+          question_key: string
+          updated_at?: string
+          user_id: string
+        }
         Update: {
-          id?: string;
-          user_id?: string;
-          question_key?: string;
-          answer_value?: Json;
-          created_at?: string;
-          updated_at?: string;
-        };
-        Relationships: [
-          {
-            foreignKeyName: 'compatibility_answers_user_id_fkey';
-            columns: ['user_id'];
-            isOneToOne: false;
-            referencedRelation: 'users';
-            referencedColumns: ['id'];
-          },
-        ];
-      };
-    };
-    Views: {
-      discoverable_profiles: {
+          answer_value?: Json
+          created_at?: string
+          id?: string
+          question_key?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      connections: {
         Row: {
-          id: string;
-          full_name: string | null;
-          age: number | null;
-          location: string | null;
-          relationship_goal: string | null;
-          faith_importance: string | null;
-          service_background: string | null;
-          short_bio: string | null;
-          more_about: string | null;
-          children: string | null;
-          has_children: string | null;
-          education: string | null;
-          pets: string | null;
-          smoking: string | null;
-          drinking: string | null;
-          career: string | null;
-          relocation: string | null;
-          things_i_enjoy: string[];
-          favorite_music_artists: string[];
-          favorite_music_songs: string[];
-          profile_photo_url: string | null;
-        };
-        Relationships: [];
-      };
+          created_at: string
+          id: string
+          source: Database["public"]["Enums"]["connection_source"]
+          status: Database["public"]["Enums"]["connection_status"]
+          updated_at: string
+          user_a_id: string
+          user_b_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          source: Database["public"]["Enums"]["connection_source"]
+          status?: Database["public"]["Enums"]["connection_status"]
+          updated_at?: string
+          user_a_id: string
+          user_b_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          source?: Database["public"]["Enums"]["connection_source"]
+          status?: Database["public"]["Enums"]["connection_status"]
+          updated_at?: string
+          user_a_id?: string
+          user_b_id?: string
+        }
+        Relationships: []
+      }
+      feedback: {
+        Row: {
+          choice: string
+          comment: string | null
+          created_at: string | null
+          id: string
+        }
+        Insert: {
+          choice: string
+          comment?: string | null
+          created_at?: string | null
+          id?: string
+        }
+        Update: {
+          choice?: string
+          comment?: string | null
+          created_at?: string | null
+          id?: string
+        }
+        Relationships: []
+      }
+      interests: {
+        Row: {
+          created_at: string
+          id: string
+          recipient_id: string
+          sender_id: string
+          status: Database["public"]["Enums"]["interest_status"]
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          recipient_id: string
+          sender_id: string
+          status?: Database["public"]["Enums"]["interest_status"]
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          recipient_id?: string
+          sender_id?: string
+          status?: Database["public"]["Enums"]["interest_status"]
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      open_to_chat_requests: {
+        Row: {
+          created_at: string
+          expires_at: string | null
+          id: string
+          note: string | null
+          recipient_id: string
+          responded_at: string | null
+          sender_id: string
+          status: Database["public"]["Enums"]["open_to_chat_status"]
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          expires_at?: string | null
+          id?: string
+          note?: string | null
+          recipient_id: string
+          responded_at?: string | null
+          sender_id: string
+          status?: Database["public"]["Enums"]["open_to_chat_status"]
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          expires_at?: string | null
+          id?: string
+          note?: string | null
+          recipient_id?: string
+          responded_at?: string | null
+          sender_id?: string
+          status?: Database["public"]["Enums"]["open_to_chat_status"]
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      passed_profiles: {
+        Row: {
+          created_at: string
+          id: string
+          passed_id: string
+          passer_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          passed_id: string
+          passer_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          passed_id?: string
+          passer_id?: string
+        }
+        Relationships: []
+      }
+      profile_answers: {
+        Row: {
+          answer: Json
+          created_at: string
+          id: string
+          importance_level: number | null
+          is_non_negotiable: boolean
+          question_key: string
+          updated_at: string
+          user_id: string
+          visibility: Database["public"]["Enums"]["answer_visibility"]
+        }
+        Insert: {
+          answer: Json
+          created_at?: string
+          id?: string
+          importance_level?: number | null
+          is_non_negotiable?: boolean
+          question_key: string
+          updated_at?: string
+          user_id: string
+          visibility?: Database["public"]["Enums"]["answer_visibility"]
+        }
+        Update: {
+          answer?: Json
+          created_at?: string
+          id?: string
+          importance_level?: number | null
+          is_non_negotiable?: boolean
+          question_key?: string
+          updated_at?: string
+          user_id?: string
+          visibility?: Database["public"]["Enums"]["answer_visibility"]
+        }
+        Relationships: []
+      }
+      profile_photos: {
+        Row: {
+          created_at: string
+          display_order: number
+          id: string
+          is_primary: boolean
+          moderation_status: Database["public"]["Enums"]["photo_moderation_status"]
+          storage_path: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          display_order: number
+          id?: string
+          is_primary?: boolean
+          moderation_status?: Database["public"]["Enums"]["photo_moderation_status"]
+          storage_path: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          display_order?: number
+          id?: string
+          is_primary?: boolean
+          moderation_status?: Database["public"]["Enums"]["photo_moderation_status"]
+          storage_path?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      profile_preferences: {
+        Row: {
+          created_at: string
+          discovery_enabled: boolean
+          gender_identity: string | null
+          interested_in: string[]
+          max_distance_miles: number | null
+          open_to_chat_available: boolean
+          preferred_age_max: number | null
+          preferred_age_min: number | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          discovery_enabled?: boolean
+          gender_identity?: string | null
+          interested_in?: string[]
+          max_distance_miles?: number | null
+          open_to_chat_available?: boolean
+          preferred_age_max?: number | null
+          preferred_age_min?: number | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          discovery_enabled?: boolean
+          gender_identity?: string | null
+          interested_in?: string[]
+          max_distance_miles?: number | null
+          open_to_chat_available?: boolean
+          preferred_age_max?: number | null
+          preferred_age_min?: number | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      profile_private_details: {
+        Row: {
+          created_at: string
+          date_of_birth: string | null
+          latitude: number | null
+          longitude: number | null
+          postal_code: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          date_of_birth?: string | null
+          latitude?: number | null
+          longitude?: number | null
+          postal_code?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          date_of_birth?: string | null
+          latitude?: number | null
+          longitude?: number | null
+          postal_code?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          age: number | null
+          career: string | null
+          children: string | null
+          created_at: string
+          drinking: string | null
+          education: string | null
+          faith_importance: string | null
+          favorite_music_artists: string[]
+          favorite_music_songs: string[]
+          full_name: string | null
+          has_children: string | null
+          id: string
+          is_discoverable: boolean
+          last_active_at: string | null
+          location: string | null
+          more_about: string | null
+          onboarding_completed_at: string | null
+          pets: string | null
+          profile_completed_at: string | null
+          profile_photo_url: string | null
+          relationship_goal: string | null
+          relocation: string | null
+          service_background: string | null
+          short_bio: string | null
+          smoking: string | null
+          status: Database["public"]["Enums"]["profile_status"]
+          things_i_enjoy: string[]
+          updated_at: string
+        }
+        Insert: {
+          age?: number | null
+          career?: string | null
+          children?: string | null
+          created_at?: string
+          drinking?: string | null
+          education?: string | null
+          faith_importance?: string | null
+          favorite_music_artists?: string[]
+          favorite_music_songs?: string[]
+          full_name?: string | null
+          has_children?: string | null
+          id: string
+          is_discoverable?: boolean
+          last_active_at?: string | null
+          location?: string | null
+          more_about?: string | null
+          onboarding_completed_at?: string | null
+          pets?: string | null
+          profile_completed_at?: string | null
+          profile_photo_url?: string | null
+          relationship_goal?: string | null
+          relocation?: string | null
+          service_background?: string | null
+          short_bio?: string | null
+          smoking?: string | null
+          status?: Database["public"]["Enums"]["profile_status"]
+          things_i_enjoy?: string[]
+          updated_at?: string
+        }
+        Update: {
+          age?: number | null
+          career?: string | null
+          children?: string | null
+          created_at?: string
+          drinking?: string | null
+          education?: string | null
+          faith_importance?: string | null
+          favorite_music_artists?: string[]
+          favorite_music_songs?: string[]
+          full_name?: string | null
+          has_children?: string | null
+          id?: string
+          is_discoverable?: boolean
+          last_active_at?: string | null
+          location?: string | null
+          more_about?: string | null
+          onboarding_completed_at?: string | null
+          pets?: string | null
+          profile_completed_at?: string | null
+          profile_photo_url?: string | null
+          relationship_goal?: string | null
+          relocation?: string | null
+          service_background?: string | null
+          short_bio?: string | null
+          smoking?: string | null
+          status?: Database["public"]["Enums"]["profile_status"]
+          things_i_enjoy?: string[]
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      saved_profiles: {
+        Row: {
+          created_at: string
+          id: string
+          saved_id: string
+          saver_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          saved_id: string
+          saver_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          saved_id?: string
+          saver_id?: string
+        }
+        Relationships: []
+      }
+      user_app_state: {
+        Row: {
+          created_at: string
+          onboarding_completed: boolean
+          onboarding_step: string | null
+          open_to_chat_education_seen: boolean
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          onboarding_completed?: boolean
+          onboarding_step?: string | null
+          open_to_chat_education_seen?: boolean
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          onboarding_completed?: boolean
+          onboarding_step?: string | null
+          open_to_chat_education_seen?: boolean
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      user_blocks: {
+        Row: {
+          blocked_id: string
+          blocker_id: string
+          created_at: string
+          id: string
+        }
+        Insert: {
+          blocked_id: string
+          blocker_id: string
+          created_at?: string
+          id?: string
+        }
+        Update: {
+          blocked_id?: string
+          blocker_id?: string
+          created_at?: string
+          id?: string
+        }
+        Relationships: []
+      }
+      waitlist: {
+        Row: {
+          created_at: string
+          email: string | null
+          id: number
+          name: string
+        }
+        Insert: {
+          created_at?: string
+          email?: string | null
+          id?: number
+          name: string
+        }
+        Update: {
+          created_at?: string
+          email?: string | null
+          id?: number
+          name?: string
+        }
+        Relationships: []
+      }
+    }
+    Views: {
       discoverable_profile_photos: {
         Row: {
-          id: string;
-          user_id: string;
-          storage_path: string;
-          display_order: number;
-          is_primary: boolean;
-        };
-        Relationships: [];
-      };
-    };
+          display_order: number | null
+          id: string | null
+          is_primary: boolean | null
+          storage_path: string | null
+          user_id: string | null
+        }
+        Relationships: []
+      }
+      discoverable_profiles: {
+        Row: {
+          age: number | null
+          career: string | null
+          children: string | null
+          drinking: string | null
+          education: string | null
+          faith_importance: string | null
+          favorite_music_artists: string[] | null
+          favorite_music_songs: string[] | null
+          full_name: string | null
+          has_children: string | null
+          id: string | null
+          location: string | null
+          more_about: string | null
+          pets: string | null
+          profile_photo_url: string | null
+          relationship_goal: string | null
+          relocation: string | null
+          service_background: string | null
+          short_bio: string | null
+          smoking: string | null
+          things_i_enjoy: string[] | null
+        }
+        Insert: {
+          age?: number | null
+          career?: string | null
+          children?: string | null
+          drinking?: string | null
+          education?: string | null
+          faith_importance?: string | null
+          favorite_music_artists?: string[] | null
+          favorite_music_songs?: string[] | null
+          full_name?: string | null
+          has_children?: string | null
+          id?: string | null
+          location?: string | null
+          more_about?: string | null
+          pets?: string | null
+          profile_photo_url?: string | null
+          relationship_goal?: string | null
+          relocation?: string | null
+          service_background?: string | null
+          short_bio?: string | null
+          smoking?: string | null
+          things_i_enjoy?: string[] | null
+        }
+        Update: {
+          age?: number | null
+          career?: string | null
+          children?: string | null
+          drinking?: string | null
+          education?: string | null
+          faith_importance?: string | null
+          favorite_music_artists?: string[] | null
+          favorite_music_songs?: string[] | null
+          full_name?: string | null
+          has_children?: string | null
+          id?: string | null
+          location?: string | null
+          more_about?: string | null
+          pets?: string | null
+          profile_photo_url?: string | null
+          relationship_goal?: string | null
+          relocation?: string | null
+          service_background?: string | null
+          short_bio?: string | null
+          smoking?: string | null
+          things_i_enjoy?: string[] | null
+        }
+        Relationships: []
+      }
+    }
     Functions: {
-      set_updated_at: {
-        Args: Record<string, never>;
-        Returns: unknown;
-      };
-      handle_new_user: {
-        Args: Record<string, never>;
-        Returns: unknown;
-      };
       ensure_foundational_user_records: {
-        Args: { p_user_id?: string | null };
-        Returns: Json;
-      };
-    };
+        Args: { p_user_id?: string }
+        Returns: Json
+      }
+    }
     Enums: {
-      profile_status: ProfileStatus;
-      answer_visibility: AnswerVisibility;
-      photo_moderation_status: PhotoModerationStatus;
-      interest_status: InterestStatus;
-      open_to_chat_status: OpenToChatStatus;
-      connection_source: ConnectionSource;
-      connection_status: ConnectionStatus;
-      character_signal_status: CharacterSignalStatus;
-      character_signal_interaction: CharacterSignalInteraction;
-    };
-    CompositeTypes: Record<string, never>;
-  };
-};
+      answer_visibility: "private" | "shared_with_matches" | "public_summary"
+      character_signal_interaction: "in_app" | "in_person"
+      character_signal_status: "pending" | "approved" | "declined"
+      connection_source: "mutual_interest" | "open_to_chat"
+      connection_status: "active" | "ended"
+      interest_status: "pending" | "mutual" | "withdrawn"
+      open_to_chat_status: "pending" | "accepted" | "declined" | "expired"
+      photo_moderation_status: "pending" | "approved" | "rejected"
+      profile_status: "draft" | "active" | "paused" | "hidden" | "deactivated"
+    }
+    CompositeTypes: {
+      [_ in never]: never
+    }
+  }
+}
 
-export type Tables<T extends keyof Database['public']['Tables']> =
-  Database['public']['Tables'][T]['Row'];
+type DatabaseWithoutInternals = Omit<Database, "__InternalSupabase">
 
-export type TablesInsert<T extends keyof Database['public']['Tables']> =
-  Database['public']['Tables'][T]['Insert'];
+type DefaultSchema = DatabaseWithoutInternals[Extract<keyof Database, "public">]
 
-export type TablesUpdate<T extends keyof Database['public']['Tables']> =
-  Database['public']['Tables'][T]['Update'];
+export type Tables<
+  DefaultSchemaTableNameOrOptions extends
+    | keyof (DefaultSchema["Tables"] & DefaultSchema["Views"])
+    | { schema: keyof DatabaseWithoutInternals },
+  TableName extends DefaultSchemaTableNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals
+  }
+    ? keyof (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
+        DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])
+    : never = never,
+> = DefaultSchemaTableNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
+      DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])[TableName] extends {
+      Row: infer R
+    }
+    ? R
+    : never
+  : DefaultSchemaTableNameOrOptions extends keyof (DefaultSchema["Tables"] &
+        DefaultSchema["Views"])
+    ? (DefaultSchema["Tables"] &
+        DefaultSchema["Views"])[DefaultSchemaTableNameOrOptions] extends {
+        Row: infer R
+      }
+      ? R
+      : never
+    : never
 
-export type Enums<T extends keyof Database['public']['Enums']> =
-  Database['public']['Enums'][T];
+export type TablesInsert<
+  DefaultSchemaTableNameOrOptions extends
+    | keyof DefaultSchema["Tables"]
+    | { schema: keyof DatabaseWithoutInternals },
+  TableName extends DefaultSchemaTableNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals
+  }
+    ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
+    : never = never,
+> = DefaultSchemaTableNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
+      Insert: infer I
+    }
+    ? I
+    : never
+  : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema["Tables"]
+    ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends {
+        Insert: infer I
+      }
+      ? I
+      : never
+    : never
+
+export type TablesUpdate<
+  DefaultSchemaTableNameOrOptions extends
+    | keyof DefaultSchema["Tables"]
+    | { schema: keyof DatabaseWithoutInternals },
+  TableName extends DefaultSchemaTableNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals
+  }
+    ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
+    : never = never,
+> = DefaultSchemaTableNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
+      Update: infer U
+    }
+    ? U
+    : never
+  : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema["Tables"]
+    ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends {
+        Update: infer U
+      }
+      ? U
+      : never
+    : never
+
+export type Enums<
+  DefaultSchemaEnumNameOrOptions extends
+    | keyof DefaultSchema["Enums"]
+    | { schema: keyof DatabaseWithoutInternals },
+  EnumName extends DefaultSchemaEnumNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals
+  }
+    ? keyof DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"]
+    : never = never,
+> = DefaultSchemaEnumNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"][EnumName]
+  : DefaultSchemaEnumNameOrOptions extends keyof DefaultSchema["Enums"]
+    ? DefaultSchema["Enums"][DefaultSchemaEnumNameOrOptions]
+    : never
+
+export type CompositeTypes<
+  PublicCompositeTypeNameOrOptions extends
+    | keyof DefaultSchema["CompositeTypes"]
+    | { schema: keyof DatabaseWithoutInternals },
+  CompositeTypeName extends PublicCompositeTypeNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals
+  }
+    ? keyof DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"]
+    : never = never,
+> = PublicCompositeTypeNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"][CompositeTypeName]
+  : PublicCompositeTypeNameOrOptions extends keyof DefaultSchema["CompositeTypes"]
+    ? DefaultSchema["CompositeTypes"][PublicCompositeTypeNameOrOptions]
+    : never
+
+export const Constants = {
+  public: {
+    Enums: {
+      answer_visibility: ["private", "shared_with_matches", "public_summary"],
+      character_signal_interaction: ["in_app", "in_person"],
+      character_signal_status: ["pending", "approved", "declined"],
+      connection_source: ["mutual_interest", "open_to_chat"],
+      connection_status: ["active", "ended"],
+      interest_status: ["pending", "mutual", "withdrawn"],
+      open_to_chat_status: ["pending", "accepted", "declined", "expired"],
+      photo_moderation_status: ["pending", "approved", "rejected"],
+      profile_status: ["draft", "active", "paused", "hidden", "deactivated"],
+    },
+  },
+} as const

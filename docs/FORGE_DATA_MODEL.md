@@ -2,9 +2,9 @@
 
 Authoritative documentation for the Forge Backend Foundation persistence layer.
 
-**Remote migration status:** Not applied from the agent environment. Apply `supabase/migrations/20260714000000_forge_backend_foundation.sql` in the linked Supabase SQL Editor before relying on these tables in production.
+**Remote migration status:** Applied to the linked Forge Supabase project via `supabase migration up --linked`. Remote migration history records `20260714000000` (`forge_backend_foundation`).
 
-**Types status:** `lib/supabase/database.types.ts` contains **temporary schema-aligned types hand-authored from the migration SQL**. They were **not** generated from an applied Supabase database. After remote apply, replace them with `npm run supabase:types`.
+**Types status:** `lib/supabase/database.types.ts` was **generated from the linked, applied Forge Supabase schema** via `npx supabase gen types typescript --linked --schema public` after migration `20260714000000` was recorded remotely.
 
 ---
 

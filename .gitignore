@@ -42,3 +42,7 @@ next-env.d.ts
 # Project specific
 forge-project.zip
 *.zip
+
+# Local DB backups (never commit)
+/tmp/forge-db-backups/
+.forge-backups/
