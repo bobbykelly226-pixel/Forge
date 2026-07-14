@@ -22,17 +22,17 @@ export default function LoginForm() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isResending, setIsResending] = useState(false);
   const [isResetting, setIsResetting] = useState(false);
-  const [resendCooldownSeconds, setResendCooldownSeconds] = useState(0);
+  const [cooldownSeconds, setCooldownSeconds] = useState(0);
 
   useEffect(() => {
-    if (resendCoolSeconds <= 0) {
+    if (cooldownSeconds <= 0) {
       return;
     }
     const timer = window.setTimeout(() => {
-      setResendCoolSeconds((seconds) => Math.max(0, seconds - 1));
+      setCooldownSeconds((seconds) => Math.max(0, seconds - 1));
     }, 1000);
     return () => window.clearTimeout(timer);
-  }, [resendCoolSeconds]);
+  }, [cooldownSeconds]);
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -62,7 +62,7 @@ export default function LoginForm() {
   };
 
   const handleResend = async () => {
-    if (resendCoolSeconds > 0) return;
+    if (cooldownSeconds > 0) return;
     setError(null);
     setMessage(null);
     setIsResending(true);
@@ -73,7 +73,7 @@ export default function LoginForm() {
         origin: window.location.origin,
       });
 
-      setResendCoolSeconds(RESEND_COOLDOWN_SECONDS);
+      setCooldownSeconds(RESEND_COOLDOWN_SECONDS);
 
       if (!result.success) {
         setError(result.message);
@@ -181,13 +181,13 @@ export default function LoginForm() {
           <button
             type="button"
             onClick={() => void handleResend()}
-            disabled={isResending || !email || resendCoolSeconds > 0}
+            disabled={isResending || !email || cooldownSeconds > 0}
             className="text-sm font-medium text-[#0B2D5C] underline-offset-2 hover:underline disabled:opacity-50"
           >
             {isResending
               ? 'Sending confirmation email...'
-              : resendCoolSeconds > 0
-                ? `Resend available in ${resendCoolSeconds}s`
+              : cooldownSeconds > 0
+                ? `Resend available in ${cooldownSeconds}s`
                 : 'Resend confirmation email'}
           </button>
           <button
