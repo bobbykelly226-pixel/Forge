@@ -20,6 +20,10 @@ import {
   type NotForMePrompt,
   type OpenToChatPrompt,
 } from '@/lib/discovery-actions-types';
+import {
+  hasCompletedOpenToChatEducation,
+  markOpenToChatEducationComplete,
+} from '@/lib/open-to-chat-session';
 
 type StatusMessage = {
   text: string;
@@ -52,7 +56,6 @@ export function useDiscoveryActions() {
 
 export function DiscoveryActionsProvider({ children }: { children: ReactNode }) {
   const [byProfileId, setByProfileId] = useState<Record<string, DiscoveryProfileActionState>>({});
-  const [sessionOpenToChatEducated, setSessionOpenToChatEducated] = useState(false);
   const [conflict, setConflict] = useState<DiscoveryActionConflict | null>(null);
   const [notForMePrompt, setNotForMePrompt] = useState<NotForMePrompt | null>(null);
   const [openToChatPrompt, setOpenToChatPrompt] = useState<OpenToChatPrompt | null>(null);
@@ -106,24 +109,38 @@ export function DiscoveryActionsProvider({ children }: { children: ReactNode }) 
   }, []);
 
   const launchOpenToChat = useCallback(
-    (profileId: string, profileName: string, forceEducate = false) => {
+    (profileId: string, profileName: string, options?: { forceEducate?: boolean }) => {
+      const forceEducate = options?.forceEducate ?? false;
       const state = getState(profileId);
-      if (state.openToChatSent) return;
 
-      const showEducation = forceEducate || !sessionOpenToChatEducated;
+      if (state.openToChatSent && !forceEducate) return;
+
+      if (forceEducate) {
+        setOpenToChatPrompt({
+          profileId,
+          profileName,
+          initialStep: 'educate',
+          showFirstTimeBanner: false,
+          educateOnly: true,
+        });
+        return;
+      }
+
+      const showEducation = !hasCompletedOpenToChatEducation();
       setOpenToChatPrompt({
         profileId,
         profileName,
-        mode: forceEducate ? 'educate' : showEducation ? 'educate' : 'confirm',
-        showFirstTimeBanner: showEducation && !sessionOpenToChatEducated,
+        initialStep: showEducation ? 'educate' : 'note',
+        showFirstTimeBanner: showEducation,
+        educateOnly: false,
       });
     },
-    [getState, sessionOpenToChatEducated]
+    [getState]
   );
 
   const applyInterested = useCallback(
     (profileId: string, profileName: string) => {
-      patchState(profileId, { interested: true, openToChatSent: false });
+      patchState(profileId, { interested: true, openToChatSent: false, openToChatNote: null });
       announce(
         `You've expressed interest in ${profileName}.`,
         `If ${profileName} is also interested, Forge will let you both know.`
@@ -133,10 +150,17 @@ export function DiscoveryActionsProvider({ children }: { children: ReactNode }) 
   );
 
   const applyOpenToChatSent = useCallback(
-    (profileId: string, profileName: string) => {
-      patchState(profileId, { openToChatSent: true, interested: false });
-      setSessionOpenToChatEducated(true);
-      announce(`Open to Chat sent to ${profileName}.`);
+    (profileId: string, profileName: string, note: string | null) => {
+      patchState(profileId, {
+        openToChatSent: true,
+        interested: false,
+        openToChatNote: note,
+      });
+      markOpenToChatEducationComplete();
+      announce(
+        `Open to Chat sent to ${profileName}.`,
+        note ? 'Your note was included with the request.' : 'Your request was sent without a note.'
+      );
     },
     [announce, patchState]
   );
@@ -191,7 +215,7 @@ export function DiscoveryActionsProvider({ children }: { children: ReactNode }) 
 
   const handleOpenToChatInfo = useCallback(
     (profileId: string, profileName: string) => {
-      launchOpenToChat(profileId, profileName, true);
+      launchOpenToChat(profileId, profileName, { forceEducate: true });
     },
     [launchOpenToChat]
   );
@@ -206,10 +230,7 @@ export function DiscoveryActionsProvider({ children }: { children: ReactNode }) 
       }
 
       patchState(profileId, { saved: true });
-      announce(
-        `${profileName} was saved for later.`,
-        'Only you can see saved profiles.'
-      );
+      announce(`${profileName} was saved for later.`, 'Only you can see saved profiles.');
     },
     [announce, getState, patchState]
   );
@@ -220,10 +241,11 @@ export function DiscoveryActionsProvider({ children }: { children: ReactNode }) 
 
   const confirmNotForMe = useCallback(() => {
     if (!notForMePrompt) return;
-    const { profileId, profileName } = notForMePrompt;
+    const { profileId } = notForMePrompt;
     patchState(profileId, {
       interested: false,
       openToChatSent: false,
+      openToChatNote: null,
       saved: false,
       passed: true,
     });
@@ -251,10 +273,13 @@ export function DiscoveryActionsProvider({ children }: { children: ReactNode }) 
     if (profileId) returnFocusToOpenToChat(profileId);
   }, [openToChatPrompt, returnFocusToOpenToChat]);
 
-  const handleOpenToChatSent = useCallback(() => {
-    if (!openToChatPrompt) return;
-    applyOpenToChatSent(openToChatPrompt.profileId, openToChatPrompt.profileName);
-  }, [applyOpenToChatSent, openToChatPrompt]);
+  const handleOpenToChatSent = useCallback(
+    (note: string | null) => {
+      if (!openToChatPrompt) return;
+      applyOpenToChatSent(openToChatPrompt.profileId, openToChatPrompt.profileName, note);
+    },
+    [applyOpenToChatSent, openToChatPrompt]
+  );
 
   const value = useMemo<DiscoveryActionsContextValue>(
     () => ({
@@ -284,6 +309,8 @@ export function DiscoveryActionsProvider({ children }: { children: ReactNode }) 
       registerOpenToChatTrigger,
     ]
   );
+
+  const promptState = openToChatPrompt ? getState(openToChatPrompt.profileId) : null;
 
   return (
     <DiscoveryActionsContext.Provider value={value}>
@@ -322,9 +349,12 @@ export function DiscoveryActionsProvider({ children }: { children: ReactNode }) 
         open={openToChatPrompt !== null}
         onClose={closeOpenToChatDrawer}
         onSent={handleOpenToChatSent}
+        onEducationContinued={markOpenToChatEducationComplete}
         profileName={openToChatPrompt?.profileName ?? 'them'}
-        mode={openToChatPrompt?.mode ?? 'educate'}
+        initialStep={openToChatPrompt?.initialStep ?? 'educate'}
         showFirstTimeBanner={openToChatPrompt?.showFirstTimeBanner ?? false}
+        educateOnly={openToChatPrompt?.educateOnly ?? false}
+        alreadySent={promptState?.openToChatSent ?? false}
       />
     </DiscoveryActionsContext.Provider>
   );
