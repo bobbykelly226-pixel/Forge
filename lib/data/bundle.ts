@@ -17,13 +17,7 @@ import {
   type DataAccessResult,
 } from '@/lib/data/profile';
 import { loadCurrentUserProfileAnswersMap } from '@/lib/data/onboarding';
-import { PROFILE_PHOTO_BUCKET } from '@/lib/profile-photo';
-
-function publicPhotoUrl(storagePath: string): string | null {
-  const base = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  if (!base || !storagePath) return null;
-  return `${base.replace(/\/$/, '')}/storage/v1/object/public/${PROFILE_PHOTO_BUCKET}/${storagePath}`;
-}
+import { resolveAuthoritativeProfilePhotoUrl } from '@/lib/profile-photo';
 
 export type CurrentUserProfileBundle = {
   profile: Tables<'profiles'> | null;
@@ -148,10 +142,10 @@ export async function loadSelfProfilePreview(): Promise<
     return { success: true, data: null };
   }
 
-  const primaryPhoto = photos.find((photo) => photo.is_primary) ?? photos[0] ?? null;
-  const resolvedPhotoUrl =
-    profile.profile_photo_url ??
-    (primaryPhoto ? publicPhotoUrl(primaryPhoto.storage_path) : null);
+  const resolvedPhotoUrl = resolveAuthoritativeProfilePhotoUrl({
+    photos,
+    legacyProfilePhotoUrl: profile.profile_photo_url,
+  });
 
   return {
     success: true,
@@ -181,8 +175,10 @@ export async function loadSelfProfilePreview(): Promise<
         storage_path: photo.storage_path,
         display_order: photo.display_order,
         is_primary: photo.is_primary,
-        // Public bucket during this PR — signed URLs deferred.
-        public_url: publicPhotoUrl(photo.storage_path),
+        public_url: resolveAuthoritativeProfilePhotoUrl({
+          photos: [photo],
+          legacyProfilePhotoUrl: null,
+        }),
       })),
     },
   };

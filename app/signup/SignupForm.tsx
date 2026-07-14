@@ -1,10 +1,15 @@
 'use client';
 
 import Header from '@/components/Header';
+import { mapAuthErrorMessage } from '@/lib/auth/messages';
 import { createClient } from '@/lib/supabase/client';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
+
+function buildConfirmRedirectTo(): string {
+  return `${window.location.origin}/auth/callback?next=/onboarding`;
+}
 
 export default function SignupForm() {
   const router = useRouter();
@@ -23,7 +28,7 @@ export default function SignupForm() {
 
     try {
       const supabase = createClient();
-      const emailRedirectTo = `${window.location.origin}/app`;
+      const emailRedirectTo = buildConfirmRedirectTo();
 
       const { data, error: signUpError } = await supabase.auth.signUp({
         email,
@@ -34,17 +39,19 @@ export default function SignupForm() {
       });
 
       if (signUpError) {
-        setError(signUpError.message);
+        setError(mapAuthErrorMessage(signUpError.message));
         return;
       }
 
       if (data.session) {
-        router.push('/app');
+        router.push('/onboarding');
         router.refresh();
         return;
       }
 
-      setMessage('Check your email to confirm your account, then sign in.');
+      setMessage(
+        'Check your email to confirm your account. After you confirm, you will continue into Forge onboarding.'
+      );
     } catch {
       setError('Something went wrong. Please try again.');
     } finally {

@@ -5,11 +5,16 @@ import { revalidatePath } from 'next/cache';
 import { upsertCurrentUserProfile } from '@/lib/data/profile';
 import { createClient } from '@/lib/supabase/server';
 import { THINGS_I_ENJOY_OPTIONS } from '@/lib/types/profile-answers';
-import { getProfilePhotoPath } from '@/lib/profile-photo';
+import {
+  PROFILE_PHOTO_BUCKET,
+  PROFILE_PHOTO_REVALIDATE_PATHS,
+  buildPublicProfilePhotoUrl,
+} from '@/lib/profile-photo';
 
 type ProfileActionResult = {
   success: boolean;
   message: string;
+  profilePhotoUrl?: string | null;
 };
 
 function parseLineList(raw: string | null): string[] {
@@ -23,10 +28,16 @@ function parseLineList(raw: string | null): string[] {
 function parseEnjoySelection(formData: FormData): string[] {
   const selected = formData.getAll('things_i_enjoy').map(String);
   const allowed = new Set<string>(THINGS_I_ENJOY_OPTIONS);
-  // Preserve catalog order for stable display
-  return THINGS_I_ENJOY_OPTIONS.filter((label) => selected.includes(label)).filter(
-    (label) => allowed.has(label)
+  return THINGS_I_ENJOY_OPTIONS.filter((label) => selected.includes(label)).filter((label) =>
+    allowed.has(label)
   );
+}
+
+function revalidateProfileRoutes() {
+  for (const path of PROFILE_PHOTO_REVALIDATE_PATHS) {
+    revalidatePath(path);
+  }
+  revalidatePath('/app');
 }
 
 export async function saveProfile(formData: FormData): Promise<ProfileActionResult> {
@@ -71,22 +82,39 @@ export async function saveProfile(formData: FormData): Promise<ProfileActionResu
     age = parsedAge;
   }
 
-  const { data: existingProfile } = await supabase
-    .from('profiles')
-    .select('profile_photo_url')
-    .eq('id', user.id)
-    .maybeSingle();
+  const { data: existingPhotos, error: existingPhotosError } = await supabase
+    .from('profile_photos')
+    .select('id, storage_path, is_primary, display_order')
+    .eq('user_id', user.id)
+    .order('display_order', { ascending: true });
 
-  let profilePhotoUrl = existingProfile?.profile_photo_url ?? null;
-  if (profilePhotoUrlInput) {
-    profilePhotoUrl = profilePhotoUrlInput;
+  if (existingPhotosError) {
+    console.error('saveProfile load photos:', existingPhotosError.message);
+    return { success: false, message: 'Could not load your current photos. Please try again.' };
+  }
+
+  const replacingPhoto = Boolean(profilePhotoUrlInput && storagePathInput);
+  if (replacingPhoto) {
+    if (!storagePathInput!.startsWith(`${user.id}/`)) {
+      return { success: false, message: 'Invalid photo path.' };
+    }
+  }
+
+  const previousPaths = (existingPhotos ?? [])
+    .map((photo) => photo.storage_path)
+    .filter((path) => path && path !== storagePathInput);
+
+  let nextPhotoUrl: string | null | undefined = undefined;
+  if (replacingPhoto) {
+    nextPhotoUrl =
+      profilePhotoUrlInput || buildPublicProfilePhotoUrl(storagePathInput!) || null;
   }
 
   const thingsIEnjoy = parseEnjoySelection(formData);
   const favoriteArtists = parseLineList(formData.get('favorite_music_artists') as string | null);
   const favoriteSongs = parseLineList(formData.get('favorite_music_songs') as string | null);
 
-  const result = await upsertCurrentUserProfile({
+  const profileFields = {
     full_name: fullName,
     age,
     location: location || null,
@@ -106,33 +134,37 @@ export async function saveProfile(formData: FormData): Promise<ProfileActionResu
     things_i_enjoy: thingsIEnjoy,
     favorite_music_artists: favoriteArtists,
     favorite_music_songs: favoriteSongs,
-    profile_photo_url: profilePhotoUrl,
-  });
+    ...(nextPhotoUrl !== undefined ? { profile_photo_url: nextPhotoUrl } : {}),
+  };
+
+  const result = await upsertCurrentUserProfile(profileFields);
 
   if (!result.success) {
     return { success: false, message: result.message };
   }
 
-  // Keep profile_photos metadata in sync for the primary/legacy single photo.
-  if (profilePhotoUrl && storagePathInput) {
-    const { data: existingPhotos } = await supabase
-      .from('profile_photos')
-      .select('id, storage_path, is_primary')
-      .eq('user_id', user.id)
-      .order('display_order', { ascending: true });
+  let authoritativePhotoUrl = result.data.profile_photo_url;
 
+  if (replacingPhoto && storagePathInput) {
     const primary = (existingPhotos ?? []).find((photo) => photo.is_primary);
     const target = primary ?? existingPhotos?.[0] ?? null;
 
     if (target) {
-      // Clear other primaries first so only one remains primary.
-      await supabase
+      const { error: clearError } = await supabase
         .from('profile_photos')
         .update({ is_primary: false })
         .eq('user_id', user.id)
         .neq('id', target.id);
 
-      await supabase
+      if (clearError) {
+        console.error('saveProfile clear primary:', clearError.message);
+        return {
+          success: false,
+          message: 'Your profile text saved, but the photo could not be updated. Please try again.',
+        };
+      }
+
+      const { data: updatedPhoto, error: updateError } = await supabase
         .from('profile_photos')
         .update({
           storage_path: storagePathInput,
@@ -140,32 +172,79 @@ export async function saveProfile(formData: FormData): Promise<ProfileActionResu
           display_order: 0,
         })
         .eq('id', target.id)
-        .eq('user_id', user.id);
+        .eq('user_id', user.id)
+        .select('id, storage_path, is_primary')
+        .single();
+
+      if (updateError || !updatedPhoto) {
+        console.error('saveProfile update photo:', updateError?.message);
+        return {
+          success: false,
+          message: 'Your profile text saved, but the photo could not be updated. Please try again.',
+        };
+      }
+
+      if (updatedPhoto.storage_path !== storagePathInput || !updatedPhoto.is_primary) {
+        return {
+          success: false,
+          message: 'Photo update could not be confirmed. Please try again.',
+        };
+      }
     } else {
-      await supabase.from('profile_photos').insert({
-        user_id: user.id,
-        storage_path: storagePathInput,
-        display_order: 0,
-        is_primary: true,
-        moderation_status: 'approved',
-      });
+      const { data: insertedPhoto, error: insertError } = await supabase
+        .from('profile_photos')
+        .insert({
+          user_id: user.id,
+          storage_path: storagePathInput,
+          display_order: 0,
+          is_primary: true,
+          moderation_status: 'approved',
+        })
+        .select('id, storage_path, is_primary')
+        .single();
+
+      if (insertError || !insertedPhoto) {
+        console.error('saveProfile insert photo:', insertError?.message);
+        return {
+          success: false,
+          message: 'Your profile text saved, but the photo could not be saved. Please try again.',
+        };
+      }
+    }
+
+    // Confirm profiles.profile_photo_url matches the new public URL.
+    const { data: confirmedProfile, error: confirmError } = await supabase
+      .from('profiles')
+      .select('profile_photo_url')
+      .eq('id', user.id)
+      .single();
+
+    if (confirmError || confirmedProfile?.profile_photo_url !== nextPhotoUrl) {
+      console.error('saveProfile confirm url:', confirmError?.message);
+      return {
+        success: false,
+        message: 'Photo save could not be confirmed. Please try again.',
+      };
+    }
+
+    authoritativePhotoUrl = confirmedProfile.profile_photo_url;
+
+    // Delete previous objects only after DB confirmation.
+    for (const oldPath of previousPaths) {
+      const { error: removeError } = await supabase.storage
+        .from(PROFILE_PHOTO_BUCKET)
+        .remove([oldPath]);
+      if (removeError) {
+        console.error('saveProfile remove old photo:', removeError.message);
+      }
     }
   }
 
-  revalidatePath('/profile');
-  revalidatePath('/profile/edit');
-  revalidatePath('/profile/preview');
-  revalidatePath('/app');
+  revalidateProfileRoutes();
 
-  return { success: true, message: 'Your profile has been saved.' };
-}
-
-/** Exported for forms that need the default storage path helper. */
-export async function getCurrentUserPhotoStorageHint(): Promise<string | null> {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) return null;
-  return getProfilePhotoPath(user.id, 'image/jpeg');
+  return {
+    success: true,
+    message: 'Your profile has been saved.',
+    profilePhotoUrl: authoritativePhotoUrl,
+  };
 }

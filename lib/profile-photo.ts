@@ -45,6 +45,70 @@ export function validateProfilePhoto(file: File): string | null {
   return null;
 }
 
-export function getProfilePhotoPath(userId: string, mimeType: ProfilePhotoMimeType): string {
-  return `${userId}/profile-photo.${getProfilePhotoExtension(mimeType)}`;
+/**
+ * Unique user-scoped storage path for every upload/replacement.
+ * Avoids reusing a cached public URL when replacing a photo.
+ */
+export function createUniqueProfilePhotoPath(
+  userId: string,
+  mimeType: ProfilePhotoMimeType,
+  uniqueId: string = `${Date.now()}-${Math.random().toString(36).slice(2, 10)}`
+): string {
+  const safeId = uniqueId.replace(/[^a-zA-Z0-9_-]/g, '');
+  return `${userId}/${safeId}.${getProfilePhotoExtension(mimeType)}`;
 }
+
+/** @deprecated Prefer createUniqueProfilePhotoPath — fixed filenames cache forever. */
+export function getProfilePhotoPath(userId: string, mimeType: ProfilePhotoMimeType): string {
+  return createUniqueProfilePhotoPath(userId, mimeType, 'profile-photo');
+}
+
+export function buildPublicProfilePhotoUrl(storagePath: string): string | null {
+  const base = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  if (!base || !storagePath) return null;
+  return `${base.replace(/\/$/, '')}/storage/v1/object/public/${PROFILE_PHOTO_BUCKET}/${storagePath}`;
+}
+
+type PhotoLike = {
+  storage_path: string;
+  is_primary?: boolean | null;
+  display_order?: number | null;
+};
+
+/**
+ * Authoritative current profile photo URL.
+ * Prefer primary profile_photos row; fall back to legacy profiles.profile_photo_url.
+ */
+export function resolveAuthoritativeProfilePhotoUrl(input: {
+  photos: PhotoLike[] | null | undefined;
+  legacyProfilePhotoUrl?: string | null;
+}): string | null {
+  const photos = [...(input.photos ?? [])].sort(
+    (a, b) => (a.display_order ?? 0) - (b.display_order ?? 0)
+  );
+  const primary = photos.find((photo) => photo.is_primary) ?? photos[0] ?? null;
+  if (primary?.storage_path) {
+    return buildPublicProfilePhotoUrl(primary.storage_path);
+  }
+  return input.legacyProfilePhotoUrl?.trim() || null;
+}
+
+export function photosAgreeWithLegacyUrl(input: {
+  photos: PhotoLike[] | null | undefined;
+  legacyProfilePhotoUrl?: string | null;
+}): boolean {
+  const authoritative = resolveAuthoritativeProfilePhotoUrl(input);
+  if (!authoritative) {
+    return !input.legacyProfilePhotoUrl;
+  }
+  if (!input.legacyProfilePhotoUrl) {
+    return true;
+  }
+  return authoritative === input.legacyProfilePhotoUrl;
+}
+
+export const PROFILE_PHOTO_REVALIDATE_PATHS = [
+  '/profile',
+  '/profile/edit',
+  '/profile/preview',
+] as const;

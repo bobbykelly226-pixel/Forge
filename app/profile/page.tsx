@@ -4,6 +4,7 @@ import { redirect } from 'next/navigation';
 import ForgeAppCanvas from '@/components/ForgeAppCanvas';
 import MyProfileHub from '@/components/profile/MyProfileHub';
 import { loadCurrentUserProfileBundle } from '@/lib/data/bundle';
+import { resolveAuthoritativeProfilePhotoUrl } from '@/lib/profile-photo';
 import { MY_PROFILE_SECTION_CARDS } from '@/lib/profile-v2-mock';
 import { createClient } from '@/lib/supabase/server';
 
@@ -55,11 +56,16 @@ export default async function MyProfileHubPage() {
     );
   }
 
-  const { profile, completionPercent, completionSections, appState } = bundle.data;
+  const { profile, photos, completionPercent, completionSections, appState } = bundle.data;
   const displayName =
     profile?.full_name?.trim().split(/\s+/)[0] ||
     profile?.full_name?.trim() ||
     'Your profile';
+
+  const photoUrl = resolveAuthoritativeProfilePhotoUrl({
+    photos,
+    legacyProfilePhotoUrl: profile?.profile_photo_url,
+  });
 
   const checklist = completionSections.map((section) => ({
     id: section.id,
@@ -97,7 +103,7 @@ export default async function MyProfileHubPage() {
       <MyProfileHub
         displayName={displayName}
         location={profile?.location ?? null}
-        photoUrl={profile?.profile_photo_url ?? null}
+        photoUrl={photoUrl}
         completionPercent={completionPercent}
         checklist={checklist}
         sectionCards={sectionCards}

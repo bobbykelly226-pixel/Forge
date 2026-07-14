@@ -38,15 +38,20 @@ export async function proxy(request: NextRequest) {
 
   const { pathname } = request.nextUrl;
 
+  // Auth confirmation/callback routes must stay public so codes/tokens are not stripped.
+  const isAuthRoute = pathname.startsWith('/auth/');
+
   const isProtectedRoute =
-    pathname.startsWith('/app') ||
-    pathname === '/profile' ||
-    pathname.startsWith('/profile/') ||
-    pathname.startsWith('/onboarding');
+    !isAuthRoute &&
+    (pathname.startsWith('/app') ||
+      pathname === '/profile' ||
+      pathname.startsWith('/profile/') ||
+      pathname.startsWith('/onboarding'));
 
   if (!user && isProtectedRoute) {
     const redirectUrl = request.nextUrl.clone();
     redirectUrl.pathname = '/login';
+    redirectUrl.search = '';
     redirectUrl.searchParams.set('redirectTo', pathname);
     return NextResponse.redirect(redirectUrl);
   }

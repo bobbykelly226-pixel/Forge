@@ -3,7 +3,7 @@
 import { saveProfile } from '@/app/actions/profile';
 import Header from '@/components/Header';
 import {
-  getProfilePhotoPath,
+  createUniqueProfilePhotoPath,
   isAllowedProfilePhotoType,
   PROFILE_PHOTO_BUCKET,
   validateProfilePhoto,
@@ -55,7 +55,6 @@ export default function ProfileForm({ profile }: ProfileFormProps) {
 
     try {
       const formData = new FormData(event.currentTarget);
-      let uploadedPhotoUrl: string | null = null;
 
       if (selectedPhotoFile) {
         const validationError = validateProfilePhoto(selectedPhotoFile);
@@ -76,23 +75,23 @@ export default function ProfileForm({ profile }: ProfileFormProps) {
           throw new Error('Please upload a JPG, PNG, WEBP, or GIF image.');
         }
 
-        const filePath = getProfilePhotoPath(user.id, selectedPhotoFile.type);
+        const filePath = createUniqueProfilePhotoPath(user.id, selectedPhotoFile.type);
         const { error: uploadError } = await supabase.storage
           .from(PROFILE_PHOTO_BUCKET)
           .upload(filePath, selectedPhotoFile, {
-            upsert: true,
+            upsert: false,
             contentType: selectedPhotoFile.type,
+            cacheControl: '3600',
           });
 
         if (uploadError) {
-          throw new Error(`Could not upload your profile photo: ${uploadError.message}`);
+          throw new Error('Could not upload your profile photo. Please try again.');
         }
 
         const {
           data: { publicUrl },
         } = supabase.storage.from(PROFILE_PHOTO_BUCKET).getPublicUrl(filePath);
 
-        uploadedPhotoUrl = publicUrl;
         formData.set('profile_photo_url', publicUrl);
         formData.set('profile_photo_storage_path', filePath);
       }
@@ -100,12 +99,11 @@ export default function ProfileForm({ profile }: ProfileFormProps) {
       const result = await saveProfile(formData);
 
       if (!result.success) {
-        if (uploadedPhotoUrl) {
-          throw new Error(
-            `Your photo was uploaded, but we could not save your profile: ${result.message}`
-          );
-        }
         throw new Error(result.message);
+      }
+
+      if (result.profilePhotoUrl) {
+        setPhotoPreview(result.profilePhotoUrl);
       }
 
       setSelectedPhotoFile(null);

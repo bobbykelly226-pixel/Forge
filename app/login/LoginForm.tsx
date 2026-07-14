@@ -1,6 +1,8 @@
 'use client';
 
+import { resendConfirmationEmail } from '@/app/actions/auth';
 import Header from '@/components/Header';
+import { mapAuthErrorMessage } from '@/lib/auth/messages';
 import { createClient } from '@/lib/supabase/client';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
@@ -14,11 +16,14 @@ export default function LoginForm() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
+  const [message, setMessage] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isResending, setIsResending] = useState(false);
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setError(null);
+    setMessage(null);
     setIsSubmitting(true);
 
     try {
@@ -29,16 +34,40 @@ export default function LoginForm() {
       });
 
       if (signInError) {
-        setError(signInError.message);
+        setError(mapAuthErrorMessage(signInError.message));
         return;
       }
 
-      router.push(redirectTo);
+      router.push(redirectTo.startsWith('/') ? redirectTo : '/app');
       router.refresh();
     } catch {
       setError('Something went wrong. Please try again.');
     } finally {
       setIsSubmitting(false);
+    }
+  };
+
+  const handleResend = async () => {
+    setError(null);
+    setMessage(null);
+    setIsResending(true);
+
+    try {
+      const result = await resendConfirmationEmail({
+        email,
+        origin: window.location.origin,
+      });
+
+      if (!result.success) {
+        setError(result.message);
+        return;
+      }
+
+      setMessage(result.message);
+    } catch {
+      setError('Could not resend the confirmation email. Please try again.');
+    } finally {
+      setIsResending(false);
     }
   };
 
@@ -95,6 +124,12 @@ export default function LoginForm() {
             </p>
           )}
 
+          {message && (
+            <p className="text-sm text-green-700 bg-green-50 border border-green-200 rounded-2xl px-4 py-3" role="status">
+              {message}
+            </p>
+          )}
+
           <button
             type="submit"
             disabled={isSubmitting}
@@ -103,6 +138,17 @@ export default function LoginForm() {
             {isSubmitting ? 'Signing in...' : 'Sign in'}
           </button>
         </form>
+
+        <div className="mt-5 text-center">
+          <button
+            type="button"
+            onClick={() => void handleResend()}
+            disabled={isResending || !email}
+            className="text-sm font-medium text-[#0B2D5C] underline-offset-2 hover:underline disabled:opacity-50"
+          >
+            {isResending ? 'Sending confirmation email...' : 'Resend confirmation email'}
+          </button>
+        </div>
 
         <p className="text-center text-[#444444] mt-8">
           New to Forge?{' '}
