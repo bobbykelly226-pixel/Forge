@@ -1,8 +1,8 @@
-import Header from '@/components/Header';
-import OnboardingShell from '@/components/OnboardingShell';
-import { loadCompatibilityAnswers } from '@/app/actions/compatibility';
-import { createClient } from '@/lib/supabase/server';
 import { redirect } from 'next/navigation';
+
+import OnboardingShell from '@/components/OnboardingShell';
+import { loadOnboardingBootstrap } from '@/app/actions/onboarding';
+import { createClient } from '@/lib/supabase/server';
 
 export default async function OnboardingPage() {
   const supabase = await createClient();
@@ -14,12 +14,18 @@ export default async function OnboardingPage() {
     redirect('/login?redirectTo=/onboarding');
   }
 
-  const initialAnswers = await loadCompatibilityAnswers();
+  const bootstrap = await loadOnboardingBootstrap();
+
+  if (bootstrap.completed) {
+    redirect('/profile');
+  }
 
   return (
-    <div className="min-h-screen bg-[#F8F6F2] text-[#222222]">
-      <Header />
-      <OnboardingShell initialAnswers={initialAnswers} />
-    </div>
+    <main className="min-h-screen bg-[#F8F6F2] text-[#222222]">
+      <OnboardingShell
+        initialAnswers={bootstrap.answers}
+        initialStep={bootstrap.initialStep}
+      />
+    </main>
   );
 }

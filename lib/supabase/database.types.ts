@@ -1,14 +1,3 @@
-/**
- * AUTO-GENERATED from the linked Forge Supabase project after applying
- * migration 20260714000000_forge_backend_foundation.
- *
- * Generated with:
- *   npx supabase gen types typescript --linked --schema public
- *
- * Do not hand-edit table/view/enum definitions. Regenerate with:
- *   npm run supabase:types
- */
-
 export type Json =
   | string
   | number

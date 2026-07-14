@@ -1,19 +1,23 @@
 'use client';
 
 import Link from 'next/link';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, useTransition } from 'react';
 
-import { saveCompatibilityAnswer } from '@/app/actions/compatibility';
 import {
-  COMPATIBILITY_QUESTION_KEYS,
-  type CompatibilityAnswersMap,
-} from '@/lib/types/compatibility';
+  finishOnboarding,
+  saveOnboardingStep,
+  saveProfileAnswer,
+} from '@/app/actions/onboarding';
+import {
+  PROFILE_ANSWER_KEYS,
+  type ProfileAnswersMap,
+} from '@/lib/types/profile-answers';
 
 const TOTAL_STEPS = 4;
 const DESKTOP_MEDIA_QUERY = '(min-width: 640px)';
 
 const primaryButtonClassName =
-  'inline-flex w-full items-center justify-center rounded-2xl bg-[#D62828] px-8 py-4 text-lg font-semibold text-white transition hover:bg-[#A61F1F]';
+  'inline-flex w-full items-center justify-center rounded-2xl bg-[#D62828] px-8 py-4 text-lg font-semibold text-white transition hover:bg-[#A61F1F] disabled:opacity-60';
 
 const secondaryButtonClassName =
   'inline-flex w-full items-center justify-center rounded-2xl border border-[#0B2D5C]/20 bg-white px-8 py-4 text-lg font-semibold text-[#0B2D5C] transition hover:bg-[#F8F6F2]';
@@ -61,17 +65,20 @@ function OptionButton({
   label,
   selected,
   onClick,
+  disabled,
 }: {
   label: string;
   selected: boolean;
   onClick: () => void;
+  disabled?: boolean;
 }) {
   return (
     <button
       type="button"
       onClick={onClick}
+      disabled={disabled}
       aria-pressed={selected}
-      className={`w-full rounded-2xl border px-5 py-4 text-left text-base font-medium transition ${
+      className={`w-full rounded-2xl border px-5 py-4 text-left text-base font-medium transition disabled:opacity-60 ${
         selected
           ? 'border-[#0B2D5C] bg-[#0B2D5C] text-white'
           : 'border-[#0B2D5C]/15 bg-white text-[#0B2D5C] hover:border-[#0B2D5C]/35'
@@ -83,16 +90,16 @@ function OptionButton({
 }
 
 function readStringAnswer(
-  answers: CompatibilityAnswersMap,
-  key: (typeof COMPATIBILITY_QUESTION_KEYS)[keyof typeof COMPATIBILITY_QUESTION_KEYS]
+  answers: ProfileAnswersMap,
+  key: (typeof PROFILE_ANSWER_KEYS)[keyof typeof PROFILE_ANSWER_KEYS]
 ): string | null {
   const value = answers[key];
   return typeof value === 'string' ? value : null;
 }
 
 function readStringArrayAnswer(
-  answers: CompatibilityAnswersMap,
-  key: (typeof COMPATIBILITY_QUESTION_KEYS)[keyof typeof COMPATIBILITY_QUESTION_KEYS]
+  answers: ProfileAnswersMap,
+  key: (typeof PROFILE_ANSWER_KEYS)[keyof typeof PROFILE_ANSWER_KEYS]
 ): string[] {
   const value = answers[key];
   return Array.isArray(value) ? value.filter((item) => typeof item === 'string') : [];
@@ -100,23 +107,26 @@ function readStringArrayAnswer(
 
 export default function OnboardingShell({
   initialAnswers = {},
+  initialStep = 1,
 }: {
-  initialAnswers?: CompatibilityAnswersMap;
+  initialAnswers?: ProfileAnswersMap;
+  initialStep?: number;
 }) {
-  const [step, setStep] = useState(1);
+  const [step, setStep] = useState(() =>
+    Math.min(TOTAL_STEPS, Math.max(1, initialStep))
+  );
   const [intention, setIntention] = useState<string | null>(() =>
-    readStringAnswer(initialAnswers, COMPATIBILITY_QUESTION_KEYS.relationshipIntention)
+    readStringAnswer(initialAnswers, PROFILE_ANSWER_KEYS.relationshipIntention)
   );
   const [selectedValues, setSelectedValues] = useState<string[]>(() =>
-    readStringArrayAnswer(initialAnswers, COMPATIBILITY_QUESTION_KEYS.coreValues)
+    readStringArrayAnswer(initialAnswers, PROFILE_ANSWER_KEYS.coreValues)
   );
   const [saveMessage, setSaveMessage] = useState<string | null>(null);
   const [saveError, setSaveError] = useState<string | null>(null);
-  // Default to mobile-first so Continue is above Back until we know the viewport.
   const [isDesktop, setIsDesktop] = useState(false);
+  const [isPending, startTransition] = useTransition();
+  const [isFinishing, setIsFinishing] = useState(false);
 
-  // Per-question save generations so rapid toggles don't apply stale responses,
-  // and older writes don't overwrite newer ones in the UI status.
   const saveGenerationRef = useRef<Record<string, number>>({});
 
   useEffect(() => {
@@ -130,6 +140,12 @@ export default function OnboardingShell({
     return () => mediaQuery.removeEventListener('change', syncViewport);
   }, []);
 
+  const persistStep = (nextStep: number) => {
+    startTransition(() => {
+      void saveOnboardingStep(nextStep);
+    });
+  };
+
   const persistAnswer = (
     questionKey: string,
     answerValue: string | string[],
@@ -140,9 +156,8 @@ export default function OnboardingShell({
 
     void (async () => {
       try {
-        const result = await saveCompatibilityAnswer(questionKey, answerValue);
+        const result = await saveProfileAnswer(questionKey, answerValue);
 
-        // Ignore stale responses from earlier clicks.
         if (saveGenerationRef.current[questionKey] !== generation) {
           return;
         }
@@ -166,25 +181,26 @@ export default function OnboardingShell({
   };
 
   const selectIntention = (option: string) => {
+    if (isPending || isFinishing) return;
     setIntention(option);
     setSaveError(null);
     persistAnswer(
-      COMPATIBILITY_QUESTION_KEYS.relationshipIntention,
+      PROFILE_ANSWER_KEYS.relationshipIntention,
       option,
       'Intention saved.'
     );
   };
 
   const toggleValue = (value: string) => {
+    if (isPending || isFinishing) return;
     const next = selectedValues.includes(value)
       ? selectedValues.filter((item) => item !== value)
       : [...selectedValues, value];
 
-    // Optimistic UI: update selection immediately, save in the background.
     setSelectedValues(next);
     setSaveError(null);
     persistAnswer(
-      COMPATIBILITY_QUESTION_KEYS.coreValues,
+      PROFILE_ANSWER_KEYS.coreValues,
       next,
       next.length > 0 ? 'Values saved.' : 'Values cleared.'
     );
@@ -193,13 +209,45 @@ export default function OnboardingShell({
   const goBack = () => {
     setSaveMessage(null);
     setSaveError(null);
-    setStep((current) => Math.max(1, current - 1));
+    setStep((current) => {
+      const next = Math.max(1, current - 1);
+      persistStep(next);
+      return next;
+    });
   };
 
   const goNext = () => {
+    if (step === 2 && !intention) {
+      setSaveError('Select a relationship intention to continue.');
+      return;
+    }
+    if (step === 3 && selectedValues.length === 0) {
+      setSaveError('Select at least one value to continue.');
+      return;
+    }
+
     setSaveMessage(null);
     setSaveError(null);
-    setStep((current) => Math.min(TOTAL_STEPS, current + 1));
+    setStep((current) => {
+      const next = Math.min(TOTAL_STEPS, current + 1);
+      persistStep(next);
+      return next;
+    });
+  };
+
+  const handleFinish = async (href: string) => {
+    if (isFinishing) return;
+    setIsFinishing(true);
+    setSaveError(null);
+
+    const result = await finishOnboarding();
+    if (!result.success) {
+      setSaveError(result.message);
+      setIsFinishing(false);
+      return;
+    }
+
+    window.location.href = href;
   };
 
   const statusMessage =
@@ -227,7 +275,12 @@ export default function OnboardingShell({
     );
 
   const continueControl = (
-    <button type="button" onClick={goNext} className={primaryButtonClassName}>
+    <button
+      type="button"
+      onClick={goNext}
+      disabled={isPending || isFinishing}
+      className={primaryButtonClassName}
+    >
       Continue
     </button>
   );
@@ -282,6 +335,7 @@ export default function OnboardingShell({
                   key={option}
                   label={option}
                   selected={intention === option}
+                  disabled={isFinishing}
                   onClick={() => selectIntention(option)}
                 />
               ))}
@@ -313,6 +367,7 @@ export default function OnboardingShell({
                   key={option}
                   label={option}
                   selected={selectedValues.includes(option)}
+                  disabled={isFinishing}
                   onClick={() => toggleValue(option)}
                 />
               ))}
@@ -341,25 +396,36 @@ export default function OnboardingShell({
             <p className="mb-8 text-base leading-relaxed text-[#555555]">
               Take a moment to strengthen your profile, then preview how others may see you.
             </p>
+            {saveError && (
+              <p className="mb-4 text-sm text-[#D62828]" role="alert">
+                {saveError}
+              </p>
+            )}
             <div className="flex flex-col gap-3">
-              <Link
-                href="/profile/edit"
-                className="inline-flex w-full items-center justify-center rounded-2xl bg-[#D62828] px-8 py-4 text-lg font-semibold text-white transition hover:bg-[#A61F1F]"
+              <button
+                type="button"
+                disabled={isFinishing}
+                onClick={() => void handleFinish('/profile/edit')}
+                className="inline-flex w-full items-center justify-center rounded-2xl bg-[#D62828] px-8 py-4 text-lg font-semibold text-white transition hover:bg-[#A61F1F] disabled:opacity-60"
               >
-                Edit Profile
-              </Link>
-              <Link
-                href="/profile/preview"
-                className="inline-flex w-full items-center justify-center rounded-2xl bg-[#0B2D5C] px-8 py-4 text-lg font-semibold text-white transition hover:bg-[#0A2540]"
+                {isFinishing ? 'Saving...' : 'Edit Profile'}
+              </button>
+              <button
+                type="button"
+                disabled={isFinishing}
+                onClick={() => void handleFinish('/profile/preview')}
+                className="inline-flex w-full items-center justify-center rounded-2xl bg-[#0B2D5C] px-8 py-4 text-lg font-semibold text-white transition hover:bg-[#0A2540] disabled:opacity-60"
               >
-                Preview Profile
-              </Link>
-              <Link
-                href="/app"
-                className="inline-flex w-full items-center justify-center rounded-2xl border border-[#0B2D5C]/20 bg-white px-8 py-4 text-lg font-semibold text-[#0B2D5C] transition hover:bg-[#F8F6F2]"
+                {isFinishing ? 'Saving...' : 'Preview Profile'}
+              </button>
+              <button
+                type="button"
+                disabled={isFinishing}
+                onClick={() => void handleFinish('/profile')}
+                className="inline-flex w-full items-center justify-center rounded-2xl border border-[#0B2D5C]/20 bg-white px-8 py-4 text-lg font-semibold text-[#0B2D5C] transition hover:bg-[#F8F6F2] disabled:opacity-60"
               >
-                Back to App
-              </Link>
+                {isFinishing ? 'Saving...' : 'Go to My Profile'}
+              </button>
             </div>
           </section>
         )}

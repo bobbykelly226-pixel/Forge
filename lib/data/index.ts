@@ -1,3 +1,7 @@
+/**
+ * Server-side data access for Forge foundational persistence.
+ */
+
 export {
   ensureFoundationalRecords,
   getCurrentUserAppState,
@@ -13,3 +17,19 @@ export {
   type DataAccessResult,
   type DataAccessSuccess,
 } from './profile';
+
+export {
+  completeOnboarding,
+  loadCurrentUserProfileAnswersMap,
+  loadOnboardingState,
+  saveOnboardingStepProgress,
+  upsertCurrentUserProfileAnswer,
+  type OnboardingLoadState,
+} from './onboarding';
+
+export {
+  loadCurrentUserProfileBundle,
+  loadSelfProfilePreview,
+  type CurrentUserProfileBundle,
+  type SelfProfilePreview,
+} from './bundle';

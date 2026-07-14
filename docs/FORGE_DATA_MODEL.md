@@ -2,9 +2,9 @@
 
 Authoritative documentation for the Forge Backend Foundation persistence layer.
 
-**Remote migration status:** Applied to the linked Forge Supabase project via `supabase migration up --linked`. Remote migration history records `20260714000000` (`forge_backend_foundation`).
+**Remote migration status:** Applied to the linked Forge Supabase project via `supabase migration up --linked`. Remote migration history records `20260714000000` (`forge_backend_foundation`) and `20260714060000` (`migrate_compatibility_to_profile_answers`).
 
-**Types status:** `lib/supabase/database.types.ts` was **generated from the linked, applied Forge Supabase schema** via `npx supabase gen types typescript --linked --schema public` after migration `20260714000000` was recorded remotely.
+**Types status:** `lib/supabase/database.types.ts` was **generated from the linked, applied Forge Supabase schema** via `npx supabase gen types typescript --linked --schema public` after migration `20260714060000` was recorded remotely.
 
 ---
 
@@ -79,29 +79,27 @@ Canonical allow-list in code: `lib/data-model-rules.ts` → `DISCOVERABLE_PROFIL
 
 ---
 
-## Compatibility answers transition plan
+## Compatibility answers transition (completed)
 
-### Current app behavior (confirmed)
+**`profile_answers` is authoritative.** Onboarding and profile questionnaire reads/writes use `profile_answers` only.
 
-The live onboarding flow **still reads and writes** `compatibility_answers` via:
+### Migration applied
 
-- `app/actions/compatibility.ts`
-- `components/OnboardingShell.tsx`
-- keys: `relationship_intention`, `core_values`
+- Migration `20260714060000_migrate_compatibility_to_profile_answers.sql` copies legacy rows from `compatibility_answers` into `profile_answers` (`question_key` unchanged; `answer_value` → `answer`).
+- Idempotent: `on conflict (user_id, question_key) do nothing`.
+- Does **not** delete `compatibility_answers`.
+- Table comment marks `compatibility_answers` as **legacy / read-only**.
 
-### Future authoritative system
+### Application rules
 
-**`profile_answers` is the future authoritative questionnaire store** (importance, non-negotiable, visibility, matching-ready jsonb).
+1. **Do not dual-write** into both tables.
+2. App code must not call `.from('compatibility_answers')` for reads or writes.
+3. Keys in use today: `relationship_intention`, `core_values`.
+4. A later cleanup migration may drop or archive `compatibility_answers`; not in this PR.
 
-### Rules for the next persistence PR
+### Photo storage note
 
-1. **Do not dual-write** the same question into both tables.
-2. Keep `compatibility_answers` data intact — no deletes in this foundation migration.
-3. During the persistence PR that connects onboarding:
-   - Migrate existing `compatibility_answers` rows into `profile_answers` once (same `question_key`, map `answer_value` → `answer`).
-   - Switch app reads/writes to `profile_answers` only.
-   - Leave `compatibility_answers` read-only or unused until a later cleanup migration.
-4. Until that PR lands, foundation data-access helpers use `profile_answers` only for new questionnaire APIs; they do not touch `compatibility_answers`.
+The `profile-photos` bucket remains **public** for this persistence PR so existing upload/preview URLs keep working. A future PR may move to private + signed URLs once the full retrieval flow is tested.
 
 ---
 

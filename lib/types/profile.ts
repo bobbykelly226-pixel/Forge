@@ -1,16 +1,7 @@
-export type Profile = {
-  id: string;
-  full_name: string | null;
-  age: number | null;
-  location: string | null;
-  relationship_goal: string | null;
-  faith_importance: string | null;
-  service_background: string | null;
-  short_bio: string | null;
-  profile_photo_url: string | null;
-  created_at: string;
-  updated_at: string;
-};
+import type { Tables } from '@/lib/supabase/database.types';
+
+/** Full profiles row from generated database types. */
+export type Profile = Tables<'profiles'>;
 
 export type ProfileFormData = {
   full_name: string;
@@ -20,4 +11,13 @@ export type ProfileFormData = {
   faith_importance: string;
   service_background: string;
   short_bio: string;
+  more_about: string;
+  children: string;
+  has_children: string;
+  education: string;
+  pets: string;
+  smoking: string;
+  drinking: string;
+  career: string;
+  relocation: string;
 };

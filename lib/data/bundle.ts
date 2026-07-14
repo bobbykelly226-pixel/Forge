@@ -1,0 +1,189 @@
+import {
+  calculateProfileCompletionPercent,
+  getProfileCompletionSections,
+  type ProfileCompletionSection,
+} from '@/lib/profile-completion';
+import type { Tables } from '@/lib/supabase/database.types';
+import {
+  PROFILE_ANSWER_KEYS,
+  type ProfileAnswersMap,
+} from '@/lib/types/profile-answers';
+import {
+  ensureFoundationalRecords,
+  getCurrentUserAppState,
+  getCurrentUserProfile,
+  getCurrentUserProfileAnswers,
+  getCurrentUserProfilePhotos,
+  type DataAccessResult,
+} from '@/lib/data/profile';
+import { loadCurrentUserProfileAnswersMap } from '@/lib/data/onboarding';
+import { PROFILE_PHOTO_BUCKET } from '@/lib/profile-photo';
+
+function publicPhotoUrl(storagePath: string): string | null {
+  const base = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  if (!base || !storagePath) return null;
+  return `${base.replace(/\/$/, '')}/storage/v1/object/public/${PROFILE_PHOTO_BUCKET}/${storagePath}`;
+}
+
+export type CurrentUserProfileBundle = {
+  profile: Tables<'profiles'> | null;
+  photos: Tables<'profile_photos'>[];
+  answers: ProfileAnswersMap;
+  answerRows: Tables<'profile_answers'>[];
+  appState: Tables<'user_app_state'> | null;
+  completionSections: ProfileCompletionSection[];
+  completionPercent: number;
+};
+
+function answersIndicateAlignment(answers: ProfileAnswersMap): boolean {
+  const value = answers[PROFILE_ANSWER_KEYS.relationshipIntention];
+  return typeof value === 'string' && value.trim().length > 0;
+}
+
+function answersIndicateFactors(answers: ProfileAnswersMap): boolean {
+  const value = answers[PROFILE_ANSWER_KEYS.coreValues];
+  return Array.isArray(value) && value.length > 0;
+}
+
+export async function loadCurrentUserProfileBundle(): Promise<
+  DataAccessResult<CurrentUserProfileBundle>
+> {
+  const ensured = await ensureFoundationalRecords();
+  if (!ensured.success) {
+    return ensured;
+  }
+
+  const [profileResult, photosResult, answersMapResult, answerRowsResult, appStateResult] =
+    await Promise.all([
+      getCurrentUserProfile(),
+      getCurrentUserProfilePhotos(),
+      loadCurrentUserProfileAnswersMap(),
+      getCurrentUserProfileAnswers(),
+      getCurrentUserAppState(),
+    ]);
+
+  for (const result of [
+    profileResult,
+    photosResult,
+    answersMapResult,
+    answerRowsResult,
+    appStateResult,
+  ]) {
+    if (!result.success) {
+      return result;
+    }
+  }
+
+  const profile = profileResult.success ? profileResult.data : null;
+  const photos = photosResult.success ? photosResult.data : [];
+  const answers = answersMapResult.success ? answersMapResult.data : {};
+  const answerRows = answerRowsResult.success ? answerRowsResult.data : [];
+  const appState = appStateResult.success ? appStateResult.data : null;
+
+  const completionSections = getProfileCompletionSections({
+    profile,
+    photoCount: photos.length,
+    hasRelationshipAlignment: answersIndicateAlignment(answers),
+    hasImportantAlignmentFactors: answersIndicateFactors(answers),
+  });
+
+  return {
+    success: true,
+    data: {
+      profile,
+      photos,
+      answers,
+      answerRows,
+      appState,
+      completionSections,
+      completionPercent: calculateProfileCompletionPercent(completionSections),
+    },
+  };
+}
+
+/**
+ * Safe public presentation fields for the owner's own preview.
+ * Never includes private details or private answer payloads.
+ */
+export type SelfProfilePreview = {
+  full_name: string | null;
+  age: number | null;
+  location: string | null;
+  short_bio: string | null;
+  more_about: string | null;
+  relationship_goal: string | null;
+  faith_importance: string | null;
+  service_background: string | null;
+  children: string | null;
+  has_children: string | null;
+  education: string | null;
+  pets: string | null;
+  smoking: string | null;
+  drinking: string | null;
+  career: string | null;
+  relocation: string | null;
+  things_i_enjoy: string[];
+  favorite_music_artists: string[];
+  favorite_music_songs: string[];
+  profile_photo_url: string | null;
+  photos: Array<{
+    id: string;
+    storage_path: string;
+    display_order: number;
+    is_primary: boolean;
+    public_url: string | null;
+  }>;
+};
+
+export async function loadSelfProfilePreview(): Promise<
+  DataAccessResult<SelfProfilePreview | null>
+> {
+  const bundle = await loadCurrentUserProfileBundle();
+  if (!bundle.success) {
+    return bundle;
+  }
+
+  const { profile, photos } = bundle.data;
+  if (!profile) {
+    return { success: true, data: null };
+  }
+
+  const primaryPhoto = photos.find((photo) => photo.is_primary) ?? photos[0] ?? null;
+  const resolvedPhotoUrl =
+    profile.profile_photo_url ??
+    (primaryPhoto ? publicPhotoUrl(primaryPhoto.storage_path) : null);
+
+  return {
+    success: true,
+    data: {
+      full_name: profile.full_name,
+      age: profile.age,
+      location: profile.location,
+      short_bio: profile.short_bio,
+      more_about: profile.more_about,
+      relationship_goal: profile.relationship_goal,
+      faith_importance: profile.faith_importance,
+      service_background: profile.service_background,
+      children: profile.children,
+      has_children: profile.has_children,
+      education: profile.education,
+      pets: profile.pets,
+      smoking: profile.smoking,
+      drinking: profile.drinking,
+      career: profile.career,
+      relocation: profile.relocation,
+      things_i_enjoy: profile.things_i_enjoy ?? [],
+      favorite_music_artists: profile.favorite_music_artists ?? [],
+      favorite_music_songs: profile.favorite_music_songs ?? [],
+      profile_photo_url: resolvedPhotoUrl,
+      photos: photos.map((photo) => ({
+        id: photo.id,
+        storage_path: photo.storage_path,
+        display_order: photo.display_order,
+        is_primary: photo.is_primary,
+        // Public bucket during this PR — signed URLs deferred.
+        public_url: publicPhotoUrl(photo.storage_path),
+      })),
+    },
+  };
+}
