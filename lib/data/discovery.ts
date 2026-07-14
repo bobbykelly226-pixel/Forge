@@ -3,6 +3,11 @@ import type { DataAccessResult } from '@/lib/data/profile';
 import { ensureFoundationalRecords } from '@/lib/data/profile';
 import type { PublicDiscoveryProfile } from '@/lib/discovery/presentation';
 import { loadCurrentUserProfileBundle } from '@/lib/data/bundle';
+import {
+  buildPublicProfilePhotoUrl,
+  resolveAuthoritativeProfilePhotoUrl,
+  sortPhotosByDisplayOrder,
+} from '@/lib/profile-photo';
 
 async function requireUser() {
   const supabase = await createClient();
@@ -18,6 +23,61 @@ async function requireUser() {
     return { supabase, user: null as null };
   }
   return { supabase, user };
+}
+
+async function attachDiscoverablePhotos(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  profiles: PublicDiscoveryProfile[]
+): Promise<PublicDiscoveryProfile[]> {
+  if (profiles.length === 0) return profiles;
+  const ids = profiles.map((profile) => profile.id);
+  const { data, error } = await supabase
+    .from('discoverable_profile_photos')
+    .select('id, user_id, storage_path, display_order, is_primary')
+    .in('user_id', ids)
+    .order('display_order', { ascending: true });
+
+  if (error) {
+    console.error('attachDiscoverablePhotos:', error.message);
+    return profiles;
+  }
+
+  const byUser = new Map<
+    string,
+    Array<{
+      id: string;
+      storage_path: string;
+      display_order: number;
+      is_primary: boolean;
+      public_url: string | null;
+    }>
+  >();
+
+  for (const row of data ?? []) {
+    if (!row.user_id || !row.storage_path) continue;
+    const list = byUser.get(row.user_id) ?? [];
+    list.push({
+      id: row.id ?? `${row.user_id}-${row.storage_path}`,
+      storage_path: row.storage_path,
+      display_order: row.display_order ?? 0,
+      is_primary: Boolean(row.is_primary),
+      public_url: buildPublicProfilePhotoUrl(row.storage_path),
+    });
+    byUser.set(row.user_id, list);
+  }
+
+  return profiles.map((profile) => {
+    const photos = sortPhotosByDisplayOrder(byUser.get(profile.id) ?? []);
+    const primaryUrl = resolveAuthoritativeProfilePhotoUrl({
+      photos,
+      legacyProfilePhotoUrl: profile.profile_photo_url,
+    });
+    return {
+      ...profile,
+      photos,
+      profile_photo_url: primaryUrl ?? profile.profile_photo_url,
+    };
+  });
 }
 
 export type DiscoveryVisibilityState = {
@@ -147,7 +207,10 @@ export async function listDiscoveryFeedProfiles(): Promise<
 
   return {
     success: true,
-    data: (data ?? []) as PublicDiscoveryProfile[],
+    data: await attachDiscoverablePhotos(
+      supabase,
+      (data ?? []) as PublicDiscoveryProfile[]
+    ),
   };
 }
 
@@ -171,7 +234,10 @@ export async function getDiscoveryProfile(
     };
   }
 
-  const rows = (data ?? []) as PublicDiscoveryProfile[];
+  const rows = await attachDiscoverablePhotos(
+    supabase,
+    (data ?? []) as PublicDiscoveryProfile[]
+  );
   return { success: true, data: rows[0] ?? null };
 }
 

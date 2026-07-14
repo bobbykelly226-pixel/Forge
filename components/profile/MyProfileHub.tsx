@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import { useState } from 'react';
 import { Eye } from 'lucide-react';
 
 import DiscoveryDesktopTopBar from '@/components/DiscoveryDesktopTopBar';
@@ -8,6 +9,7 @@ import ForgeAppBottomNav from '@/components/ForgeAppBottomNav';
 import ForgeDesktopAppNav from '@/components/ForgeDesktopAppNav';
 import DiscoveryVisibilityToggle from '@/components/profile/DiscoveryVisibilityToggle';
 import ProfileWorkspace from '@/components/profile/ProfileWorkspace';
+import type { ManagedProfilePhoto } from '@/lib/profile-photo';
 import type { Profile } from '@/lib/types/profile';
 
 type PrivateLocationSeed = {
@@ -34,7 +36,7 @@ export type MyProfileHubProps = {
   coreValues: string[];
   hasRelationshipAlignment: boolean;
   hasImportantAlignmentFactors: boolean;
-  photoCount: number;
+  photos: ManagedProfilePhoto[];
   initialSection?: string | null;
 };
 
@@ -76,7 +78,7 @@ function CompletionRing({ percent }: { percent: number }) {
 export default function MyProfileHub({
   displayName,
   location,
-  photoUrl,
+  photoUrl: initialPhotoUrl,
   completionPercent,
   onboardingCompleted,
   discoveryVisibility,
@@ -85,9 +87,11 @@ export default function MyProfileHub({
   coreValues,
   hasRelationshipAlignment,
   hasImportantAlignmentFactors,
-  photoCount,
+  photos,
   initialSection,
 }: MyProfileHubProps) {
+  const [photoUrl, setPhotoUrl] = useState(initialPhotoUrl);
+  const showCompletionUi = completionPercent < 100;
   const flashNote = (message: string) => {
     void message;
   };
@@ -185,22 +189,29 @@ export default function MyProfileHub({
                       </div>
                     </div>
 
-                    <div className="mt-6 flex items-center gap-4 border-t border-[#0B2D5C]/06 pt-5">
-                      <CompletionRing percent={completionPercent} />
-                      <div>
-                        <p className="text-xs font-semibold uppercase tracking-[0.14em] text-[#D62828]">
-                          Profile completion
-                        </p>
-                        <p className="mt-1.5 text-lg font-semibold text-[#0B2D5C]">
-                          {completionPercent}% Complete
-                        </p>
-                        <p className="mt-1 text-sm text-[#5A6575]">
-                          Encouragement only — never required for Discovery.
-                        </p>
+                    {showCompletionUi ? (
+                      <div
+                        className="mt-6 flex items-center gap-4 border-t border-[#0B2D5C]/06 pt-5"
+                        data-testid="profile-completion-summary"
+                      >
+                        <CompletionRing percent={completionPercent} />
+                        <div>
+                          <p className="text-xs font-semibold uppercase tracking-[0.14em] text-[#D62828]">
+                            Profile completion
+                          </p>
+                          <p className="mt-1.5 text-lg font-semibold text-[#0B2D5C]">
+                            {completionPercent}% Complete
+                          </p>
+                          <p className="mt-1 text-sm text-[#5A6575]">
+                            Encouragement only — never required for Discovery.
+                          </p>
+                        </div>
                       </div>
-                    </div>
+                    ) : null}
 
-                    <div className="mt-5 border-t border-[#0B2D5C]/06 pt-5">
+                    <div
+                      className={`${showCompletionUi ? 'mt-5' : 'mt-6'} border-t border-[#0B2D5C]/06 pt-5`}
+                    >
                       <Link
                         href="/profile/preview"
                         className="inline-flex w-full items-center justify-center gap-2 rounded-2xl border border-[#0B2D5C]/20 bg-white px-5 py-3.5 text-sm font-semibold text-[#0B2D5C] transition hover:border-[#0B2D5C]/35 hover:bg-[#FBF9F6] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0B2D5C]"
@@ -228,8 +239,9 @@ export default function MyProfileHub({
                     coreValues={coreValues}
                     hasRelationshipAlignment={hasRelationshipAlignment}
                     hasImportantAlignmentFactors={hasImportantAlignmentFactors}
-                    photoCount={photoCount}
+                    initialPhotos={photos}
                     initialSection={initialSection}
+                    onPrimaryPhotoChange={setPhotoUrl}
                   />
                 </div>
               </div>

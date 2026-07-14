@@ -42,6 +42,14 @@ export type PublicDiscoveryProfile = {
   favorite_music_artists: string[] | null;
   favorite_music_songs: string[] | null;
   profile_photo_url: string | null;
+  /** Ordered public photos (primary included). Empty slots omitted. */
+  photos?: Array<{
+    id?: string;
+    storage_path: string;
+    display_order: number;
+    is_primary: boolean;
+    public_url?: string | null;
+  }> | null;
 };
 
 export type DiscoveryFeedCardModel = {

@@ -41,6 +41,13 @@ function toPublicProfile(profile: SelfProfilePreview): PublicDiscoveryProfile {
     favorite_music_artists: profile.favorite_music_artists,
     favorite_music_songs: profile.favorite_music_songs,
     profile_photo_url: profile.profile_photo_url,
+    photos: profile.photos.map((photo) => ({
+      id: photo.id,
+      storage_path: photo.storage_path,
+      display_order: photo.display_order,
+      is_primary: photo.is_primary,
+      public_url: photo.public_url,
+    })),
   };
 }
 

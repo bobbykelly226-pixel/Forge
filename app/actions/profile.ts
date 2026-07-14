@@ -9,6 +9,8 @@ import {
 import { createClient } from '@/lib/supabase/server';
 import { CORE_VALUES_OPTIONS, THINGS_I_ENJOY_OPTIONS } from '@/lib/types/profile-answers';
 import {
+  MAX_PROFILE_PHOTOS,
+  MAX_PROFILE_PHOTOS_MESSAGE,
   PROFILE_PHOTO_BUCKET,
   PROFILE_PHOTO_REVALIDATE_PATHS,
   buildPublicProfilePhotoUrl,
@@ -895,3 +897,465 @@ function isValidSectionId(value: string): boolean {
     'video',
   ].includes(value);
 }
+
+export type ProfilePhotoActionResult = {
+  success: boolean;
+  message: string;
+  photos?: Array<{
+    id: string;
+    storage_path: string;
+    display_order: number;
+    is_primary: boolean;
+    public_url: string | null;
+  }>;
+  primaryPhotoUrl?: string | null;
+};
+
+async function loadOwnerPhotos(supabase: Awaited<ReturnType<typeof createClient>>, userId: string) {
+  return supabase
+    .from('profile_photos')
+    .select('id, storage_path, is_primary, display_order')
+    .eq('user_id', userId)
+    .order('display_order', { ascending: true });
+}
+
+function mapPhotoRows(
+  rows: Array<{
+    id: string;
+    storage_path: string;
+    is_primary: boolean;
+    display_order: number;
+  }>
+) {
+  return rows.map((photo) => ({
+    id: photo.id,
+    storage_path: photo.storage_path,
+    display_order: photo.display_order,
+    is_primary: photo.is_primary,
+    public_url: buildPublicProfilePhotoUrl(photo.storage_path),
+  }));
+}
+
+async function syncLegacyPrimaryPhotoUrl(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  userId: string,
+  photos: Array<{ storage_path: string; is_primary: boolean; display_order: number }>
+): Promise<string | null> {
+  const primary =
+    photos.find((photo) => photo.is_primary) ??
+    [...photos].sort((a, b) => a.display_order - b.display_order)[0] ??
+    null;
+  const nextUrl = primary
+    ? buildPublicProfilePhotoUrl(primary.storage_path)
+    : null;
+
+  const result = await upsertCurrentUserProfile({
+    profile_photo_url: nextUrl,
+  });
+  if (!result.success) {
+    throw new Error(result.message);
+  }
+  return nextUrl;
+}
+
+/**
+ * Persist a newly uploaded photo after client storage upload succeeds.
+ * Does not report success unless metadata + primary rules are valid.
+ * On metadata failure, caller should remove the orphan storage object.
+ */
+export async function addProfilePhoto(input: {
+  storagePath: string;
+  publicUrl?: string | null;
+}): Promise<ProfilePhotoActionResult> {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) {
+    return { success: false, message: 'You must be signed in.' };
+  }
+
+  const storagePath = input.storagePath.trim();
+  if (!storagePath.startsWith(`${user.id}/`)) {
+    return { success: false, message: 'Invalid photo path.' };
+  }
+
+  const { data: existing, error: loadError } = await loadOwnerPhotos(supabase, user.id);
+  if (loadError) {
+    return { success: false, message: 'Could not load your photos. Please try again.' };
+  }
+
+  const photos = existing ?? [];
+  if (photos.length >= MAX_PROFILE_PHOTOS) {
+    return { success: false, message: MAX_PROFILE_PHOTOS_MESSAGE };
+  }
+
+  const displayOrder =
+    photos.length === 0
+      ? 0
+      : Math.max(...photos.map((photo) => photo.display_order)) + 1;
+  const makePrimary = photos.length === 0 || !photos.some((photo) => photo.is_primary);
+
+  if (makePrimary && photos.length > 0) {
+    const { error: clearError } = await supabase
+      .from('profile_photos')
+      .update({ is_primary: false })
+      .eq('user_id', user.id);
+    if (clearError) {
+      return { success: false, message: 'Could not update photo primary status.' };
+    }
+  }
+
+  const { data: inserted, error: insertError } = await supabase
+    .from('profile_photos')
+    .insert({
+      user_id: user.id,
+      storage_path: storagePath,
+      display_order: displayOrder,
+      is_primary: makePrimary,
+      moderation_status: 'approved',
+    })
+    .select('id, storage_path, is_primary, display_order')
+    .single();
+
+  if (insertError || !inserted) {
+    console.error('addProfilePhoto insert:', insertError?.message);
+    return {
+      success: false,
+      message: 'Your photo uploaded, but could not be saved. Please try again.',
+    };
+  }
+
+  const { data: refreshed, error: refreshError } = await loadOwnerPhotos(supabase, user.id);
+  if (refreshError || !refreshed) {
+    return { success: false, message: 'Photo saved, but could not confirm the collection.' };
+  }
+
+  let primaryPhotoUrl: string | null = null;
+  try {
+    primaryPhotoUrl = await syncLegacyPrimaryPhotoUrl(supabase, user.id, refreshed);
+  } catch (error) {
+    // Roll back metadata insert so we do not leave inconsistent state.
+    await supabase.from('profile_photos').delete().eq('id', inserted.id).eq('user_id', user.id);
+    return {
+      success: false,
+      message:
+        error instanceof Error
+          ? error.message
+          : 'Photo metadata could not be confirmed. Please try again.',
+    };
+  }
+
+  revalidateProfileRoutes();
+  return {
+    success: true,
+    message: 'Photo added.',
+    photos: mapPhotoRows(refreshed),
+    primaryPhotoUrl,
+  };
+}
+
+export async function deleteProfilePhoto(photoId: string): Promise<ProfilePhotoActionResult> {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) {
+    return { success: false, message: 'You must be signed in.' };
+  }
+
+  const { data: existing, error: loadError } = await loadOwnerPhotos(supabase, user.id);
+  if (loadError) {
+    return { success: false, message: 'Could not load your photos. Please try again.' };
+  }
+
+  const target = (existing ?? []).find((photo) => photo.id === photoId);
+  if (!target) {
+    return { success: false, message: 'That photo could not be found.' };
+  }
+
+  const remaining = (existing ?? []).filter((photo) => photo.id !== photoId);
+  const wasPrimary = target.is_primary;
+  const promote =
+    wasPrimary && remaining.length > 0
+      ? [...remaining].sort((a, b) => a.display_order - b.display_order)[0]
+      : null;
+
+  if (promote) {
+    const { error: clearError } = await supabase
+      .from('profile_photos')
+      .update({ is_primary: false })
+      .eq('user_id', user.id);
+    if (clearError) {
+      return { success: false, message: 'Could not update primary photo.' };
+    }
+    const { error: promoteError } = await supabase
+      .from('profile_photos')
+      .update({ is_primary: true })
+      .eq('id', promote.id)
+      .eq('user_id', user.id);
+    if (promoteError) {
+      return { success: false, message: 'Could not promote the next photo to primary.' };
+    }
+  }
+
+  const { error: deleteError } = await supabase
+    .from('profile_photos')
+    .delete()
+    .eq('id', target.id)
+    .eq('user_id', user.id);
+
+  if (deleteError) {
+    console.error('deleteProfilePhoto:', deleteError.message);
+    return { success: false, message: 'Could not remove that photo. Please try again.' };
+  }
+
+  const { error: removeError } = await supabase.storage
+    .from(PROFILE_PHOTO_BUCKET)
+    .remove([target.storage_path]);
+  if (removeError) {
+    console.error('deleteProfilePhoto storage:', removeError.message);
+  }
+
+  // Compact display_order to 0..n-1 while preserving relative order.
+  const { data: afterDelete } = await loadOwnerPhotos(supabase, user.id);
+  const ordered = [...(afterDelete ?? [])].sort(
+    (a, b) => a.display_order - b.display_order
+  );
+  for (let index = 0; index < ordered.length; index += 1) {
+    const photo = ordered[index]!;
+    if (photo.display_order !== index) {
+      await supabase
+        .from('profile_photos')
+        .update({ display_order: index })
+        .eq('id', photo.id)
+        .eq('user_id', user.id);
+    }
+  }
+
+  const { data: refreshed } = await loadOwnerPhotos(supabase, user.id);
+  let primaryPhotoUrl: string | null = null;
+  try {
+    primaryPhotoUrl = await syncLegacyPrimaryPhotoUrl(supabase, user.id, refreshed ?? []);
+  } catch (error) {
+    return {
+      success: false,
+      message:
+        error instanceof Error
+          ? error.message
+          : 'Photo removed, but profile could not be updated. Please refresh.',
+    };
+  }
+
+  revalidateProfileRoutes();
+  return {
+    success: true,
+    message: 'Photo removed.',
+    photos: mapPhotoRows(refreshed ?? []),
+    primaryPhotoUrl,
+  };
+}
+
+export async function setPrimaryProfilePhoto(
+  photoId: string
+): Promise<ProfilePhotoActionResult> {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) {
+    return { success: false, message: 'You must be signed in.' };
+  }
+
+  const { data: existing, error: loadError } = await loadOwnerPhotos(supabase, user.id);
+  if (loadError) {
+    return { success: false, message: 'Could not load your photos. Please try again.' };
+  }
+
+  const target = (existing ?? []).find((photo) => photo.id === photoId);
+  if (!target) {
+    return { success: false, message: 'That photo could not be found.' };
+  }
+
+  const { error: clearError } = await supabase
+    .from('profile_photos')
+    .update({ is_primary: false })
+    .eq('user_id', user.id);
+  if (clearError) {
+    return { success: false, message: 'Could not update primary photo.' };
+  }
+
+  const { data: updated, error: updateError } = await supabase
+    .from('profile_photos')
+    .update({ is_primary: true })
+    .eq('id', target.id)
+    .eq('user_id', user.id)
+    .select('id, storage_path, is_primary, display_order')
+    .single();
+
+  if (updateError || !updated || !updated.is_primary) {
+    return { success: false, message: 'Could not set that photo as primary.' };
+  }
+
+  const { data: refreshed } = await loadOwnerPhotos(supabase, user.id);
+  let primaryPhotoUrl: string | null = null;
+  try {
+    primaryPhotoUrl = await syncLegacyPrimaryPhotoUrl(supabase, user.id, refreshed ?? []);
+  } catch (error) {
+    return {
+      success: false,
+      message:
+        error instanceof Error ? error.message : 'Could not sync primary photo.',
+    };
+  }
+
+  revalidateProfileRoutes();
+  return {
+    success: true,
+    message: 'Primary photo updated.',
+    photos: mapPhotoRows(refreshed ?? []),
+    primaryPhotoUrl,
+  };
+}
+
+export async function reorderProfilePhotos(
+  orderedPhotoIds: string[]
+): Promise<ProfilePhotoActionResult> {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) {
+    return { success: false, message: 'You must be signed in.' };
+  }
+
+  const { data: existing, error: loadError } = await loadOwnerPhotos(supabase, user.id);
+  if (loadError) {
+    return { success: false, message: 'Could not load your photos. Please try again.' };
+  }
+
+  const photos = existing ?? [];
+  if (photos.length === 0) {
+    return { success: true, message: 'No photos to reorder.', photos: [] };
+  }
+
+  const idSet = new Set(photos.map((photo) => photo.id));
+  if (
+    orderedPhotoIds.length !== photos.length ||
+    orderedPhotoIds.some((id) => !idSet.has(id)) ||
+    new Set(orderedPhotoIds).size !== orderedPhotoIds.length
+  ) {
+    return { success: false, message: 'Photo order is invalid.' };
+  }
+
+  // Two-phase update avoids unique (user_id, display_order) collisions.
+  for (let index = 0; index < orderedPhotoIds.length; index += 1) {
+    const { error } = await supabase
+      .from('profile_photos')
+      .update({ display_order: 1000 + index })
+      .eq('id', orderedPhotoIds[index]!)
+      .eq('user_id', user.id);
+    if (error) {
+      return { success: false, message: 'Could not reorder photos. Please try again.' };
+    }
+  }
+  for (let index = 0; index < orderedPhotoIds.length; index += 1) {
+    const { error } = await supabase
+      .from('profile_photos')
+      .update({ display_order: index })
+      .eq('id', orderedPhotoIds[index]!)
+      .eq('user_id', user.id);
+    if (error) {
+      return { success: false, message: 'Could not reorder photos. Please try again.' };
+    }
+  }
+
+  const { data: refreshed } = await loadOwnerPhotos(supabase, user.id);
+  let primaryPhotoUrl: string | null = null;
+  try {
+    primaryPhotoUrl = await syncLegacyPrimaryPhotoUrl(supabase, user.id, refreshed ?? []);
+  } catch (error) {
+    return {
+      success: false,
+      message:
+        error instanceof Error ? error.message : 'Could not sync photo order.',
+    };
+  }
+
+  revalidateProfileRoutes();
+  return {
+    success: true,
+    message: 'Photo order saved.',
+    photos: mapPhotoRows(refreshed ?? []),
+    primaryPhotoUrl,
+  };
+}
+
+export async function replaceProfilePhoto(input: {
+  photoId: string;
+  storagePath: string;
+}): Promise<ProfilePhotoActionResult> {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) {
+    return { success: false, message: 'You must be signed in.' };
+  }
+
+  const storagePath = input.storagePath.trim();
+  if (!storagePath.startsWith(`${user.id}/`)) {
+    return { success: false, message: 'Invalid photo path.' };
+  }
+
+  const { data: existing, error: loadError } = await loadOwnerPhotos(supabase, user.id);
+  if (loadError) {
+    return { success: false, message: 'Could not load your photos. Please try again.' };
+  }
+
+  const target = (existing ?? []).find((photo) => photo.id === input.photoId);
+  if (!target) {
+    return { success: false, message: 'That photo could not be found.' };
+  }
+
+  const previousPath = target.storage_path;
+  const { data: updated, error: updateError } = await supabase
+    .from('profile_photos')
+    .update({ storage_path: storagePath })
+    .eq('id', target.id)
+    .eq('user_id', user.id)
+    .select('id, storage_path, is_primary, display_order')
+    .single();
+
+  if (updateError || !updated || updated.storage_path !== storagePath) {
+    return {
+      success: false,
+      message: 'Your photo uploaded, but could not be saved. Please try again.',
+    };
+  }
+
+  if (previousPath && previousPath !== storagePath) {
+    await supabase.storage.from(PROFILE_PHOTO_BUCKET).remove([previousPath]);
+  }
+
+  const { data: refreshed } = await loadOwnerPhotos(supabase, user.id);
+  let primaryPhotoUrl: string | null = null;
+  try {
+    primaryPhotoUrl = await syncLegacyPrimaryPhotoUrl(supabase, user.id, refreshed ?? []);
+  } catch (error) {
+    return {
+      success: false,
+      message:
+        error instanceof Error ? error.message : 'Could not sync replaced photo.',
+    };
+  }
+
+  revalidateProfileRoutes();
+  return {
+    success: true,
+    message: 'Photo replaced.',
+    photos: mapPhotoRows(refreshed ?? []),
+    primaryPhotoUrl,
+  };
+}
+

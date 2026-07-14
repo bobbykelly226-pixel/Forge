@@ -22,16 +22,12 @@ import { saveProfileSection } from '@/app/actions/profile';
 import LocationPicker, {
   type LocationPickerValue,
 } from '@/components/profile/LocationPicker';
+import ProfilePhotoManager from '@/components/profile/ProfilePhotoManager';
 import {
   ChoiceChips,
   MultiChoiceChips,
 } from '@/components/profile/StructuredChoices';
-import {
-  createUniqueProfilePhotoPath,
-  isAllowedProfilePhotoType,
-  PROFILE_PHOTO_BUCKET,
-  validateProfilePhoto,
-} from '@/lib/profile-photo';
+import type { ManagedProfilePhoto } from '@/lib/profile-photo';
 import {
   CHILDREN_COUNT_OPTIONS,
   DRINKING_OPTIONS,
@@ -59,7 +55,6 @@ import {
   getProfileCompletionSections,
   type ProfileCompletionSectionId,
 } from '@/lib/profile-completion';
-import { createClient } from '@/lib/supabase/client';
 import type { Profile } from '@/lib/types/profile';
 import {
   CORE_VALUES_OPTIONS,
@@ -80,8 +75,9 @@ export type ProfileWorkspaceProps = {
   coreValues: string[];
   hasRelationshipAlignment: boolean;
   hasImportantAlignmentFactors: boolean;
-  photoCount: number;
+  initialPhotos: ManagedProfilePhoto[];
   initialSection?: string | null;
+  onPrimaryPhotoChange?: (url: string | null) => void;
 };
 
 const inputClassName =
@@ -126,14 +122,6 @@ function buildInitialLocation(
   };
 }
 
-function getInitials(name: string | null | undefined): string {
-  if (!name) return 'F';
-  const parts = name.trim().split(/\s+/).filter(Boolean);
-  if (parts.length === 0) return 'F';
-  if (parts.length === 1) return parts[0]!.charAt(0).toUpperCase();
-  return `${parts[0]!.charAt(0)}${parts[parts.length - 1]!.charAt(0)}`.toUpperCase();
-}
-
 type SectionStatus = 'idle' | 'editing' | 'saving' | 'saved' | 'error';
 
 export default function ProfileWorkspace({
@@ -142,11 +130,13 @@ export default function ProfileWorkspace({
   coreValues: initialCoreValues,
   hasRelationshipAlignment,
   hasImportantAlignmentFactors,
-  photoCount,
+  initialPhotos,
   initialSection,
+  onPrimaryPhotoChange,
 }: ProfileWorkspaceProps) {
   const [profile, setProfile] = useState<Profile>(initialProfile);
   const [coreValues, setCoreValues] = useState<string[]>(initialCoreValues);
+  const [photos, setPhotos] = useState<ManagedProfilePhoto[]>(initialPhotos);
   const [openSection, setOpenSection] = useState<ProfileSectionId | null>(() =>
     isProfileSectionId(initialSection) ? initialSection : null
   );
@@ -154,15 +144,17 @@ export default function ProfileWorkspace({
   const [sectionMessage, setSectionMessage] = useState<Record<string, string>>({});
   const sectionRefs = useRef<Partial<Record<ProfileSectionId, HTMLElement | null>>>({});
 
+  const photoCount = photos.length;
   const completionSections = getProfileCompletionSections({
     profile,
-    photoCount: photoCount > 0 || Boolean(profile.profile_photo_url) ? Math.max(photoCount, 1) : 0,
+    photoCount,
     hasRelationshipAlignment:
       hasRelationshipAlignment || Boolean(profile.relationship_goal),
     hasImportantAlignmentFactors:
       hasImportantAlignmentFactors || coreValues.length > 0,
   });
   const completionPercent = calculateProfileCompletionPercent(completionSections);
+  const showCompletionUi = completionPercent < 100;
 
   useEffect(() => {
     if (!openSection) return;
@@ -262,59 +254,62 @@ export default function ProfileWorkspace({
         </div>
       ) : null}
 
-      <section
-        className="rounded-[1.75rem] border border-[#0B2D5C]/08 bg-white/90 p-6 shadow-[0_12px_40px_rgba(11,45,92,0.05)]"
-        aria-labelledby="completion-checklist-title"
-      >
-        <div className="flex flex-wrap items-end justify-between gap-3">
-          <div>
-            <h2
-              id="completion-checklist-title"
-              className="text-lg tracking-[-0.01em] text-[#0B2D5C]"
-              style={{ fontFamily: 'var(--font-discovery-display), Georgia, serif' }}
-            >
-              Profile checklist
-            </h2>
-            <p className="mt-1 text-sm text-[#5A6575]">
-              {completionPercent}% complete — informational only. Discovery is not gated.
-            </p>
-          </div>
-          <Link
-            href="/profile/preview"
-            className="text-sm font-semibold text-[#0B2D5C] underline-offset-2 hover:underline"
-          >
-            View My Profile
-          </Link>
-        </div>
-        <ul className="mt-4 space-y-2">
-          {completionSections.map((item) => (
-            <li key={item.id}>
-              <button
-                type="button"
-                onClick={() => openFromChecklist(item.id)}
-                className="flex w-full items-center gap-3 rounded-2xl px-2 py-2 text-left text-sm text-[#0B2D5C] transition hover:bg-[#F8F6F2] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0B2D5C]"
+      {showCompletionUi ? (
+        <section
+          className="rounded-[1.75rem] border border-[#0B2D5C]/08 bg-white/90 p-6 shadow-[0_12px_40px_rgba(11,45,92,0.05)]"
+          aria-labelledby="completion-checklist-title"
+          data-testid="profile-completion-checklist"
+        >
+          <div className="flex flex-wrap items-end justify-between gap-3">
+            <div>
+              <h2
+                id="completion-checklist-title"
+                className="text-lg tracking-[-0.01em] text-[#0B2D5C]"
+                style={{ fontFamily: 'var(--font-discovery-display), Georgia, serif' }}
               >
-                <span
-                  className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-xs font-bold ${
-                    item.complete
-                      ? 'bg-[#0B2D5C] text-white'
-                      : 'border border-[#0B2D5C]/20 bg-white text-[#8A93A0]'
-                  }`}
-                  aria-hidden="true"
+                Profile checklist
+              </h2>
+              <p className="mt-1 text-sm text-[#5A6575]">
+                {completionPercent}% complete — informational only. Discovery is not gated.
+              </p>
+            </div>
+            <Link
+              href="/profile/preview"
+              className="text-sm font-semibold text-[#0B2D5C] underline-offset-2 hover:underline"
+            >
+              View My Profile
+            </Link>
+          </div>
+          <ul className="mt-4 space-y-2">
+            {completionSections.map((item) => (
+              <li key={item.id}>
+                <button
+                  type="button"
+                  onClick={() => openFromChecklist(item.id)}
+                  className="flex w-full items-center gap-3 rounded-2xl px-2 py-2 text-left text-sm text-[#0B2D5C] transition hover:bg-[#F8F6F2] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0B2D5C]"
                 >
-                  {item.complete ? '✓' : ''}
-                </span>
-                <span className={item.complete ? '' : 'text-[#5A6575]'}>{item.label}</span>
-                {!item.complete ? (
-                  <span className="ml-auto text-xs font-semibold uppercase tracking-[0.12em] text-[#D62828]">
-                    Open
+                  <span
+                    className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-xs font-bold ${
+                      item.complete
+                        ? 'bg-[#0B2D5C] text-white'
+                        : 'border border-[#0B2D5C]/20 bg-white text-[#8A93A0]'
+                    }`}
+                    aria-hidden="true"
+                  >
+                    {item.complete ? '✓' : ''}
                   </span>
-                ) : null}
-              </button>
-            </li>
-          ))}
-        </ul>
-      </section>
+                  <span className={item.complete ? '' : 'text-[#5A6575]'}>{item.label}</span>
+                  {!item.complete ? (
+                    <span className="ml-auto text-xs font-semibold uppercase tracking-[0.12em] text-[#D62828]">
+                      Open
+                    </span>
+                  ) : null}
+                </button>
+              </li>
+            ))}
+          </ul>
+        </section>
+      ) : null}
 
       <section aria-labelledby="editable-sections-title" className="space-y-3">
         <div>
@@ -334,7 +329,10 @@ export default function ProfileWorkspace({
           const Icon = SECTION_ICONS[section.id] ?? UserRound;
           const isOpen = openSection === section.id;
           const status = sectionStatus[section.id] ?? 'idle';
-          const summary = summarizeProfileSection(section.id, profile, { coreValues });
+          const summary = summarizeProfileSection(section.id, profile, {
+            coreValues,
+            photoCount,
+          });
 
           return (
             <article
@@ -391,13 +389,19 @@ export default function ProfileWorkspace({
                     profile={profile}
                     privateDetails={privateDetails}
                     coreValues={coreValues}
+                    photos={photos}
                     status={status}
                     message={sectionMessage[section.id] ?? ''}
                     onCancel={() => cancelEdit(section.id)}
                     onSubmit={(event) => void handleSectionSave(section.id, event)}
-                    onPhotoUploaded={(url) =>
-                      setProfile((current) => ({ ...current, profile_photo_url: url }))
-                    }
+                    onPhotosChange={({ photos: nextPhotos, primaryPhotoUrl }) => {
+                      setPhotos(nextPhotos);
+                      setProfile((current) => ({
+                        ...current,
+                        profile_photo_url: primaryPhotoUrl,
+                      }));
+                      onPrimaryPhotoChange?.(primaryPhotoUrl);
+                    }}
                   />
                 </div>
               ) : null}
@@ -414,34 +418,52 @@ function SectionEditor({
   profile,
   privateDetails,
   coreValues,
+  photos,
   status,
   message,
   onCancel,
   onSubmit,
-  onPhotoUploaded,
+  onPhotosChange,
 }: {
   sectionId: ProfileSectionId;
   profile: Profile;
   privateDetails: PrivateLocationSeed | null;
   coreValues: string[];
+  photos: ManagedProfilePhoto[];
   status: SectionStatus;
   message: string;
   onCancel: () => void;
   onSubmit: (event: React.FormEvent<HTMLFormElement>) => void;
-  onPhotoUploaded: (url: string) => void;
+  onPhotosChange: (next: {
+    photos: ManagedProfilePhoto[];
+    primaryPhotoUrl: string | null;
+  }) => void;
 }) {
   const saving = status === 'saving';
 
+  if (sectionId === 'photo') {
+    return (
+      <div className="space-y-4">
+        <ProfilePhotoManager
+          initialPhotos={photos}
+          disabled={saving}
+          onChange={onPhotosChange}
+        />
+        <div className="flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
+          <button
+            type="button"
+            onClick={onCancel}
+            className="rounded-2xl border border-[#0B2D5C]/20 bg-white px-5 py-3 text-sm font-semibold text-[#0B2D5C]"
+          >
+            Done
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <form onSubmit={onSubmit} className="space-y-4">
-      {sectionId === 'photo' ? (
-        <PhotoFields
-          profile={profile}
-          disabled={saving}
-          onUploaded={onPhotoUploaded}
-        />
-      ) : null}
-
       {sectionId === 'basics' ? (
         <>
           <label className="block text-sm font-medium text-[#0B2D5C]">
@@ -881,103 +903,5 @@ function ServiceFields({
       onChange={setValues}
       disabled={disabled}
     />
-  );
-}
-
-function PhotoFields({
-  profile,
-  disabled,
-  onUploaded,
-}: {
-  profile: Profile;
-  disabled?: boolean;
-  onUploaded: (url: string) => void;
-}) {
-  const [preview, setPreview] = useState(profile.profile_photo_url);
-  const [photoUrl, setPhotoUrl] = useState('');
-  const [storagePath, setStoragePath] = useState('');
-  const [error, setError] = useState<string | null>(null);
-  const [uploading, setUploading] = useState(false);
-
-  const onChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
-    const validationError = validateProfilePhoto(file);
-    if (validationError) {
-      setError(validationError);
-      event.target.value = '';
-      return;
-    }
-    if (!isAllowedProfilePhotoType(file.type)) {
-      setError('Please upload a JPG, PNG, WEBP, or GIF image.');
-      return;
-    }
-
-    setUploading(true);
-    setError(null);
-    try {
-      const supabase = createClient();
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-      if (!user) throw new Error('You must be signed in to upload a profile photo.');
-
-      const filePath = createUniqueProfilePhotoPath(user.id, file.type);
-      const { error: uploadError } = await supabase.storage
-        .from(PROFILE_PHOTO_BUCKET)
-        .upload(filePath, file, {
-          upsert: false,
-          contentType: file.type,
-          cacheControl: '3600',
-        });
-      if (uploadError) throw new Error('Could not upload your profile photo.');
-
-      const {
-        data: { publicUrl },
-      } = supabase.storage.from(PROFILE_PHOTO_BUCKET).getPublicUrl(filePath);
-
-      setPreview(publicUrl);
-      setPhotoUrl(publicUrl);
-      setStoragePath(filePath);
-      onUploaded(publicUrl);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Upload failed.');
-    } finally {
-      setUploading(false);
-    }
-  };
-
-  const initials = getInitials(profile.full_name);
-
-  return (
-    <div className="space-y-4 text-center">
-      {preview ? (
-        <img
-          src={preview}
-          alt="Profile photo preview"
-          className="mx-auto h-28 w-28 rounded-full object-cover border-4 border-[#F8F6F2]"
-        />
-      ) : (
-        <div className="mx-auto flex h-28 w-28 items-center justify-center rounded-full bg-[#0B2D5C]/10 border-4 border-[#F8F6F2]">
-          <span className="text-2xl font-bold text-[#0B2D5C]">{initials}</span>
-        </div>
-      )}
-      <input
-        type="file"
-        accept="image/jpeg,image/png,image/webp,image/gif"
-        onChange={(event) => void onChange(event)}
-        disabled={disabled || uploading}
-        className="block w-full max-w-sm mx-auto text-sm"
-      />
-      <input type="hidden" name="profile_photo_url" value={photoUrl} />
-      <input type="hidden" name="profile_photo_storage_path" value={storagePath} />
-      {uploading ? <p className="text-sm text-[#666666]">Uploading…</p> : null}
-      {error ? (
-        <p className="text-sm text-red-600" role="alert">
-          {error}
-        </p>
-      ) : null}
-      <p className="text-xs text-[#888888]">Choose a photo, then save this section.</p>
-    </div>
   );
 }

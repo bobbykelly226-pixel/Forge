@@ -4,7 +4,7 @@ import { redirect } from 'next/navigation';
 import ForgeAppCanvas from '@/components/ForgeAppCanvas';
 import MyProfileHub from '@/components/profile/MyProfileHub';
 import { loadCurrentUserProfileBundle } from '@/lib/data/bundle';
-import { resolveAuthoritativeProfilePhotoUrl } from '@/lib/profile-photo';
+import { resolveAuthoritativeProfilePhotoUrl, toManagedProfilePhoto } from '@/lib/profile-photo';
 import { PROFILE_ANSWER_KEYS } from '@/lib/types/profile-answers';
 import type { Profile } from '@/lib/types/profile';
 import { createClient } from '@/lib/supabase/server';
@@ -135,7 +135,7 @@ export default async function MyProfileHubPage({ searchParams }: PageProps) {
         coreValues={coreValues}
         hasRelationshipAlignment={hasRelationshipAlignment}
         hasImportantAlignmentFactors={hasImportantAlignmentFactors}
-        photoCount={photos.length}
+        photos={photos.map(toManagedProfilePhoto)}
         initialSection={initialSection}
       />
     </ForgeAppCanvas>

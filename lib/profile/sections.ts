@@ -203,13 +203,18 @@ function structuredLabel(
 export function summarizeProfileSection(
   sectionId: ProfileSectionId,
   profile: Profile | null,
-  extras?: { coreValues?: string[] }
+  extras?: { coreValues?: string[]; photoCount?: number }
 ): string {
   if (!profile) return 'Not added yet';
 
   switch (sectionId) {
-    case 'photo':
+    case 'photo': {
+      const count = extras?.photoCount;
+      if (typeof count === 'number' && count > 0) {
+        return count === 1 ? '1 photo added' : `${count} photos added`;
+      }
       return hasText(profile.profile_photo_url) ? 'Photo added' : 'Not added yet';
+    }
     case 'basics': {
       const parts = [line(profile.full_name), profile.age != null ? `Age ${profile.age}` : null].filter(
         Boolean
