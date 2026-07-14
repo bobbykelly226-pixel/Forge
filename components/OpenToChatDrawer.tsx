@@ -17,8 +17,8 @@ export type OpenToChatDrawerStep = 'educate' | 'note' | 'success';
 type OpenToChatDrawerProps = {
   open: boolean;
   onClose: () => void;
-  /** Called when the request is sent. note is null when skipped/blank. */
-  onSent?: (note: string | null) => void;
+  /** Called when the request is sent. Return false to keep the note step (failed write). */
+  onSent?: (note: string | null) => void | boolean | Promise<void | boolean>;
   /** Called when the user continues past first-use education */
   onEducationContinued?: () => void;
   profileName?: string;
@@ -68,12 +68,7 @@ export default function OpenToChatDrawer({
   const [sentNote, setSentNote] = useState<string | null>(null);
   const [limitReached, setLimitReached] = useState(false);
 
-  const resetForOpen = useCallback(() => {
-    setStep(initialStep);
-    setNoteDraft('');
-    setSentNote(null);
-    setLimitReached(false);
-  }, [initialStep]);
+  const [sending, setSending] = useState(false);
 
   const handleKeyDown = useCallback(
     (event: ReactKeyboardEvent<HTMLDivElement>) => {
@@ -111,8 +106,6 @@ export default function OpenToChatDrawer({
   useEffect(() => {
     if (!open) return;
 
-    resetForOpen();
-
     const previousOverflow = document.body.style.overflow;
     document.body.style.overflow = 'hidden';
 
@@ -134,7 +127,7 @@ export default function OpenToChatDrawer({
       window.clearTimeout(focusTimer);
       document.removeEventListener('keydown', onDocumentKeyDown);
     };
-  }, [open, onClose, resetForOpen, initialStep]);
+  }, [open, onClose, initialStep]);
 
   useEffect(() => {
     if (!open) return;
@@ -166,18 +159,30 @@ export default function OpenToChatDrawer({
     goToNote();
   };
 
-  const sendImmediately = (raw: string) => {
-    // Prototype only — no messaging, notifications, or storage.
+  const sendImmediately = async (raw: string) => {
+    if (sending) return;
     const trimmed = trimNote(raw);
     const note = trimmed.length > 0 ? trimmed : null;
-    setSentNote(note);
-    onSent?.(note);
-    setStep('success');
+    setSending(true);
+    try {
+      const result = await onSent?.(note);
+      if (result === false) {
+        return;
+      }
+      setSentNote(note);
+      setStep('success');
+    } finally {
+      setSending(false);
+    }
   };
 
-  const handleSendRequest = () => sendImmediately(noteDraft);
+  const handleSendRequest = () => {
+    void sendImmediately(noteDraft);
+  };
 
-  const handleContinueWithoutNote = () => sendImmediately('');
+  const handleContinueWithoutNote = () => {
+    void sendImmediately('');
+  };
 
   const handleNoteChange = (value: string) => {
     const next = value.slice(0, OPEN_TO_CHAT_NOTE_MAX_LENGTH);

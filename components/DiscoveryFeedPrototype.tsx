@@ -8,10 +8,7 @@ import ForgeAppBottomNav from '@/components/ForgeAppBottomNav';
 import ForgeDesktopAppNav from '@/components/ForgeDesktopAppNav';
 import { useDiscoveryActions } from '@/components/discovery/DiscoveryActionsProvider';
 import DiscoveryFeedCard from '@/components/DiscoveryFeedCard';
-import {
-  DISCOVERY_FEED_PROFILES,
-  DISCOVERY_FEED_VIEWER_NAME,
-} from '@/lib/discovery-feed-mock';
+import type { DiscoveryFeedCardModel } from '@/lib/discovery/presentation';
 
 const FILTERS = [
   { id: 'All', label: 'All', icon: LayoutGrid },
@@ -47,7 +44,7 @@ function FilterButtons({ activeFilter, onSelect, layout }: FilterButtonsProps) {
           : 'scrollbar-none -mx-1 flex gap-2 overflow-x-auto px-1 pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden'
       }
       role="toolbar"
-      aria-label="Discovery filters (prototype only)"
+      aria-label="Discovery filters"
     >
       {FILTERS.map((filter) => {
         const isActive = filter.id === activeFilter;
@@ -85,95 +82,96 @@ function FilterButtons({ activeFilter, onSelect, layout }: FilterButtonsProps) {
   );
 }
 
-export default function DiscoveryFeedPrototype() {
-  const [profiles] = useState(DISCOVERY_FEED_PROFILES);
-  const [showEmptyDemo, setShowEmptyDemo] = useState(false);
+type DiscoveryFeedProps = {
+  profiles: DiscoveryFeedCardModel[];
+  viewerName: string;
+  loadError?: string | null;
+};
+
+export default function DiscoveryFeedPrototype({
+  profiles,
+  viewerName,
+  loadError = null,
+}: DiscoveryFeedProps) {
   const [activeFilter, setActiveFilter] = useState<FilterId>('All');
   const [filterNote, setFilterNote] = useState<string | null>(null);
   const { isPassed } = useDiscoveryActions();
 
-  const visibleProfiles = showEmptyDemo
-    ? []
-    : profiles.filter((profile) => !isPassed(profile.id));
+  const visibleProfiles = profiles.filter((profile) => !isPassed(profile.id));
   const greeting = useMemo(() => getTimeGreeting(), []);
 
   const flashFilterNote = (message: string) => {
     setFilterNote(message);
-    window.setTimeout(() => setFilterNote(null), 2200);
+    window.setTimeout(() => setFilterNote(null), 2800);
   };
 
-  const selectFilter = (filter: FilterId) => {
+  const handleFilterSelect = (filter: FilterId) => {
     setActiveFilter(filter);
-    flashFilterNote('Prototype only — filters do not change results yet.');
+    if (filter !== 'All') {
+      flashFilterNote('Filters are coming soon — showing all eligible profiles for now.');
+    }
   };
 
-  const feedContent =
-    visibleProfiles.length === 0 ? (
-      <section
-        className="flex min-h-[58vh] flex-col items-center justify-center rounded-[2rem] border border-[#0B2D5C]/08 bg-white/75 px-8 py-16 text-center shadow-[0_16px_44px_rgba(11,45,92,0.06)] lg:min-h-[28rem] lg:rounded-[2.25rem] lg:px-12 lg:py-20"
-        aria-live="polite"
-        style={{ animation: 'discoveryFeedFadeUp 0.55s ease-out both' }}
+  const feedContent = loadError ? (
+    <section
+      className="flex min-h-[40vh] flex-col items-center justify-center rounded-[2rem] border border-[#0B2D5C]/08 bg-white/75 px-8 py-16 text-center"
+      role="alert"
+    >
+      <h2
+        className="text-2xl text-[#0B2D5C]"
+        style={{ fontFamily: 'var(--font-discovery-display), Georgia, serif' }}
       >
-        <div
-          className="mb-6 h-14 w-14 rounded-full border border-[#0B2D5C]/12 bg-[#E8EEF6]"
-          style={{ animation: 'discoveryFeedSoftPulse 2.4s ease-in-out infinite' }}
-          aria-hidden="true"
-        />
-        <h2
-          className="text-2xl tracking-[-0.01em] text-[#0B2D5C] lg:text-[1.85rem]"
-          style={{ fontFamily: 'var(--font-discovery-display), Georgia, serif' }}
-        >
-          We&apos;re finding thoughtful introductions for you.
-        </h2>
-        <p className="mt-4 max-w-sm text-[15px] leading-relaxed text-[#5A6575] lg:max-w-md lg:text-base">
-          Forge is preparing a short list of intentional introductions. Check back soon.
-        </p>
-        <button
-          type="button"
-          onClick={() => setShowEmptyDemo(false)}
-          className="mt-8 text-sm font-semibold text-[#0B2D5C] transition hover:text-[#D62828]"
-        >
-          Show sample introductions
-        </button>
-      </section>
-    ) : (
+        Discovery is unavailable right now
+      </h2>
+      <p className="mt-4 max-w-sm text-[15px] leading-relaxed text-[#5A6575]">{loadError}</p>
+    </section>
+  ) : visibleProfiles.length === 0 ? (
+    <section
+      className="flex min-h-[58vh] flex-col items-center justify-center rounded-[2rem] border border-[#0B2D5C]/08 bg-white/75 px-8 py-16 text-center shadow-[0_16px_44px_rgba(11,45,92,0.06)] lg:min-h-[28rem] lg:rounded-[2.25rem] lg:px-12 lg:py-20"
+      aria-live="polite"
+      style={{ animation: 'discoveryFeedFadeUp 0.55s ease-out both' }}
+    >
       <div
-        className="flex flex-col gap-8 sm:gap-10 lg:gap-12"
-        style={{ scrollSnapType: 'y proximity' }}
+        className="mb-6 h-14 w-14 rounded-full border border-[#0B2D5C]/12 bg-[#E8EEF6]"
+        style={{ animation: 'discoveryFeedSoftPulse 2.4s ease-in-out infinite' }}
+        aria-hidden="true"
+      />
+      <h2
+        className="text-2xl tracking-[-0.01em] text-[#0B2D5C] lg:text-[1.85rem]"
+        style={{ fontFamily: 'var(--font-discovery-display), Georgia, serif' }}
       >
-        {visibleProfiles.map((profile, index) => (
-          <DiscoveryFeedCard key={profile.id} profile={profile} index={index} />
-        ))}
-      </div>
-    );
+        No profiles are available right now
+      </h2>
+      <p className="mt-4 max-w-sm text-[15px] leading-relaxed text-[#5A6575] lg:max-w-md lg:text-base">
+        When eligible Forge members show themselves in Discovery, they will appear here.
+      </p>
+    </section>
+  ) : (
+    <div
+      className="flex flex-col gap-8 sm:gap-10 lg:gap-12"
+      style={{ scrollSnapType: 'y proximity' }}
+    >
+      {visibleProfiles.map((profile, index) => (
+        <DiscoveryFeedCard key={profile.id} profile={profile} index={index} />
+      ))}
+    </div>
+  );
 
   return (
     <>
       <style>{`
         @keyframes discoveryFeedFadeUp {
-          from {
-            opacity: 0;
-            transform: translateY(12px);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0);
-          }
+          from { opacity: 0; transform: translateY(12px); }
+          to { opacity: 1; transform: translateY(0); }
         }
-
         @keyframes discoveryFeedSoftPulse {
           0%, 100% { opacity: 0.55; transform: scale(1); }
           50% { opacity: 0.9; transform: scale(1.04); }
         }
       `}</style>
 
-      {/*
-        Mobile: existing single-column feed (max-w-lg) — preserved.
-        Desktop (lg+): sidebar + wider main stage as a premium web app shell.
-      */}
       <div className="mx-auto min-h-screen w-full lg:max-w-[1280px] lg:px-8 lg:py-8 xl:max-w-[1360px] xl:px-10">
         <div className="lg:grid lg:grid-cols-[17.5rem_minmax(0,1fr)] lg:items-start lg:gap-10 xl:grid-cols-[18.5rem_minmax(0,1fr)] xl:gap-12">
-          {/* Desktop permanent sidebar */}
           <aside
             className="sticky top-8 hidden self-start lg:block"
             style={{ animation: 'discoveryFeedFadeUp 0.5s ease-out both' }}
@@ -184,43 +182,35 @@ export default function DiscoveryFeedPrototype() {
                 alt="Forge"
                 className="h-12 w-auto"
               />
-
               <h1
                 className="mt-8 text-[1.85rem] leading-none tracking-[-0.02em] text-[#0B2D5C]"
                 style={{ fontFamily: 'var(--font-discovery-display), Georgia, serif' }}
               >
-                {greeting}, {DISCOVERY_FEED_VIEWER_NAME}
+                {greeting}, {viewerName}
               </h1>
-
               <p className="mt-4 text-[15px] leading-relaxed text-[#5A6575]">
-                We&apos;ve selected a few thoughtful introductions based on your profile.
+                Thoughtful introductions from eligible Forge members.
               </p>
-
               <ForgeDesktopAppNav active="discovery" />
-
               <div className="mt-8 border-t border-[#0B2D5C]/08 pt-6">
                 <p className="mb-3 text-[11px] font-semibold uppercase tracking-[0.16em] text-[#D62828]">
                   Discover
                 </p>
                 <FilterButtons
                   activeFilter={activeFilter}
-                  onSelect={selectFilter}
+                  onSelect={handleFilterSelect}
                   layout="vertical"
                 />
               </div>
             </div>
           </aside>
 
-          {/* Main column */}
           <div className="min-h-screen w-full lg:min-h-0">
-            {/* Desktop top utilities span the main stage */}
             <div className="hidden px-0 lg:block">
               <DiscoveryDesktopTopBar onPrototypeAction={flashFilterNote} />
             </div>
 
-            {/* Mobile + shared feed stage: max-w-lg on mobile (unchanged), wider on desktop */}
             <div className="mx-auto flex w-full max-w-lg flex-col px-4 pb-[7.5rem] pt-5 sm:px-6 sm:pt-7 lg:mx-0 lg:max-w-3xl lg:px-0 lg:pb-10 lg:pt-0 xl:max-w-[52rem]">
-              {/* Mobile header — hidden on desktop */}
               <header
                 className="shrink-0 lg:hidden"
                 style={{ animation: 'discoveryFeedFadeUp 0.5s ease-out both' }}
@@ -231,23 +221,18 @@ export default function DiscoveryFeedPrototype() {
                     alt="Forge"
                     className="h-12 w-auto sm:h-14"
                   />
-                  <p className="rounded-full border border-[#0B2D5C]/12 bg-white/70 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.16em] text-[#0B2D5C]/65">
-                    Prototype
-                  </p>
                 </div>
-
                 <h1
                   className="text-[2.1rem] leading-none tracking-[-0.02em] text-[#0B2D5C] sm:text-[2.45rem]"
                   style={{ fontFamily: 'var(--font-discovery-display), Georgia, serif' }}
                 >
-                  {greeting}, {DISCOVERY_FEED_VIEWER_NAME}
+                  {greeting}, {viewerName}
                 </h1>
                 <p className="mt-3 max-w-md text-[15px] leading-relaxed text-[#5A6575] sm:text-base">
                   Here are a few thoughtful introductions.
                 </p>
               </header>
 
-              {/* Mobile filter bar — hidden on desktop */}
               <div
                 className="mt-6 shrink-0 lg:hidden"
                 style={{
@@ -257,7 +242,7 @@ export default function DiscoveryFeedPrototype() {
               >
                 <FilterButtons
                   activeFilter={activeFilter}
-                  onSelect={selectFilter}
+                  onSelect={handleFilterSelect}
                   layout="horizontal"
                 />
               </div>
@@ -271,23 +256,6 @@ export default function DiscoveryFeedPrototype() {
                 >
                   {filterNote}
                 </p>
-              )}
-
-              {visibleProfiles.length > 0 && (
-                <div className="mt-8 text-center lg:mt-10 lg:text-left">
-                  <button
-                    type="button"
-                    onClick={() => setShowEmptyDemo(true)}
-                    className="text-xs font-medium text-[#8A93A0] transition hover:text-[#0B2D5C]"
-                  >
-                    Preview empty state
-                  </button>
-                  <p className="mt-3 text-xs leading-relaxed text-[#8A93A0]">
-                    Forge Discovery Feed — UI/UX prototype.
-                    <br />
-                    No matching, messaging, scoring, or live data.
-                  </p>
-                </div>
               )}
             </div>
           </div>

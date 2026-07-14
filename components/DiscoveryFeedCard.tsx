@@ -13,10 +13,10 @@ import {
 } from 'lucide-react';
 
 import DiscoveryActionTiles from '@/components/discovery/DiscoveryActionTiles';
-import type { DiscoveryFeedProfile } from '@/lib/discovery-feed-mock';
+import type { DiscoveryFeedCardModel } from '@/lib/discovery/presentation';
 
 type DiscoveryFeedCardProps = {
-  profile: DiscoveryFeedProfile;
+  profile: DiscoveryFeedCardModel;
   index: number;
 };
 
@@ -50,7 +50,7 @@ export default function DiscoveryFeedCard({ profile, index }: DiscoveryFeedCardP
   const router = useRouter();
 
   const openProfile = () => {
-    router.push('/discovery/profile');
+    router.push(`/discovery/profile/${profile.id}`);
   };
 
   const handleOpenProfileKey = (event: KeyboardEvent<HTMLElement>) => {
@@ -88,7 +88,9 @@ export default function DiscoveryFeedCard({ profile, index }: DiscoveryFeedCardP
             <div
               className="absolute inset-0"
               style={{
-                backgroundImage: profile.portraitGradient,
+                backgroundImage: profile.photoUrl
+                  ? `url(${profile.photoUrl})`
+                  : profile.portraitGradient,
                 backgroundSize: 'cover',
                 backgroundPosition: 'center',
                 backgroundRepeat: 'no-repeat',
@@ -108,12 +110,15 @@ export default function DiscoveryFeedCard({ profile, index }: DiscoveryFeedCardP
                 className="text-[2rem] leading-none tracking-[-0.02em] text-white sm:text-[2.25rem] lg:text-[2.35rem]"
                 style={{ fontFamily: 'var(--font-discovery-display), Georgia, serif' }}
               >
-                {profile.firstName}, {profile.age}
+                {profile.firstName}
+                {profile.age != null ? `, ${profile.age}` : ''}
               </h2>
-              <p className="mt-2 inline-flex items-center gap-1.5 text-sm text-white/90 sm:text-base lg:text-[15px]">
-                <MapPin className="h-3.5 w-3.5 shrink-0" strokeWidth={1.75} aria-hidden="true" />
-                {profile.location}
-              </p>
+              {profile.location ? (
+                <p className="mt-2 inline-flex items-center gap-1.5 text-sm text-white/90 sm:text-base lg:text-[15px]">
+                  <MapPin className="h-3.5 w-3.5 shrink-0" strokeWidth={1.75} aria-hidden="true" />
+                  {profile.location}
+                </p>
+              ) : null}
             </div>
           </div>
 
@@ -170,25 +175,29 @@ export default function DiscoveryFeedCard({ profile, index }: DiscoveryFeedCardP
                 </div>
               ) : null}
 
-              <section aria-label="About preview">
-                <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[#D62828] lg:text-xs">
-                  About
-                </p>
-                <p className="mt-2 text-[15px] leading-relaxed text-[#3D4654] lg:text-[15px] lg:leading-[1.65]">
-                  {profile.aboutPreview}
-                </p>
-              </section>
+              {profile.aboutPreview ? (
+                <section aria-label="About preview">
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[#D62828] lg:text-xs">
+                    About
+                  </p>
+                  <p className="mt-2 text-[15px] leading-relaxed text-[#3D4654] lg:text-[15px] lg:leading-[1.65]">
+                    {profile.aboutPreview}
+                  </p>
+                </section>
+              ) : null}
 
-              <section aria-label="Character signals preview">
-                <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[#D62828] lg:text-xs">
-                  Character Signals
-                </p>
-                <div className="mt-3 flex flex-wrap gap-2">
-                  {profile.characterSignals.map((signal) => (
-                    <SignalChip key={signal} label={signal} />
-                  ))}
-                </div>
-              </section>
+              {profile.characterSignals.length > 0 ? (
+                <section aria-label="Character signals preview">
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[#D62828] lg:text-xs">
+                    Character Signals
+                  </p>
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    {profile.characterSignals.map((signal) => (
+                      <SignalChip key={signal} label={signal} />
+                    ))}
+                  </div>
+                </section>
+              ) : null}
             </div>
 
             <button

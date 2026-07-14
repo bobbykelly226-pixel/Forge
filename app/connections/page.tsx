@@ -1,7 +1,12 @@
 import { Fraunces, Manrope } from 'next/font/google';
+import { redirect } from 'next/navigation';
 
+import { loadConnectionsHubAction } from '@/app/actions/relationships';
 import ConnectionsHubPrototype from '@/components/connections/ConnectionsHubPrototype';
+import { ConnectionsHubProvider } from '@/components/connections/ConnectionsHubProvider';
 import ForgeAppCanvas from '@/components/ForgeAppCanvas';
+import { createClient } from '@/lib/supabase/server';
+import type { ConnectionsHubData } from '@/lib/data/connections-hub';
 
 const display = Fraunces({
   subsets: ['latin'],
@@ -16,16 +21,46 @@ const sans = Manrope({
 });
 
 export const metadata = {
-  title: 'Connections Hub Prototype | Forge',
+  title: 'Connections | Forge',
   description:
-    'Design prototype for the Forge Connections Hub — manage conversations, mutual interest, and saved profiles. Layout only — no messaging or persistent data.',
+    'Review Open to Chat requests, mutual interest, and profiles you saved on Forge.',
   robots: {
     index: false,
     follow: false,
   },
 };
 
-export default function ConnectionsHubPage() {
+const EMPTY_HUB: ConnectionsHubData = {
+  viewerFirstName: 'there',
+  openToChat: [],
+  interestReceived: [],
+  mutual: [],
+  saved: [],
+  sent: [],
+  educationSeen: false,
+  tabCounts: {
+    forYou: 0,
+    openToChat: 0,
+    mutual: 0,
+    saved: 0,
+    sent: 0,
+  },
+};
+
+export default async function ConnectionsHubPage() {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    redirect('/login?redirectTo=/connections');
+  }
+
+  const result = await loadConnectionsHubAction();
+  const initialData = result.success ? result.data : EMPTY_HUB;
+  const loadError = result.success ? null : result.message;
+
   return (
     <ForgeAppCanvas
       className={`${display.variable} ${sans.variable}`}
@@ -33,7 +68,9 @@ export default function ConnectionsHubPage() {
         fontFamily: 'var(--font-discovery-sans), ui-sans-serif, system-ui, sans-serif',
       }}
     >
-      <ConnectionsHubPrototype />
+      <ConnectionsHubProvider initialData={initialData}>
+        <ConnectionsHubPrototype loadError={loadError} />
+      </ConnectionsHubProvider>
     </ForgeAppCanvas>
   );
 }

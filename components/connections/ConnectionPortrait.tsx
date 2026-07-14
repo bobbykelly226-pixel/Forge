@@ -1,7 +1,7 @@
-import type { ConnectionProfile } from '@/lib/connections-mock';
+import type { HubProfileCard } from '@/lib/data/connections-hub';
 
 type ConnectionPortraitProps = {
-  profile: ConnectionProfile;
+  profile: HubProfileCard;
   size?: 'sm' | 'md' | 'lg';
   overlay?: React.ReactNode;
 };
@@ -46,9 +46,12 @@ export function ConnectionIdentity({
   profile,
   compact = false,
 }: {
-  profile: ConnectionProfile;
+  profile: HubProfileCard;
   compact?: boolean;
 }) {
+  const title =
+    profile.age != null ? `${profile.firstName}, ${profile.age}` : profile.firstName;
+
   return (
     <div>
       <h3
@@ -57,11 +60,13 @@ export function ConnectionIdentity({
         }`}
         style={{ fontFamily: 'var(--font-discovery-display), Georgia, serif' }}
       >
-        {profile.firstName}, {profile.age}
+        {title}
       </h3>
-      <p className={`mt-1 text-[#5A6575] ${compact ? 'text-sm' : 'text-[15px]'}`}>
-        {profile.location}
-      </p>
+      {profile.location ? (
+        <p className={`mt-1 text-[#5A6575] ${compact ? 'text-sm' : 'text-[15px]'}`}>
+          {profile.location}
+        </p>
+      ) : null}
     </div>
   );
 }
@@ -70,7 +75,7 @@ export function ConnectionAlignment({
   profile,
   showConfidence = true,
 }: {
-  profile: ConnectionProfile;
+  profile: HubProfileCard;
   showConfidence?: boolean;
 }) {
   return (
@@ -93,7 +98,7 @@ export function ConnectionAlignment({
   );
 }
 
-export function ImportantFactorsBadge({ profile }: { profile: ConnectionProfile }) {
+export function ImportantFactorsBadge({ profile }: { profile: HubProfileCard }) {
   if (!profile.hasImportantFactors) return null;
 
   return (
@@ -105,7 +110,7 @@ export function ImportantFactorsBadge({ profile }: { profile: ConnectionProfile 
         !
       </span>
       <p className="text-xs leading-relaxed text-[#5A6575] lg:text-sm">
-        {profile.importantFactorsSummary ?? 'Review alignment details on their profile.'}
+        Review alignment details on their profile.
       </p>
     </div>
   );

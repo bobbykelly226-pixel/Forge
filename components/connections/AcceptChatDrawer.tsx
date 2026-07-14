@@ -123,14 +123,14 @@ export default function AcceptChatDrawer({
             className="text-[1.45rem] leading-tight tracking-[-0.02em] text-[#0B2D5C]"
             style={{ fontFamily: 'var(--font-discovery-display), Georgia, serif' }}
           >
-            {isSuccess ? 'Conversation opened' : `Open a conversation with ${profileName}?`}
+            {isSuccess ? "You're connected" : `Open a conversation with ${profileName}?`}
           </h2>
           <div id={descriptionId} className="mt-3 space-y-3 text-[15px] leading-relaxed text-[#5A6575]">
             {isSuccess ? (
               <>
-                <p>You and {profileName} can now begin talking.</p>
+                <p>You&apos;re connected.</p>
                 <p className="text-sm text-[#8A93A0]">
-                  Prototype only — no real messaging was opened.
+                  Messaging is coming later.
                 </p>
               </>
             ) : (
