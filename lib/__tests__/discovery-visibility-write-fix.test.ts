@@ -97,6 +97,8 @@ describe('discovery visibility write fix', () => {
     );
     assert.match(preview, /mode="self-preview"/);
     assert.match(preview, /showSurfacedReason=\{false\}/);
+    assert.match(preview, /Manage My Profile/);
+    assert.doesNotMatch(preview, /Edit Profile/);
     assert.match(presentation, /lg:max-w-5xl/);
     assert.match(presentation, /lg:grid-cols-\[minmax\(18rem,38%\)/);
   });

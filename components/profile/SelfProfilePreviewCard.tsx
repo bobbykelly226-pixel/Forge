@@ -47,6 +47,7 @@ function toPublicProfile(profile: SelfProfilePreview): PublicDiscoveryProfile {
 /**
  * Owner self-preview — same responsive public profile system as Discovery,
  * without Interested, Open to Chat, Save, Not for Me, or surfacing copy.
+ * Read-only: editing happens on /profile via Manage My Profile.
  */
 export default function SelfProfilePreviewCard({ profile }: Props) {
   return (
@@ -57,25 +58,19 @@ export default function SelfProfilePreviewCard({ profile }: Props) {
       showSurfacedReason={false}
       header={
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <PublicProfileBackLink href="/profile" label="← Back to My Profile" />
+          <PublicProfileBackLink href="/profile" label="← Back" />
           <span className="inline-flex w-fit items-center rounded-full border border-[#0B2D5C]/15 bg-white px-3.5 py-1.5 text-xs font-semibold uppercase tracking-[0.14em] text-[#D62828]">
             Your Profile Preview
           </span>
         </div>
       }
       footer={
-        <div className="flex flex-col gap-3 sm:flex-row">
-          <Link
-            href="/profile/edit"
-            className="inline-flex flex-1 items-center justify-center rounded-2xl bg-[#D62828] px-8 py-4 text-lg font-semibold text-white transition hover:bg-[#A61F1F]"
-          >
-            Edit Profile
-          </Link>
+        <div className="flex flex-col gap-3">
           <Link
             href="/profile"
-            className="inline-flex flex-1 items-center justify-center rounded-2xl border border-[#0B2D5C]/20 bg-white px-8 py-4 text-lg font-semibold text-[#0B2D5C] transition hover:bg-white/80"
+            className="inline-flex w-full items-center justify-center rounded-2xl bg-[#D62828] px-8 py-4 text-lg font-semibold text-white transition hover:bg-[#A61F1F]"
           >
-            Back to My Profile
+            Manage My Profile
           </Link>
         </div>
       }

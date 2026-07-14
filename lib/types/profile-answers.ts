@@ -106,3 +106,17 @@ export const THINGS_I_ENJOY_OPTIONS = [
 ] as const;
 
 export type ThingsIEnjoyLabel = (typeof THINGS_I_ENJOY_OPTIONS)[number];
+
+/** Important Alignment Factors / core values catalog (onboarding + My Profile). */
+export const CORE_VALUES_OPTIONS = [
+  'Faith',
+  'Family',
+  'Communication',
+  'Emotional maturity',
+  'Loyalty',
+  'Shared goals',
+  'Service',
+  'Growth',
+] as const;
+
+export type CoreValueLabel = (typeof CORE_VALUES_OPTIONS)[number];

@@ -1,56 +1,41 @@
 'use client';
 
 import Link from 'next/link';
-import {
-  Camera,
-  ChevronRight,
-  Compass,
-  Eye,
-  HeartHandshake,
-  Lock,
-  Mic,
-  Music2,
-  Sparkles,
-  Star,
-  TextQuote,
-  UserRound,
-  Video,
-  type LucideIcon,
-} from 'lucide-react';
+import { Eye } from 'lucide-react';
 
 import DiscoveryDesktopTopBar from '@/components/DiscoveryDesktopTopBar';
 import ForgeAppBottomNav from '@/components/ForgeAppBottomNav';
 import ForgeDesktopAppNav from '@/components/ForgeDesktopAppNav';
 import DiscoveryVisibilityToggle from '@/components/profile/DiscoveryVisibilityToggle';
-import type { ProfileHubCard } from '@/lib/profile-v2-mock';
+import ProfileWorkspace from '@/components/profile/ProfileWorkspace';
+import type { Profile } from '@/lib/types/profile';
+
+type PrivateLocationSeed = {
+  postal_code: string | null;
+  latitude: number | null;
+  longitude: number | null;
+  location_place_id: string | null;
+  location_provider: string | null;
+};
 
 export type MyProfileHubProps = {
   displayName: string;
   location: string | null;
   photoUrl: string | null;
   completionPercent: number;
-  checklist: Array<{ id: string; label: string; complete: boolean }>;
-  sectionCards: Array<ProfileHubCard & { statusLabel?: string }>;
   onboardingCompleted: boolean;
   discoveryVisibility: {
     enabled: boolean;
     canEnable: boolean;
     message: string | null;
   };
-};
-
-const CARD_ICONS: Record<ProfileHubCard['icon'], LucideIcon> = {
-  photos: Camera,
-  about: TextQuote,
-  alignment: Compass,
-  factors: Star,
-  enjoy: HeartHandshake,
-  music: Music2,
-  signals: Sparkles,
-  voice: Mic,
-  video: Video,
-  privacy: Lock,
-  subscription: UserRound,
+  profile: Profile;
+  privateDetails: PrivateLocationSeed | null;
+  coreValues: string[];
+  hasRelationshipAlignment: boolean;
+  hasImportantAlignmentFactors: boolean;
+  photoCount: number;
+  initialSection?: string | null;
 };
 
 function CompletionRing({ percent }: { percent: number }) {
@@ -93,15 +78,19 @@ export default function MyProfileHub({
   location,
   photoUrl,
   completionPercent,
-  checklist,
-  sectionCards,
   onboardingCompleted,
   discoveryVisibility,
+  profile,
+  privateDetails,
+  coreValues,
+  hasRelationshipAlignment,
+  hasImportantAlignmentFactors,
+  photoCount,
+  initialSection,
 }: MyProfileHubProps) {
   const flashNote = (message: string) => {
     void message;
   };
-
 
   return (
     <>
@@ -131,7 +120,7 @@ export default function MyProfileHub({
                 My Profile
               </h1>
               <p className="mt-4 text-[15px] leading-relaxed text-[#5A6575]">
-                Your home inside Forge — manage how you show up.
+                Review and update your profile in one place.
               </p>
               <ForgeDesktopAppNav active="profile" />
             </div>
@@ -150,10 +139,10 @@ export default function MyProfileHub({
                   className="h-12 w-auto sm:h-14"
                 />
                 <Link
-                  href="/profile/edit"
+                  href="/profile/preview"
                   className="rounded-full border border-[#0B2D5C]/12 bg-white/70 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.16em] text-[#0B2D5C]"
                 >
-                  Edit
+                  Preview
                 </Link>
               </div>
 
@@ -161,20 +150,22 @@ export default function MyProfileHub({
                 className="lg:grid lg:grid-cols-[minmax(16rem,20rem)_minmax(0,1fr)] lg:items-start lg:gap-8 xl:gap-10"
                 style={{ animation: 'profileHubFadeUp 0.5s ease-out both' }}
               >
-                {/* Left: summary */}
-                <div className="space-y-5">
+                <div className="space-y-5 lg:sticky lg:top-8">
                   <section className="rounded-[1.75rem] border border-[#0B2D5C]/08 bg-white/90 p-6 shadow-[0_12px_40px_rgba(11,45,92,0.05)]">
                     <div className="flex items-center gap-4">
-                      {photoUrl ? (
+                      {photoUrl || profile.profile_photo_url ? (
                         <img
-                          src={photoUrl}
+                          src={photoUrl || profile.profile_photo_url || ''}
                           alt=""
                           className="h-20 w-20 shrink-0 rounded-full border-4 border-white object-cover shadow-[0_8px_24px_rgba(11,45,92,0.12)]"
                         />
                       ) : (
                         <div
                           className="h-20 w-20 shrink-0 rounded-full border-4 border-white shadow-[0_8px_24px_rgba(11,45,92,0.12)]"
-                          style={{ background: 'linear-gradient(160deg, #1B2F4A 0%, #3E566F 38%, #A8927D 72%, #E6D5C3 100%)' }}
+                          style={{
+                            background:
+                              'linear-gradient(160deg, #1B2F4A 0%, #3E566F 38%, #A8927D 72%, #E6D5C3 100%)',
+                          }}
                           role="img"
                           aria-label={`${displayName} profile photo`}
                         />
@@ -188,7 +179,9 @@ export default function MyProfileHub({
                         >
                           {displayName}
                         </h1>
-                        <p className="mt-2 text-sm text-[#5A6575]">{location || 'Add your location'}</p>
+                        <p className="mt-2 text-sm text-[#5A6575]">
+                          {location || 'Add your location'}
+                        </p>
                       </div>
                     </div>
 
@@ -202,7 +195,7 @@ export default function MyProfileHub({
                           {completionPercent}% Complete
                         </p>
                         <p className="mt-1 text-sm text-[#5A6575]">
-                          A few more details can strengthen your introductions.
+                          Encouragement only — never required for Discovery.
                         </p>
                       </div>
                     </div>
@@ -221,120 +214,24 @@ export default function MyProfileHub({
                     </div>
                   </section>
 
-                  <section
-                    className="rounded-[1.75rem] border border-[#0B2D5C]/08 bg-white/90 p-6 shadow-[0_12px_40px_rgba(11,45,92,0.05)]"
-                    aria-labelledby="completion-checklist-title"
-                  >
-                    <h2
-                      id="completion-checklist-title"
-                      className="text-lg tracking-[-0.01em] text-[#0B2D5C]"
-                      style={{ fontFamily: 'var(--font-discovery-display), Georgia, serif' }}
-                    >
-                      Profile checklist
-                    </h2>
-                    <ul className="mt-4 space-y-3">
-                      {checklist.map((item) => (
-                        <li key={item.id} className="flex items-center gap-3 text-sm text-[#0B2D5C]">
-                          <span
-                            className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-xs font-bold ${
-                              item.complete
-                                ? 'bg-[#0B2D5C] text-white'
-                                : 'border border-[#0B2D5C]/20 bg-white text-[#8A93A0]'
-                            }`}
-                            aria-hidden="true"
-                          >
-                            {item.complete ? '✓' : ''}
-                          </span>
-                          <span className={item.complete ? '' : 'text-[#5A6575]'}>{item.label}</span>
-                          <span className="sr-only">
-                            {item.complete ? 'Complete' : 'Incomplete'}
-                          </span>
-                        </li>
-                      ))}
-                    </ul>
-                  </section>
-
-                  <div className="mt-5">
-                    <DiscoveryVisibilityToggle
-                      enabled={discoveryVisibility.enabled}
-                      canEnable={discoveryVisibility.canEnable}
-                      message={discoveryVisibility.message}
-                    />
-                  </div>
+                  <DiscoveryVisibilityToggle
+                    enabled={discoveryVisibility.enabled}
+                    canEnable={discoveryVisibility.canEnable}
+                    message={discoveryVisibility.message}
+                  />
                 </div>
 
-                {/* Right: section cards */}
-                <section aria-labelledby="my-profile-sections-title">
-                  <h2
-                    id="my-profile-sections-title"
-                    className="mt-8 text-xl tracking-[-0.01em] text-[#0B2D5C] lg:mt-0 lg:text-2xl"
-                    style={{ fontFamily: 'var(--font-discovery-display), Georgia, serif' }}
-                  >
-                    My Profile
-                  </h2>
-                  <p className="mt-2 max-w-xl text-sm leading-relaxed text-[#5A6575]">
-                    Each section answers a different question about who you are.
-                  </p>
-
-                  <ul className="mt-5 space-y-3">
-                    {sectionCards.map((card) => {
-                      const Icon = CARD_ICONS[card.icon];
-                      const content = (
-                        <>
-                          <span className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-[#EEF2F7] text-[#0B2D5C]">
-                            <Icon className="h-5 w-5" strokeWidth={1.75} aria-hidden="true" />
-                          </span>
-                          <span className="min-w-0 flex-1 text-left">
-                            <span className="flex flex-wrap items-center gap-2">
-                              <span className="text-[15px] font-semibold text-[#0B2D5C]">
-                                {card.title}
-                              </span>
-                              {card.comingSoon && (
-                                <span className="rounded-full border border-[#0B2D5C]/12 bg-[#F8F6F2] px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-[0.12em] text-[#5A6575]">
-                                  Coming Soon
-                                </span>
-                              )}
-                            </span>
-                            <span className="mt-1 block text-sm leading-relaxed text-[#5A6575]">
-                              {card.description}
-                            </span>
-                          </span>
-                          <ChevronRight
-                            className="h-5 w-5 shrink-0 text-[#8A93A0]"
-                            strokeWidth={1.75}
-                            aria-hidden="true"
-                          />
-                        </>
-                      );
-
-                      const className =
-                        'flex w-full items-center gap-3.5 rounded-[1.5rem] border border-[#0B2D5C]/08 bg-white/90 px-4 py-4 shadow-[0_8px_28px_rgba(11,45,92,0.04)] transition hover:border-[#0B2D5C]/18 hover:bg-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0B2D5C]';
-
-                      if (card.href.startsWith('/')) {
-                        return (
-                          <li key={card.id}>
-                            <Link href={card.href} className={className}>
-                              {content}
-                            </Link>
-                          </li>
-                        );
-                      }
-
-                      return (
-                        <li key={card.id}>
-                          <button
-                            type="button"
-                            className={className}
-                            onClick={(event) => event.preventDefault()}
-                            aria-disabled={card.comingSoon || undefined}
-                          >
-                            {content}
-                          </button>
-                        </li>
-                      );
-                    })}
-                  </ul>
-                </section>
+                <div className="mt-8 min-w-0 lg:mt-0">
+                  <ProfileWorkspace
+                    initialProfile={profile}
+                    privateDetails={privateDetails}
+                    coreValues={coreValues}
+                    hasRelationshipAlignment={hasRelationshipAlignment}
+                    hasImportantAlignmentFactors={hasImportantAlignmentFactors}
+                    photoCount={photoCount}
+                    initialSection={initialSection}
+                  />
+                </div>
               </div>
 
               {onboardingCompleted ? (

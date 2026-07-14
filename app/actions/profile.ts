@@ -7,7 +7,7 @@ import {
   upsertCurrentUserProfile,
 } from '@/lib/data/profile';
 import { createClient } from '@/lib/supabase/server';
-import { THINGS_I_ENJOY_OPTIONS } from '@/lib/types/profile-answers';
+import { CORE_VALUES_OPTIONS, THINGS_I_ENJOY_OPTIONS } from '@/lib/types/profile-answers';
 import {
   PROFILE_PHOTO_BUCKET,
   PROFILE_PHOTO_REVALIDATE_PATHS,
@@ -468,4 +468,430 @@ export async function saveProfile(formData: FormData): Promise<ProfileActionResu
     message: 'Your profile has been saved.',
     profilePhotoUrl: authoritativePhotoUrl,
   };
+}
+
+export type ProfileSectionSaveResult = ProfileActionResult & {
+  profile?: Record<string, unknown>;
+  coreValues?: string[];
+};
+
+async function clearUnmappedKeysForFields(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  userId: string,
+  answeredKeys: string[]
+): Promise<Json> {
+  const { data: existingProfile } = await supabase
+    .from('profiles')
+    .select('unmapped_legacy_fields')
+    .eq('id', userId)
+    .maybeSingle();
+
+  const previousUnmapped =
+    existingProfile?.unmapped_legacy_fields &&
+    typeof existingProfile.unmapped_legacy_fields === 'object' &&
+    !Array.isArray(existingProfile.unmapped_legacy_fields)
+      ? ({ ...(existingProfile.unmapped_legacy_fields as Record<string, string>) } as Record<
+          string,
+          string
+        >)
+      : {};
+
+  for (const key of answeredKeys) {
+    if (previousUnmapped[key]) delete previousUnmapped[key];
+  }
+
+  return previousUnmapped as Json;
+}
+
+/**
+ * Save a single My Profile workspace section without rewriting unrelated fields.
+ * Authoritative shared save path for the unified /profile editor.
+ */
+export async function saveProfileSection(
+  sectionId: string,
+  formData: FormData
+): Promise<ProfileSectionSaveResult> {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    return { success: false, message: 'You must be signed in to save your profile.' };
+  }
+
+  if (!isValidSectionId(sectionId)) {
+    return { success: false, message: 'Unknown profile section.' };
+  }
+
+  if (sectionId === 'voice' || sectionId === 'video') {
+    return { success: false, message: 'This section is coming soon.' };
+  }
+
+  if (sectionId === 'factors') {
+    const selected = formData.getAll('core_values').map(String);
+    const allowed = new Set<string>(CORE_VALUES_OPTIONS);
+    const coreValues = CORE_VALUES_OPTIONS.filter((label) => selected.includes(label)).filter(
+      (label) => allowed.has(label)
+    );
+
+    const { error } = await supabase.from('profile_answers').upsert(
+      {
+        user_id: user.id,
+        question_key: 'core_values',
+        answer: coreValues,
+        visibility: 'private',
+        is_non_negotiable: false,
+      },
+      { onConflict: 'user_id,question_key' }
+    );
+
+    if (error) {
+      console.error('saveProfileSection factors:', error.message);
+      return { success: false, message: 'Could not save your values. Please try again.' };
+    }
+
+    revalidateProfileRoutes();
+    return {
+      success: true,
+      message: 'Saved.',
+      coreValues,
+    };
+  }
+
+  if (sectionId === 'photo') {
+    const profilePhotoUrlInput = readOptionalString(formData, 'profile_photo_url');
+    const storagePathInput = readOptionalString(formData, 'profile_photo_storage_path');
+
+    if (!profilePhotoUrlInput || !storagePathInput) {
+      return { success: false, message: 'Choose a photo to upload before saving.' };
+    }
+    if (!storagePathInput.startsWith(`${user.id}/`)) {
+      return { success: false, message: 'Invalid photo path.' };
+    }
+
+    // Reuse full save path by synthesizing a minimal profile payload would wipe fields.
+    // Handle photo-only write here.
+    const { data: existingPhotos, error: existingPhotosError } = await supabase
+      .from('profile_photos')
+      .select('id, storage_path, is_primary, display_order')
+      .eq('user_id', user.id)
+      .order('display_order', { ascending: true });
+
+    if (existingPhotosError) {
+      return { success: false, message: 'Could not load your current photos. Please try again.' };
+    }
+
+    const previousPaths = (existingPhotos ?? [])
+      .map((photo) => photo.storage_path)
+      .filter((path) => path && path !== storagePathInput);
+
+    const nextPhotoUrl =
+      profilePhotoUrlInput || buildPublicProfilePhotoUrl(storagePathInput) || null;
+
+    const profileResult = await upsertCurrentUserProfile({
+      profile_photo_url: nextPhotoUrl,
+    });
+    if (!profileResult.success) {
+      return { success: false, message: profileResult.message };
+    }
+
+    const primary = (existingPhotos ?? []).find((photo) => photo.is_primary);
+    const target = primary ?? existingPhotos?.[0] ?? null;
+
+    if (target) {
+      await supabase
+        .from('profile_photos')
+        .update({ is_primary: false })
+        .eq('user_id', user.id)
+        .neq('id', target.id);
+
+      const { data: updatedPhoto, error: updateError } = await supabase
+        .from('profile_photos')
+        .update({
+          storage_path: storagePathInput,
+          is_primary: true,
+          display_order: 0,
+        })
+        .eq('id', target.id)
+        .eq('user_id', user.id)
+        .select('id, storage_path, is_primary')
+        .single();
+
+      if (updateError || !updatedPhoto || updatedPhoto.storage_path !== storagePathInput) {
+        return {
+          success: false,
+          message: 'Your photo could not be updated. Please try again.',
+        };
+      }
+    } else {
+      const { error: insertError } = await supabase.from('profile_photos').insert({
+        user_id: user.id,
+        storage_path: storagePathInput,
+        display_order: 0,
+        is_primary: true,
+        moderation_status: 'approved',
+      });
+      if (insertError) {
+        return {
+          success: false,
+          message: 'Your photo could not be saved. Please try again.',
+        };
+      }
+    }
+
+    for (const oldPath of previousPaths) {
+      await supabase.storage.from(PROFILE_PHOTO_BUCKET).remove([oldPath]);
+    }
+
+    revalidateProfileRoutes();
+    return {
+      success: true,
+      message: 'Saved.',
+      profilePhotoUrl: nextPhotoUrl,
+      profile: { profile_photo_url: nextPhotoUrl },
+    };
+  }
+
+  const fields: Record<string, unknown> = {};
+  const answeredUnmapped: string[] = [];
+
+  if (sectionId === 'basics') {
+    const fullName = (formData.get('full_name') as string)?.trim();
+    if (!fullName) {
+      return { success: false, message: 'Full name is required.' };
+    }
+    const ageValue = (formData.get('age') as string)?.trim();
+    let age: number | null = null;
+    if (ageValue) {
+      const parsedAge = Number.parseInt(ageValue, 10);
+      if (Number.isNaN(parsedAge) || parsedAge < 18 || parsedAge > 120) {
+        return { success: false, message: 'Age must be between 18 and 120.' };
+      }
+      age = parsedAge;
+    }
+    fields.full_name = fullName;
+    fields.age = age;
+  }
+
+  if (sectionId === 'about') {
+    fields.short_bio = readOptionalString(formData, 'short_bio');
+  }
+
+  if (sectionId === 'more_about') {
+    fields.more_about = readOptionalString(formData, 'more_about');
+  }
+
+  if (sectionId === 'career') {
+    fields.career = readOptionalString(formData, 'career');
+  }
+
+  if (sectionId === 'relationship') {
+    const parsed = readStructuredField(formData, 'relationship_goal', 'relationship_goal');
+    if (!parsed.ok) return { success: false, message: parsed.message };
+    fields.relationship_goal = parsed.value;
+    if (parsed.value) answeredUnmapped.push('relationship_goal');
+  }
+
+  if (sectionId === 'children') {
+    for (const item of [
+      { key: 'has_children', field: 'has_children' as const },
+      { key: 'children_count', field: 'children_count' as const },
+      { key: 'children', field: 'children' as const },
+      {
+        key: 'open_to_partner_with_children',
+        field: 'open_to_partner_with_children' as const,
+      },
+    ]) {
+      const parsed = readStructuredField(formData, item.key, item.field);
+      if (!parsed.ok) return { success: false, message: parsed.message };
+      fields[item.key] = parsed.value;
+      if (parsed.value) answeredUnmapped.push(item.key);
+    }
+    if (fields.has_children !== 'yes') {
+      fields.children_count = null;
+    }
+  }
+
+  if (sectionId === 'faith') {
+    const identity = readStructuredField(formData, 'faith_identity', 'faith_identity');
+    if (!identity.ok) return { success: false, message: identity.message };
+    const importance = readStructuredField(formData, 'faith_importance', 'faith_importance');
+    if (!importance.ok) return { success: false, message: importance.message };
+    const faithOther = readOptionalString(formData, 'faith_other');
+    const faithTradition = readOptionalString(formData, 'faith_tradition');
+    fields.faith_identity = identity.value;
+    fields.faith_importance = importance.value;
+    fields.faith_other = identity.value === 'other' ? faithOther : null;
+    fields.faith_tradition =
+      identity.value &&
+      ['christian', 'catholic', 'protestant', 'jewish', 'muslim', 'hindu', 'buddhist', 'other'].includes(
+        identity.value
+      )
+        ? faithTradition
+        : null;
+    if (identity.value) answeredUnmapped.push('faith_identity');
+    if (importance.value) answeredUnmapped.push('faith_importance');
+  }
+
+  for (const single of [
+    { id: 'smoking', key: 'smoking', field: 'smoking' as const },
+    { id: 'drinking', key: 'drinking', field: 'drinking' as const },
+    { id: 'education', key: 'education', field: 'education' as const },
+    { id: 'pets', key: 'pets', field: 'pets' as const },
+    { id: 'relocation', key: 'relocation', field: 'relocation' as const },
+  ] as const) {
+    if (sectionId === single.id) {
+      const parsed = readStructuredField(formData, single.key, single.field);
+      if (!parsed.ok) return { success: false, message: parsed.message };
+      fields[single.key] = parsed.value;
+      if (parsed.value) answeredUnmapped.push(single.key);
+    }
+  }
+
+  if (sectionId === 'service') {
+    const serviceRaw = formData.getAll('service_backgrounds').map(String);
+    const serviceBackgrounds = normalizeServiceBackgroundSelection(serviceRaw);
+    for (const value of serviceBackgrounds) {
+      if (!isValidStructuredValue('service_background', value)) {
+        return { success: false, message: 'Please choose valid service background options.' };
+      }
+    }
+    fields.service_backgrounds = serviceBackgrounds;
+    fields.service_background = serviceBackgroundDisplayLabel(serviceBackgrounds);
+    if (serviceBackgrounds.length > 0) answeredUnmapped.push('service_background');
+  }
+
+  if (sectionId === 'enjoy') {
+    fields.things_i_enjoy = parseEnjoySelection(formData);
+  }
+
+  if (sectionId === 'music') {
+    fields.favorite_music_artists = parseLineList(
+      formData.get('favorite_music_artists') as string | null
+    );
+    fields.favorite_music_songs = parseLineList(
+      formData.get('favorite_music_songs') as string | null
+    );
+  }
+
+  if (sectionId === 'location') {
+    const locationCity = readOptionalString(formData, 'location_city');
+    const locationRegion = readOptionalString(formData, 'location_region');
+    const locationCountry = readOptionalString(formData, 'location_country');
+    const locationPostal = readOptionalString(formData, 'location_postal_code');
+    const locationPlaceId = readOptionalString(formData, 'location_place_id');
+    const locationProvider = readOptionalString(formData, 'location_provider');
+    const locationLatitude = parseOptionalNumber(
+      readOptionalString(formData, 'location_latitude')
+    );
+    const locationLongitude = parseOptionalNumber(
+      readOptionalString(formData, 'location_longitude')
+    );
+    const hasLocation = Boolean(locationCity || locationRegion);
+    const publicLocation = hasLocation
+      ? toPublicLocationFields({
+          city: locationCity ?? '',
+          region: locationRegion ?? '',
+          country: locationCountry ?? 'US',
+          postalCode: locationPostal,
+          latitude: locationLatitude,
+          longitude: locationLongitude,
+          placeId: locationPlaceId,
+          provider: locationProvider,
+        })
+      : {
+          location: null,
+          location_city: null,
+          location_region: null,
+          location_country: null,
+        };
+
+    fields.location = publicLocation.location;
+    fields.location_city = publicLocation.location_city;
+    fields.location_region = publicLocation.location_region;
+    fields.location_country = publicLocation.location_country;
+
+    const privateResult = await upsertCurrentUserPrivateDetails({
+      location_city: publicLocation.location_city,
+      location_region: publicLocation.location_region,
+      location_country: publicLocation.location_country,
+      postal_code: hasLocation ? locationPostal : null,
+      latitude: hasLocation ? locationLatitude : null,
+      longitude: hasLocation ? locationLongitude : null,
+      location_place_id: hasLocation ? locationPlaceId : null,
+      location_provider: hasLocation ? locationProvider : null,
+    });
+
+    if (!privateResult.success) {
+      return { success: false, message: privateResult.message };
+    }
+  }
+
+  if (answeredUnmapped.length > 0) {
+    fields.unmapped_legacy_fields = await clearUnmappedKeysForFields(
+      supabase,
+      user.id,
+      answeredUnmapped
+    );
+  }
+
+  const result = await upsertCurrentUserProfile(fields);
+  if (!result.success) {
+    return { success: false, message: result.message };
+  }
+
+  if (sectionId === 'relationship' && typeof fields.relationship_goal === 'string') {
+    const { error: intentionError } = await supabase.from('profile_answers').upsert(
+      {
+        user_id: user.id,
+        question_key: 'relationship_intention',
+        answer: fields.relationship_goal,
+        visibility: 'private',
+        is_non_negotiable: false,
+      },
+      { onConflict: 'user_id,question_key' }
+    );
+    if (intentionError) {
+      console.error('saveProfileSection sync intention:', intentionError.message);
+      return {
+        success: false,
+        message: 'Your profile saved, but relationship intention could not be synced.',
+      };
+    }
+  }
+
+  revalidateProfileRoutes();
+
+  return {
+    success: true,
+    message: 'Saved.',
+    profile: fields,
+    profilePhotoUrl: result.data.profile_photo_url,
+  };
+}
+
+function isValidSectionId(value: string): boolean {
+  return [
+    'photo',
+    'basics',
+    'location',
+    'about',
+    'more_about',
+    'relationship',
+    'children',
+    'faith',
+    'smoking',
+    'drinking',
+    'education',
+    'pets',
+    'relocation',
+    'career',
+    'service',
+    'enjoy',
+    'music',
+    'factors',
+    'voice',
+    'video',
+  ].includes(value);
 }
