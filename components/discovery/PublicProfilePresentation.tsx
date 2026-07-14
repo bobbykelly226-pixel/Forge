@@ -74,7 +74,7 @@ export default function PublicProfilePresentation({
             badge={
               mode === 'self-preview' ? (
                 <div className="absolute left-4 top-4 z-[1]">
-                  <span className="inline-flex items-center rounded-full bg-[#F8F6F2]/95 px-3.5 py-1.5 text-xs font-semibold uppercase tracking-[0.12em] text-[#0B2D5C] shadow-sm">
+                  <span className="inline-flex items-center rounded-full border border-[#C5CCD6]/80 bg-white/95 px-3.5 py-1.5 text-xs font-semibold uppercase tracking-[0.12em] text-[#0B2D5C] shadow-sm">
                     Your Preview
                   </span>
                 </div>
@@ -156,7 +156,7 @@ export default function PublicProfilePresentation({
                 {enjoy.map((item) => (
                   <span
                     key={item}
-                    className="rounded-full border border-[#0B2D5C]/10 bg-[#F8F6F2] px-3 py-1.5 text-xs font-medium text-[#0B2D5C]"
+                    className="rounded-full border border-[#0B2D5C]/10 bg-[#EEF2F7] px-3 py-1.5 text-xs font-medium text-[#0B2D5C]"
                   >
                     {item}
                   </span>
@@ -177,7 +177,7 @@ export default function PublicProfilePresentation({
                 {[...musicArtists, ...musicSongs].map((item) => (
                   <span
                     key={item}
-                    className="rounded-full border border-[#0B2D5C]/10 bg-[#F8F6F2] px-3 py-1.5 text-xs font-medium text-[#0B2D5C]"
+                    className="rounded-full border border-[#0B2D5C]/10 bg-[#EEF2F7] px-3 py-1.5 text-xs font-medium text-[#0B2D5C]"
                   >
                     {item}
                   </span>

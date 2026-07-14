@@ -49,8 +49,24 @@
 }
 
 :root {
-  /* Soft Slate — permanent Forge application canvas only */
-  --forge-app-background: #E8EBF0;
+  /* ------------------------------------------------------------------ */
+  /* Forge application color foundation                                 */
+  /* Soft Slate + Forge Navy + Precision Silver; red used sparingly.    */
+  /* Marketing cream (#F8F6F2) is not the authenticated app canvas.     */
+  /* ------------------------------------------------------------------ */
+  --forge-app-background: #E8EBF0; /* Soft Slate — primary application canvas */
+  --forge-surface: #ffffff; /* clean white surfaces */
+  --forge-surface-soft: #f4f6f8; /* soft white / pale cool gray */
+  --forge-surface-muted: #eef2f7; /* subtle slate surface */
+  --forge-navy: #0b2d5c; /* Forge Navy — structure, typography, primary actions */
+  --forge-navy-deep: #0a2540;
+  --forge-silver: #c5ccd6; /* precision silver / cool chrome */
+  --forge-graphite: #6b7585; /* graphite supporting text */
+  --forge-steel: #8a93a0; /* restrained steel */
+  --forge-red: #d62828; /* selective accent only — not default primary buttons */
+  --forge-red-deep: #a61f1f;
+  --forge-marketing-cream: #f8f6f2; /* public marketing only */
+
   --background: oklch(1 0 0);
   --foreground: oklch(0.145 0 0);
   --card: oklch(1 0 0);
@@ -134,4 +150,23 @@
 /* Soft Slate application canvas — marketing pages do not use this class */
 .forge-app-canvas {
   background-color: var(--forge-app-background);
+  color: #1a2332;
+}
+
+/* Application primary action — Forge Navy (not red) */
+.forge-btn-primary {
+  background-color: var(--forge-navy);
+  color: #ffffff;
+}
+.forge-btn-primary:hover {
+  background-color: var(--forge-navy-deep);
+}
+
+/* Selective Forge red — brand moments / destructive only */
+.forge-accent-red {
+  color: var(--forge-red);
+}
+.forge-btn-destructive {
+  color: var(--forge-red);
+  border-color: color-mix(in srgb, var(--forge-red) 25%, transparent);
 }

@@ -219,7 +219,7 @@ export default function LocationPicker({ initial }: LocationPickerProps) {
                 <button
                   type="button"
                   role="option"
-                  className="w-full px-5 py-3 text-left text-[#0B2D5C] hover:bg-[#F8F6F2]"
+                  className="w-full px-5 py-3 text-left text-[#0B2D5C] hover:bg-[#EEF2F7]"
                   onMouseDown={(event) => event.preventDefault()}
                   onClick={() => applyHit(hit)}
                   aria-selected={false}
@@ -236,14 +236,14 @@ export default function LocationPicker({ initial }: LocationPickerProps) {
             type="button"
             onClick={useCurrentLocation}
             disabled={locating}
-            className="rounded-2xl border border-[#0B2D5C]/20 bg-white px-4 py-2 text-sm font-semibold text-[#0B2D5C] hover:bg-[#F8F6F2] disabled:opacity-60"
+            className="rounded-2xl border border-[#0B2D5C]/20 bg-white px-4 py-2 text-sm font-semibold text-[#0B2D5C] hover:bg-[#EEF2F7] disabled:opacity-60"
           >
             {locating ? 'Locating…' : 'Use current location'}
           </button>
           <button
             type="button"
             onClick={() => setManualMode((current) => !current)}
-            className="rounded-2xl border border-[#0B2D5C]/20 bg-white px-4 py-2 text-sm font-semibold text-[#0B2D5C] hover:bg-[#F8F6F2]"
+            className="rounded-2xl border border-[#0B2D5C]/20 bg-white px-4 py-2 text-sm font-semibold text-[#0B2D5C] hover:bg-[#EEF2F7]"
           >
             {manualMode ? 'Hide manual entry' : 'Enter city and state'}
           </button>

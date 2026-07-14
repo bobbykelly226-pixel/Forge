@@ -118,7 +118,7 @@ export default function ProfilePhotoCropDialog({
       aria-labelledby="photo-crop-title"
       data-testid="profile-photo-crop-dialog"
     >
-      <div className="flex max-h-[92vh] w-full max-w-md flex-col overflow-hidden rounded-[1.75rem] bg-[#F8F6F2] shadow-[0_24px_60px_rgba(11,45,92,0.28)]">
+      <div className="flex max-h-[92vh] w-full max-w-md flex-col overflow-hidden rounded-[1.75rem] bg-white shadow-[0_24px_60px_rgba(11,45,92,0.22)]">
         <div className="border-b border-[#0B2D5C]/08 px-5 py-4">
           <h2
             id="photo-crop-title"
@@ -181,7 +181,7 @@ export default function ProfilePhotoCropDialog({
             type="button"
             onClick={() => void handleConfirm()}
             disabled={busy}
-            className="rounded-2xl bg-[#D62828] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#A61F1F] disabled:bg-gray-400"
+            className="rounded-2xl bg-[#0B2D5C] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#0A2540] disabled:bg-gray-400"
           >
             {busy ? 'Preparing…' : 'Confirm photo'}
           </button>
