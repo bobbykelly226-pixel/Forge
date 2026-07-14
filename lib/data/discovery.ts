@@ -75,10 +75,15 @@ export async function setDiscoveryVisibility(
   });
 
   if (error) {
-    console.error('setDiscoveryVisibility:', error.message);
+    console.error('setDiscoveryVisibility:', {
+      message: error.message,
+      code: error.code,
+      details: error.details,
+      hint: error.hint,
+    });
     return {
       success: false,
-      message: 'Could not update Discovery visibility. Please try again.',
+      message: 'Couldn’t update. Try again.',
     };
   }
 
@@ -90,11 +95,10 @@ export async function setDiscoveryVisibility(
   };
 
   if (!payload?.ok) {
+    console.error('setDiscoveryVisibility rejected:', payload);
     return {
       success: false,
-      message:
-        payload?.message ||
-        'Discovery visibility is unavailable for this account.',
+      message: 'Couldn’t update. Try again.',
     };
   }
 

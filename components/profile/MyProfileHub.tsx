@@ -337,11 +337,11 @@ export default function MyProfileHub({
                 </section>
               </div>
 
-              <p className="mt-10 text-xs leading-relaxed text-[#8A93A0] lg:mt-12">
-                {onboardingCompleted
-                  ? 'Your Forge profile is saved to your account.'
-                  : 'Finish onboarding to unlock the full Forge experience.'}
-              </p>
+              {onboardingCompleted ? (
+                <p className="mt-10 text-xs leading-relaxed text-[#8A93A0] lg:mt-12">
+                  Your Forge profile is saved to your account.
+                </p>
+              ) : null}
             </div>
           </div>
         </div>

@@ -19,18 +19,16 @@ export default function DiscoveryVisibilityToggle({
   const router = useRouter();
   const [enabled, setEnabled] = useState(initialEnabled);
   const [error, setError] = useState<string | null>(null);
-  const [status, setStatus] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
 
   const onToggle = (next: boolean) => {
     if (pending) return;
     if (next && !canEnable) {
-      setError(message || 'Discovery visibility is unavailable for this account.');
+      setError(message || 'Couldn’t update. Try again.');
       return;
     }
 
     setError(null);
-    setStatus(null);
     const previous = enabled;
     setEnabled(next);
 
@@ -38,32 +36,29 @@ export default function DiscoveryVisibilityToggle({
       const result = await setDiscoveryVisibilityAction(next);
       if (!result.success) {
         setEnabled(previous);
-        setError(result.message);
+        setError('Couldn’t update. Try again.');
         return;
       }
       setEnabled(result.data.enabled);
-      setStatus(result.data.message);
       router.refresh();
     });
   };
 
   return (
     <section
-      className="rounded-[1.75rem] border border-[#0B2D5C]/08 bg-white/90 p-6 shadow-[0_12px_32px_rgba(11,45,92,0.04)]"
+      className="rounded-[1.5rem] border border-[#0B2D5C]/08 bg-white/90 px-4 py-4 shadow-[0_8px_28px_rgba(11,45,92,0.04)]"
       aria-labelledby="discovery-visibility-title"
     >
-      <div className="flex items-start justify-between gap-4">
-        <div>
+      <div className="flex items-center justify-between gap-4">
+        <div className="min-w-0 flex-1">
           <h2
             id="discovery-visibility-title"
-            className="text-xl text-[#0B2D5C]"
-            style={{ fontFamily: 'var(--font-discovery-display), Georgia, serif' }}
+            className="text-[15px] font-semibold text-[#0B2D5C]"
           >
             Show Me in Discovery
           </h2>
-          <p className="mt-2 text-sm leading-relaxed text-[#5A6575]">
-            Allow other Forge members to discover your profile. You can turn this off at any time.
-            Profile completion is optional — share only what you are ready to share.
+          <p className="mt-1 text-sm leading-snug text-[#5A6575]">
+            Let other Forge members discover your profile.
           </p>
         </div>
         <button
@@ -85,20 +80,9 @@ export default function DiscoveryVisibilityToggle({
         </button>
       </div>
 
-      {!canEnable ? (
-        <p className="mt-4 rounded-2xl bg-[#F8F6F2] px-4 py-3 text-sm text-[#5A6575]" role="status">
-          Discovery visibility is unavailable for this account.
-        </p>
-      ) : null}
-
       {error ? (
-        <p className="mt-3 text-sm text-[#D62828]" role="alert">
+        <p className="mt-2 text-sm text-[#D62828]" role="alert">
           {error}
-        </p>
-      ) : null}
-      {status ? (
-        <p className="mt-3 text-sm text-[#0B2D5C]" role="status">
-          {status}
         </p>
       ) : null}
     </section>
