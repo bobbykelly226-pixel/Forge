@@ -457,6 +457,8 @@ export type SampleProfileAlignmentPresentation = {
   characterSignalIds: CharacterSignalId[];
   incompleteAssessmentCopy?: string;
   noFactorsCopy?: string;
+  /** Optional paragraph for “Why Forge surfaced this profile”. */
+  whySurfacedCopy?: string;
 };
 
 export function toSampleAlignmentPresentation(

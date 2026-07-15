@@ -186,11 +186,12 @@ describe('sample profile fixtures and real profile path', () => {
 
   it('resolves demo ids through fixture adapters only', () => {
     const discoveryAction = read('app/actions/discovery.ts');
-    assert.match(discoveryAction, /isDemoProfileId/);
+    assert.match(discoveryAction, /isDemoConnectionProfileId/);
     assert.match(discoveryAction, /getSampleConnectionById/);
     assert.match(discoveryAction, /toSamplePublicDiscoveryProfile/);
-    assert.match(discoveryAction, /Preview-only sample profiles/);
-    const demoBranch = discoveryAction.split('isDemoProfileId(profileId)')[1] ?? '';
+    assert.match(discoveryAction, /Preview-only Connections mutual fixtures/);
+    const demoBranch =
+      discoveryAction.split('isDemoConnectionProfileId(profileId)')[1] ?? '';
     assert.doesNotMatch(demoBranch.slice(0, 500), /getDiscoveryProfile\(/);
 
     const jessica = getSampleConnectionById('demo-jessica');

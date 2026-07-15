@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="1200" viewBox="0 0 900 1200" role="img" aria-label="Sample portrait placeholder">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#2A4060"/>
+      <stop offset="38%" stop-color="#8FA3BC"/>
+      <stop offset="72%" stop-color="#D9C4B0"/>
+      <stop offset="100%" stop-color="#F2E8DC"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="35%" cy="28%" r="42%">
+      <stop offset="0%" stop-color="rgba(255,255,255,0.35)"/>
+      <stop offset="100%" stop-color="rgba(255,255,255,0)"/>
+    </radialGradient>
+  </defs>
+  <rect width="900" height="1200" fill="url(#bg)"/>
+  <rect width="900" height="1200" fill="url(#glow)"/>
+  <circle cx="450" cy="430" r="150" fill="rgba(255,255,255,0.12)"/>
+  <ellipse cx="450" cy="780" rx="230" ry="260" fill="rgba(255,255,255,0.08)"/>
+</svg>

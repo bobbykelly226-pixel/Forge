@@ -2,8 +2,10 @@
 
 import {
   createContext,
+  startTransition,
   useCallback,
   useContext,
+  useEffect,
   useMemo,
   useRef,
   useState,
@@ -22,6 +24,16 @@ import {
   sendOpenToChatAction,
   withdrawInterestAction,
 } from '@/app/actions/relationships';
+import {
+  clearSampleDiscoveryActionStateSession,
+  clearSampleDiscoveryEducationSeenSession,
+  mergeResetSampleDiscoveryActions,
+  readSampleDiscoveryActionStateFromSession,
+  readSampleDiscoveryEducationSeenFromSession,
+  shouldSimulateDiscoveryAction,
+  writeSampleDiscoveryActionStateToSession,
+  writeSampleDiscoveryEducationSeenToSession,
+} from '@/lib/demo/demo-discovery-actions';
 import {
   createEmptyActionState,
   type DiscoveryActionConflict,
@@ -47,6 +59,7 @@ type DiscoveryActionsContextValue = {
   handleSaveForLater: (profileId: string, profileName: string) => void;
   handleNotForMe: (profileId: string, profileName: string) => void;
   registerOpenToChatTrigger: (profileId: string, element: HTMLButtonElement | null) => void;
+  resetSampleDiscoveryActions: () => void;
 };
 
 const DiscoveryActionsContext = createContext<DiscoveryActionsContextValue | null>(null);
@@ -80,6 +93,38 @@ export function DiscoveryActionsProvider({
   const [pending, setPending] = useState(false);
   const openToChatTriggers = useRef<Record<string, HTMLButtonElement | null>>({});
   const statusTimerRef = useRef<number | null>(null);
+  const sampleSessionHydrated = useRef(false);
+
+  // Hydrate preview-only sample action state across feed ↔ profile navigations.
+  // Full browser reload clears simulated sample actions (banner: reset on refresh).
+  useEffect(() => {
+    if (sampleSessionHydrated.current) return;
+    sampleSessionHydrated.current = true;
+
+    const navigation = performance.getEntriesByType(
+      'navigation'
+    )[0] as PerformanceNavigationTiming | undefined;
+    if (navigation?.type === 'reload') {
+      clearSampleDiscoveryActionStateSession();
+      clearSampleDiscoveryEducationSeenSession();
+      return;
+    }
+
+    const stored = readSampleDiscoveryActionStateFromSession();
+    const storedEducation = readSampleDiscoveryEducationSeenFromSession();
+    if (Object.keys(stored).length === 0 && storedEducation !== true) {
+      return;
+    }
+
+    startTransition(() => {
+      if (Object.keys(stored).length > 0) {
+        setByProfileId((prev) => ({ ...prev, ...stored }));
+      }
+      if (storedEducation === true) {
+        setEducationSeen(true);
+      }
+    });
+  }, []);
 
   const getState = useCallback(
     (profileId: string): DiscoveryProfileActionState =>
@@ -94,10 +139,16 @@ export function DiscoveryActionsProvider({
 
   const patchState = useCallback(
     (profileId: string, patch: Partial<DiscoveryProfileActionState>) => {
-      setByProfileId((prev) => ({
-        ...prev,
-        [profileId]: { ...(prev[profileId] ?? createEmptyActionState()), ...patch },
-      }));
+      setByProfileId((prev) => {
+        const next = {
+          ...prev,
+          [profileId]: { ...(prev[profileId] ?? createEmptyActionState()), ...patch },
+        };
+        if (shouldSimulateDiscoveryAction(profileId)) {
+          writeSampleDiscoveryActionStateToSession(next);
+        }
+        return next;
+      });
     },
     []
   );
@@ -159,6 +210,14 @@ export function DiscoveryActionsProvider({
   const applyInterested = useCallback(
     async (profileId: string, profileName: string) => {
       if (pending) return;
+      if (shouldSimulateDiscoveryAction(profileId)) {
+        patchState(profileId, { interested: true });
+        announce(
+          `You've expressed interest in ${profileName}.`,
+          `If ${profileName} is also interested, Forge will let you both know. Sample preview — not saved to your account.`
+        );
+        return;
+      }
       setPending(true);
       const previous = getState(profileId);
       patchState(profileId, { interested: true });
@@ -197,6 +256,11 @@ export function DiscoveryActionsProvider({
   const handleUndoInterested = useCallback(
     async (profileId: string, profileName: string) => {
       if (pending) return;
+      if (shouldSimulateDiscoveryAction(profileId)) {
+        patchState(profileId, { interested: false });
+        announce(`Interest in ${profileName} was removed.`);
+        return;
+      }
       setPending(true);
       patchState(profileId, { interested: false });
       const result = await withdrawInterestAction(profileId);
@@ -247,6 +311,20 @@ export function DiscoveryActionsProvider({
     async (profileId: string, profileName: string) => {
       if (pending) return;
       const state = getState(profileId);
+      if (shouldSimulateDiscoveryAction(profileId)) {
+        if (state.saved) {
+          patchState(profileId, { saved: false });
+          announce(`${profileName} was removed from Saved.`);
+          return;
+        }
+        patchState(profileId, { saved: true, passed: false });
+        announce(
+          `${profileName} was saved for later.`,
+          'Sample preview — only available in this browser session.'
+        );
+        return;
+      }
+
       setPending(true);
       if (state.saved) {
         patchState(profileId, { saved: false });
@@ -281,6 +359,18 @@ export function DiscoveryActionsProvider({
   const confirmNotForMe = useCallback(async () => {
     if (!notForMePrompt || pending) return;
     const { profileId } = notForMePrompt;
+    if (shouldSimulateDiscoveryAction(profileId)) {
+      patchState(profileId, {
+        interested: false,
+        openToChatSent: false,
+        openToChatNote: null,
+        saved: false,
+        passed: true,
+      });
+      setNotForMePrompt(null);
+      announce('Introduction passed.', 'Sample preview — not saved to your account.');
+      return;
+    }
     const previous = getState(profileId);
     setPending(true);
     patchState(profileId, {
@@ -325,6 +415,21 @@ export function DiscoveryActionsProvider({
   const handleOpenToChatSent = useCallback(
     async (note: string | null): Promise<boolean> => {
       if (!openToChatPrompt || pending) return false;
+      if (shouldSimulateDiscoveryAction(openToChatPrompt.profileId)) {
+        patchState(openToChatPrompt.profileId, {
+          openToChatSent: true,
+          openToChatNote: note,
+        });
+        setEducationSeen(true);
+        writeSampleDiscoveryEducationSeenToSession(true);
+        announce(
+          `Open to Chat sent to ${openToChatPrompt.profileName}.`,
+          note
+            ? 'Your note was included. Sample preview — no request or notification was sent.'
+            : 'Sample preview — no request or notification was sent.'
+        );
+        return true;
+      }
       setPending(true);
       const result = await sendOpenToChatAction(openToChatPrompt.profileId, note);
       setPending(false);
@@ -348,8 +453,24 @@ export function DiscoveryActionsProvider({
 
   const handleEducationContinued = useCallback(() => {
     setEducationSeen(true);
+    const profileId = openToChatPrompt?.profileId;
+    if (profileId && shouldSimulateDiscoveryAction(profileId)) {
+      writeSampleDiscoveryEducationSeenToSession(true);
+      return;
+    }
     void markOpenToChatEducationSeenAction();
-  }, []);
+  }, [openToChatPrompt]);
+
+  const resetSampleDiscoveryActions = useCallback(() => {
+    setByProfileId((prev) => {
+      const next = mergeResetSampleDiscoveryActions(prev);
+      clearSampleDiscoveryActionStateSession();
+      writeSampleDiscoveryActionStateToSession(next);
+      return next;
+    });
+    clearSampleDiscoveryEducationSeenSession();
+    announce('Sample Discovery actions were reset.');
+  }, [announce]);
 
   const value = useMemo<DiscoveryActionsContextValue>(
     () => ({
@@ -368,6 +489,7 @@ export function DiscoveryActionsProvider({
       },
       handleNotForMe,
       registerOpenToChatTrigger,
+      resetSampleDiscoveryActions,
     }),
     [
       getState,
@@ -381,6 +503,7 @@ export function DiscoveryActionsProvider({
       handleSaveForLater,
       handleNotForMe,
       registerOpenToChatTrigger,
+      resetSampleDiscoveryActions,
     ]
   );
 

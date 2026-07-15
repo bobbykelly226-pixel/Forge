@@ -8,6 +8,8 @@ import ForgeAppBottomNav from '@/components/ForgeAppBottomNav';
 import ForgeDesktopAppNav from '@/components/ForgeDesktopAppNav';
 import { useDiscoveryActions } from '@/components/discovery/DiscoveryActionsProvider';
 import DiscoveryFeedCard from '@/components/DiscoveryFeedCard';
+import { isDemoDiscoveryProfileId } from '@/lib/demo/demo-access';
+import { SAMPLE_DISCOVERY_BANNER } from '@/lib/demo/inject-sample-discovery';
 import type { DiscoveryFeedCardModel } from '@/lib/discovery/presentation';
 
 const FILTERS = [
@@ -86,18 +88,29 @@ type DiscoveryFeedProps = {
   profiles: DiscoveryFeedCardModel[];
   viewerName: string;
   loadError?: string | null;
+  sampleProfilesInjected?: boolean;
 };
 
 export default function DiscoveryFeedPrototype({
   profiles,
   viewerName,
   loadError = null,
+  sampleProfilesInjected = false,
 }: DiscoveryFeedProps) {
   const [activeFilter, setActiveFilter] = useState<FilterId>('All');
   const [filterNote, setFilterNote] = useState<string | null>(null);
-  const { isPassed } = useDiscoveryActions();
+  const [hideSampleProfiles, setHideSampleProfiles] = useState(false);
+  const { isPassed, resetSampleDiscoveryActions } = useDiscoveryActions();
 
-  const visibleProfiles = profiles.filter((profile) => !isPassed(profile.id));
+  const visibleProfiles = profiles.filter((profile) => {
+    if (isPassed(profile.id)) return false;
+    if (hideSampleProfiles && isDemoDiscoveryProfileId(profile.id)) return false;
+    return true;
+  });
+  const hasVisibleSampleProfiles =
+    sampleProfilesInjected &&
+    !hideSampleProfiles &&
+    visibleProfiles.some((profile) => isDemoDiscoveryProfileId(profile.id));
   const greeting = useMemo(() => getTimeGreeting(), []);
 
   const flashFilterNote = (message: string) => {
@@ -151,6 +164,27 @@ export default function DiscoveryFeedPrototype({
       className="flex flex-col gap-8 sm:gap-10 lg:gap-12"
       style={{ scrollSnapType: 'y proximity' }}
     >
+      {hasVisibleSampleProfiles ? (
+        <div className="flex flex-col gap-2 rounded-2xl border border-[#0B2D5C]/08 bg-white/70 px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
+          <p className="text-sm leading-relaxed text-[#5A6575]">{SAMPLE_DISCOVERY_BANNER}</p>
+          <div className="flex flex-wrap gap-3">
+            <button
+              type="button"
+              onClick={() => setHideSampleProfiles(true)}
+              className="shrink-0 text-sm font-semibold text-[#0B2D5C] underline-offset-4 transition hover:text-[#D62828] hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0B2D5C]"
+            >
+              Hide sample profiles
+            </button>
+            <button
+              type="button"
+              onClick={() => resetSampleDiscoveryActions()}
+              className="shrink-0 text-sm font-semibold text-[#0B2D5C] underline-offset-4 transition hover:text-[#D62828] hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0B2D5C]"
+            >
+              Reset sample Discovery actions
+            </button>
+          </div>
+        </div>
+      ) : null}
       {visibleProfiles.map((profile, index) => (
         <DiscoveryFeedCard key={profile.id} profile={profile} index={index} />
       ))}

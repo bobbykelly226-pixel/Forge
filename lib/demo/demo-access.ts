@@ -1,6 +1,6 @@
 /**
- * Access control for preview-only sample Connections injection.
- * Must never enable sample connections in ordinary production.
+ * Access control for preview-only sample Connections / Discovery injection.
+ * Must never enable samples in ordinary production.
  */
 
 export type DemoAccessEnv = {
@@ -37,6 +37,13 @@ export function canInjectSampleConnections(
   return isInternalDemoAccessAllowed(env);
 }
 
+/** Alias for Discovery sample injection gating. */
+export function canInjectSampleDiscovery(
+  env: DemoAccessEnv = process.env
+): boolean {
+  return isInternalDemoAccessAllowed(env);
+}
+
 export function describeDemoAccessDecision(env: DemoAccessEnv = process.env): {
   allowed: boolean;
   reason: string;
@@ -53,6 +60,17 @@ export function describeDemoAccessDecision(env: DemoAccessEnv = process.env): {
   return { allowed: false, reason: 'production_blocked' };
 }
 
+/** Any preview fixture id (Connections or Discovery). */
 export function isDemoProfileId(profileId: string): boolean {
   return profileId.startsWith('demo-');
+}
+
+/** Discovery feed/profile fixtures only. */
+export function isDemoDiscoveryProfileId(profileId: string): boolean {
+  return profileId.startsWith('demo-discovery-');
+}
+
+/** Connections mutual sample fixtures (not Discovery feed). */
+export function isDemoConnectionProfileId(profileId: string): boolean {
+  return isDemoProfileId(profileId) && !isDemoDiscoveryProfileId(profileId);
 }

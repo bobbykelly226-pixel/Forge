@@ -25,6 +25,7 @@ export type ProfileAlignmentSectionsProps = {
   characterSignalIds: CharacterSignalId[];
   incompleteAssessmentCopy?: string;
   noFactorsCopy?: string;
+  whySurfacedCopy?: string;
   cardClassName?: string;
 };
 
@@ -91,6 +92,7 @@ export default function ProfileAlignmentSections({
   characterSignalIds,
   incompleteAssessmentCopy,
   noFactorsCopy,
+  whySurfacedCopy,
   cardClassName = 'rounded-[1.75rem] border border-[#0B2D5C]/08 bg-white/90 p-6',
 }: ProfileAlignmentSectionsProps) {
   const [alignmentOpen, setAlignmentOpen] = useState(false);
@@ -205,6 +207,36 @@ export default function ProfileAlignmentSections({
           <p className="mt-3 text-[15px] leading-relaxed text-[#5A6575]">{noFactorsCopy}</p>
         </section>
       ) : null}
+
+      <section className={`${cardClassName} mt-4`} aria-labelledby="why-surfaced-heading">
+        <h2
+          id="why-surfaced-heading"
+          className="text-xl text-[#0B2D5C]"
+          style={{ fontFamily: 'var(--font-discovery-display), Georgia, serif' }}
+        >
+          Why Forge surfaced this profile
+        </h2>
+        {whySurfacedCopy ? (
+          <p className="mt-3 text-[15px] leading-relaxed text-[#5A6575]">{whySurfacedCopy}</p>
+        ) : (
+          <ul className="mt-4 space-y-3">
+            {sharedStrengths.map((item) => (
+              <li
+                key={`${item.title}-${item.copy}`}
+                className="flex items-start gap-3 text-[15px] leading-relaxed text-[#5A6575]"
+              >
+                <span
+                  className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-[#0B2D5C] text-[10px] font-bold text-white"
+                  aria-hidden="true"
+                >
+                  ✓
+                </span>
+                <span>{item.copy}</span>
+              </li>
+            ))}
+          </ul>
+        )}
+      </section>
 
       <PublicCharacterSignalsSection
         cardClassName={cardClassName}
