@@ -3,22 +3,22 @@
 import Image from 'next/image';
 import { useState } from 'react';
 
-import ForgeSignatureV4, {
-  SIGNATURE_V4_COMPARE,
-} from '@/components/ui/ForgeSignatureV4';
+import ForgeSignatureV5, {
+  SIGNATURE_V5_COMPARE,
+} from '@/components/ui/ForgeSignatureV5';
 
 type ReviewMode = 'side-by-side' | 'overlay' | 'implementation-only';
 
 /**
- * Internal-only navy Signature V4 review tool.
- * Exact crop vs ForgeSignatureV4 at identical dimensions.
+ * Internal-only navy Signature V5 review tool.
+ * Exact crop vs literal Gemini SVG at 360×127.
  */
-export default function SignatureV4Review() {
+export default function SignatureV5Review() {
   const [mode, setMode] = useState<ReviewMode>('side-by-side');
-  const { widthPx, heightPx, cropPath } = SIGNATURE_V4_COMPARE;
+  const { widthPx, heightPx, cropPath } = SIGNATURE_V5_COMPARE;
 
   return (
-    <div className="forge-sig-v4-review" data-review-tool="signature-v4">
+    <div className="forge-sig-v5-review" data-review-tool="signature-v5">
       <div className="mb-4 flex flex-wrap gap-2">
         {(
           [
@@ -69,7 +69,7 @@ export default function SignatureV4Review() {
           </div>
           <div>
             <p className="mb-2 text-[10px] font-semibold uppercase tracking-[0.14em] text-[#8A93A0]">
-              Implementation candidate — Signature V4
+              Implementation candidate — Signature V5
             </p>
             <div
               style={{
@@ -79,7 +79,7 @@ export default function SignatureV4Review() {
               }}
               className="flex items-center justify-center"
             >
-              <ForgeSignatureV4 compareSize />
+              <ForgeSignatureV5 compareSize />
             </div>
           </div>
         </div>
@@ -99,7 +99,7 @@ export default function SignatureV4Review() {
             }}
           >
             <div className="absolute inset-0 flex items-center justify-center">
-              <ForgeSignatureV4 compareSize />
+              <ForgeSignatureV5 compareSize />
             </div>
             <Image
               src={cropPath}
@@ -113,7 +113,7 @@ export default function SignatureV4Review() {
             />
           </div>
           <p className="mt-2 text-[11px] text-[#8A93A0]">
-            Overlay is decorative (pointer-events: none). Interactive control remains Signature V4.
+            Overlay is decorative (pointer-events: none). Interactive control remains Signature V5.
           </p>
         </div>
       ) : null}
@@ -121,7 +121,7 @@ export default function SignatureV4Review() {
       {mode === 'implementation-only' ? (
         <div>
           <p className="mb-2 text-[10px] font-semibold uppercase tracking-[0.14em] text-[#8A93A0]">
-            Implementation candidate — Signature V4
+            Implementation candidate — Signature V5
           </p>
           <div
             style={{
@@ -131,30 +131,14 @@ export default function SignatureV4Review() {
             }}
             className="flex items-center justify-center"
           >
-            <ForgeSignatureV4 compareSize />
+            <ForgeSignatureV5 compareSize />
           </div>
         </div>
       ) : null}
 
-      <ul className="mt-5 grid gap-1.5 border border-[#0B2D5C]/08 bg-[#F7F8FA] p-4 text-xs text-[#5A6575] sm:grid-cols-2 lg:grid-cols-3">
-        <li>• Outer silhouette</li>
-        <li>• Chrome sharpness</li>
-        <li>• Upper polished lip</li>
-        <li>• Side metal definition</li>
-        <li>• Lower steel depth</li>
-        <li>• Inner silver rim</li>
-        <li>• Graphite channel</li>
-        <li>• Face proportion</li>
-        <li>• Navy depth</li>
-        <li>• Glass specular line</li>
-        <li>• Broad reflection</li>
-        <li>• Typography</li>
-        <li>• Contact shadow</li>
-      </ul>
-
       <p className="mt-3 text-[11px] text-[#8A93A0]">
-        Comparison box {widthPx}×{heightPx}px · viewBox {SIGNATURE_V4_COMPARE.viewBox} ·
-        data-visual-candidate=&quot;{SIGNATURE_V4_COMPARE.dataCandidate}&quot;
+        Comparison box {widthPx}×{heightPx}px · viewBox {SIGNATURE_V5_COMPARE.viewBox} ·
+        data-visual-candidate=&quot;{SIGNATURE_V5_COMPARE.dataCandidate}&quot;
       </p>
     </div>
   );
