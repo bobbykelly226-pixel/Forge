@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { useMemo, useState } from 'react';
 
 import DiscoveryDesktopTopBar from '@/components/DiscoveryDesktopTopBar';
@@ -16,11 +17,15 @@ import {
 } from '@/components/connections/ConnectionCards';
 import ConnectionsTabs from '@/components/connections/ConnectionsTabs';
 import { useConnectionsHub } from '@/components/connections/ConnectionsHubProvider';
+import { DEMO_CONNECTIONS_ROUTE } from '@/lib/demo/demo-connections';
 
 export default function ConnectionsHubPrototype({
   loadError = null,
+  showDemoShortcut = false,
 }: {
   loadError?: string | null;
+  /** Preview/local only — never enabled in production. */
+  showDemoShortcut?: boolean;
 }) {
   const {
     activeTab,
@@ -154,10 +159,22 @@ export default function ConnectionsHubPrototype({
     mutual: (
       <div className="flex flex-col gap-6">
         {visibleMutual.length === 0 ? (
-          <EmptyState
-            title="No mutual connections yet."
-            description="Thoughtful introductions take time."
-          />
+          <>
+            <EmptyState
+              title="No mutual connections yet."
+              description="Thoughtful introductions take time."
+            />
+            {showDemoShortcut ? (
+              <p className="text-center text-sm text-[#6B7585]">
+                <Link
+                  href={DEMO_CONNECTIONS_ROUTE}
+                  className="font-semibold text-[#0B2D5C] underline-offset-4 transition hover:text-[#D62828] hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0B2D5C]"
+                >
+                  Preview Demo Connections
+                </Link>
+              </p>
+            ) : null}
+          </>
         ) : (
           visibleMutual.map((profile) => (
             <MutualConnectionCard key={profile.id} profile={profile} />

@@ -5,6 +5,7 @@ import { loadConnectionsHubAction } from '@/app/actions/relationships';
 import ConnectionsHubPrototype from '@/components/connections/ConnectionsHubPrototype';
 import { ConnectionsHubProvider } from '@/components/connections/ConnectionsHubProvider';
 import ForgeAppCanvas from '@/components/ForgeAppCanvas';
+import { shouldShowConnectionsDemoShortcut } from '@/lib/demo/demo-access';
 import { createClient } from '@/lib/supabase/server';
 import type { ConnectionsHubData } from '@/lib/data/connections-hub';
 
@@ -60,6 +61,9 @@ export default async function ConnectionsHubPage() {
   const result = await loadConnectionsHubAction();
   const initialData = result.success ? result.data : EMPTY_HUB;
   const loadError = result.success ? null : result.message;
+  const hasZeroRealConnections = initialData.mutual.length === 0;
+  const showDemoShortcut =
+    hasZeroRealConnections && shouldShowConnectionsDemoShortcut();
 
   return (
     <ForgeAppCanvas
@@ -69,7 +73,10 @@ export default async function ConnectionsHubPage() {
       }}
     >
       <ConnectionsHubProvider initialData={initialData}>
-        <ConnectionsHubPrototype loadError={loadError} />
+        <ConnectionsHubPrototype
+          loadError={loadError}
+          showDemoShortcut={showDemoShortcut}
+        />
       </ConnectionsHubProvider>
     </ForgeAppCanvas>
   );
