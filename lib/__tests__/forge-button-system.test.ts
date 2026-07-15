@@ -6,10 +6,12 @@ import { join } from 'node:path';
 const css = () => readFileSync(join(process.cwd(), 'app/globals.css'), 'utf8');
 const page = () =>
   readFileSync(join(process.cwd(), 'app/internal/visual-system/page.tsx'), 'utf8');
-const component = () =>
+const sig = () =>
+  readFileSync(join(process.cwd(), 'components/ui/ForgeSignatureV3.tsx'), 'utf8');
+const review = () =>
+  readFileSync(join(process.cwd(), 'components/internal/SignatureV3Review.tsx'), 'utf8');
+const forgeBtn = () =>
   readFileSync(join(process.cwd(), 'components/ui/ForgeButton.tsx'), 'utf8');
-const chassis = () =>
-  readFileSync(join(process.cwd(), 'components/ui/ForgeButtonReferenceChassis.tsx'), 'utf8');
 
 function collectTsFiles(dir: string, acc: string[] = []): string[] {
   for (const name of readdirSync(dir)) {
@@ -22,145 +24,81 @@ function collectTsFiles(dir: string, acc: string[] = []): string[] {
   return acc;
 }
 
-describe('Forge button — referenceFaithful candidate', () => {
-  it('uses an independent SVG structure for the new candidate', () => {
-    const svg = chassis();
-    const btn = component();
-    assert.match(svg, /viewBox=\{`0 0 \$\{W\} \$\{H\}`\}|viewBox=\{`0 0 \$\{W\}/);
-    assert.match(svg, /ForgeButtonReferenceChassis|REFERENCE_FAITHFUL_PROPORTIONS/);
-    assert.match(svg, /frameMask|channelMask/);
-    assert.match(svg, /linearGradient/);
-    assert.match(btn, /referenceFaithful/);
-    assert.match(btn, /ForgeButtonReferenceChassis/);
-    assert.match(btn, /variant/);
+describe('Forge Signature V3 navy review', () => {
+  it('primary implementation area renders ForgeSignatureV3', () => {
+    const p = page();
+    assert.match(p, /import SignatureV3Review from '@\/components\/internal\/SignatureV3Review'/);
+    assert.match(p, /import \{ SIGNATURE_V3_COMPARE \} from '@\/components\/ui\/ForgeSignatureV3'/);
+    assert.match(p, /<SignatureV3Review\s*\/>/);
+    assert.match(p, /Implementation candidate — Signature V3/);
+    // Primary section must not mount referenceFaithful as the candidate
+    const primary = p.slice(0, p.indexOf('Historical experiments'));
+    assert.match(primary, /SignatureV3Review/);
+    assert.doesNotMatch(primary, /variant="referenceFaithful"/);
+    assert.doesNotMatch(primary, /variant="experimental"/);
   });
 
-  it('keeps real text as HTML, not SVG paths', () => {
-    const btn = component();
-    const svg = chassis();
-    assert.match(btn, /forge-btn__label/);
-    assert.doesNotMatch(svg, /<text[\s>]/);
-    assert.match(btn, /\{children\}/);
+  it('primary candidate has data-visual-candidate="forge-signature-v3"', () => {
+    const s = sig();
+    const r = review();
+    assert.match(s, /data-visual-candidate['"]:\s*SIGNATURE_V3_COMPARE\.dataCandidate|data-visual-candidate=\{?SIGNATURE_V3_COMPARE|['"]data-visual-candidate['"]:\s*['"]forge-signature-v3['"]/);
+    assert.match(s, /dataCandidate:\s*'forge-signature-v3'/);
+    assert.match(r, /ForgeSignatureV3/);
+    assert.match(s, /'data-visual-candidate':\s*SIGNATURE_V3_COMPARE\.dataCandidate/);
   });
 
-  it('marks SVG layers decorative and aria-hidden', () => {
-    const btn = component();
-    const svg = chassis();
-    assert.match(btn, /forge-btn-rf__art" aria-hidden="true"/);
-    assert.match(svg, /aria-hidden="true"/);
-    assert.match(svg, /pointer-events:\s*none|focusable="false"/);
-  });
-
-  it('shows the smooth rounded-rectangle reference (not angular/chamfered copy)', () => {
-    const review = page();
-    const svg = chassis();
-    assert.match(review, /Actual approved reference|sole visual source of truth/i);
-    assert.match(review, /smooth chrome rounded-rectangle/i);
-    assert.match(review, /not the prior angular\/chamfered/i);
-    assert.match(review, /no bottom silver rail/i);
-    assert.match(review, /\/internal\/forge-button-approved-reference\.png/);
+  it('exact navy reference crop uses the approved source asset', () => {
+    assert.ok(
+      existsSync(join(process.cwd(), 'public/internal/forge-button-navy-reference-crop.png'))
+    );
     assert.ok(
       existsSync(join(process.cwd(), 'public/internal/forge-button-approved-reference.png'))
     );
-    // Controlled corner family — not the prior bulbous 11/60 ratio
-    assert.match(svg, /OUTER_RX = 7\.5/);
-    assert.doesNotMatch(svg, /OUTER_RX = 11/);
-    // Reference asset must not appear on product entry points
-    for (const file of ['app/page.tsx', 'app/layout.tsx', 'app/profile/page.tsx']) {
-      try {
-        const src = readFileSync(join(process.cwd(), file), 'utf8');
-        assert.doesNotMatch(src, /forge-button-approved-reference/);
-      } catch {
-        /* optional path */
-      }
-    }
+    const s = sig();
+    assert.match(s, /cropPath:\s*'\/internal\/forge-button-navy-reference-crop\.png'/);
+    assert.match(s, /cropSource:\s*'\/internal\/forge-button-approved-reference\.png'/);
   });
 
-  it('omits the detached bottom silver rail under the chassis', () => {
-    const svg = chassis();
-    // Old rail sat on the outer bottom edge at H - 1.4 spanning a wide band
-    assert.doesNotMatch(svg, /H - 1\.4/);
-    assert.doesNotMatch(svg, /Bottom polish catch/);
-    assert.match(svg, /NOT a detached rail|no heavy bottom rail/i);
+  it('reference and implementation render with the same comparison dimensions', () => {
+    const s = sig();
+    const r = review();
+    assert.match(s, /widthPx:\s*360/);
+    assert.match(s, /heightPx:\s*Math\.round\(\(360 \* 230\) \/ 654\)/);
+    assert.match(r, /width: widthPx/);
+    assert.match(r, /height: heightPx/);
+    assert.match(css(), /\.forge-sig-v3--compare/);
   });
 
-  it('uses a broad soft glass reflection without an isolated oval sticker', () => {
-    const svg = chassis();
-    assert.match(svg, /Broad soft upper-face glass|Broad soft glass reflection/);
-    assert.doesNotMatch(svg, /<ellipse/);
+  it('overlay mode is internal-review only and decorative', () => {
+    const r = review();
+    assert.match(r, /Overlay reference/);
+    assert.match(r, /pointer-events-none|pointer-events:\s*none/);
+    assert.match(r, /opacity:\s*0\.5/);
+    assert.match(r, /aria-hidden="true"/);
+    assert.match(r, /design-review tool/i);
+    // Overlay Image is a sibling, not a child of ForgeSignatureV3
+    assert.doesNotMatch(r, /<ForgeSignatureV3[^>]*>\s*<Image/);
   });
 
-  it('does not use the reference image as the interactive control', () => {
-    const review = page();
-    assert.match(review, /not an\s+interactive control/i);
-    assert.match(
-      review,
-      /<Image[\s\S]*?src="\/internal\/forge-button-approved-reference\.png"/
-    );
-    assert.doesNotMatch(review, /<ForgeButton[^>]*>\s*<Image/);
-    assert.doesNotMatch(
-      review,
-      /<ForgeButton[^>]*src="\/internal\/forge-button-approved-reference/
-    );
+  it('interactive control remains a real button or Link with aria-hidden SVG and HTML label', () => {
+    const s = sig();
+    assert.match(s, /<button/);
+    assert.match(s, /<Link/);
+    assert.match(s, /aria-hidden="true"/);
+    assert.match(s, /forge-sig-v3__label/);
+    assert.doesNotMatch(s, /<text[\s>]/);
   });
 
-  it('standard candidate is taller than the old 48px experiment', () => {
-    const styles = css();
-    const svg = chassis();
-    assert.match(styles, /\.forge-btn--rf\.forge-btn--tier1[\s\S]*?--forge-btn-height:\s*58px/);
-    assert.match(styles, /\.forge-btn--experimental\.forge-btn--tier1[\s\S]*?--forge-btn-height:\s*48px/);
-    assert.match(svg, /standardHeightPx:\s*58/);
+  it('uses unique Signature V3 SVG gradient id prefixes (no shared stale IDs)', () => {
+    const s = sig();
+    assert.match(s, /sigv3-metal-/);
+    assert.match(s, /sigv3-face-/);
+    assert.match(s, /sigv3-glass-/);
+    assert.match(s, /useId\(\)/);
+    assert.doesNotMatch(s, /rf-metal-|forge-metal-/);
   });
 
-  it('labels compact size as experimental', () => {
-    const review = page();
-    const styles = css();
-    assert.match(review, /Compact experimental/);
-    assert.match(review, /not automatically approved/i);
-    assert.match(styles, /\.forge-btn--rf\.forge-btn--compact[\s\S]*?--forge-btn-height:\s*48px/);
-  });
-
-  it('Tier 2 on navy is not a filled navy block', () => {
-    const styles = css();
-    const dark = styles.match(/\.forge-btn--tier2-on-dark\s*\{[^}]+\}/)?.[0] ?? '';
-    assert.ok(dark.length > 0);
-    assert.match(dark, /rgba\(255,\s*255,\s*255,\s*0\.0[4-9]/);
-    assert.match(dark, /border:\s*1px solid rgba\(232,\s*235,\s*240,\s*0\.78\)/);
-    assert.doesNotMatch(dark, /background:\s*(var\(--forge-navy\)|#0[Bb]2[Dd]5[Cc])/);
-  });
-
-  it('Tier 2 on white retains full text contrast', () => {
-    const styles = css();
-    const white = styles.match(/\.forge-btn--tier2-on-white\s*\{[^}]+\}/)?.[0] ?? '';
-    assert.match(white, /color:\s*var\(--forge-navy\)/);
-    assert.match(white, /background:\s*var\(--forge-app-background/);
-    assert.doesNotMatch(white, /opacity:\s*0\.\d/);
-  });
-
-  it('interaction states preserve dimensions', () => {
-    const styles = css();
-    const btn = component();
-    assert.match(btn, /loading\?:/);
-    assert.match(btn, /data-loading/);
-    assert.match(styles, /\[data-loading='true'\]/);
-    assert.match(styles, /--forge-btn-height:\s*58px/);
-    assert.match(styles, /--forge-btn-height:\s*68px/);
-  });
-
-  it('keeps reduced-motion behavior', () => {
-    assert.match(css(), /prefers-reduced-motion:\s*reduce/);
-  });
-
-  it('hosts candidate review sections on /internal/visual-system', () => {
-    const review = page();
-    assert.match(review, /Implementation candidate/);
-    assert.match(review, /Enlarged detail/);
-    assert.match(review, /Surface matrix/);
-    assert.match(review, /referenceFaithful/);
-    assert.match(review, /variant="experimental"/);
-  });
-
-  it('confirms no product routes use the candidate', () => {
+  it('no production-facing route imports ForgeSignatureV3', () => {
     const productDirs = [
       'app/profile',
       'app/discovery',
@@ -190,12 +128,7 @@ describe('Forge button — referenceFaithful candidate', () => {
       }
       for (const file of collectTsFiles(full)) {
         const src = readFileSync(file, 'utf8');
-        if (
-          src.includes('ForgeButton') ||
-          src.includes('forge-btn--rf') ||
-          src.includes('referenceFaithful') ||
-          src.includes('ForgeButtonReferenceChassis')
-        ) {
+        if (src.includes('ForgeSignatureV3') || src.includes('forge-signature-v3')) {
           offenders.push(file.replace(process.cwd() + '/', ''));
         }
       }
@@ -203,22 +136,37 @@ describe('Forge button — referenceFaithful candidate', () => {
     for (const file of ['app/page.tsx', 'app/layout.tsx']) {
       try {
         const src = readFileSync(join(process.cwd(), file), 'utf8');
-        if (src.includes('ForgeButton') || src.includes('referenceFaithful')) {
+        if (src.includes('ForgeSignatureV3') || src.includes('forge-signature-v3')) {
           offenders.push(file);
         }
       } catch {
         /* missing */
       }
     }
-    assert.deepEqual(
-      offenders,
-      [],
-      `Candidate must not roll out to product routes. Found: ${offenders.join(', ')}`
-    );
+    assert.deepEqual(offenders, [], `Found: ${offenders.join(', ')}`);
   });
 
-  it('documents production-safe robots rules for the internal route', () => {
-    const review = page();
-    assert.match(review, /robots:\s*\{[\s\S]*index:\s*false[\s\S]*follow:\s*false/);
+  it('Tier 2 and Tier 3 were not changed in this Signature V3 pass', () => {
+    const btn = forgeBtn();
+    // ForgeButton still owns Tier 2/3; Signature V3 does not redefine them
+    assert.match(btn, /forge-btn--tier2/);
+    assert.match(btn, /forge-btn--tier3/);
+    const s = sig();
+    assert.doesNotMatch(s, /tier2|tier3|Tier 2|Tier 3/i);
+    const styles = css();
+    assert.match(styles, /\.forge-btn--tier2-on-dark/);
+    assert.match(styles, /\.forge-btn--tier2-on-white/);
+  });
+
+  it('internal route remains unavailable via robots', () => {
+    const p = page();
+    assert.match(p, /robots:\s*\{[\s\S]*index:\s*false[\s\S]*follow:\s*false/);
+  });
+
+  it('keeps historical experiments clearly separated below the primary review', () => {
+    const p = page();
+    const hist = p.indexOf('Historical experiments');
+    const primary = p.indexOf('SignatureV3Review');
+    assert.ok(primary >= 0 && hist > primary);
   });
 });

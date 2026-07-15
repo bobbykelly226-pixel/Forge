@@ -652,6 +652,136 @@
   border-radius: var(--forge-btn-radius);
 }
 
+
+/* ------------------------------------------------------------------ */
+/* ForgeSignatureV3 — navy Signature Implementation Candidate          */
+/* Independent of referenceFaithful / experimental. Internal review.   */
+/* ------------------------------------------------------------------ */
+
+.forge-sig-v3 {
+  --sig-v3-w: 360px;
+  --sig-v3-h: 126px;
+  box-sizing: border-box;
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--sig-v3-w);
+  height: var(--sig-v3-h);
+  min-height: var(--sig-v3-h);
+  padding: 0;
+  margin: 0;
+  border: none;
+  border-radius: 15px; /* ~28/230 of compare height */
+  background: transparent;
+  color: #ffffff;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: 0.09em;
+  line-height: 1;
+  text-transform: uppercase;
+  text-decoration: none;
+  cursor: pointer;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  overflow: visible;
+  isolation: isolate;
+  /* Grounded contact + soft ambient — no pedestal / rail */
+  box-shadow:
+    0 1px 1px rgba(26, 35, 50, 0.28),
+    0 3px 8px rgba(11, 45, 92, 0.14),
+    0 8px 18px rgba(11, 45, 92, 0.08);
+  transition:
+    transform 140ms ease,
+    box-shadow 140ms ease,
+    filter 140ms ease;
+}
+
+.forge-sig-v3--compare {
+  width: var(--sig-v3-w);
+  height: var(--sig-v3-h);
+}
+
+.forge-sig-v3__art {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  overflow: hidden;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.forge-sig-v3__svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+.forge-sig-v3__label {
+  position: relative;
+  z-index: 2;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
+  padding: 0 28px;
+  white-space: nowrap;
+  color: #ffffff;
+}
+
+.forge-sig-v3__spinner {
+  width: 0.8em;
+  height: 0.8em;
+  border: 1.5px solid currentColor;
+  border-right-color: transparent;
+  border-radius: 50%;
+  animation: forge-btn-spin 0.7s linear infinite;
+}
+
+.forge-sig-v3:focus-visible {
+  outline: 2px solid var(--forge-navy);
+  outline-offset: 3px;
+}
+
+.forge-sig-v3:hover:not(:disabled):not([aria-disabled='true']):not([data-loading='true']) {
+  filter: brightness(1.03);
+  transform: translateY(-0.5px);
+  box-shadow:
+    0 1px 1px rgba(26, 35, 50, 0.26),
+    0 4px 10px rgba(11, 45, 92, 0.16),
+    0 10px 22px rgba(11, 45, 92, 0.1);
+}
+
+.forge-sig-v3:active:not(:disabled):not([aria-disabled='true']):not([data-loading='true']) {
+  transform: translateY(1px);
+  filter: brightness(0.98);
+  box-shadow:
+    0 1px 1px rgba(26, 35, 50, 0.22),
+    0 2px 5px rgba(11, 45, 92, 0.12);
+}
+
+.forge-sig-v3:disabled,
+.forge-sig-v3[aria-disabled='true'] {
+  cursor: not-allowed;
+  pointer-events: none;
+  filter: grayscale(0.3) brightness(0.92);
+}
+
+.forge-sig-v3[data-loading='true'] {
+  cursor: wait;
+  pointer-events: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .forge-sig-v3,
+  .forge-sig-v3__spinner {
+    transition: none !important;
+    animation: none !important;
+  }
+}
+
 /* Selective Forge red — brand moments / destructive text only (not glossy primary) */
 .forge-accent-red {
   color: var(--forge-red);
