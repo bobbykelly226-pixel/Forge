@@ -9,10 +9,23 @@ import {
   type KeyboardEvent as ReactKeyboardEvent,
 } from 'react';
 
+export type ImportantAlignmentFactorDetail = {
+  title: string;
+  severityLabel: string;
+  explanation: string;
+  viewerAnswer?: string;
+  partnerAnswer?: string;
+  conversationPrompt?: string;
+};
+
 type ImportantAlignmentFactorsDrawerProps = {
   open: boolean;
   onClose: () => void;
   profileName?: string;
+  /** When provided, replaces hardcoded prototype Children content. */
+  factors?: ImportantAlignmentFactorDetail[];
+  intro?: string;
+  hideReviewAnswerLink?: boolean;
 };
 
 function getFocusableElements(container: HTMLElement): HTMLElement[] {
@@ -24,15 +37,37 @@ function getFocusableElements(container: HTMLElement): HTMLElement[] {
   );
 }
 
+const DEFAULT_FACTORS: ImportantAlignmentFactorDetail[] = [
+  {
+    title: 'Children',
+    severityLabel: 'Important difference',
+    explanation:
+      'Questions about children can shape long-term plans, timing, family expectations, and the kind of future each person hopes to build. Forge surfaces this difference early so neither person has to discover it after investing significant time or emotion.',
+    viewerAnswer: 'Does not want children',
+    partnerAnswer: 'Wants children',
+    conversationPrompt:
+      'How do you currently picture children fitting into your future, and how certain do you feel about that?',
+  },
+];
+
 export default function ImportantAlignmentFactorsDrawer({
   open,
   onClose,
   profileName = 'Jessica',
+  factors,
+  intro,
+  hideReviewAnswerLink = false,
 }: ImportantAlignmentFactorsDrawerProps) {
   const titleId = useId();
   const descriptionId = useId();
   const panelRef = useRef<HTMLDivElement>(null);
   const closeButtonRef = useRef<HTMLButtonElement>(null);
+  const resolvedFactors = factors && factors.length > 0 ? factors : DEFAULT_FACTORS;
+  const resolvedIntro =
+    intro ??
+    (resolvedFactors.length === 1
+      ? 'Forge identified one meaningful difference in your current answers.'
+      : 'Forge identified meaningful differences in your current answers.');
 
   const handleKeyDown = useCallback(
     (event: ReactKeyboardEvent<HTMLDivElement>) => {
@@ -169,73 +204,82 @@ export default function ImportantAlignmentFactorsDrawer({
 
         <div className="flex-1 overflow-y-auto overscroll-contain px-5 py-5 sm:px-6 sm:py-6">
           <p id={descriptionId} className="text-[15px] leading-relaxed text-[#3D4654]">
-            Forge identified one meaningful difference in your current answers.
+            {resolvedIntro}
           </p>
           <p className="mt-3 text-sm leading-relaxed text-[#7A8494]">
-            This is not a judgment or a prediction. It is simply something worth understanding
-            before deciding whether to move forward.
+            This is not a judgment or a prediction. It is simply something worth understanding before
+            deciding whether to move forward. The factor is the concern — not the person.
           </p>
 
-          {/* Factor summary */}
-          <section
-            className="mt-7 rounded-[1.5rem] border-2 border-[#D62828] bg-[#FBF6EE] p-5 shadow-[0_8px_28px_rgba(214,40,40,0.08)]"
-            aria-labelledby="factor-summary-heading"
-          >
-            <div className="flex gap-3">
-              <span
-                className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#D62828] text-sm font-bold text-white"
-                aria-hidden="true"
+          <ul className="mt-7 space-y-4">
+            {resolvedFactors.map((factor) => (
+              <li
+                key={factor.title}
+                className="rounded-[1.5rem] border-2 border-[#D62828]/55 bg-[#FBF6EE] p-5 shadow-[0_8px_28px_rgba(214,40,40,0.08)]"
               >
-                !
-              </span>
-              <div className="min-w-0 flex-1">
-                <h3
-                  id="factor-summary-heading"
-                  className="text-lg font-semibold tracking-tight text-[#0B2D5C]"
-                >
-                  Children
-                </h3>
+                <div className="flex gap-3">
+                  <span
+                    className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#D62828] text-sm font-bold text-white"
+                    aria-hidden="true"
+                  >
+                    !
+                  </span>
+                  <div className="min-w-0 flex-1">
+                    <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-[#8A7048]">
+                      {factor.severityLabel}
+                    </p>
+                    <h3 className="mt-1 text-lg font-semibold tracking-tight text-[#0B2D5C]">
+                      {factor.title}
+                    </h3>
 
-                <dl className="mt-4 space-y-3">
-                  <div className="rounded-2xl bg-white/80 px-4 py-3">
-                    <dt className="text-[11px] font-semibold uppercase tracking-[0.12em] text-[#8A93A0]">
-                      {profileName}
-                    </dt>
-                    <dd className="mt-1 text-[15px] font-medium text-[#0B2D5C]">Wants children</dd>
+                    {(factor.partnerAnswer || factor.viewerAnswer) && (
+                      <dl className="mt-4 space-y-3">
+                        {factor.partnerAnswer ? (
+                          <div className="rounded-2xl bg-white/80 px-4 py-3">
+                            <dt className="text-[11px] font-semibold uppercase tracking-[0.12em] text-[#8A93A0]">
+                              {profileName}
+                            </dt>
+                            <dd className="mt-1 text-[15px] font-medium text-[#0B2D5C]">
+                              {factor.partnerAnswer}
+                            </dd>
+                          </div>
+                        ) : null}
+                        {factor.viewerAnswer ? (
+                          <div className="rounded-2xl bg-white/80 px-4 py-3">
+                            <dt className="text-[11px] font-semibold uppercase tracking-[0.12em] text-[#8A93A0]">
+                              You
+                            </dt>
+                            <dd className="mt-1 text-[15px] font-medium text-[#0B2D5C]">
+                              {factor.viewerAnswer}
+                            </dd>
+                          </div>
+                        ) : null}
+                      </dl>
+                    )}
+
+                    <p className="mt-4 text-[15px] leading-relaxed text-[#3D4654]">
+                      {factor.explanation}
+                    </p>
+
+                    {factor.conversationPrompt ? (
+                      <div className="mt-4 rounded-[1.25rem] border border-[#0B2D5C]/08 bg-white px-4 py-4">
+                        <p className="text-xs font-semibold uppercase tracking-[0.12em] text-[#7A8494]">
+                          A conversation worth having
+                        </p>
+                        <p
+                          className="mt-2 text-[15px] leading-relaxed text-[#0B2D5C]"
+                          style={{ fontFamily: 'var(--font-discovery-display), Georgia, serif' }}
+                        >
+                          “{factor.conversationPrompt}”
+                        </p>
+                      </div>
+                    ) : null}
                   </div>
-                  <div className="rounded-2xl bg-white/80 px-4 py-3">
-                    <dt className="text-[11px] font-semibold uppercase tracking-[0.12em] text-[#8A93A0]">
-                      You
-                    </dt>
-                    <dd className="mt-1 text-[15px] font-medium text-[#0B2D5C]">
-                      Does not want children
-                    </dd>
-                  </div>
-                </dl>
-              </div>
-            </div>
-          </section>
+                </div>
+              </li>
+            ))}
+          </ul>
 
-          {/* Why this matters */}
-          <section className="mt-8" aria-labelledby="why-matters-heading">
-            <h3
-              id="why-matters-heading"
-              className="text-lg tracking-[-0.01em] text-[#0B2D5C]"
-              style={{ fontFamily: 'var(--font-discovery-display), Georgia, serif' }}
-            >
-              Why this matters
-            </h3>
-            <p className="mt-3 text-[15px] leading-relaxed text-[#5A6575]">
-              Questions about children can shape long-term plans, timing, family expectations, and
-              the kind of future each person hopes to build.
-            </p>
-            <p className="mt-3 text-[15px] leading-relaxed text-[#5A6575]">
-              Forge surfaces this difference early so neither person has to discover it after
-              investing significant time or emotion.
-            </p>
-          </section>
-
-          {/* What this does not mean */}
           <section className="mt-8" aria-labelledby="does-not-mean-heading">
             <h3
               id="does-not-mean-heading"
@@ -248,70 +292,11 @@ export default function ImportantAlignmentFactorsDrawer({
               <p className="text-[15px] leading-relaxed text-[#5A6575]">
                 This does not mean the relationship cannot succeed.
               </p>
-              <p className="mt-3 text-[15px] leading-relaxed text-[#5A6575]">
-                People sometimes reconsider priorities, interpret questions differently, or need
-                conversation before fully understanding each other&apos;s plans.
-              </p>
               <p className="mt-3 text-[15px] leading-relaxed text-[#3D4654]">
                 Forge provides context. The decision remains yours.
               </p>
             </div>
           </section>
-
-          {/* Suggested conversation */}
-          <section className="mt-8" aria-labelledby="conversation-heading">
-            <h3
-              id="conversation-heading"
-              className="text-lg tracking-[-0.01em] text-[#0B2D5C]"
-              style={{ fontFamily: 'var(--font-discovery-display), Georgia, serif' }}
-            >
-              A conversation worth having
-            </h3>
-            <div className="mt-4 rounded-[1.25rem] border border-[#0B2D5C]/08 bg-white px-5 py-5 shadow-[0_8px_24px_rgba(11,45,92,0.05)]">
-              <p
-                className="text-[16px] leading-relaxed text-[#0B2D5C]"
-                style={{ fontFamily: 'var(--font-discovery-display), Georgia, serif' }}
-              >
-                “How do you currently picture children fitting into your future, and how certain do
-                you feel about that?”
-              </p>
-              <p className="mt-3 text-sm text-[#7A8494]">
-                Use this as a starting point, not a script.
-              </p>
-            </div>
-          </section>
-
-          {/* Answer context */}
-          <section className="mt-8 rounded-[1.5rem] border border-[#0B2D5C]/08 bg-white/90 p-5">
-            <h3
-              className="text-lg tracking-[-0.01em] text-[#0B2D5C]"
-              style={{ fontFamily: 'var(--font-discovery-display), Georgia, serif' }}
-            >
-              Answer context
-            </h3>
-            <dl className="mt-4 space-y-3">
-              <div className="flex items-baseline justify-between gap-4 border-b border-[#0B2D5C]/06 pb-3">
-                <dt className="text-sm text-[#7A8494]">{profileName} answered this question</dt>
-                <dd className="text-sm font-semibold text-[#0B2D5C]">Recently</dd>
-              </div>
-              <div className="flex items-baseline justify-between gap-4 border-b border-[#0B2D5C]/06 pb-3">
-                <dt className="text-sm text-[#7A8494]">You answered this question</dt>
-                <dd className="text-sm font-semibold text-[#0B2D5C]">Recently</dd>
-              </div>
-              <div>
-                <dt className="text-xs font-semibold uppercase tracking-[0.12em] text-[#7A8494]">
-                  Confidence
-                </dt>
-                <dd className="mt-1.5 text-sm leading-relaxed text-[#3D4654]">
-                  Clear difference based on both current answers
-                </dd>
-              </div>
-            </dl>
-          </section>
-
-          <p className="mt-8 text-center text-xs text-[#8A93A0]">
-            Prototype only — placeholder answers, not live hard-limit detection.
-          </p>
         </div>
 
         <div className="shrink-0 border-t border-[#0B2D5C]/08 bg-[#F8F6F2] px-5 py-4 sm:px-6">
@@ -322,14 +307,16 @@ export default function ImportantAlignmentFactorsDrawer({
           >
             Return to Profile
           </button>
-          <div className="mt-3 text-center">
-            <Link
-              href="/onboarding"
-              className="text-sm font-medium text-[#6B7585] transition hover:text-[#0B2D5C]"
-            >
-              Review my answer
-            </Link>
-          </div>
+          {!hideReviewAnswerLink ? (
+            <div className="mt-3 text-center">
+              <Link
+                href="/onboarding"
+                className="text-sm font-medium text-[#6B7585] transition hover:text-[#0B2D5C]"
+              >
+                Review my answer
+              </Link>
+            </div>
+          ) : null}
         </div>
       </div>
     </div>

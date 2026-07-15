@@ -22,6 +22,7 @@ import type {
   SavedHubItem,
   SentHubItem,
 } from '@/lib/data/connections-hub';
+import { isDemoProfileId } from '@/lib/demo/demo-access';
 
 const cardShell =
   'overflow-hidden rounded-[1.75rem] border border-[#0B2D5C]/08 bg-white/90 shadow-[0_12px_40px_rgba(11,45,92,0.06)] backdrop-blur-sm';
@@ -204,13 +205,16 @@ export function MutualConnectionCard({
   const ready = isMutualConversationReady(profile.id);
   const [recognitionOpen, setRecognitionOpen] = useState(false);
   const recognizeTriggerRef = useRef<HTMLButtonElement>(null);
+  const isDemo = isDemoProfileId(profile.id);
 
   const relativeTime =
     'relativeTime' in profile && typeof profile.relativeTime === 'string'
       ? profile.relativeTime
       : null;
 
-  const recipient = RECOGNITION_RECIPIENTS.find((entry) => entry.id === profile.id) ?? null;
+  const recipient = isDemo
+    ? null
+    : (RECOGNITION_RECIPIENTS.find((entry) => entry.id === profile.id) ?? null);
 
   return (
     <article className={cardShell}>
@@ -219,6 +223,7 @@ export function MutualConnectionCard({
         <div className="p-5 sm:p-6 lg:p-7 lg:pl-0">
           <ConnectionIdentity profile={profile} />
           <ConnectionAlignment profile={profile} />
+          <ImportantFactorsBadge profile={profile} />
           {profile.characterSignals.length > 0 && (
             <>
               <p className="mt-3 text-[11px] font-semibold uppercase tracking-[0.16em] text-[#D62828]">
@@ -239,7 +244,7 @@ export function MutualConnectionCard({
           <p className="mt-4 text-xs text-[#8A93A0]">
             {relativeTime ? `Connected ${relativeTime}` : 'Connected'} · Not yet messaging
           </p>
-          {ready && (
+          {ready && !isDemo && (
             <div className="mt-4 rounded-2xl border border-[#0B2D5C]/10 bg-[#E8EEF6] px-4 py-3">
               <p className="text-sm font-semibold text-[#0B2D5C]">Conversation Ready</p>
               <p className="mt-1 text-xs leading-relaxed text-[#5A6575]">
@@ -248,7 +253,11 @@ export function MutualConnectionCard({
             </div>
           )}
           <div className="mt-5 flex flex-col gap-2 sm:flex-row sm:flex-wrap" onClick={(e) => e.stopPropagation()}>
-            {!ready && (
+            {isDemo ? (
+              <span className="inline-flex items-center justify-center gap-2 rounded-2xl border border-[#0B2D5C]/12 px-4 py-3 text-sm font-medium text-[#8A93A0]">
+                Start Conversation · Demo only
+              </span>
+            ) : !ready ? (
               <button
                 type="button"
                 onClick={() => startMutualConversation(profile.id, profile.firstName)}
@@ -257,7 +266,7 @@ export function MutualConnectionCard({
                 <MessageCircle className="h-4 w-4" strokeWidth={1.75} aria-hidden="true" />
                 Start Conversation
               </button>
-            )}
+            ) : null}
             <ViewProfileLink profileId={profile.id} />
             {recipient && (
               <button

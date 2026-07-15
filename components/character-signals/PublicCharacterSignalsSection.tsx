@@ -15,15 +15,26 @@ import {
  * Unified premium treatment — no management dashboard accents.
  * Prototype only — no live confirmations or persistence.
  */
+export type PublicCharacterSignalEntry = {
+  signalId: CharacterSignalId;
+  confirmationCount: number;
+};
+
 export default function PublicCharacterSignalsSection({
   cardClassName,
+  signals,
+  emptyCopy,
 }: {
   cardClassName: string;
+  /** When omitted, uses the prototype Discovery public signals list. */
+  signals?: PublicCharacterSignalEntry[];
+  emptyCopy?: string;
 }) {
   const [detailSignalId, setDetailSignalId] = useState<CharacterSignalId | null>(null);
   const [detailCount, setDetailCount] = useState(0);
   const triggers = useRef<Record<string, HTMLButtonElement | null>>({});
   const activeKeyRef = useRef<string | null>(null);
+  const list = signals ?? DISCOVERY_PROFILE_PUBLIC_SIGNALS;
 
   const openDetail = (signalId: CharacterSignalId, count: number) => {
     activeKeyRef.current = signalId;
@@ -53,39 +64,45 @@ export default function PublicCharacterSignalsSection({
           Positive qualities recognized through meaningful interactions on Forge.
         </p>
 
-        <ul className="mt-6 space-y-3">
-          {DISCOVERY_PROFILE_PUBLIC_SIGNALS.map((entry) => {
-            const signal = getSignalDefinition(entry.signalId);
-            return (
-              <li key={entry.signalId}>
-                <button
-                  ref={(node) => {
-                    triggers.current[entry.signalId] = node;
-                  }}
-                  type="button"
-                  onClick={() => openDetail(entry.signalId, entry.confirmationCount)}
-                  className="flex w-full items-start gap-3 rounded-2xl border border-[#0B2D5C]/08 border-l-[3px] border-l-[#557A67] bg-[#EDF4EF]/35 px-4 py-3.5 text-left transition hover:border-[#0B2D5C]/18 hover:bg-[#EDF4EF]/55 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0B2D5C]"
-                  aria-haspopup="dialog"
-                >
-                  <span className="mt-0.5 inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[#557A67] text-white">
-                    <CharacterSignalIcon signalId={entry.signalId} className="h-4 w-4" />
-                  </span>
-                  <span className="min-w-0 flex-1">
-                    <span className="block text-[15px] font-semibold text-[#0B2D5C]">
-                      {signal.title}
+        {list.length === 0 ? (
+          <p className="mt-6 text-[15px] leading-relaxed text-[#5A6575]">
+            {emptyCopy ?? 'No public Character Signals yet'}
+          </p>
+        ) : (
+          <ul className="mt-6 space-y-3">
+            {list.map((entry) => {
+              const signal = getSignalDefinition(entry.signalId);
+              return (
+                <li key={entry.signalId}>
+                  <button
+                    ref={(node) => {
+                      triggers.current[entry.signalId] = node;
+                    }}
+                    type="button"
+                    onClick={() => openDetail(entry.signalId, entry.confirmationCount)}
+                    className="flex w-full items-start gap-3 rounded-2xl border border-[#0B2D5C]/08 border-l-[3px] border-l-[#557A67] bg-[#EDF4EF]/35 px-4 py-3.5 text-left transition hover:border-[#0B2D5C]/18 hover:bg-[#EDF4EF]/55 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0B2D5C]"
+                    aria-haspopup="dialog"
+                  >
+                    <span className="mt-0.5 inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[#557A67] text-white">
+                      <CharacterSignalIcon signalId={entry.signalId} className="h-4 w-4" />
                     </span>
-                    <span className="mt-1 block text-sm leading-relaxed text-[#5A6575]">
-                      {signal.shortDescription}
+                    <span className="min-w-0 flex-1">
+                      <span className="block text-[15px] font-semibold text-[#0B2D5C]">
+                        {signal.title}
+                      </span>
+                      <span className="mt-1 block text-sm leading-relaxed text-[#5A6575]">
+                        {signal.shortDescription}
+                      </span>
+                      <span className="mt-2 block text-sm font-medium text-[#0B2D5C]">
+                        Confirmed by {entry.confirmationCount} people
+                      </span>
                     </span>
-                    <span className="mt-2 block text-sm font-medium text-[#0B2D5C]">
-                      Confirmed by {entry.confirmationCount} people
-                    </span>
-                  </span>
-                </button>
-              </li>
-            );
-          })}
-        </ul>
+                  </button>
+                </li>
+              );
+            })}
+          </ul>
+        )}
       </section>
 
       <CharacterSignalDetailDrawer

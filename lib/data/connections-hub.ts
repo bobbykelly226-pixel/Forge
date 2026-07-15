@@ -32,6 +32,8 @@ export type HubProfileCard = {
   alignmentLabel: string;
   confidence: string;
   hasImportantFactors: boolean;
+  /** Optional one-line Important Alignment Factor summary for cards that support it. */
+  importantFactorsSummary?: string;
   aboutPreview: string | null;
   characterSignals: string[];
   portraitGradient: string;

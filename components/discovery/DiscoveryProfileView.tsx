@@ -7,6 +7,11 @@ import { useDiscoveryActions } from '@/components/discovery/DiscoveryActionsProv
 import PublicProfilePresentation, {
   PublicProfileBackLink,
 } from '@/components/discovery/PublicProfilePresentation';
+import { isDemoProfileId } from '@/lib/demo/demo-access';
+import {
+  getSampleConnectionById,
+  toSampleAlignmentPresentation,
+} from '@/lib/demo/sample-connections';
 import {
   firstNameFromFullName,
   type PublicDiscoveryProfile,
@@ -21,8 +26,11 @@ export default function DiscoveryProfileView({ profile }: Props) {
   const firstName = firstNameFromFullName(profile.full_name);
   const { isPassed } = useDiscoveryActions();
   const passed = isPassed(profileId);
+  const isDemo = isDemoProfileId(profileId);
+  const sample = isDemo ? getSampleConnectionById(profileId) : undefined;
+  const alignmentPresentation = sample ? toSampleAlignmentPresentation(sample) : null;
 
-  if (passed) {
+  if (passed && !isDemo) {
     return (
       <div className="mx-auto flex min-h-screen max-w-lg flex-col items-center justify-center px-6 text-center">
         <h1
@@ -45,16 +53,39 @@ export default function DiscoveryProfileView({ profile }: Props) {
         profile={profile}
         mode="discovery"
         showAlignmentCard
-        showSurfacedReason
+        showSurfacedReason={!isDemo}
+        alignmentPresentation={alignmentPresentation}
         header={
-          <PublicProfileBackLink href="/discovery" label="← Back to Discovery" />
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <PublicProfileBackLink
+              href={isDemo ? '/connections' : '/discovery'}
+              label={isDemo ? '← Back to Connections' : '← Back to Discovery'}
+            />
+            {isDemo ? (
+              <span className="inline-flex rounded-full border border-[#0B2D5C]/12 bg-[#E8EEF6] px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.12em] text-[#0B2D5C]/70">
+                Sample profile
+              </span>
+            ) : null}
+          </div>
         }
         footer={
-          <DiscoveryActionTiles
-            profileId={profileId}
-            profileName={firstName}
-            layout="profile-stack"
-          />
+          isDemo ? (
+            <div className="rounded-[1.75rem] border border-[#0B2D5C]/08 bg-white/80 px-5 py-4">
+              <p className="text-sm leading-relaxed text-[#5A6575]">
+                Sample preview profile. Relationship actions that would write live data stay
+                unavailable.
+              </p>
+              <p className="mt-3 text-xs font-semibold uppercase tracking-[0.12em] text-[#8A93A0]">
+                Interested · Open to Chat · Demo only
+              </p>
+            </div>
+          ) : (
+            <DiscoveryActionTiles
+              profileId={profileId}
+              profileName={firstName}
+              layout="profile-stack"
+            />
+          )
         }
       />
     </div>

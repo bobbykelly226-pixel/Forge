@@ -5,7 +5,11 @@ import { loadConnectionsHubAction } from '@/app/actions/relationships';
 import ConnectionsHubPrototype from '@/components/connections/ConnectionsHubPrototype';
 import { ConnectionsHubProvider } from '@/components/connections/ConnectionsHubProvider';
 import ForgeAppCanvas from '@/components/ForgeAppCanvas';
-import { shouldShowConnectionsDemoShortcut } from '@/lib/demo/demo-access';
+import {
+  countRealMutualConnections,
+  injectSampleConnections,
+  shouldInjectSampleConnectionsForRequest,
+} from '@/lib/demo/inject-sample-connections';
 import { createClient } from '@/lib/supabase/server';
 import type { ConnectionsHubData } from '@/lib/data/connections-hub';
 
@@ -48,7 +52,11 @@ const EMPTY_HUB: ConnectionsHubData = {
   },
 };
 
-export default async function ConnectionsHubPage() {
+export default async function ConnectionsHubPage({
+  searchParams,
+}: {
+  searchParams?: Promise<{ demo?: string }>;
+}) {
   const supabase = await createClient();
   const {
     data: { user },
@@ -59,11 +67,22 @@ export default async function ConnectionsHubPage() {
   }
 
   const result = await loadConnectionsHubAction();
-  const initialData = result.success ? result.data : EMPTY_HUB;
+  let initialData = result.success ? result.data : EMPTY_HUB;
   const loadError = result.success ? null : result.message;
-  const hasZeroRealConnections = initialData.mutual.length === 0;
-  const showDemoShortcut =
-    hasZeroRealConnections && shouldShowConnectionsDemoShortcut();
+
+  const params = searchParams ? await searchParams : {};
+  const forceDemoQuery = params.demo === '1';
+  const realMutualCount = countRealMutualConnections(initialData.mutual);
+  const shouldInject = shouldInjectSampleConnectionsForRequest({
+    realMutualCount,
+    forceDemoQuery,
+  });
+
+  let sampleConnectionsInjected = false;
+  if (shouldInject) {
+    initialData = injectSampleConnections(initialData);
+    sampleConnectionsInjected = true;
+  }
 
   return (
     <ForgeAppCanvas
@@ -75,7 +94,7 @@ export default async function ConnectionsHubPage() {
       <ConnectionsHubProvider initialData={initialData}>
         <ConnectionsHubPrototype
           loadError={loadError}
-          showDemoShortcut={showDemoShortcut}
+          sampleConnectionsInjected={sampleConnectionsInjected}
         />
       </ConnectionsHubProvider>
     </ForgeAppCanvas>

@@ -7,7 +7,13 @@ import {
   loadActionStateForProfiles,
   setDiscoveryVisibility,
 } from '@/lib/data/discovery';
+import { canInjectSampleConnections, isDemoProfileId } from '@/lib/demo/demo-access';
+import {
+  getSampleConnectionById,
+  toSamplePublicDiscoveryProfile,
+} from '@/lib/demo/sample-connections';
 import { toDiscoveryFeedCard } from '@/lib/discovery/presentation';
+import { createEmptyActionState } from '@/lib/discovery-actions-types';
 
 export async function fetchDiscoveryFeedAction() {
   const result = await listDiscoveryFeedProfiles();
@@ -26,6 +32,33 @@ export async function fetchDiscoveryFeedAction() {
 }
 
 export async function fetchDiscoveryProfileAction(profileId: string) {
+  // Preview-only sample profiles resolve from local fixtures — never query Supabase.
+  if (isDemoProfileId(profileId)) {
+    if (!canInjectSampleConnections()) {
+      return {
+        success: true as const,
+        unavailable: true as const,
+        profile: null,
+        actionState: null,
+      };
+    }
+    const sample = getSampleConnectionById(profileId);
+    if (!sample) {
+      return {
+        success: true as const,
+        unavailable: true as const,
+        profile: null,
+        actionState: null,
+      };
+    }
+    return {
+      success: true as const,
+      unavailable: false as const,
+      profile: toSamplePublicDiscoveryProfile(sample),
+      actionState: createEmptyActionState(),
+    };
+  }
+
   const result = await getDiscoveryProfile(profileId);
   if (!result.success) {
     return { success: false as const, message: result.message, profile: null, actionState: null };

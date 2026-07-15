@@ -1,184 +1,110 @@
-# Demo Connections Showcase
+# Sample Connections (Preview Injection)
 
-Private demonstration experience so Forge Connections and compatibility language can be shown even when a real account has zero live connections.
-
-Status: Draft preview feature (local fixtures only)  
-Route: `/internal/demo-connections`
+Private preview support so Bobby can demonstrate Forge Connections with realistic sample profiles inside the **real** Connections experience — without creating fake live users or writing to Supabase.
 
 ---
 
 ## Purpose
 
-Bobby can walk through realistic sample connections that demonstrate:
+When a preview/local account has zero real Mutual connections, five sample connections are injected into the same `ConnectionsHubData` consumed by:
 
-- Multiple connections
-- Compatibility Index
-- Relationship Alignment categories
-- Confidence levels
-- Shared alignment strengths
-- Important Alignment Factors
-- Potential dealbreakers (factor-focused language)
-- Incomplete-information behavior
-- Character Signals
-- Compatibility breakdowns
-- Conversation topics
+- `ConnectionsHubProvider`
+- `ConnectionsHubPrototype`
+- `MutualConnectionCard`
+- `/discovery/profile/[profileId]` → `DiscoveryProfileView` → `PublicProfilePresentation`
 
-This is not a disconnected mockup. It reuses Forge app chrome, typography, card shells, Soft Slate canvas, and Connections-adjacent layout patterns.
+Bobby can click through cards, open profiles, open Relationship Alignment and Important Alignment Factors drawers, and view Character Signals exactly as a real user would.
 
 ---
 
-## Route
+## Routes
 
-| Surface | Path |
-|---------|------|
-| Demo hub | `/internal/demo-connections` |
-| Compatibility detail | `/internal/demo-connections/[id]` |
+| Surface | Behavior |
+|---------|----------|
+| `/connections` | Authoritative Connections UI. Samples inject in preview/local when mutuals are empty (or `?demo=1`). |
+| `/discovery/profile/demo-*` | Resolves sample fixtures via adapter — no Supabase user query. |
+| `/internal/demo-connections` | **Retired.** Redirects to `/connections?demo=1` (or `notFound()` in production). |
 
-The route does **not** appear in public marketing navigation.
+There is **no** separate showcase design, Compatibility Index, or custom demo Connections layout.
 
 ---
 
-## Preview-only behavior
+## Visibility rules
 
-Access is controlled by `lib/demo/demo-access.ts`:
+Controlled by `lib/demo/demo-access.ts` / `lib/demo/inject-sample-connections.ts`:
 
-| Environment | Allowed? |
-|-------------|----------|
-| Local development (`NODE_ENV=development`) | Yes |
-| Vercel preview (`VERCEL_ENV=preview`) | Yes |
+| Environment | Samples shown? |
+|-------------|----------------|
+| Local development | Yes (when zero real mutuals, or `?demo=1`) |
+| Vercel preview | Yes (same) |
 | Production | Only if `ENABLE_INTERNAL_DEMOS=true` |
 
-Suggested optional flag:
-
-```bash
-ENABLE_INTERNAL_DEMOS=true
-```
-
-Bobby does **not** need to set the flag for normal Vercel preview testing when `VERCEL_ENV` is already `preview`.
-
-Authenticated session is required (same pattern as `/connections`). Unauthenticated visitors are redirected to login with `redirectTo` preserved. `/internal` is included in `proxy.ts` protected routes.
-
----
-
-## Production protection
-
-In production without `ENABLE_INTERNAL_DEMOS=true`, the demo pages call `notFound()`.
-
-The quiet Connections empty-state shortcut is also gated and will not render in production.
-
----
-
-## Empty Connections shortcut
-
-On the real `/connections` page, when the viewer has **zero mutual connections**:
-
-- In local development or Vercel preview only, a quiet supporting link appears under the Mutual empty state:
-  - **Preview Demo Connections** → `/internal/demo-connections`
-- The normal empty state copy is preserved
-- Real Connections behavior is otherwise unchanged
+Ordinary production shows only real Connections data.
 
 ---
 
 ## Fixture architecture
 
-Central file:
+| File | Role |
+|------|------|
+| `lib/demo/sample-connections.ts` | Sample fixtures + adapters to hub cards / public profiles / alignment presentation |
+| `lib/demo/inject-sample-connections.ts` | Merge samples into `ConnectionsHubData` |
+| `lib/demo/demo-access.ts` | Env gating + `isDemoProfileId` |
 
-`lib/demo/demo-connections.ts`
-
-Access helpers:
-
-`lib/demo/demo-access.ts`
-
-Fixtures are typed (`DemoConnection`, `DemoAlignmentFactor`, etc.) and map closely to live hub presentation fields (`HubProfileCard` adapter via `toDemoHubProfileCard`).
-
-Do not scatter sample data through components.
+Adapters map into production types (`HubProfileCard`, `MutualConnectionItem`, `PublicDiscoveryProfile`).
 
 ---
 
-## Sample profiles
+## Sample profile IDs
 
-| Id | Name | Alignment | Index | Confidence |
-|----|------|-----------|-------|------------|
-| `demo-jessica` | Jessica, 38 | Strong Alignment | 94 | High |
-| `demo-megan` | Megan, 36 | Promising Alignment | 83 | High |
-| `demo-lauren` | Lauren, 41 | More to Discover | 68 | Moderate |
-| `demo-natalie` | Natalie, 39 | More to Discover | 52 | High |
-| `demo-emily` | Emily, 37 | Not Enough Information | Not yet available | Low |
+- `demo-jessica` — Strong Alignment
+- `demo-megan` — Promising Alignment (relocation worth discussing)
+- `demo-lauren` — More to Discover (faith / drinking / incomplete relocation)
+- `demo-natalie` — More to Discover (potential dealbreaker: children; smoking conflict)
+- `demo-emily` — Not Enough Information
 
-All profiles are marked `isDemo: true` internally and show a restrained **Demo Connection** badge in UI.
+Qualitative Relationship Alignment only. No Compatibility Index. No numeric scores or category gauges.
 
 ---
 
-## Compatibility examples
+## Product language
 
-- Strong / Promising / More to Discover examples show a numeric Compatibility Index beside alignment category, confidence, and written reasoning.
-- Not Enough Information withholds a numeric score and explains why.
-- Breakdown rows either show category scores or incomplete/unavailable states.
+Use **Important Alignment Factors**. Never label a person a red flag.
 
-The index is informational guidance — not arcade scoring, not green/red judgment of a person.
+Serious conflicts may use: Potential dealbreaker, Important difference, Worth discussing.
 
 ---
 
-## Important Alignment Factor language
+## Banner + hide control
 
-Forge must not label a human being as a “red flag.”
+When samples are visible on Mutual:
 
-Official product language:
+> Sample connections are shown for product preview. No live member data is affected.
 
-- **Important Alignment Factors**
-- For serious conflicts: **Potential dealbreaker**, **Important difference**, **Preference conflict**, **Worth discussing before moving forward**
-
-The factor is the concern, not the person.
-
-Severity visuals (restrained):
-
-| Severity | Treatment |
-|----------|-----------|
-| Informational | Muted slate / navy |
-| Worth discussing | Warm neutral / restrained amber |
-| Potential dealbreaker | Restrained Forge red accent (not a fully red card) |
+Quiet control: **Hide sample connections** (client-only). Refresh restores them.
 
 ---
 
-## Why fake live users were not created
+## Why no fake live users
 
-Creating fake auth users, connection rows, notifications, or messages would:
-
-- Pollute Bobby’s real account and Discovery
-- Risk production data integrity
-- Trigger real relationship actions
-
-This showcase uses deterministic local fixtures only. No database migration is required or permitted.
+Injecting into the UI at runtime avoids polluting Auth, Discovery, connections, notifications, and messaging. No database migration is required or permitted.
 
 ---
 
-## How to add or change demo profiles later
+## How to change samples later
 
-1. Edit `DEMO_CONNECTIONS` in `lib/demo/demo-connections.ts`
-2. Keep `isDemo: true` and a stable `demo-*` id
-3. Prefer existing Character Signal titles used in product language
-4. For Not Enough Information cases, set `compatibilityIndex: null` and incomplete breakdown rows
-5. Update tests in `lib/__tests__/demo-connections-showcase.test.ts`
-6. Optional: add a local portrait under `public/` and set `photoUrl` (architecture already supports it)
-
----
-
-## How to remove the showcase before launch
-
-1. Delete `app/internal/demo-connections/`
-2. Delete `components/demo/`
-3. Delete `lib/demo/`
-4. Delete `docs/DEMO_CONNECTIONS_SHOWCASE.md` and related tests
-5. Remove `showDemoShortcut` plumbing from `app/connections/page.tsx` and `ConnectionsHubPrototype.tsx`
-6. Remove `/internal` from the protected-route list in `proxy.ts` if no other internal routes remain
+1. Edit `SAMPLE_CONNECTIONS` in `lib/demo/sample-connections.ts`
+2. Keep `demo-*` ids and `isDemo: true`
+3. Keep structured field values from `lib/profile/structured-options.ts`
+4. Update `lib/__tests__/demo-connections-showcase.test.ts`
+5. Optional: set `photoUrl` / photos when local portraits are available
 
 ---
 
-## Read-only guarantee
+## How to remove before launch
 
-Demo cards may only:
-
-- View Compatibility
-- View demo detail / navigate back
-
-They must not send messages, create connections, block users, trigger Open to Chat, mark Interested, or modify Supabase.
+1. Remove injection from `app/connections/page.tsx`
+2. Remove demo branch from `fetchDiscoveryProfileAction`
+3. Delete `lib/demo/`, retired internal redirect, and this doc
+4. Optionally remove `/internal` from `proxy.ts` if unused
+5. Remove sample banner / hide control props from `ConnectionsHubPrototype`

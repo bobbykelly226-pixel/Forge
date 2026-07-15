@@ -2,6 +2,9 @@
 
 import Link from 'next/link';
 
+import ProfileAlignmentSections, {
+  type ProfileAlignmentSectionsProps,
+} from '@/components/discovery/ProfileAlignmentSections';
 import ProfilePhotoGallery from '@/components/discovery/ProfilePhotoGallery';
 import {
   DISCOVERY_NEUTRAL_ALIGNMENT_LABEL,
@@ -28,6 +31,11 @@ export type PublicProfilePresentationProps = {
   showAlignmentCard?: boolean;
   /** Show “Why Forge surfaced this profile” (Discovery only). */
   showSurfacedReason?: boolean;
+  /**
+   * Optional qualitative alignment enrichment (preview sample profiles).
+   * When set, replaces the neutral placeholder alignment card.
+   */
+  alignmentPresentation?: Omit<ProfileAlignmentSectionsProps, 'profileName' | 'cardClassName'> | null;
 };
 
 /**
@@ -42,6 +50,7 @@ export default function PublicProfilePresentation({
   footer,
   showAlignmentCard = mode === 'discovery',
   showSurfacedReason = mode === 'discovery',
+  alignmentPresentation = null,
 }: PublicProfilePresentationProps) {
   const firstName = firstNameFromFullName(profile.full_name);
   const orderedPhotos = sortPhotosByDisplayOrder(profile.photos ?? []);
@@ -53,6 +62,7 @@ export default function PublicProfilePresentation({
   const locationLabel = resolvePublicLocation(profile);
   const hasAbout = Boolean(profile.short_bio?.trim());
   const hasMoreAbout = Boolean(profile.more_about?.trim());
+  const useEnrichedAlignment = Boolean(alignmentPresentation) && showAlignmentCard;
 
   return (
     <div
@@ -84,7 +94,11 @@ export default function PublicProfilePresentation({
         </div>
 
         <div className="mt-8 space-y-6 lg:mt-0 lg:space-y-8">
-          {showAlignmentCard ? (
+          {useEnrichedAlignment && alignmentPresentation ? (
+            <ProfileAlignmentSections profileName={firstName} {...alignmentPresentation} />
+          ) : null}
+
+          {showAlignmentCard && !useEnrichedAlignment ? (
             <section className="rounded-[1.75rem] border border-[#0B2D5C]/08 bg-white/90 p-6">
               <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[#D62828]">
                 Relationship Alignment
@@ -197,7 +211,7 @@ export default function PublicProfilePresentation({
             </section>
           ) : null}
 
-          {showSurfacedReason ? (
+          {showSurfacedReason && !useEnrichedAlignment ? (
             <section className="rounded-[1.75rem] border border-[#0B2D5C]/08 bg-white/90 p-6">
               <h2
                 className="text-xl text-[#0B2D5C]"

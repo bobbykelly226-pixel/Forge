@@ -1,6 +1,6 @@
 /**
- * Access control for private internal demo experiences.
- * Demo routes must never be reachable in production without an explicit flag.
+ * Access control for preview-only sample Connections injection.
+ * Must never enable sample connections in ordinary production.
  */
 
 export type DemoAccessEnv = {
@@ -10,10 +10,10 @@ export type DemoAccessEnv = {
 };
 
 /**
- * Recommended access rule:
- * - local development: allowed
- * - Vercel preview: allowed
- * - production: only when ENABLE_INTERNAL_DEMOS=true
+ * Allowed when:
+ * - local development
+ * - Vercel preview
+ * - ENABLE_INTERNAL_DEMOS=true
  */
 export function isInternalDemoAccessAllowed(
   env: DemoAccessEnv = process.env
@@ -21,20 +21,17 @@ export function isInternalDemoAccessAllowed(
   if (env.ENABLE_INTERNAL_DEMOS === 'true') {
     return true;
   }
-
   if (env.VERCEL_ENV === 'preview') {
     return true;
   }
-
   if (env.NODE_ENV === 'development') {
     return true;
   }
-
   return false;
 }
 
-/** Quiet empty-state shortcut on real Connections — never in production. */
-export function shouldShowConnectionsDemoShortcut(
+/** Alias for Connections sample injection gating. */
+export function canInjectSampleConnections(
   env: DemoAccessEnv = process.env
 ): boolean {
   return isInternalDemoAccessAllowed(env);
@@ -54,4 +51,8 @@ export function describeDemoAccessDecision(env: DemoAccessEnv = process.env): {
     return { allowed: true, reason: 'NODE_ENV_development' };
   }
   return { allowed: false, reason: 'production_blocked' };
+}
+
+export function isDemoProfileId(profileId: string): boolean {
+  return profileId.startsWith('demo-');
 }

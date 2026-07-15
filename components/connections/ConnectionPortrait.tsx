@@ -19,16 +19,24 @@ export function ConnectionPortrait({
 }: ConnectionPortraitProps) {
   return (
     <div className={`relative shrink-0 overflow-hidden ${sizeClasses[size]}`}>
-      <div
-        className="absolute inset-0"
-        style={{
-          backgroundImage: profile.portraitGradient,
-          backgroundSize: 'cover',
-          backgroundPosition: 'center',
-        }}
-        role="img"
-        aria-label={`${profile.firstName}, portrait`}
-      />
+      {profile.photoUrl ? (
+        // eslint-disable-next-line @next/next/no-img-element -- connection hub portraits may be local fixtures
+        <img
+          src={profile.photoUrl}
+          alt=""
+          className="absolute inset-0 h-full w-full object-cover"
+        />
+      ) : (
+        <div
+          className="absolute inset-0"
+          style={{
+            backgroundImage: profile.portraitGradient,
+            backgroundSize: 'cover',
+            backgroundPosition: 'center',
+          }}
+          aria-hidden="true"
+        />
+      )}
       <div
         className="absolute inset-0 opacity-30"
         style={{
@@ -37,6 +45,7 @@ export function ConnectionPortrait({
         }}
         aria-hidden="true"
       />
+      <span className="sr-only">{`${profile.firstName}, portrait`}</span>
       {overlay}
     </div>
   );
@@ -110,7 +119,9 @@ export function ImportantFactorsBadge({ profile }: { profile: HubProfileCard }) 
         !
       </span>
       <p className="text-xs leading-relaxed text-[#5A6575] lg:text-sm">
-        Review alignment details on their profile.
+        {profile.importantFactorsSummary?.trim()
+          ? profile.importantFactorsSummary
+          : 'Review alignment details on their profile.'}
       </p>
     </div>
   );
