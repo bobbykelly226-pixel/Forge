@@ -782,6 +782,142 @@
   }
 }
 
+
+/* ------------------------------------------------------------------ */
+/* ForgeSignatureV4 — navy Signature Implementation Candidate          */
+/* Multi-layer chrome SVG · independent of V3 · Soft Slate review only */
+/* ------------------------------------------------------------------ */
+
+.forge-sig-v4 {
+  --sig-v4-w: 360px;
+  --sig-v4-h: 127px;
+  box-sizing: border-box;
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--sig-v4-w);
+  height: var(--sig-v4-h);
+  min-height: var(--sig-v4-h);
+  padding: 0;
+  margin: 0;
+  border: none;
+  /* ~22/230 of compare height ≈ 12px at 127px */
+  border-radius: 12px;
+  background: transparent;
+  color: #ffffff;
+  font-family: inherit;
+  font-size: 15px;
+  font-weight: 500;
+  letter-spacing: 0.09em;
+  line-height: 1;
+  text-transform: uppercase;
+  text-decoration: none;
+  cursor: pointer;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  overflow: visible;
+  isolation: isolate;
+  /* 13–14. Contact + soft ambient — no rail / pedestal */
+  box-shadow:
+    0 1px 1px rgba(26, 35, 50, 0.32),
+    0 3px 7px rgba(11, 45, 92, 0.16),
+    0 8px 18px rgba(11, 45, 92, 0.09);
+  transition:
+    transform 140ms ease,
+    box-shadow 140ms ease,
+    filter 140ms ease;
+}
+
+.forge-sig-v4--compare {
+  width: var(--sig-v4-w);
+  height: var(--sig-v4-h);
+}
+
+.forge-sig-v4__art {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  overflow: hidden;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.forge-sig-v4__svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+.forge-sig-v4__label {
+  position: relative;
+  z-index: 2;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
+  padding: 0 32px;
+  white-space: nowrap;
+  color: #ffffff;
+}
+
+.forge-sig-v4__spinner {
+  width: 0.8em;
+  height: 0.8em;
+  border: 1.5px solid currentColor;
+  border-right-color: transparent;
+  border-radius: 50%;
+  animation: forge-btn-spin 0.7s linear infinite;
+}
+
+.forge-sig-v4:focus-visible {
+  outline: 2px solid var(--forge-navy);
+  outline-offset: 3px;
+}
+
+.forge-sig-v4:hover:not(:disabled):not([aria-disabled='true']):not([data-loading='true']) {
+  filter: brightness(1.035);
+  transform: translateY(-0.5px);
+  box-shadow:
+    0 1px 1px rgba(26, 35, 50, 0.3),
+    0 4px 10px rgba(11, 45, 92, 0.18),
+    0 10px 22px rgba(11, 45, 92, 0.1);
+}
+
+.forge-sig-v4:active:not(:disabled):not([aria-disabled='true']):not([data-loading='true']) {
+  transform: translateY(1px);
+  filter: brightness(0.97);
+  box-shadow:
+    0 1px 1px rgba(26, 35, 50, 0.24),
+    0 2px 5px rgba(11, 45, 92, 0.12);
+}
+
+.forge-sig-v4:disabled,
+.forge-sig-v4[aria-disabled='true'] {
+  cursor: not-allowed;
+  pointer-events: none;
+  filter: grayscale(0.28) brightness(0.9);
+}
+
+.forge-sig-v4:disabled .forge-sig-v4__label,
+.forge-sig-v4[aria-disabled='true'] .forge-sig-v4__label {
+  opacity: 0.82;
+}
+
+.forge-sig-v4[data-loading='true'] {
+  cursor: wait;
+  pointer-events: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .forge-sig-v4,
+  .forge-sig-v4__spinner {
+    transition: none !important;
+    animation: none !important;
+  }
+}
+
 /* Selective Forge red — brand moments / destructive text only (not glossy primary) */
 .forge-accent-red {
   color: var(--forge-red);
