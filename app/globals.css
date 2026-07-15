@@ -784,80 +784,74 @@
 
 
 
+
 /* ------------------------------------------------------------------ */
-/* ForgeSignatureV5 — literal Gemini SVG chassis (layout/states only)  */
-/* Do not convert SVG chrome/face/channel back into CSS gradients.     */
+/* ForgeSignatureV6 — literal Gemini recalibrated SVG (layout only)    */
+/* Do not convert SVG chrome/face back into CSS borders/gradients.     */
 /* ------------------------------------------------------------------ */
 
-.forge-premium-btn {
+.forge-signature-v6 {
   position: relative;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   width: 360px;
   height: 127px;
-  box-sizing: border-box;
-  border: 0;
   padding: 0;
-  margin: 0;
+  border: 0;
   background: transparent;
+  box-sizing: border-box;
   color: #ffffff;
   text-decoration: none;
   cursor: pointer;
   isolation: isolate;
   user-select: none;
   -webkit-tap-highlight-color: transparent;
-  /* External wrapper shadow only — SVG provides chrome */
-  box-shadow:
-    0 1px 1px rgba(26, 35, 50, 0.3),
-    0 4px 10px rgba(11, 45, 92, 0.14),
-    0 10px 22px rgba(11, 45, 92, 0.08);
-  transition:
-    transform 140ms ease,
-    box-shadow 140ms ease,
-    filter 140ms ease;
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-.forge-premium-btn--compare {
+.forge-signature-v6--compare {
   width: 360px;
   height: 127px;
 }
 
-.forge-premium-btn--block {
+.forge-signature-v6--block {
   width: 100%;
   max-width: 100%;
   height: auto;
   aspect-ratio: 360 / 127;
 }
 
-.forge-premium-btn .btn-chassis {
+.forge-signature-v6 .v6-chassis {
   position: absolute;
   inset: 0;
   width: 100%;
   height: 100%;
+  z-index: 1;
   display: block;
   pointer-events: none;
 }
 
-.forge-premium-btn .btn-text {
+.forge-signature-v6 .v6-text {
   position: relative;
-  z-index: 1;
+  z-index: 2;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 0.45rem;
-  font-family: var(--font-discovery-sans), var(--font-manrope), Manrope, sans-serif;
-  font-size: 24px;
+  color: #ffffff;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  font-size: 26px;
   font-weight: 500;
   line-height: 1;
-  letter-spacing: 0.08em;
   text-transform: uppercase;
+  letter-spacing: 0.14em;
   text-align: center;
   white-space: nowrap;
-  color: #ffffff;
+  text-shadow: 0 2px 5px rgba(0, 0, 0, 0.75);
 }
 
-.forge-premium-btn__spinner {
+.forge-signature-v6__spinner {
   width: 0.85em;
   height: 0.85em;
   border: 1.5px solid currentColor;
@@ -866,38 +860,41 @@
   animation: forge-btn-spin 0.7s linear infinite;
 }
 
-.forge-premium-btn:focus-visible {
-  outline: 2px solid var(--forge-navy, #0b2d5c);
-  outline-offset: 3px;
+.forge-signature-v6:hover:not(:disabled):not([aria-disabled='true']):not([data-loading='true']) {
+  transform: scale(1.015);
 }
 
-.forge-premium-btn:hover:not(:disabled):not([aria-disabled='true']):not([data-loading='true']) {
-  filter: brightness(1.03);
-}
-
-.forge-premium-btn:active:not(:disabled):not([aria-disabled='true']):not([data-loading='true']) {
+.forge-signature-v6:active:not(:disabled):not([aria-disabled='true']):not([data-loading='true']) {
   transform: translateY(1px);
-  box-shadow:
-    0 1px 1px rgba(26, 35, 50, 0.22),
-    0 2px 5px rgba(11, 45, 92, 0.12);
 }
 
-.forge-premium-btn:disabled,
-.forge-premium-btn[aria-disabled='true'] {
+.forge-signature-v6:focus-visible {
+  outline: 3px solid rgba(11, 45, 92, 0.45);
+  outline-offset: 4px;
+}
+
+.forge-signature-v6:disabled,
+.forge-signature-v6[aria-disabled='true'] {
   cursor: not-allowed;
   pointer-events: none;
   filter: grayscale(0.35) contrast(0.92);
 }
 
-.forge-premium-btn[data-loading='true'] {
+.forge-signature-v6[data-loading='true'] {
   cursor: wait;
   pointer-events: none;
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .forge-premium-btn,
-  .forge-premium-btn__spinner {
-    transition: none !important;
+  .forge-signature-v6 {
+    transition: none;
+  }
+
+  .forge-signature-v6:hover {
+    transform: none;
+  }
+
+  .forge-signature-v6__spinner {
     animation: none !important;
   }
 }

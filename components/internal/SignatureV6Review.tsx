@@ -3,22 +3,22 @@
 import Image from 'next/image';
 import { useState } from 'react';
 
-import ForgeSignatureV5, {
-  SIGNATURE_V5_COMPARE,
-} from '@/components/ui/ForgeSignatureV5';
+import ForgeSignatureV6, {
+  SIGNATURE_V6_COMPARE,
+} from '@/components/ui/ForgeSignatureV6';
 
 type ReviewMode = 'side-by-side' | 'overlay' | 'implementation-only';
 
 /**
- * Internal-only navy Signature V5 review tool.
+ * Internal-only navy Signature V6 review tool.
  * Exact crop vs literal Gemini SVG at 360×127.
  */
-export default function SignatureV5Review() {
+export default function SignatureV6Review() {
   const [mode, setMode] = useState<ReviewMode>('side-by-side');
-  const { widthPx, heightPx, cropPath } = SIGNATURE_V5_COMPARE;
+  const { widthPx, heightPx, cropPath } = SIGNATURE_V6_COMPARE;
 
   return (
-    <div className="forge-sig-v5-review" data-review-tool="signature-v5">
+    <div className="forge-sig-v6-review" data-review-tool="signature-v6">
       <div className="mb-4 flex flex-wrap gap-2">
         {(
           [
@@ -69,7 +69,7 @@ export default function SignatureV5Review() {
           </div>
           <div>
             <p className="mb-2 text-[10px] font-semibold uppercase tracking-[0.14em] text-[#8A93A0]">
-              Implementation candidate — Signature V5
+              Implementation candidate — Signature V6
             </p>
             <div
               style={{
@@ -79,7 +79,7 @@ export default function SignatureV5Review() {
               }}
               className="flex items-center justify-center"
             >
-              <ForgeSignatureV5 compareSize />
+              <ForgeSignatureV6 compareSize />
             </div>
           </div>
         </div>
@@ -99,7 +99,7 @@ export default function SignatureV5Review() {
             }}
           >
             <div className="absolute inset-0 flex items-center justify-center">
-              <ForgeSignatureV5 compareSize />
+              <ForgeSignatureV6 compareSize />
             </div>
             <Image
               src={cropPath}
@@ -113,7 +113,7 @@ export default function SignatureV5Review() {
             />
           </div>
           <p className="mt-2 text-[11px] text-[#8A93A0]">
-            Overlay is decorative (pointer-events: none). Interactive control remains Signature V5.
+            Overlay is decorative (pointer-events: none). Interactive control remains Signature V6.
           </p>
         </div>
       ) : null}
@@ -121,7 +121,7 @@ export default function SignatureV5Review() {
       {mode === 'implementation-only' ? (
         <div>
           <p className="mb-2 text-[10px] font-semibold uppercase tracking-[0.14em] text-[#8A93A0]">
-            Implementation candidate — Signature V5
+            Implementation candidate — Signature V6
           </p>
           <div
             style={{
@@ -131,14 +131,14 @@ export default function SignatureV5Review() {
             }}
             className="flex items-center justify-center"
           >
-            <ForgeSignatureV5 compareSize />
+            <ForgeSignatureV6 compareSize />
           </div>
         </div>
       ) : null}
 
       <p className="mt-3 text-[11px] text-[#8A93A0]">
-        Comparison box {widthPx}×{heightPx}px · viewBox {SIGNATURE_V5_COMPARE.viewBox} ·
-        data-visual-candidate=&quot;{SIGNATURE_V5_COMPARE.dataCandidate}&quot;
+        Comparison box {widthPx}×{heightPx}px · viewBox {SIGNATURE_V6_COMPARE.viewBox} ·
+        data-visual-candidate=&quot;{SIGNATURE_V6_COMPARE.dataCandidate}&quot;
       </p>
     </div>
   );

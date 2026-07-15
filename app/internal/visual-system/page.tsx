@@ -2,11 +2,11 @@ import { Fraunces, Manrope } from 'next/font/google';
 import Link from 'next/link';
 
 import SignatureV3Review from '@/components/internal/SignatureV3Review';
-import SignatureV5Review from '@/components/internal/SignatureV5Review';
+import SignatureV6Review from '@/components/internal/SignatureV6Review';
 import ForgeAppCanvas from '@/components/ForgeAppCanvas';
 import ForgeButton from '@/components/ui/ForgeButton';
 import ForgeSignatureV3 from '@/components/ui/ForgeSignatureV3';
-import { SIGNATURE_V5_COMPARE } from '@/components/ui/ForgeSignatureV5';
+import { SIGNATURE_V6_COMPARE } from '@/components/ui/ForgeSignatureV6';
 
 const display = Fraunces({
   subsets: ['latin'],
@@ -21,9 +21,9 @@ const sans = Manrope({
 });
 
 export const metadata = {
-  title: 'Forge Visual System | Signature V5 Review',
+  title: 'Forge Visual System | Signature V6 Review',
   description:
-    'Internal visual review for ForgeSignatureV5 navy candidate. Not rolled out to product routes.',
+    'Internal visual review for ForgeSignatureV6 navy candidate. Not rolled out to product routes.',
   robots: {
     index: false,
     follow: false,
@@ -74,18 +74,18 @@ export default function VisualSystemPage() {
       <div className="mx-auto w-full max-w-5xl px-4 py-10 sm:px-6 lg:px-8 lg:py-12">
         <header className="mb-8 max-w-3xl">
           <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[#D62828]">
-            Internal · Visual review · Signature V5
+            Internal · Visual review · Signature V6
           </p>
           <h1
             className="mt-3 text-[2rem] leading-none tracking-[-0.03em] text-[#0B2D5C] sm:text-[2.35rem]"
             style={{ fontFamily: 'var(--font-discovery-display), Georgia, serif' }}
           >
-            Signature V5 Navy Review
+            Signature V6 Navy Review
           </h1>
           <p className="mt-3 text-[15px] leading-relaxed text-[#5A6575]">
-            Primary review renders only <code>ForgeSignatureV5</code> with{' '}
-            <code>data-visual-candidate=&quot;{SIGNATURE_V5_COMPARE.dataCandidate}&quot;</code>. The
-            supplied Gemini SVG is implemented literally (React syntax + unique IDs only). Manual
+            Primary review renders only <code>ForgeSignatureV6</code> with{' '}
+            <code>data-visual-candidate=&quot;{SIGNATURE_V6_COMPARE.dataCandidate}&quot;</code>. The
+            recalibrated Gemini SVG is implemented literally (React syntax + unique IDs only). Manual
             approval has not been granted. No product-route rollout.
           </p>
           <p className="mt-2 text-sm text-[#8A93A0]">
@@ -97,26 +97,33 @@ export default function VisualSystemPage() {
 
         <div className="flex flex-col gap-6">
           <Section
-            title="Primary · Navy reference vs Signature V5"
-            description="Exact navy crop beside ForgeSignatureV5 at identical 360×127 dimensions."
+            title="Primary · Navy reference vs Signature V6"
+            description="Exact navy crop beside ForgeSignatureV6 at identical 360×127 dimensions."
           >
             <p className="mb-3 text-[10px] font-semibold uppercase tracking-[0.14em] text-[#0B2D5C]">
-              Implementation candidate — Signature V5
+              Implementation candidate — Signature V6
             </p>
-            <SignatureV5Review />
+            <SignatureV6Review />
           </Section>
 
           <Section title="Historical experiments — not current candidate">
             <p className="mb-4 text-sm text-[#5A6575]">
-              Prior builds only. Signature V4 exclusive CSS and rendering were removed (rejected
-              multi-layer chassis). Do not treat these as the primary candidate.
+              Prior builds only. Signature V5 exclusive CSS and components were removed (rejected
+              dark frame). Do not treat these as the primary candidate.
             </p>
 
             <div className="space-y-6">
               <div>
+                <Label>Signature V5 — removed (rejected)</Label>
+                <p className="text-xs text-[#5A6575]">
+                  V5-exclusive CSS and components deleted. Not mounted.
+                </p>
+              </div>
+
+              <div>
                 <Label>Signature V4 — removed (rejected)</Label>
                 <p className="text-xs text-[#5A6575]">
-                  V4-exclusive CSS and components deleted. Not mounted.
+                  V4-exclusive CSS and components deleted earlier. Not mounted.
                 </p>
               </div>
 
@@ -169,7 +176,7 @@ export default function VisualSystemPage() {
           </Section>
 
           <p className="text-center text-xs text-[#8A93A0]">
-            Scope lock: /internal/visual-system only. Signature V5 Implementation Candidate awaiting
+            Scope lock: /internal/visual-system only. Signature V6 Implementation Candidate awaiting
             manual visual approval.
           </p>
         </div>
