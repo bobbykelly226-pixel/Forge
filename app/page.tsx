@@ -34,10 +34,6 @@ export default function Home() {
     }
   };
 
-  const scrollToPoll = () => {
-    document.getElementById('feedback-poll')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-  };
-
   const getFollowUpPrompt = () => {
     if (selectedOption === "I'd definitely join") return "What excites you most about Forge?";
     if (selectedOption === "I'd consider it") return "What's keeping you from saying yes today?";
@@ -64,16 +60,20 @@ export default function Home() {
             If you're looking for something rooted in faith, family, commitment, and purpose, you're in the right place.
           </p>
           
-          <button 
-            onClick={scrollToPoll}
-            className="w-full bg-[#D62828] hover:bg-[#A61F1F] text-white py-4 rounded-2xl font-semibold text-lg transition-all duration-200 mb-4"
-          >
-            Take Our Poll →
-          </button>
-          
-          <p className="text-[15px] text-[#666666] text-center">
-            Help us build Forge before launch. Your feedback takes less than 30 seconds.
-          </p>
+          <div className="flex flex-col gap-3 mb-2">
+            <Link
+              href="/signup"
+              className="w-full bg-[#D62828] hover:bg-[#A61F1F] text-white py-4 rounded-2xl font-semibold text-lg text-center transition-all duration-200"
+            >
+              Create Your Profile
+            </Link>
+            <Link
+              href="/login"
+              className="w-full text-center text-[#0B2D5C] font-semibold py-3 hover:text-[#D62828] transition"
+            >
+              Log In
+            </Link>
+          </div>
         </div>
       </div>
 
@@ -89,15 +89,20 @@ export default function Home() {
             Forge was built for people who believe the strongest relationships begin with shared values. 
             If you're looking for something rooted in faith, family, commitment, and purpose, you're in the right place.
           </p>
-          <button 
-            onClick={scrollToPoll}
-            className="bg-[#D62828] hover:bg-[#A61F1F] hover:-translate-y-0.5 hover:shadow-lg text-white px-8 py-4 rounded-xl font-semibold text-lg transition-all duration-200 inline-block mb-3"
-          >
-            Take Our Poll →
-          </button>
-          <p className="text-[15px] text-[#666666] max-w-xs">
-            Help us build Forge before launch. Your feedback takes less than 30 seconds.
-          </p>
+          <div className="flex flex-wrap items-center gap-4 mb-2">
+            <Link
+              href="/signup"
+              className="bg-[#D62828] hover:bg-[#A61F1F] hover:-translate-y-0.5 hover:shadow-lg text-white px-8 py-4 rounded-xl font-semibold text-lg transition-all duration-200 inline-block"
+            >
+              Create Your Profile
+            </Link>
+            <Link
+              href="/login"
+              className="text-[#0B2D5C] font-semibold text-lg hover:text-[#D62828] transition px-2 py-2"
+            >
+              Log In
+            </Link>
+          </div>
         </div>
       </div>
 
@@ -189,7 +194,7 @@ export default function Home() {
             </div>
 
             <p className="text-xl font-medium text-[#0F2D52] text-center mb-10">
-              If Forge launched today, would you join?
+              Would you join Forge?
             </p>
 
             {!submitted ? (
@@ -242,12 +247,12 @@ export default function Home() {
                 {(selectedOption === "I'd definitely join" || selectedOption === "I'd consider it") ? (
                   <div>
                     <p className="text-[#444444] mb-8 max-w-sm mx-auto">
-                      Welcome to the beginning of Forge.<br />
+                      Welcome to Forge.<br />
                       Your feedback is helping shape a dating platform built on faith, family, commitment, and shared values.
                     </p>
-                    <a href="/waitlist" className="inline-block bg-[#D62828] hover:bg-[#A61F1F] text-white px-10 py-4 rounded-2xl font-semibold transition">
-                      Support the Launch
-                    </a>
+                    <Link href="/signup" className="inline-block bg-[#D62828] hover:bg-[#A61F1F] text-white px-10 py-4 rounded-2xl font-semibold transition">
+                      Create Your Profile
+                    </Link>
                   </div>
                 ) : (
                   <p className="text-[#444444]">
@@ -261,8 +266,29 @@ export default function Home() {
         </div>
       </div>
 
+      {/* Final CTA */}
+      <div className="bg-[#0B2D5C] py-20">
+        <div className="max-w-3xl mx-auto px-6 text-center">
+          <h2 className="text-3xl sm:text-4xl font-bold tracking-tight text-white mb-8 leading-tight">
+            Ready to find something more meaningful?
+          </h2>
+          <Link
+            href="/signup"
+            className="inline-block bg-[#D62828] hover:bg-[#A61F1F] text-white px-10 py-4 rounded-2xl font-semibold text-lg transition"
+          >
+            Sign Up for Forge
+          </Link>
+          <p className="mt-6 text-white/80 text-base">
+            Already have an account?{' '}
+            <Link href="/login" className="text-white font-semibold underline underline-offset-4 hover:text-[#D62828] transition">
+              Log in
+            </Link>
+          </p>
+        </div>
+      </div>
+
       {/* Footer */}
-      <footer className="bg-[#0B2D5C] text-white/80 py-8">
+      <footer className="bg-[#0B2D5C] text-white/80 py-8 border-t border-white/10">
         <div className="max-w-6xl mx-auto px-6">
           <div className="flex flex-col md:flex-row justify-between items-center gap-8">
             <div>
