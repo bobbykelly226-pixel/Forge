@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { readFileSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, it } from 'node:test';
 
@@ -80,7 +80,6 @@ describe('beta seed catalog', () => {
   });
 
   it('references only portrait files that exist on disk', () => {
-    const { existsSync } = require('node:fs') as typeof import('node:fs');
     const profiles = getSeedProfiles();
     let multi = 0;
     for (const profile of profiles) {

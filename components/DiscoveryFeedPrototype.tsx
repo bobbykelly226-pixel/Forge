@@ -94,7 +94,6 @@ export default function DiscoveryFeedPrototype({
   profiles,
   viewerName,
   loadError = null,
-  seedProfilesInjected: _seedProfilesInjected = false,
   showSeedReset = false,
 }: DiscoveryFeedProps) {
   const [activeFilter, setActiveFilter] = useState<FilterId>('All');

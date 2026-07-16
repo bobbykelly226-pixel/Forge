@@ -20,7 +20,6 @@ import { resetAllSeedState } from '@/lib/seed/actions';
 
 export default function ConnectionsHubPrototype({
   loadError = null,
-  seedConnectionsInjected: _seedConnectionsInjected = false,
   showSeedReset = false,
   onResetSeedState,
 }: {
