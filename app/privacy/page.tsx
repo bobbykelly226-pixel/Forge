@@ -14,20 +14,20 @@ export default function Privacy() {
         </h1>
 
         <p className="text-sm text-[#666666] mb-8">
-          Last updated: June 2026
+          Last updated: July 2026
         </p>
 
         <div className="prose prose-lg max-w-none text-[#444444] leading-8">
           <p className="mb-4">
-            Forged In Life operates Forge, a waitlist-stage platform focused on helping people build meaningful connections through shared values, character, faith, trust, commitment, and purpose.
+            Forged In Life operates Forge, a values-first dating platform focused on helping people build meaningful connections through shared values, character, faith, trust, commitment, and purpose.
           </p>
 
           <p className="mb-4">
-            This Privacy Policy explains what information we collect, how we use it, how we protect it, and the choices available to you when you visit our website or join the Forge waitlist.
+            This Privacy Policy explains what information we collect, how we use it, how we protect it, and the choices available to you when you visit our website, create an account, or use Forge-related services.
           </p>
 
           <p className="mb-8">
-            This Privacy Policy currently applies to the Forge website and waitlist. If Forge later launches user accounts, matching features, mobile apps, or additional services, this policy may be updated to reflect those changes.
+            This Privacy Policy applies to the Forge website and account experience. As Forge grows — including matching features, mobile apps, or additional services — this policy may be updated to reflect those changes.
           </p>
 
           <h2 className="text-3xl font-semibold text-[#0B2D5C] mt-8 mb-3">
@@ -35,12 +35,13 @@ export default function Privacy() {
           </h2>
 
           <p className="mb-3">
-            When you join the Forge waitlist or contact us, we may collect:
+            When you create a Forge account, complete your profile, or contact us, we may collect:
           </p>
 
           <ul className="list-disc pl-6 space-y-2 mb-5">
-            <li>Your name</li>
-            <li>Your email address</li>
+            <li>Your name and email address</li>
+            <li>Account credentials and authentication data</li>
+            <li>Profile information you choose to provide</li>
             <li>Any information you choose to submit through our forms or messages</li>
           </ul>
 
@@ -49,7 +50,7 @@ export default function Privacy() {
           </p>
 
           <p className="mb-8">
-            We do not currently collect payment information, government identification numbers, Social Security numbers, or sensitive personal information through the Forge waitlist.
+            We do not currently collect payment information, government identification numbers, or Social Security numbers through the Forge website.
           </p>
 
           <h2 className="text-3xl font-semibold text-[#0B2D5C] mt-8 mb-3">
@@ -61,14 +62,15 @@ export default function Privacy() {
           </p>
 
           <ul className="list-disc pl-6 space-y-2 mb-5">
-            <li>Add you to the Forge waitlist</li>
-            <li>Send waitlist confirmation emails</li>
-            <li>Send occasional updates about Forge</li>
+            <li>Create and manage your Forge account</li>
+            <li>Provide authentication, onboarding, and profile features</li>
+            <li>Send account-related emails such as confirmation and security notices</li>
+            <li>Send occasional product updates about Forge</li>
             <li>Respond to questions or requests</li>
             <li>Improve the website and user experience</li>
             <li>Monitor website performance</li>
             <li>Help prevent spam, abuse, or misuse of the website</li>
-            <li>Maintain basic records related to the waitlist</li>
+            <li>Maintain basic records related to your account and service use</li>
           </ul>
 
           <p className="mb-8">
@@ -80,11 +82,11 @@ export default function Privacy() {
           </h2>
 
           <p className="mb-4">
-            If you join the waitlist, we may email you about Forge updates, launch progress, product availability, and related announcements.
+            If you create an account or contact us, we may email you about account activity, Forge updates, product availability, and related announcements.
           </p>
 
           <p className="mb-8">
-            You may request to stop receiving Forge updates at any time. If unsubscribe tools are added in the future, you may also use those tools to manage your email preferences.
+            You may request to stop receiving non-essential Forge updates at any time. If unsubscribe tools are added in the future, you may also use those tools to manage your email preferences.
           </p>
 
           <h2 className="text-3xl font-semibold text-[#0B2D5C] mt-8 mb-3">
@@ -96,7 +98,7 @@ export default function Privacy() {
           </p>
 
           <p className="mb-4">
-            We may share limited information with trusted service providers that help us operate the website, manage the waitlist, send emails, host the site, store data, analyze site performance, or protect the site from misuse.
+            We may share limited information with trusted service providers that help us operate the website, manage accounts, send emails, host the site, store data, analyze site performance, or protect the site from misuse.
           </p>
 
           <p className="mb-4">
@@ -124,11 +126,11 @@ export default function Privacy() {
           </h2>
 
           <p className="mb-4">
-            We keep waitlist information for as long as needed to manage the waitlist, communicate about Forge, improve the website, comply with legal obligations, resolve disputes, or maintain appropriate business records.
+            We keep account and service information for as long as needed to provide Forge, communicate about the product, improve the website, comply with legal obligations, resolve disputes, or maintain appropriate business records.
           </p>
 
           <p className="mb-8">
-            You may request removal from the waitlist as described in the Contact Us section below.
+            You may request account deletion or data removal as described in the Contact Us section below.
           </p>
 
           <h2 className="text-3xl font-semibold text-[#0B2D5C] mt-8 mb-3">
@@ -140,10 +142,10 @@ export default function Privacy() {
           </p>
 
           <ul className="list-disc pl-6 space-y-2 mb-5">
-            <li>Remove you from the Forge waitlist</li>
-            <li>Stop sending Forge updates</li>
-            <li>Correct basic contact information</li>
-            <li>Delete information associated with your waitlist submission, where applicable</li>
+            <li>Delete or deactivate your Forge account</li>
+            <li>Stop sending non-essential Forge updates</li>
+            <li>Correct basic contact or profile information</li>
+            <li>Delete information associated with your account, where applicable</li>
           </ul>
 
           <p className="mb-8">
@@ -155,7 +157,7 @@ export default function Privacy() {
           </h2>
 
           <p className="mb-4">
-            Forge may use basic website tools, cookies, analytics, or similar technologies to understand how visitors use the site, improve performance, and evaluate the effectiveness of waitlist sharing.
+            Forge may use basic website tools, cookies, analytics, or similar technologies to understand how visitors use the site, improve performance, and support authentication.
           </p>
 
           <p className="mb-8">
@@ -171,7 +173,7 @@ export default function Privacy() {
           </p>
 
           <p className="mb-8">
-            We do not knowingly collect personal information from children under 13. We also do not intend for minors to join the Forge waitlist. If we learn that we have collected information from a child or minor, we will take reasonable steps to delete that information.
+            We do not knowingly collect personal information from children under 13. We also do not intend for minors to create Forge accounts. If we learn that we have collected information from a child or minor, we will take reasonable steps to delete that information.
           </p>
 
           <h2 className="text-3xl font-semibold text-[#0B2D5C] mt-8 mb-3">
@@ -179,11 +181,11 @@ export default function Privacy() {
           </h2>
 
           <p className="mb-4">
-            Forge may use third-party services for website hosting, database storage, email delivery, analytics, security, and website performance.
+            Forge may use third-party services for website hosting, database storage, authentication, email delivery, analytics, security, and website performance.
           </p>
 
           <p className="mb-8">
-            These services may process limited information as needed to support the website and waitlist system.
+            These services may process limited information as needed to support the website and account system.
           </p>
 
           <h2 className="text-3xl font-semibold text-[#0B2D5C] mt-8 mb-3">
@@ -210,7 +212,6 @@ export default function Privacy() {
         </div>
       </main>
 
-      {/* Footer - unchanged */}
       <footer className="bg-[#0B2D5C] text-white/80 py-8">
         <div className="max-w-6xl mx-auto px-6">
           <div className="flex flex-col md:flex-row justify-between items-center gap-8">
@@ -228,37 +229,37 @@ export default function Privacy() {
 
             <div className="flex gap-8 text-2xl">
               <a
-    href="https://www.facebook.com/profile.php?id=61591000607513"
-    target="_blank"
-    rel="noopener noreferrer"
-    aria-label="Facebook"
-    className="hover:text-white transition"
-  >
-    <svg
-      className="h-8 w-8"
-      viewBox="0 0 24 24"
-      fill="currentColor"
-      aria-hidden="true"
-    >
-      <path d="M22 12.06C22 6.48 17.52 2 11.94 2S2 6.48 2 12.06c0 5.02 3.66 9.18 8.44 9.94v-7.03H7.9v-2.91h2.54V9.84c0-2.5 1.49-3.89 3.77-3.89 1.09 0 2.23.2 2.23.2v2.45h-1.26c-1.24 0-1.63.77-1.63 1.56v1.9h2.77l-.44 2.91h-2.33V22C18.34 21.24 22 17.08 22 12.06z" />
-    </svg>
-  </a>
+                href="https://www.facebook.com/profile.php?id=61591000607513"
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="Facebook"
+                className="hover:text-white transition"
+              >
+                <svg
+                  className="h-8 w-8"
+                  viewBox="0 0 24 24"
+                  fill="currentColor"
+                  aria-hidden="true"
+                >
+                  <path d="M22 12.06C22 6.48 17.52 2 11.94 2S2 6.48 2 12.06c0 5.02 3.66 9.18 8.44 9.94v-7.03H7.9v-2.91h2.54V9.84c0-2.5 1.49-3.89 3.77-3.89 1.09 0 2.23.2 2.23.2v2.45h-1.26c-1.24 0-1.63.77-1.63 1.56v1.9h2.77l-.44 2.91h-2.33V22C18.34 21.24 22 17.08 22 12.06z" />
+                </svg>
+              </a>
               <a
-    href="https://www.instagram.com/forgedconnections/"
-    target="_blank"
-    rel="noopener noreferrer"
-    aria-label="Instagram"
-    className="hover:text-white transition"
-  >
-    <svg
-      className="h-8 w-8"
-      viewBox="0 0 24 24"
-      fill="currentColor"
-      aria-hidden="true"
-    >
-      <path d="M7.75 2h8.5A5.76 5.76 0 0 1 22 7.75v8.5A5.76 5.76 0 0 1 16.25 22h-8.5A5.76 5.76 0 0 1 2 16.25v-8.5A5.76 5.76 0 0 1 7.75 2zm0 2A3.76 3.76 0 0 0 4 7.75v8.5A3.76 3.76 0 0 0 7.75 20h8.5A3.76 3.76 0 0 0 20 16.25v-8.5A3.76 3.76 0 0 0 16.25 4h-8.5zM12 7.35A4.65 4.65 0 1 1 12 16.65 4.65 4.65 0 0 1 12 7.35zm0 2A2.65 2.65 0 1 0 12 14.65 2.65 2.65 0 0 0 12 9.35zm5.1-2.3a1.1 1.1 0 1 1 0 2.2 1.1 1.1 0 0 1 0-2.2z" />
-    </svg>
-  </a>
+                href="https://www.instagram.com/forgedconnections/"
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="Instagram"
+                className="hover:text-white transition"
+              >
+                <svg
+                  className="h-8 w-8"
+                  viewBox="0 0 24 24"
+                  fill="currentColor"
+                  aria-hidden="true"
+                >
+                  <path d="M7.75 2h8.5A5.76 5.76 0 0 1 22 7.75v8.5A5.76 5.76 0 0 1 16.25 22h-8.5A5.76 5.76 0 0 1 2 16.25v-8.5A5.76 5.76 0 0 1 7.75 2zm0 2A3.76 3.76 0 0 0 4 7.75v8.5A3.76 3.76 0 0 0 7.75 20h8.5A3.76 3.76 0 0 0 20 16.25v-8.5A3.76 3.76 0 0 0 16.25 4h-8.5zM12 7.35A4.65 4.65 0 1 1 12 16.65 4.65 4.65 0 0 1 12 7.35zm0 2A2.65 2.65 0 1 0 12 14.65 2.65 2.65 0 0 0 12 9.35zm5.1-2.3a1.1 1.1 0 1 1 0 2.2 1.1 1.1 0 0 1 0-2.2z" />
+                </svg>
+              </a>
             </div>
           </div>
 

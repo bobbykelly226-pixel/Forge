@@ -1,5 +1,6 @@
 import { redirect } from 'next/navigation';
 
-export default function Wait() {
-  redirect('/waitlist');
+/** Legacy short waitlist URL — Forge now uses direct signup. */
+export default function WaitRedirect() {
+  redirect('/signup');
 }
