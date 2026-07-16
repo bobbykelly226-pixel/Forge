@@ -87,7 +87,6 @@ function getFocusableElements(container: HTMLElement): HTMLElement[] {
 export default function AlignmentDetailsDrawer({
   open,
   onClose,
-  profileName: _profileName = 'Jessica',
   content,
 }: AlignmentDetailsDrawerProps) {
   const titleId = useId();
