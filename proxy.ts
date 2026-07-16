@@ -48,7 +48,8 @@ export async function proxy(request: NextRequest) {
       pathname.startsWith('/profile/') ||
       pathname.startsWith('/onboarding') ||
       pathname.startsWith('/discovery') ||
-      pathname.startsWith('/connections'));
+      pathname.startsWith('/connections') ||
+      pathname.startsWith('/internal'));
 
   if (!user && isProtectedRoute) {
     const redirectUrl = request.nextUrl.clone();

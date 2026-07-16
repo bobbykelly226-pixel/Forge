@@ -28,6 +28,7 @@ import {
   MultiChoiceChips,
 } from '@/components/profile/StructuredChoices';
 import type { ManagedProfilePhoto } from '@/lib/profile-photo';
+import { resolveUnifiedAbout } from '@/lib/profile/unified-about';
 import {
   CHILDREN_COUNT_OPTIONS,
   DRINKING_OPTIONS,
@@ -89,7 +90,6 @@ const SECTION_ICONS: Partial<Record<ProfileSectionId, LucideIcon>> = {
   basics: UserRound,
   location: MapPin,
   about: TextQuote,
-  more_about: TextQuote,
   relationship: Compass,
   children: HeartHandshake,
   faith: Sparkles,
@@ -506,23 +506,11 @@ function SectionEditor({
           About
           <textarea
             name="short_bio"
-            rows={4}
-            defaultValue={profile.short_bio ?? ''}
+            rows={6}
+            defaultValue={resolveUnifiedAbout(profile.short_bio, profile.more_about) ?? ''}
             className={`${inputClassName} mt-2 resize-y`}
             disabled={saving}
-          />
-        </label>
-      ) : null}
-
-      {sectionId === 'more_about' ? (
-        <label className="block text-sm font-medium text-[#0B2D5C]">
-          More about
-          <textarea
-            name="more_about"
-            rows={4}
-            defaultValue={profile.more_about ?? ''}
-            className={`${inputClassName} mt-2 resize-y`}
-            disabled={saving}
+            placeholder="Share who you are in your own words."
           />
         </label>
       ) : null}

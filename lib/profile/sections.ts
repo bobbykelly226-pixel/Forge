@@ -10,6 +10,7 @@ import {
   isPreferNotToSay,
 } from '@/lib/profile/structured-options';
 import { formatPublicLocation } from '@/lib/profile/location-format';
+import { resolveUnifiedAbout } from '@/lib/profile/unified-about';
 import type { ProfileCompletionSectionId } from '@/lib/profile-completion';
 
 export const PROFILE_SECTION_IDS = [
@@ -17,7 +18,6 @@ export const PROFILE_SECTION_IDS = [
   'basics',
   'location',
   'about',
-  'more_about',
   'relationship',
   'children',
   'faith',
@@ -67,13 +67,7 @@ export const PROFILE_SECTIONS: ProfileSectionDefinition[] = [
   {
     id: 'about',
     title: 'About',
-    description: 'A short introduction in your own words.',
-    editable: true,
-  },
-  {
-    id: 'more_about',
-    title: 'More about',
-    description: 'Share more when you are ready.',
+    description: 'Your public biography in your own words.',
     editable: true,
   },
   {
@@ -230,9 +224,7 @@ export function summarizeProfileSection(
         }) ?? 'Not added yet'
       );
     case 'about':
-      return line(profile.short_bio) ?? 'Not added yet';
-    case 'more_about':
-      return line(profile.more_about) ?? 'Not added yet';
+      return resolveUnifiedAbout(profile.short_bio, profile.more_about) ?? 'Not added yet';
     case 'relationship':
       return structuredLabel('relationship_goal', profile.relationship_goal) ?? 'Not added yet';
     case 'children': {

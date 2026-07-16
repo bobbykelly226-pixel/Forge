@@ -4,6 +4,7 @@ import { useMemo, useState } from 'react';
 
 import DiscoveryDesktopTopBar from '@/components/DiscoveryDesktopTopBar';
 import ForgeAppBottomNav from '@/components/ForgeAppBottomNav';
+import ForgeAuthenticatedTwoColumnShell from '@/components/ForgeAuthenticatedTwoColumnShell';
 import ForgeDesktopAppNav from '@/components/ForgeDesktopAppNav';
 import {
   EmptyState,
@@ -16,11 +17,19 @@ import {
 } from '@/components/connections/ConnectionCards';
 import ConnectionsTabs from '@/components/connections/ConnectionsTabs';
 import { useConnectionsHub } from '@/components/connections/ConnectionsHubProvider';
+import { resetAllSeedState } from '@/lib/seed/actions';
 
 export default function ConnectionsHubPrototype({
   loadError = null,
+  showSeedReset = false,
+  onResetSeedState,
 }: {
   loadError?: string | null;
+  /** Preview/local only — seed mutuals were injected into hub data. */
+  seedConnectionsInjected?: boolean;
+  /** Developer-only reset control (?seed=1). */
+  showSeedReset?: boolean;
+  onResetSeedState?: () => void;
 }) {
   const {
     activeTab,
@@ -39,6 +48,15 @@ export default function ConnectionsHubPrototype({
   const flashNote = (message: string) => {
     setDesktopNote(message);
     window.setTimeout(() => setDesktopNote(null), 2200);
+  };
+
+  const handleResetSeedState = () => {
+    if (onResetSeedState) {
+      onResetSeedState();
+      return;
+    }
+    resetAllSeedState();
+    flashNote('Seed state was reset.');
   };
 
   const visibleOpenToChat = useMemo(
@@ -78,6 +96,18 @@ export default function ConnectionsHubPrototype({
     forYouOpenToChat.length > 0 ||
     visibleInterest.length > 0 ||
     visibleMutual.length > 0;
+
+  const seedResetControl = showSeedReset ? (
+    <div className="flex justify-center pt-2">
+      <button
+        type="button"
+        onClick={handleResetSeedState}
+        className="text-xs text-[#8A93A0] underline-offset-2 transition hover:text-[#5A6575] hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0B2D5C]"
+      >
+        Reset Seed State
+      </button>
+    </div>
+  ) : null;
 
   const tabPanels = {
     forYou: (
@@ -159,10 +189,14 @@ export default function ConnectionsHubPrototype({
             description="Thoughtful introductions take time."
           />
         ) : (
-          visibleMutual.map((profile) => (
-            <MutualConnectionCard key={profile.id} profile={profile} />
-          ))
+          <>
+            {visibleMutual.map((profile) => (
+              <MutualConnectionCard key={profile.id} profile={profile} />
+            ))}
+            {seedResetControl}
+          </>
         )}
+        {visibleMutual.length === 0 ? seedResetControl : null}
       </div>
     ),
     saved: (
@@ -213,114 +247,108 @@ export default function ConnectionsHubPrototype({
         }
       `}</style>
 
-      <div className="mx-auto min-h-screen w-full lg:max-w-[1280px] lg:px-8 lg:py-8 xl:max-w-[1360px] xl:px-10">
-        <div className="lg:grid lg:grid-cols-[17.5rem_minmax(0,1fr)] lg:items-start lg:gap-10 xl:grid-cols-[18.5rem_minmax(0,1fr)] xl:gap-12">
-          <aside
-            className="sticky top-8 hidden max-h-[calc(100vh-4rem)] self-start overflow-y-auto overscroll-contain [scrollbar-gutter:stable] [scrollbar-width:thin] [scrollbar-color:rgba(11,45,92,0.28)_transparent] lg:block [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-[#0B2D5C]/25 [&::-webkit-scrollbar-track]:bg-transparent"
+      <ForgeAuthenticatedTwoColumnShell
+        asideStyle={{ animation: 'connectionsFadeUp 0.5s ease-out both' }}
+        aside={
+          <div className="rounded-[1.75rem] border border-[#0B2D5C]/08 bg-white/70 p-6 shadow-[0_16px_44px_rgba(11,45,92,0.05)] backdrop-blur-sm xl:p-7">
+            <img
+              src="/Logos/forgedinlife-header-dark.png"
+              alt="Forge"
+              className="h-12 w-auto"
+            />
+
+            <h1
+              className="mt-8 text-[1.85rem] leading-none tracking-[-0.02em] text-[#0B2D5C]"
+              style={{ fontFamily: 'var(--font-discovery-display), Georgia, serif' }}
+            >
+              Connections
+            </h1>
+
+            <p className="mt-4 text-[15px] leading-relaxed text-[#5A6575]">
+              Review conversations, mutual interest, and profiles you chose to revisit.
+            </p>
+
+            <ForgeDesktopAppNav active="connections" />
+
+            <div className="mt-8 border-t border-[#0B2D5C]/08 pt-6">
+              <p className="mb-3 text-[11px] font-semibold uppercase tracking-[0.16em] text-[#D62828]">
+                Sections
+              </p>
+              <ConnectionsTabs layout="vertical" />
+            </div>
+          </div>
+        }
+      >
+        <div className="hidden px-0 lg:block">
+          <DiscoveryDesktopTopBar onPrototypeAction={flashNote} />
+        </div>
+
+        <div className="mx-auto flex w-full max-w-lg flex-col px-4 pb-[7.5rem] pt-5 sm:px-6 sm:pt-7 lg:mx-0 lg:max-w-none lg:px-0 lg:pb-10 lg:pt-0">
+          <header
+            className="shrink-0 lg:hidden"
             style={{ animation: 'connectionsFadeUp 0.5s ease-out both' }}
           >
-            <div className="rounded-[1.75rem] border border-[#0B2D5C]/08 bg-white/70 p-6 shadow-[0_16px_44px_rgba(11,45,92,0.05)] backdrop-blur-sm xl:p-7">
+            <div className="mb-5 flex items-center justify-between gap-3">
               <img
                 src="/Logos/forgedinlife-header-dark.png"
                 alt="Forge"
-                className="h-12 w-auto"
+                className="h-12 w-auto sm:h-14"
               />
-
-              <h1
-                className="mt-8 text-[1.85rem] leading-none tracking-[-0.02em] text-[#0B2D5C]"
-                style={{ fontFamily: 'var(--font-discovery-display), Georgia, serif' }}
-              >
-                Connections
-              </h1>
-
-              <p className="mt-4 text-[15px] leading-relaxed text-[#5A6575]">
-                Review conversations, mutual interest, and profiles you chose to revisit.
-              </p>
-
-              <ForgeDesktopAppNav active="connections" />
-
-              <div className="mt-8 border-t border-[#0B2D5C]/08 pt-6">
-                <p className="mb-3 text-[11px] font-semibold uppercase tracking-[0.16em] text-[#D62828]">
-                  Sections
-                </p>
-                <ConnectionsTabs layout="vertical" />
-              </div>
-            </div>
-          </aside>
-
-          <div className="min-h-screen w-full lg:min-h-0">
-            <div className="hidden px-0 lg:block">
-              <DiscoveryDesktopTopBar onPrototypeAction={flashNote} />
             </div>
 
-            <div className="mx-auto flex w-full max-w-lg flex-col px-4 pb-[7.5rem] pt-5 sm:px-6 sm:pt-7 lg:mx-0 lg:max-w-none lg:px-0 lg:pb-10 lg:pt-0">
-              <header
-                className="shrink-0 lg:hidden"
-                style={{ animation: 'connectionsFadeUp 0.5s ease-out both' }}
-              >
-                <div className="mb-5 flex items-center justify-between gap-3">
-                  <img
-                    src="/Logos/forgedinlife-header-dark.png"
-                    alt="Forge"
-                    className="h-12 w-auto sm:h-14"
-                  />
-                </div>
+            <h1
+              className="text-[2.1rem] leading-none tracking-[-0.02em] text-[#0B2D5C] sm:text-[2.45rem]"
+              style={{ fontFamily: 'var(--font-discovery-display), Georgia, serif' }}
+            >
+              Connections
+            </h1>
+            <p className="mt-3 max-w-md text-[15px] leading-relaxed text-[#5A6575] sm:text-base">
+              Review conversations, mutual interest, and profiles you chose to revisit.
+            </p>
+          </header>
 
-                <h1
-                  className="text-[2.1rem] leading-none tracking-[-0.02em] text-[#0B2D5C] sm:text-[2.45rem]"
-                  style={{ fontFamily: 'var(--font-discovery-display), Georgia, serif' }}
-                >
-                  Connections
-                </h1>
-                <p className="mt-3 max-w-md text-[15px] leading-relaxed text-[#5A6575] sm:text-base">
-                  Review conversations, mutual interest, and profiles you chose to revisit.
-                </p>
-              </header>
+          {loadError && (
+            <p
+              className="mt-4 rounded-2xl border border-[#D62828]/25 bg-[#FBF6EE] px-4 py-3 text-sm text-[#5A6575]"
+              role="alert"
+            >
+              {loadError}
+            </p>
+          )}
 
-              {loadError && (
-                <p
-                  className="mt-4 rounded-2xl border border-[#D62828]/25 bg-[#FBF6EE] px-4 py-3 text-sm text-[#5A6575]"
-                  role="alert"
-                >
-                  {loadError}
-                </p>
-              )}
-
-              <div
-                className="mt-6 shrink-0 lg:hidden"
-                style={{
-                  animation: 'connectionsFadeUp 0.55s ease-out both',
-                  animationDelay: '60ms',
-                }}
-              >
-                <ConnectionsTabs layout="horizontal" />
-              </div>
-
-              <div
-                role="tabpanel"
-                id={`connections-panel-${activeTab}`}
-                aria-labelledby={`connections-tab-${activeTab}`}
-                className="mt-7 min-h-0 flex-1 lg:mt-0"
-                style={{
-                  animation: 'connectionsFadeUp 0.55s ease-out both',
-                  animationDelay: '80ms',
-                }}
-              >
-                {tabPanels[activeTab]}
-              </div>
-
-              {desktopNote && (
-                <p
-                  className="fixed inset-x-4 bottom-[5.75rem] z-30 mx-auto max-w-lg rounded-2xl border border-[#0B2D5C]/10 bg-[#0B2D5C] px-4 py-3 text-center text-sm text-white shadow-[0_12px_32px_rgba(11,45,92,0.25)] lg:bottom-8 lg:left-auto lg:right-8 lg:max-w-sm"
-                  role="status"
-                >
-                  {desktopNote}
-                </p>
-              )}
-            </div>
+          <div
+            className="mt-6 shrink-0 lg:hidden"
+            style={{
+              animation: 'connectionsFadeUp 0.55s ease-out both',
+              animationDelay: '60ms',
+            }}
+          >
+            <ConnectionsTabs layout="horizontal" />
           </div>
+
+          <div
+            role="tabpanel"
+            id={`connections-panel-${activeTab}`}
+            aria-labelledby={`connections-tab-${activeTab}`}
+            className="mt-7 min-h-0 flex-1 lg:mt-0"
+            style={{
+              animation: 'connectionsFadeUp 0.55s ease-out both',
+              animationDelay: '80ms',
+            }}
+          >
+            {tabPanels[activeTab]}
+          </div>
+
+          {desktopNote && (
+            <p
+              className="fixed inset-x-4 bottom-[5.75rem] z-30 mx-auto max-w-lg rounded-2xl border border-[#0B2D5C]/10 bg-[#0B2D5C] px-4 py-3 text-center text-sm text-white shadow-[0_12px_32px_rgba(11,45,92,0.25)] lg:bottom-8 lg:left-auto lg:right-8 lg:max-w-sm"
+              role="status"
+            >
+              {desktopNote}
+            </p>
+          )}
         </div>
-      </div>
+      </ForgeAuthenticatedTwoColumnShell>
 
       <ForgeAppBottomNav active="connections" />
     </>

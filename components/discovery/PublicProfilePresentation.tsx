@@ -2,6 +2,9 @@
 
 import Link from 'next/link';
 
+import ProfileAlignmentSections, {
+  type ProfileAlignmentSectionsProps,
+} from '@/components/discovery/ProfileAlignmentSections';
 import ProfilePhotoGallery from '@/components/discovery/ProfilePhotoGallery';
 import {
   DISCOVERY_NEUTRAL_ALIGNMENT_LABEL,
@@ -14,6 +17,7 @@ import {
   resolvePublicLocation,
   type PublicDiscoveryProfile,
 } from '@/lib/discovery/presentation';
+import { resolveUnifiedAbout } from '@/lib/profile/unified-about';
 import { sortPhotosByDisplayOrder } from '@/lib/profile-photo';
 
 export type PublicProfilePresentationProps = {
@@ -26,8 +30,13 @@ export type PublicProfilePresentationProps = {
   footer?: React.ReactNode;
   /** Show neutral alignment card (Discovery only). */
   showAlignmentCard?: boolean;
-  /** Show “Why Forge surfaced this profile” (Discovery only). */
+  /** Show “Why Forge Introduced You” (Discovery only). */
   showSurfacedReason?: boolean;
+  /**
+   * Optional qualitative alignment enrichment (enriched profiles).
+   * When set, replaces the neutral placeholder alignment card.
+   */
+  alignmentPresentation?: Omit<ProfileAlignmentSectionsProps, 'profileName' | 'cardClassName'> | null;
 };
 
 /**
@@ -42,6 +51,7 @@ export default function PublicProfilePresentation({
   footer,
   showAlignmentCard = mode === 'discovery',
   showSurfacedReason = mode === 'discovery',
+  alignmentPresentation = null,
 }: PublicProfilePresentationProps) {
   const firstName = firstNameFromFullName(profile.full_name);
   const orderedPhotos = sortPhotosByDisplayOrder(profile.photos ?? []);
@@ -51,8 +61,9 @@ export default function PublicProfilePresentation({
   const musicSongs = nonEmptyStringList(profile.favorite_music_songs);
   const hasMusic = musicArtists.length > 0 || musicSongs.length > 0;
   const locationLabel = resolvePublicLocation(profile);
-  const hasAbout = Boolean(profile.short_bio?.trim());
-  const hasMoreAbout = Boolean(profile.more_about?.trim());
+  const aboutCopy = resolveUnifiedAbout(profile.short_bio, profile.more_about);
+  const hasAbout = Boolean(aboutCopy);
+  const useEnrichedAlignment = Boolean(alignmentPresentation) && showAlignmentCard;
 
   return (
     <div
@@ -84,13 +95,17 @@ export default function PublicProfilePresentation({
         </div>
 
         <div className="mt-8 space-y-6 lg:mt-0 lg:space-y-8">
-          {showAlignmentCard ? (
+          {useEnrichedAlignment && alignmentPresentation ? (
+            <ProfileAlignmentSections profileName={firstName} {...alignmentPresentation} />
+          ) : null}
+
+          {showAlignmentCard && !useEnrichedAlignment ? (
             <section className="rounded-[1.75rem] border border-[#0B2D5C]/08 bg-white/90 p-6">
               <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[#D62828]">
                 Relationship Alignment
               </p>
               <h2
-                className="mt-2 text-2xl text-[#0B2D5C]"
+                className="mt-2.5 text-2xl font-medium tracking-[-0.01em] text-[#0B2D5C]"
                 style={{ fontFamily: 'var(--font-discovery-display), Georgia, serif' }}
               >
                 {DISCOVERY_NEUTRAL_ALIGNMENT_LABEL}
@@ -109,19 +124,9 @@ export default function PublicProfilePresentation({
               >
                 About
               </h2>
-              <p className="mt-3 text-[15px] leading-relaxed text-[#5A6575]">{profile.short_bio}</p>
-            </section>
-          ) : null}
-
-          {hasMoreAbout ? (
-            <section>
-              <h2
-                className="text-xl text-[#0B2D5C]"
-                style={{ fontFamily: 'var(--font-discovery-display), Georgia, serif' }}
-              >
-                More About {firstName}
-              </h2>
-              <p className="mt-3 text-[15px] leading-relaxed text-[#5A6575]">{profile.more_about}</p>
+              <p className="mt-3 whitespace-pre-line text-[15px] leading-relaxed text-[#5A6575]">
+                {aboutCopy}
+              </p>
             </section>
           ) : null}
 
@@ -197,13 +202,13 @@ export default function PublicProfilePresentation({
             </section>
           ) : null}
 
-          {showSurfacedReason ? (
+          {showSurfacedReason && !useEnrichedAlignment ? (
             <section className="rounded-[1.75rem] border border-[#0B2D5C]/08 bg-white/90 p-6">
               <h2
                 className="text-xl text-[#0B2D5C]"
                 style={{ fontFamily: 'var(--font-discovery-display), Georgia, serif' }}
               >
-                Why Forge surfaced this profile
+                Why Forge Introduced You
               </h2>
               <p className="mt-3 text-[15px] leading-relaxed text-[#5A6575]">
                 {DISCOVERY_SURFACED_REASON}

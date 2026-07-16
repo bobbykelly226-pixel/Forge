@@ -32,8 +32,7 @@ Other users must **not** query `profiles` with `select *`. Peer reads go through
 | Relationship goal | `relationship_goal` |
 | Faith | `faith_importance` |
 | Service background | `service_background` |
-| About | `short_bio` |
-| More About | `more_about` |
+| About | `short_bio` (canonical); `more_about` is a legacy fallback merged into About for display and cleared when About is saved |
 | Children / Has children | `children`, `has_children` |
 | Education, pets, smoking, drinking, career, relocation | matching columns |
 | Things I Enjoy | `things_i_enjoy` |
@@ -68,7 +67,7 @@ Canonical allow-list in code: `lib/data-model-rules.ts` → `DISCOVERABLE_PROFIL
 | Product concept | Database column | Notes |
 |-----------------|-----------------|-------|
 | Display name | `profiles.full_name` | V1 name retained |
-| About | `profiles.short_bio` | V1 name retained |
+| About | `profiles.short_bio` | Canonical public biography. Legacy `more_about` is merged for display and normalized into `short_bio` on About save. |
 | Faith | `profiles.faith_importance` | V1 name retained |
 | Relationship goal | `profiles.relationship_goal` | Shared |
 | Service background | `profiles.service_background` | Shared |

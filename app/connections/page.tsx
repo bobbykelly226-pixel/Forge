@@ -5,6 +5,12 @@ import { loadConnectionsHubAction } from '@/app/actions/relationships';
 import ConnectionsHubPrototype from '@/components/connections/ConnectionsHubPrototype';
 import { ConnectionsHubProvider } from '@/components/connections/ConnectionsHubProvider';
 import ForgeAppCanvas from '@/components/ForgeAppCanvas';
+import { parseSeedQueryParam } from '@/lib/seed/access';
+import {
+  countRealMutualConnections,
+  injectSeedConnections,
+  shouldInjectSeedConnectionsForRequest,
+} from '@/lib/seed/inject-connections';
 import { createClient } from '@/lib/supabase/server';
 import type { ConnectionsHubData } from '@/lib/data/connections-hub';
 
@@ -47,7 +53,11 @@ const EMPTY_HUB: ConnectionsHubData = {
   },
 };
 
-export default async function ConnectionsHubPage() {
+export default async function ConnectionsHubPage({
+  searchParams,
+}: {
+  searchParams?: Promise<{ seed?: string; demo?: string }>;
+}) {
   const supabase = await createClient();
   const {
     data: { user },
@@ -58,18 +68,39 @@ export default async function ConnectionsHubPage() {
   }
 
   const result = await loadConnectionsHubAction();
-  const initialData = result.success ? result.data : EMPTY_HUB;
+  let initialData = result.success ? result.data : EMPTY_HUB;
   const loadError = result.success ? null : result.message;
+
+  const params = searchParams ? await searchParams : {};
+  const seedFlags = parseSeedQueryParam(params.seed);
+  const forceSeed = seedFlags.forceSeed || params.demo === '1';
+  const realMutualCount = countRealMutualConnections(initialData);
+  const shouldInject = shouldInjectSeedConnectionsForRequest({
+    realMutualCount,
+    forceSeed,
+    disableSeed: seedFlags.disableSeed,
+  });
+
+  let seedConnectionsInjected = false;
+  if (shouldInject) {
+    initialData = injectSeedConnections(initialData);
+    seedConnectionsInjected = true;
+  }
 
   return (
     <ForgeAppCanvas
+      desktopViewportLock
       className={`${display.variable} ${sans.variable}`}
       style={{
         fontFamily: 'var(--font-discovery-sans), ui-sans-serif, system-ui, sans-serif',
       }}
     >
       <ConnectionsHubProvider initialData={initialData}>
-        <ConnectionsHubPrototype loadError={loadError} />
+        <ConnectionsHubPrototype
+          loadError={loadError}
+          seedConnectionsInjected={seedConnectionsInjected}
+          showSeedReset={seedFlags.showReset}
+        />
       </ConnectionsHubProvider>
     </ForgeAppCanvas>
   );

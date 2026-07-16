@@ -122,7 +122,9 @@ export function getProfileCompletionSections(
     {
       id: 'about',
       label: 'Write About Me',
-      complete: Boolean(profile && hasText(profile.short_bio)),
+      complete: Boolean(
+        profile && (hasText(profile.short_bio) || hasText(profile.more_about))
+      ),
     },
     {
       id: 'details',

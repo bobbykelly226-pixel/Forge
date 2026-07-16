@@ -6,6 +6,13 @@ import { getOpenToChatEducationSeenAction } from '@/app/actions/relationships';
 import DiscoveryFeed from '@/components/DiscoveryFeedPrototype';
 import ForgeAppCanvas from '@/components/ForgeAppCanvas';
 import { DiscoveryActionsProvider } from '@/components/discovery/DiscoveryActionsProvider';
+import { parseSeedQueryParam } from '@/lib/seed/access';
+import {
+  buildSeedDiscoveryActionState,
+  countRealDiscoveryCandidates,
+  injectSeedDiscoveryProfiles,
+  shouldInjectSeedDiscoveryForRequest,
+} from '@/lib/seed/inject-discovery';
 import { createEmptyActionState } from '@/lib/discovery-actions-types';
 import { createClient } from '@/lib/supabase/server';
 import { getCurrentUserProfile } from '@/lib/data/profile';
@@ -32,7 +39,11 @@ export const metadata = {
   },
 };
 
-export default async function DiscoveryFeedPage() {
+export default async function DiscoveryFeedPage({
+  searchParams,
+}: {
+  searchParams?: Promise<{ seed?: string; demo?: string }>;
+}) {
   const supabase = await createClient();
   const {
     data: { user },
@@ -48,7 +59,23 @@ export default async function DiscoveryFeedPage() {
     getCurrentUserProfile(),
   ]);
 
-  const initialActionState = Object.fromEntries(
+  const params = searchParams ? await searchParams : {};
+  const seedFlags = parseSeedQueryParam(params.seed);
+  const forceSeed = seedFlags.forceSeed || params.demo === '1';
+  const realProfiles = feed.success ? feed.profiles : [];
+  const realCandidateCount = countRealDiscoveryCandidates(realProfiles);
+  const shouldInject = shouldInjectSeedDiscoveryForRequest({
+    realCandidateCount,
+    forceSeed,
+    disableSeed: seedFlags.disableSeed,
+  });
+
+  const profiles = shouldInject
+    ? injectSeedDiscoveryProfiles(realProfiles)
+    : realProfiles;
+  const seedProfilesInjected = shouldInject;
+
+  const baseActionState = Object.fromEntries(
     Object.entries(feed.actionState ?? {}).map(([id, state]) => [
       id,
       {
@@ -62,12 +89,17 @@ export default async function DiscoveryFeedPage() {
     ])
   );
 
+  const initialActionState = seedProfilesInjected
+    ? { ...buildSeedDiscoveryActionState(), ...baseActionState }
+    : baseActionState;
+
   const viewerName = profile.success
     ? firstNameFromFullName(profile.data?.full_name)
     : 'there';
 
   return (
     <ForgeAppCanvas
+      desktopViewportLock
       className={`${display.variable} ${sans.variable}`}
       style={{
         fontFamily: 'var(--font-discovery-sans), ui-sans-serif, system-ui, sans-serif',
@@ -78,9 +110,11 @@ export default async function DiscoveryFeedPage() {
         initialEducationSeen={education.success ? education.data : false}
       >
         <DiscoveryFeed
-          profiles={feed.success ? feed.profiles : []}
+          profiles={profiles}
           viewerName={viewerName}
           loadError={feed.success ? null : feed.message}
+          seedProfilesInjected={seedProfilesInjected}
+          showSeedReset={seedFlags.showReset}
         />
       </DiscoveryActionsProvider>
     </ForgeAppCanvas>

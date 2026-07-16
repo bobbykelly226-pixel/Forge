@@ -2,8 +2,10 @@
 
 import {
   createContext,
+  startTransition,
   useCallback,
   useContext,
+  useEffect,
   useMemo,
   useRef,
   useState,
@@ -22,6 +24,17 @@ import {
   sendOpenToChatAction,
   withdrawInterestAction,
 } from '@/app/actions/relationships';
+import {
+  clearSeedDiscoveryActionStateSession,
+  clearSeedDiscoveryEducationSeenSession,
+  mergeResetSeedDiscoveryActions,
+  readSeedDiscoveryActionStateFromSession,
+  readSeedDiscoveryEducationSeenFromSession,
+  resetAllSeedState,
+  shouldSimulateDiscoveryAction,
+  writeSeedDiscoveryActionStateToSession,
+  writeSeedDiscoveryEducationSeenToSession,
+} from '@/lib/seed/actions';
 import {
   createEmptyActionState,
   type DiscoveryActionConflict,
@@ -47,6 +60,9 @@ type DiscoveryActionsContextValue = {
   handleSaveForLater: (profileId: string, profileName: string) => void;
   handleNotForMe: (profileId: string, profileName: string) => void;
   registerOpenToChatTrigger: (profileId: string, element: HTMLButtonElement | null) => void;
+  resetSeedState: () => void;
+  /** @deprecated Use resetSeedState */
+  resetSampleDiscoveryActions: () => void;
 };
 
 const DiscoveryActionsContext = createContext<DiscoveryActionsContextValue | null>(null);
@@ -80,6 +96,38 @@ export function DiscoveryActionsProvider({
   const [pending, setPending] = useState(false);
   const openToChatTriggers = useRef<Record<string, HTMLButtonElement | null>>({});
   const statusTimerRef = useRef<number | null>(null);
+  const seedSessionHydrated = useRef(false);
+
+  // Hydrate preview-only seed action state across feed ↔ profile navigations.
+  // Full browser reload clears simulated seed actions.
+  useEffect(() => {
+    if (seedSessionHydrated.current) return;
+    seedSessionHydrated.current = true;
+
+    const navigation = performance.getEntriesByType(
+      'navigation'
+    )[0] as PerformanceNavigationTiming | undefined;
+    if (navigation?.type === 'reload') {
+      clearSeedDiscoveryActionStateSession();
+      clearSeedDiscoveryEducationSeenSession();
+      return;
+    }
+
+    const stored = readSeedDiscoveryActionStateFromSession();
+    const storedEducation = readSeedDiscoveryEducationSeenFromSession();
+    if (Object.keys(stored).length === 0 && storedEducation !== true) {
+      return;
+    }
+
+    startTransition(() => {
+      if (Object.keys(stored).length > 0) {
+        setByProfileId((prev) => ({ ...prev, ...stored }));
+      }
+      if (storedEducation === true) {
+        setEducationSeen(true);
+      }
+    });
+  }, []);
 
   const getState = useCallback(
     (profileId: string): DiscoveryProfileActionState =>
@@ -94,10 +142,16 @@ export function DiscoveryActionsProvider({
 
   const patchState = useCallback(
     (profileId: string, patch: Partial<DiscoveryProfileActionState>) => {
-      setByProfileId((prev) => ({
-        ...prev,
-        [profileId]: { ...(prev[profileId] ?? createEmptyActionState()), ...patch },
-      }));
+      setByProfileId((prev) => {
+        const next = {
+          ...prev,
+          [profileId]: { ...(prev[profileId] ?? createEmptyActionState()), ...patch },
+        };
+        if (shouldSimulateDiscoveryAction(profileId)) {
+          writeSeedDiscoveryActionStateToSession(next);
+        }
+        return next;
+      });
     },
     []
   );
@@ -159,6 +213,14 @@ export function DiscoveryActionsProvider({
   const applyInterested = useCallback(
     async (profileId: string, profileName: string) => {
       if (pending) return;
+      if (shouldSimulateDiscoveryAction(profileId)) {
+        patchState(profileId, { interested: true });
+        announce(
+          `You've expressed interest in ${profileName}.`,
+          `If ${profileName} is also interested, Forge will let you both know.`
+        );
+        return;
+      }
       setPending(true);
       const previous = getState(profileId);
       patchState(profileId, { interested: true });
@@ -197,6 +259,11 @@ export function DiscoveryActionsProvider({
   const handleUndoInterested = useCallback(
     async (profileId: string, profileName: string) => {
       if (pending) return;
+      if (shouldSimulateDiscoveryAction(profileId)) {
+        patchState(profileId, { interested: false });
+        announce(`Interest in ${profileName} was removed.`);
+        return;
+      }
       setPending(true);
       patchState(profileId, { interested: false });
       const result = await withdrawInterestAction(profileId);
@@ -247,6 +314,20 @@ export function DiscoveryActionsProvider({
     async (profileId: string, profileName: string) => {
       if (pending) return;
       const state = getState(profileId);
+      if (shouldSimulateDiscoveryAction(profileId)) {
+        if (state.saved) {
+          patchState(profileId, { saved: false });
+          announce(`${profileName} was removed from Saved.`);
+          return;
+        }
+        patchState(profileId, { saved: true, passed: false });
+        announce(
+          `${profileName} was saved for later.`,
+          'Only you can see saved profiles.'
+        );
+        return;
+      }
+
       setPending(true);
       if (state.saved) {
         patchState(profileId, { saved: false });
@@ -281,6 +362,18 @@ export function DiscoveryActionsProvider({
   const confirmNotForMe = useCallback(async () => {
     if (!notForMePrompt || pending) return;
     const { profileId } = notForMePrompt;
+    if (shouldSimulateDiscoveryAction(profileId)) {
+      patchState(profileId, {
+        interested: false,
+        openToChatSent: false,
+        openToChatNote: null,
+        saved: false,
+        passed: true,
+      });
+      setNotForMePrompt(null);
+      announce('Introduction passed.');
+      return;
+    }
     const previous = getState(profileId);
     setPending(true);
     patchState(profileId, {
@@ -325,6 +418,21 @@ export function DiscoveryActionsProvider({
   const handleOpenToChatSent = useCallback(
     async (note: string | null): Promise<boolean> => {
       if (!openToChatPrompt || pending) return false;
+      if (shouldSimulateDiscoveryAction(openToChatPrompt.profileId)) {
+        patchState(openToChatPrompt.profileId, {
+          openToChatSent: true,
+          openToChatNote: note,
+        });
+        setEducationSeen(true);
+        writeSeedDiscoveryEducationSeenToSession(true);
+        announce(
+          `Open to Chat sent to ${openToChatPrompt.profileName}.`,
+          note
+            ? 'Your note was included with the request.'
+            : 'Your request was sent without a note.'
+        );
+        return true;
+      }
       setPending(true);
       const result = await sendOpenToChatAction(openToChatPrompt.profileId, note);
       setPending(false);
@@ -348,8 +456,23 @@ export function DiscoveryActionsProvider({
 
   const handleEducationContinued = useCallback(() => {
     setEducationSeen(true);
+    const profileId = openToChatPrompt?.profileId;
+    if (profileId && shouldSimulateDiscoveryAction(profileId)) {
+      writeSeedDiscoveryEducationSeenToSession(true);
+      return;
+    }
     void markOpenToChatEducationSeenAction();
-  }, []);
+  }, [openToChatPrompt]);
+
+  const resetSeedState = useCallback(() => {
+    setByProfileId((prev) => {
+      const next = mergeResetSeedDiscoveryActions(prev);
+      resetAllSeedState();
+      writeSeedDiscoveryActionStateToSession(next);
+      return next;
+    });
+    announce('Seed state was reset.');
+  }, [announce]);
 
   const value = useMemo<DiscoveryActionsContextValue>(
     () => ({
@@ -368,6 +491,8 @@ export function DiscoveryActionsProvider({
       },
       handleNotForMe,
       registerOpenToChatTrigger,
+      resetSeedState,
+      resetSampleDiscoveryActions: resetSeedState,
     }),
     [
       getState,
@@ -381,6 +506,7 @@ export function DiscoveryActionsProvider({
       handleSaveForLater,
       handleNotForMe,
       registerOpenToChatTrigger,
+      resetSeedState,
     ]
   );
 

@@ -193,7 +193,7 @@ describe('profile completion at 100%', () => {
     assert.equal(calculateProfileCompletionPercent(complete), 100);
 
     const dropped = getProfileCompletionSections({
-      profile: minimalProfile({ short_bio: null }),
+      profile: minimalProfile({ short_bio: null, more_about: null }),
       photoCount: 1,
       hasRelationshipAlignment: true,
       hasImportantAlignmentFactors: true,
