@@ -205,33 +205,26 @@ export default function DiscoveryProfilePrototype() {
               Relationship Alignment
             </p>
             <h2
-              className="mt-3 text-2xl tracking-[-0.01em] text-[#0B2D5C] sm:text-[1.65rem]"
+              className="mt-3 text-2xl font-medium tracking-[-0.01em] text-[#0B2D5C] sm:text-[1.65rem]"
               style={{ fontFamily: 'var(--font-discovery-display), Georgia, serif' }}
             >
               Promising Alignment
             </h2>
 
-            <div className="mt-5 border-t border-[#0B2D5C]/06 pt-5">
-              <p className="text-xs font-semibold uppercase tracking-[0.14em] text-[#7A8494]">
-                Confidence
-              </p>
-              <p className="mt-1.5 text-lg font-semibold text-[#0B2D5C]">Moderate</p>
-            </div>
-
             <p className="mt-5 text-[15px] leading-relaxed text-[#5A6575]">
-              Based on shared values, life goals, and completed compatibility questions.
+              Based on shared values, life goals, and completed compatibility questions. This is
+              qualitative guidance — not a numeric score.
             </p>
 
             <button
               ref={alignmentTriggerRef}
               type="button"
               onClick={openAlignmentDrawer}
-              className="mt-6 -mx-2 inline-flex w-[calc(100%+1rem)] items-center justify-between gap-3 rounded-2xl px-2 py-3 text-left text-sm font-semibold text-[#0B2D5C] transition hover:bg-[#0B2D5C]/04 hover:text-[#D62828] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0B2D5C]"
+              className="mt-6 inline-flex min-h-11 items-center text-left text-sm font-semibold text-[#0B2D5C] underline decoration-[#0B2D5C]/55 underline-offset-[5px] transition hover:text-[#D62828] hover:decoration-[#D62828] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0B2D5C]"
               aria-haspopup="dialog"
               aria-expanded={alignmentDrawerOpen}
             >
-              <span>See why you align</span>
-              <span aria-hidden="true">→</span>
+              See Why You Align
             </button>
           </section>
         </SectionReveal>

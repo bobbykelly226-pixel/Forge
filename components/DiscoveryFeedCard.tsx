@@ -132,7 +132,7 @@ export default function DiscoveryFeedCard({ profile, index }: DiscoveryFeedCardP
                   Relationship Alignment
                 </p>
                 <p
-                  className="mt-2 inline-flex items-center gap-2 text-xl tracking-[-0.01em] text-[#0B2D5C] sm:text-[1.35rem] lg:text-[1.4rem]"
+                  className="mt-2.5 inline-flex items-center gap-2 text-xl font-medium tracking-[-0.01em] text-[#0B2D5C] sm:text-[1.35rem] lg:text-[1.4rem]"
                   style={{ fontFamily: 'var(--font-discovery-display), Georgia, serif' }}
                 >
                   {profile.alignmentLabel}
@@ -141,10 +141,6 @@ export default function DiscoveryFeedCard({ profile, index }: DiscoveryFeedCardP
                     strokeWidth={1.75}
                     aria-hidden="true"
                   />
-                </p>
-                <p className="mt-2 text-sm text-[#5A6575] lg:text-[15px]">
-                  Confidence:{' '}
-                  <span className="font-semibold text-[#0B2D5C]">{profile.confidence}</span>
                 </p>
               </section>
 

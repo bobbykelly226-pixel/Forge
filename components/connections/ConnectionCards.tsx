@@ -537,7 +537,7 @@ export function ForYouOverviewCard({
         <ConnectionPortrait profile={profile} size="md" />
         <div className="min-w-0 flex-1">
           <ConnectionIdentity profile={profile} compact />
-          {variant !== 'interest' && <ConnectionAlignment profile={profile} showConfidence />}
+          {variant !== 'interest' && <ConnectionAlignment profile={profile} />}
           {variant === 'open_to_chat' &&
             (hasIncomingNote ? (
               <div className="mt-3 rounded-2xl border border-[#0B2D5C]/08 bg-[#FBF9F6] px-3.5 py-3">

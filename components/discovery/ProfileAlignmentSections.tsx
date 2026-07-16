@@ -132,7 +132,7 @@ export default function ProfileAlignmentSections({
           Relationship Alignment
         </p>
         <h2
-          className="mt-2 text-2xl text-[#0B2D5C]"
+          className="mt-2.5 text-2xl font-medium tracking-[-0.01em] text-[#0B2D5C]"
           style={{ fontFamily: 'var(--font-discovery-display), Georgia, serif' }}
         >
           {alignmentLabel}
@@ -154,12 +154,11 @@ export default function ProfileAlignmentSections({
             setFactorsOpen(false);
             setAlignmentOpen(true);
           }}
-          className="mt-5 -mx-2 inline-flex w-[calc(100%+1rem)] min-h-11 items-center justify-between gap-3 rounded-2xl px-2 py-3 text-left text-sm font-semibold text-[#0B2D5C] transition hover:bg-[#0B2D5C]/04 hover:text-[#D62828] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0B2D5C]"
+          className="mt-5 inline-flex min-h-11 items-center text-left text-sm font-semibold text-[#0B2D5C] underline decoration-[#0B2D5C]/55 underline-offset-[5px] transition hover:text-[#D62828] hover:decoration-[#D62828] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0B2D5C]"
           aria-haspopup="dialog"
           aria-expanded={alignmentOpen}
         >
-          <span>See why you align</span>
-          <span aria-hidden="true">→</span>
+          See Why You Align
         </button>
       </section>
 

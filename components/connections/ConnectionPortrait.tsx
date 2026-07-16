@@ -82,10 +82,8 @@ export function ConnectionIdentity({
 
 export function ConnectionAlignment({
   profile,
-  showConfidence = true,
 }: {
   profile: HubProfileCard;
-  showConfidence?: boolean;
 }) {
   return (
     <div className="mt-3">
@@ -93,16 +91,11 @@ export function ConnectionAlignment({
         Relationship Alignment
       </p>
       <p
-        className="mt-1 text-base font-medium text-[#0B2D5C] lg:text-lg"
+        className="mt-1.5 text-base font-semibold text-[#0B2D5C] lg:text-lg"
         style={{ fontFamily: 'var(--font-discovery-display), Georgia, serif' }}
       >
         {profile.alignmentLabel}
       </p>
-      {showConfidence && (
-        <p className="mt-1 text-sm text-[#5A6575]">
-          {profile.confidence} confidence
-        </p>
-      )}
     </div>
   );
 }

@@ -104,7 +104,7 @@ export default function PublicProfilePresentation({
                 Relationship Alignment
               </p>
               <h2
-                className="mt-2 text-2xl text-[#0B2D5C]"
+                className="mt-2.5 text-2xl font-medium tracking-[-0.01em] text-[#0B2D5C]"
                 style={{ fontFamily: 'var(--font-discovery-display), Georgia, serif' }}
               >
                 {DISCOVERY_NEUTRAL_ALIGNMENT_LABEL}
