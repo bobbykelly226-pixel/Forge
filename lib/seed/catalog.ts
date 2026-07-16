@@ -301,7 +301,7 @@ export const SEED_PROFILES: SeedProfile[] = [
     importantFactorsSummary: "Faith, parenting, and relocation need clarification",
     characterSignalIds: ["great_listener","respectful_communicator","handled_mismatch_respectfully"] as CharacterSignalId[],
     isMutualConnection: false,
-    photoFiles: ["rachel-ortiz-1.png","rachel-ortiz-2.png","rachel-ortiz-3.png"],
+    photoFiles: ["rachel-ortiz-1.png"],
   },
   {
     id: "seed-danielle-brooks",
@@ -394,7 +394,7 @@ export const SEED_PROFILES: SeedProfile[] = [
     importantFactorsSummary: "Marriage timeline and relocation deserve conversation",
     characterSignalIds: ["great_listener","respectful_communicator"] as CharacterSignalId[],
     isMutualConnection: false,
-    photoFiles: ["monica-ellis-1.png","monica-ellis-2.png","monica-ellis-3.png"],
+    photoFiles: ["monica-ellis-1.png"],
   },
   {
     id: "seed-kristin-walsh",
@@ -433,7 +433,7 @@ export const SEED_PROFILES: SeedProfile[] = [
     incompleteAssessmentCopy: "Forge does not have enough information to offer a responsible Relationship Alignment assessment yet.",
     characterSignalIds: [] as CharacterSignalId[],
     isMutualConnection: false,
-    photoFiles: ["kristin-walsh-1.png","kristin-walsh-2.png","kristin-walsh-3.png"],
+    photoFiles: ["kristin-walsh-1.png"],
   },
   {
     id: "seed-lauren-price",
@@ -549,7 +549,7 @@ export const SEED_PROFILES: SeedProfile[] = [
     importantFactorsSummary: "Relocation preferences differ",
     characterSignalIds: ["kind_conversation","clear_intentions","respectful_in_person","great_listener"] as CharacterSignalId[],
     isMutualConnection: false,
-    photoFiles: ["megan-torres-1.png","megan-torres-2.png","megan-torres-3.png"],
+    photoFiles: ["megan-torres-1.png"],
   },
   {
     id: "seed-emily-chen",
@@ -587,7 +587,7 @@ export const SEED_PROFILES: SeedProfile[] = [
     incompleteAssessmentCopy: "Forge does not have enough information to offer a responsible Relationship Alignment assessment yet.",
     characterSignalIds: [] as CharacterSignalId[],
     isMutualConnection: false,
-    photoFiles: ["emily-chen-1.png","emily-chen-2.png","emily-chen-3.png"],
+    photoFiles: ["emily-chen-1.png"],
   },
   {
     id: "seed-jessica-rivera",
@@ -688,7 +688,7 @@ export const SEED_PROFILES: SeedProfile[] = [
     importantFactorsSummary: "Potential dealbreaker: Smoking preferences conflict",
     characterSignalIds: ["clear_intentions","genuine_and_present"] as CharacterSignalId[],
     isMutualConnection: false,
-    photoFiles: ["hannah-brooks-1.png","hannah-brooks-2.png","hannah-brooks-3.png"],
+    photoFiles: ["hannah-brooks-1.png"],
   },
   {
     id: "seed-olivia-grant",
@@ -734,7 +734,7 @@ export const SEED_PROFILES: SeedProfile[] = [
     importantFactorsSummary: "Military service background may shape daily rhythms",
     characterSignalIds: ["consistent_follow_through","respectful_in_person","clear_intentions"] as CharacterSignalId[],
     isMutualConnection: false,
-    photoFiles: ["olivia-grant-1.png","olivia-grant-2.png","olivia-grant-3.png"],
+    photoFiles: ["olivia-grant-1.png"],
   },
   {
     id: "seed-sophia-martinez",
@@ -773,7 +773,7 @@ export const SEED_PROFILES: SeedProfile[] = [
     noFactorsCopy: "No major alignment concerns surfaced from the information currently available.",
     characterSignalIds: ["kind_conversation","genuine_and_present","clear_intentions","great_listener"] as CharacterSignalId[],
     isMutualConnection: false,
-    photoFiles: ["sophia-martinez-1.png","sophia-martinez-2.png","sophia-martinez-3.png"],
+    photoFiles: ["sophia-martinez-1.png"],
   },
   {
     id: "seed-ashley-quinn",
@@ -834,7 +834,7 @@ export const SEED_PROFILES: SeedProfile[] = [
     importantFactorsSummary: "Potential dealbreaker: Children preferences differ",
     characterSignalIds: ["respectful_communicator","handled_mismatch_respectfully"] as CharacterSignalId[],
     isMutualConnection: false,
-    photoFiles: ["ashley-quinn-1.png","ashley-quinn-2.png","ashley-quinn-3.png"],
+    photoFiles: ["ashley-quinn-1.png"],
   },
   {
     id: "seed-brittany-hale",
@@ -873,7 +873,7 @@ export const SEED_PROFILES: SeedProfile[] = [
     noFactorsCopy: "No major alignment concerns surfaced from the information currently available.",
     characterSignalIds: ["genuine_and_present","great_listener","consistent_follow_through"] as CharacterSignalId[],
     isMutualConnection: false,
-    photoFiles: ["brittany-hale-1.png","brittany-hale-2.png","brittany-hale-3.png"],
+    photoFiles: ["brittany-hale-1.png"],
   },
   {
     id: "seed-courtney-diaz",
@@ -996,7 +996,7 @@ export const SEED_PROFILES: SeedProfile[] = [
     importantFactorsSummary: "Potential dealbreaker: Children preferences differ",
     characterSignalIds: ["respectful_communicator","clear_intentions"] as CharacterSignalId[],
     isMutualConnection: false,
-    photoFiles: ["natalie-kim-1.png","natalie-kim-2.png","natalie-kim-3.png"],
+    photoFiles: ["natalie-kim-1.png"],
   },
   {
     id: "seed-victoria-lane",
@@ -1050,7 +1050,7 @@ export const SEED_PROFILES: SeedProfile[] = [
     importantFactorsSummary: "Family priorities and marriage timeline deserve conversation",
     characterSignalIds: ["respectful_communicator","great_listener","respectful_in_person"] as CharacterSignalId[],
     isMutualConnection: false,
-    photoFiles: ["victoria-lane-1.png","victoria-lane-2.png","victoria-lane-3.png"],
+    photoFiles: ["victoria-lane-1.png"],
   },
   {
     id: "seed-rebecca-frost",
@@ -1088,7 +1088,7 @@ export const SEED_PROFILES: SeedProfile[] = [
     incompleteAssessmentCopy: "Forge does not have enough information to offer a responsible Relationship Alignment assessment yet.",
     characterSignalIds: [] as CharacterSignalId[],
     isMutualConnection: false,
-    photoFiles: ["rebecca-frost-1.png","rebecca-frost-2.png","rebecca-frost-3.png"],
+    photoFiles: ["rebecca-frost-1.png"],
   },
   {
     id: "seed-michael-turner",
@@ -1181,7 +1181,7 @@ export const SEED_PROFILES: SeedProfile[] = [
     importantFactorsSummary: "Faith and relocation deserve conversation",
     characterSignalIds: ["great_listener","kind_conversation","genuine_and_present"] as CharacterSignalId[],
     isMutualConnection: false,
-    photoFiles: ["david-nguyen-1.png","david-nguyen-2.png","david-nguyen-3.png"],
+    photoFiles: ["david-nguyen-1.png"],
   },
   {
     id: "seed-james-carter",
@@ -1241,7 +1241,7 @@ export const SEED_PROFILES: SeedProfile[] = [
     importantFactorsSummary: "Children preferences and lifestyle deserve conversation",
     characterSignalIds: ["clear_intentions","respectful_communicator","handled_mismatch_respectfully"] as CharacterSignalId[],
     isMutualConnection: false,
-    photoFiles: ["james-carter-1.png","james-carter-2.png","james-carter-3.png"],
+    photoFiles: ["james-carter-1.png"],
   },
   {
     id: "seed-christopher-bell",
@@ -1280,7 +1280,7 @@ export const SEED_PROFILES: SeedProfile[] = [
     noFactorsCopy: "No major alignment concerns surfaced from the information currently available.",
     characterSignalIds: ["great_listener","consistent_follow_through","clear_intentions","genuine_and_present"] as CharacterSignalId[],
     isMutualConnection: false,
-    photoFiles: ["christopher-bell-1.png","christopher-bell-2.png","christopher-bell-3.png"],
+    photoFiles: ["christopher-bell-1.png"],
   },
   {
     id: "seed-matthew-ruiz",
@@ -1372,7 +1372,7 @@ export const SEED_PROFILES: SeedProfile[] = [
     incompleteAssessmentCopy: "Forge does not have enough information to offer a responsible Relationship Alignment assessment yet.",
     characterSignalIds: [] as CharacterSignalId[],
     isMutualConnection: false,
-    photoFiles: ["andrew-scott-1.png","andrew-scott-2.png","andrew-scott-3.png"],
+    photoFiles: ["andrew-scott-1.png"],
   },
   {
     id: "seed-joshua-klein",
@@ -1432,7 +1432,7 @@ export const SEED_PROFILES: SeedProfile[] = [
     importantFactorsSummary: "Faith tradition and relocation need clarification",
     characterSignalIds: ["clear_intentions","great_listener","genuine_and_present"] as CharacterSignalId[],
     isMutualConnection: false,
-    photoFiles: ["joshua-klein-1.png","joshua-klein-2.png","joshua-klein-3.png"],
+    photoFiles: ["joshua-klein-1.png"],
   },
   {
     id: "seed-ryan-cooper",
@@ -1518,7 +1518,7 @@ export const SEED_PROFILES: SeedProfile[] = [
     importantFactorsSummary: "Future children preferences should be clarified",
     characterSignalIds: ["great_listener","clear_intentions"] as CharacterSignalId[],
     isMutualConnection: false,
-    photoFiles: ["brandon-miles-1.png","brandon-miles-2.png","brandon-miles-3.png"],
+    photoFiles: ["brandon-miles-1.png"],
   },
   {
     id: "seed-tyler-shaw",
@@ -1585,7 +1585,7 @@ export const SEED_PROFILES: SeedProfile[] = [
     importantFactorsSummary: "Faith and smoking deserve conversation",
     characterSignalIds: ["clear_intentions","handled_mismatch_respectfully"] as CharacterSignalId[],
     isMutualConnection: false,
-    photoFiles: ["tyler-shaw-1.png","tyler-shaw-2.png","tyler-shaw-3.png"],
+    photoFiles: ["tyler-shaw-1.png"],
   },
   {
     id: "seed-kevin-morgan",
@@ -1639,7 +1639,7 @@ export const SEED_PROFILES: SeedProfile[] = [
     importantFactorsSummary: "Relocation logistics deserve conversation",
     characterSignalIds: ["respectful_communicator","great_listener","consistent_follow_through"] as CharacterSignalId[],
     isMutualConnection: false,
-    photoFiles: ["kevin-morgan-1.png","kevin-morgan-2.png","kevin-morgan-3.png"],
+    photoFiles: ["kevin-morgan-1.png"],
   },
   {
     id: "seed-justin-reed",
@@ -1678,7 +1678,7 @@ export const SEED_PROFILES: SeedProfile[] = [
     noFactorsCopy: "No major alignment concerns surfaced from the information currently available.",
     characterSignalIds: ["kind_conversation","clear_intentions","genuine_and_present","great_listener"] as CharacterSignalId[],
     isMutualConnection: false,
-    photoFiles: ["justin-reed-1.png","justin-reed-2.png","justin-reed-3.png"],
+    photoFiles: ["justin-reed-1.png"],
   },
   {
     id: "seed-nathan-brooks",
@@ -1781,7 +1781,7 @@ export const SEED_PROFILES: SeedProfile[] = [
     incompleteAssessmentCopy: "Forge does not have enough information to offer a responsible Relationship Alignment assessment yet.",
     characterSignalIds: [] as CharacterSignalId[],
     isMutualConnection: false,
-    photoFiles: ["adam-porter-1.png","adam-porter-2.png","adam-porter-3.png"],
+    photoFiles: ["adam-porter-1.png"],
   },
   {
     id: "seed-eric-lawson",
@@ -1833,7 +1833,7 @@ export const SEED_PROFILES: SeedProfile[] = [
     importantFactorsSummary: "Relocation preferences deserve conversation",
     characterSignalIds: ["respectful_in_person","consistent_follow_through","clear_intentions"] as CharacterSignalId[],
     isMutualConnection: false,
-    photoFiles: ["eric-lawson-1.png","eric-lawson-2.png","eric-lawson-3.png"],
+    photoFiles: ["eric-lawson-1.png"],
   },
   {
     id: "seed-steven-hart",
@@ -1894,7 +1894,7 @@ export const SEED_PROFILES: SeedProfile[] = [
     importantFactorsSummary: "Potential dealbreaker: Children preferences differ",
     characterSignalIds: ["clear_intentions","respectful_communicator"] as CharacterSignalId[],
     isMutualConnection: false,
-    photoFiles: ["steven-hart-1.png","steven-hart-2.png","steven-hart-3.png"],
+    photoFiles: ["steven-hart-1.png"],
   },
   {
     id: "seed-patrick-doyle",
@@ -1933,7 +1933,7 @@ export const SEED_PROFILES: SeedProfile[] = [
     noFactorsCopy: "No major alignment concerns surfaced from the information currently available.",
     characterSignalIds: ["genuine_and_present","kind_conversation","consistent_follow_through","great_listener"] as CharacterSignalId[],
     isMutualConnection: false,
-    photoFiles: ["patrick-doyle-1.png","patrick-doyle-2.png","patrick-doyle-3.png"],
+    photoFiles: ["patrick-doyle-1.png"],
   },
   {
     id: "seed-gregory-lane",
@@ -2045,7 +2045,7 @@ export const SEED_PROFILES: SeedProfile[] = [
     importantFactorsSummary: "Faith, children, and relocation need clarification",
     characterSignalIds: ["kind_conversation","genuine_and_present"] as CharacterSignalId[],
     isMutualConnection: false,
-    photoFiles: ["jonathan-west-1.png","jonathan-west-2.png","jonathan-west-3.png"],
+    photoFiles: ["jonathan-west-1.png"],
   },
   {
     id: "seed-daniel-cruz",
@@ -2083,7 +2083,7 @@ export const SEED_PROFILES: SeedProfile[] = [
     incompleteAssessmentCopy: "Forge does not have enough information to offer a responsible Relationship Alignment assessment yet.",
     characterSignalIds: [] as CharacterSignalId[],
     isMutualConnection: false,
-    photoFiles: ["daniel-cruz-1.png","daniel-cruz-2.png","daniel-cruz-3.png"],
+    photoFiles: ["daniel-cruz-1.png"],
   }
 ];
 

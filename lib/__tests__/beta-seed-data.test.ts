@@ -78,6 +78,24 @@ describe('beta seed catalog', () => {
     assert.equal(seedFixtureContainsRedFlagLabel(), false);
     assert.equal(seedFixturesHaveNumericScores(), false);
   });
+
+  it('references only portrait files that exist on disk', () => {
+    const { existsSync } = require('node:fs') as typeof import('node:fs');
+    const profiles = getSeedProfiles();
+    let multi = 0;
+    for (const profile of profiles) {
+      assert.ok(profile.photoFiles.length >= 1, profile.id);
+      assert.ok(profile.photoFiles[0]?.endsWith('-1.png'), profile.id);
+      for (const file of profile.photoFiles) {
+        assert.ok(
+          existsSync(join(root, 'public/seed-portraits', file)),
+          `${profile.id} missing ${file}`
+        );
+      }
+      if (profile.photoFiles.length >= 3) multi += 1;
+    }
+    assert.equal(multi, 12);
+  });
 });
 
 describe('beta seed access control', () => {

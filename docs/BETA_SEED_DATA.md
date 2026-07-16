@@ -21,7 +21,18 @@ There is **no** separate showcase UI, Compatibility Index, or numeric ranking.
 | Men | 20 |
 | Mutual connections (subset) | 10 |
 
-All profile ids use the `seed-` prefix. Portraits are expected under `/public/seed-portraits/`.
+All profile ids use the `seed-` prefix. Portraits live under `/public/seed-portraits/`.
+
+### Portrait coverage
+
+| Set | Count | Photos |
+|-----|-------|--------|
+| All seed profiles | 40 | At least 1 primary portrait each |
+| Featured gallery profiles | 12 | 3 photos each (primary + 2 lifestyle) |
+
+Featured galleries (all 10 mutual connections plus 2 Discovery standouts): Amanda Cole, Nicole Hayes, Lauren Price, Jessica Rivera, Courtney Diaz, Michael Turner, Matthew Ruiz, Ryan Cooper, Nathan Brooks, Gregory Lane, Sarah Bennett, Danielle Brooks.
+
+`photoFiles` in the catalog must only reference files that exist on disk.
 
 ## Query flags
 
