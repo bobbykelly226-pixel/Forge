@@ -220,7 +220,7 @@ export default function ProfileAlignmentSections({
           className="text-xl text-[#0B2D5C]"
           style={{ fontFamily: 'var(--font-discovery-display), Georgia, serif' }}
         >
-          Why Forge surfaced this profile
+          Why Forge Introduced You
         </h2>
         {whySurfacedCopy ? (
           <p className="mt-3 text-[15px] leading-relaxed text-[#5A6575]">{whySurfacedCopy}</p>

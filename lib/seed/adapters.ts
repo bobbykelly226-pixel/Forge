@@ -36,7 +36,7 @@ export type SeedProfileAlignmentPresentation = {
   characterSignalIds: CharacterSignalId[];
   incompleteAssessmentCopy?: string;
   noFactorsCopy?: string;
-  /** Optional paragraph for “Why Forge surfaced this profile”. */
+  /** Optional paragraph under “Why Forge Introduced You”. */
   whySurfacedCopy?: string;
 };
 

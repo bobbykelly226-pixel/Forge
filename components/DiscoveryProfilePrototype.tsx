@@ -436,7 +436,7 @@ export default function DiscoveryProfilePrototype() {
           <VideoIntroductionSection />
         </SectionReveal>
 
-        {/* 13. Why Forge surfaced */}
+        {/* 13. Why Forge Introduced You */}
         <SectionReveal delayMs={460}>
           <section className={`${cardClassName} mt-4`} aria-labelledby="why-title">
             <h2
@@ -444,7 +444,7 @@ export default function DiscoveryProfilePrototype() {
               className="text-xl tracking-[-0.01em] text-[#0B2D5C] sm:text-2xl"
               style={{ fontFamily: 'var(--font-discovery-display), Georgia, serif' }}
             >
-              Why Forge surfaced this profile
+              Why Forge Introduced You
             </h2>
 
             <div className="mt-6 space-y-6">

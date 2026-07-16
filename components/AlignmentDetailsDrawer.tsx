@@ -87,7 +87,7 @@ function getFocusableElements(container: HTMLElement): HTMLElement[] {
 export default function AlignmentDetailsDrawer({
   open,
   onClose,
-  profileName = 'Jessica',
+  profileName: _profileName = 'Jessica',
   content,
 }: AlignmentDetailsDrawerProps) {
   const titleId = useId();
@@ -231,7 +231,7 @@ export default function AlignmentDetailsDrawer({
                 className="mt-2 text-[1.55rem] leading-tight tracking-[-0.02em] text-[#0B2D5C] sm:text-2xl"
                 style={{ fontFamily: 'var(--font-discovery-display), Georgia, serif' }}
               >
-                Why Forge introduced {profileName}
+                Why Forge Introduced You
               </h2>
             </div>
             <button

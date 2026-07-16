@@ -47,13 +47,14 @@ describe('unified About biography', () => {
 });
 
 describe('public profile information density', () => {
-  it('collapses Why Forge Surfaced reasons after three with More / Show Less', () => {
+  it('collapses Why Forge Introduced You reasons after three with More / Show Less', () => {
     const source = readFileSync(
       join(process.cwd(), 'components/discovery/ProfileAlignmentSections.tsx'),
       'utf8'
     );
     assert.match(source, /WHY_SURFACED_PREVIEW_COUNT = 3/);
     assert.match(source, /sharedStrengths\.slice\(0, WHY_SURFACED_PREVIEW_COUNT\)/);
+    assert.match(source, /Why Forge Introduced You/);
     assert.match(source, /\{whySurfacedExpanded \? 'Show Less' : 'More'\}/);
     assert.match(source, /aria-expanded=\{whySurfacedExpanded\}/);
     assert.doesNotMatch(source, /More About/);

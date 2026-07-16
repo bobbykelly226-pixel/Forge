@@ -30,7 +30,7 @@ export type PublicProfilePresentationProps = {
   footer?: React.ReactNode;
   /** Show neutral alignment card (Discovery only). */
   showAlignmentCard?: boolean;
-  /** Show “Why Forge surfaced this profile” (Discovery only). */
+  /** Show “Why Forge Introduced You” (Discovery only). */
   showSurfacedReason?: boolean;
   /**
    * Optional qualitative alignment enrichment (enriched profiles).
@@ -208,7 +208,7 @@ export default function PublicProfilePresentation({
                 className="text-xl text-[#0B2D5C]"
                 style={{ fontFamily: 'var(--font-discovery-display), Georgia, serif' }}
               >
-                Why Forge surfaced this profile
+                Why Forge Introduced You
               </h2>
               <p className="mt-3 text-[15px] leading-relaxed text-[#5A6575]">
                 {DISCOVERY_SURFACED_REASON}
