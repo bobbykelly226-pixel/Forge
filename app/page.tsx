@@ -5,11 +5,6 @@ import Link from 'next/link';
 import { useState } from 'react';
 import { createClient } from '@supabase/supabase-js';
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-);
-
 export default function Home() {
   const [selectedOption, setSelectedOption] = useState<string | null>(null);
   const [comment, setComment] = useState("");
@@ -20,6 +15,12 @@ export default function Home() {
     if (!selectedOption) return;
     setIsSubmitting(true);
     try {
+      const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+      const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+      if (!supabaseUrl || !supabaseAnonKey) {
+        throw new Error('Missing Supabase environment variables');
+      }
+      const supabase = createClient(supabaseUrl, supabaseAnonKey);
       const { error } = await supabase.from('feedback').insert({
         choice: selectedOption,
         comment: comment || null,
@@ -57,7 +58,7 @@ export default function Home() {
           </h1>
           <p className="text-[19px] text-[#444444] leading-relaxed mb-8">
             Forge was built for people who believe the strongest relationships begin with shared values. 
-            If you're looking for something rooted in faith, family, commitment, and purpose, you're in the right place.
+            If you&apos;re looking for something rooted in faith, family, commitment, and purpose, you&apos;re in the right place.
           </p>
           
           <div className="flex flex-col gap-3 mb-2">
@@ -87,7 +88,7 @@ export default function Home() {
           </h1>
           <p className="text-lg sm:text-xl text-[#444444] max-w-lg mb-8">
             Forge was built for people who believe the strongest relationships begin with shared values. 
-            If you're looking for something rooted in faith, family, commitment, and purpose, you're in the right place.
+            If you&apos;re looking for something rooted in faith, family, commitment, and purpose, you&apos;re in the right place.
           </p>
           <div className="flex flex-wrap items-center gap-4 mb-2">
             <Link
@@ -189,7 +190,7 @@ export default function Home() {
                 Forge is being built for people who believe meaningful relationships start with shared values.
               </h2>
               <p className="text-lg text-[#444444]">
-                You're one of the first people to see Forge. Help us build it right.
+                You&apos;re one of the first people to see Forge. Help us build it right.
               </p>
             </div>
 
