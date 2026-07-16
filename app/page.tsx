@@ -1,50 +1,7 @@
-'use client';
-
 import Header from '../components/Header';
 import Link from 'next/link';
-import { useState } from 'react';
-import { createClient } from '@supabase/supabase-js';
 
 export default function Home() {
-  const [selectedOption, setSelectedOption] = useState<string | null>(null);
-  const [comment, setComment] = useState("");
-  const [submitted, setSubmitted] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-
-  const handleFeedbackSubmit = async () => {
-    if (!selectedOption) return;
-    setIsSubmitting(true);
-    try {
-      const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-      const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-      if (!supabaseUrl || !supabaseAnonKey) {
-        throw new Error('Missing Supabase environment variables');
-      }
-      const supabase = createClient(supabaseUrl, supabaseAnonKey);
-      const { error } = await supabase.from('feedback').insert({
-        choice: selectedOption,
-        comment: comment || null,
-      });
-      if (error) throw error;
-      setSubmitted(true);
-    } catch (error) {
-      console.error('Error:', error);
-      alert('Something went wrong. Please try again.');
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
-  const scrollToPoll = () => {
-    document.getElementById('feedback-poll')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-  };
-
-  const getFollowUpPrompt = () => {
-    if (selectedOption === "I'd definitely join") return "What excites you most about Forge?";
-    if (selectedOption === "I'd consider it") return "What's keeping you from saying yes today?";
-    return "What would make Forge more valuable to you?";
-  };
-
   return (
     <div className="min-h-screen bg-[#F8F6F2] text-[#222222]">
       <Header />
@@ -60,20 +17,9 @@ export default function Home() {
             Strong Values.<br />
             <span className="text-[#D62828]">Strong Connections.</span>
           </h1>
-          <p className="text-[19px] text-[#444444] leading-relaxed mb-8">
+          <p className="text-[19px] text-[#444444] leading-relaxed">
             Forge was built for people who believe the strongest relationships begin with shared values. 
-            If you're looking for something rooted in faith, family, commitment, and purpose, you're in the right place.
-          </p>
-          
-          <button 
-            onClick={scrollToPoll}
-            className="w-full bg-[#D62828] hover:bg-[#A61F1F] text-white py-4 rounded-2xl font-semibold text-lg transition-all duration-200 mb-4"
-          >
-            Take Our Poll →
-          </button>
-          
-          <p className="text-[15px] text-[#666666] text-center">
-            Help us build Forge before launch. Your feedback takes less than 30 seconds.
+            If you&apos;re looking for something rooted in faith, family, commitment, and purpose, you&apos;re in the right place.
           </p>
         </div>
       </div>
@@ -86,18 +32,9 @@ export default function Home() {
             Strong Values.<br />
             <span className="text-[#D62828]">Strong Connections.</span>
           </h1>
-          <p className="text-lg sm:text-xl text-[#444444] max-w-lg mb-8">
+          <p className="text-lg sm:text-xl text-[#444444] max-w-lg">
             Forge was built for people who believe the strongest relationships begin with shared values. 
-            If you're looking for something rooted in faith, family, commitment, and purpose, you're in the right place.
-          </p>
-          <button 
-            onClick={scrollToPoll}
-            className="bg-[#D62828] hover:bg-[#A61F1F] hover:-translate-y-0.5 hover:shadow-lg text-white px-8 py-4 rounded-xl font-semibold text-lg transition-all duration-200 inline-block mb-3"
-          >
-            Take Our Poll →
-          </button>
-          <p className="text-[15px] text-[#666666] max-w-xs">
-            Help us build Forge before launch. Your feedback takes less than 30 seconds.
+            If you&apos;re looking for something rooted in faith, family, commitment, and purpose, you&apos;re in the right place.
           </p>
         </div>
       </div>
@@ -176,94 +113,29 @@ export default function Home() {
         </div>
       </div>
 
-      {/* Feedback Poll Section */}
-      <div id="feedback-poll" className="bg-white py-20 border-t">
-        <div className="max-w-[850px] mx-auto px-6">
-          <div className="bg-white border border-[#0B2D5C]/10 rounded-3xl p-12 shadow-sm">
-            <div className="text-center mb-10">
-              <h2 className="text-2xl font-semibold text-[#0F2D52] leading-tight mb-4">
-                Forge is being built for people who believe meaningful relationships start with shared values.
-              </h2>
-              <p className="text-lg text-[#444444]">
-                You're one of the first people to see Forge. Help us build it right.
-              </p>
-            </div>
-
-            <p className="text-xl font-medium text-[#0F2D52] text-center mb-10">
-              If Forge launched today, would you join?
-            </p>
-
-            {!submitted ? (
-              <div className="space-y-3 max-w-md mx-auto">
-                {[
-                  "I'd definitely join",
-                  "I'd consider it",
-                  "I probably wouldn't"
-                ].map((option) => (
-                  <button
-                    key={option}
-                    onClick={() => setSelectedOption(option)}
-                    className={`w-full py-4 px-8 rounded-2xl border text-lg font-medium transition-all duration-200 hover:shadow-md hover:-translate-y-0.5 ${
-                      selectedOption === option 
-                        ? "bg-[#0F2D52] text-white border-[#0F2D52]" 
-                        : "bg-white hover:bg-[#F8F6F2] border-[#0B2D5C]/30 hover:border-[#0B2D5C]"
-                    }`}
-                  >
-                    {option}
-                  </button>
-                ))}
-
-                {selectedOption && (
-                  <div className="mt-10">
-                    <label className="block text-sm font-medium text-[#444444] mb-3 text-center">
-                      {getFollowUpPrompt()}
-                    </label>
-                    <textarea
-                      value={comment}
-                      onChange={(e) => setComment(e.target.value)}
-                      placeholder="Share your thoughts..."
-                      className="w-full p-5 border border-[#0B2D5C]/20 rounded-2xl focus:outline-none focus:border-[#0F2D52] min-h-[110px] text-base"
-                    />
-                    <button
-                      onClick={handleFeedbackSubmit}
-                      disabled={isSubmitting}
-                      className="mt-6 w-full bg-[#D62828] hover:bg-[#A61F1F] text-white py-5 rounded-2xl font-semibold transition disabled:opacity-70"
-                    >
-                      {isSubmitting ? "Submitting..." : "Submit Feedback"}
-                    </button>
-                  </div>
-                )}
-              </div>
-            ) : (
-              <div className="text-center py-12">
-                <p className="text-2xl text-[#0F2D52] font-medium mb-4">
-                  Thank you — that really helps.
-                </p>
-                
-                {(selectedOption === "I'd definitely join" || selectedOption === "I'd consider it") ? (
-                  <div>
-                    <p className="text-[#444444] mb-8 max-w-sm mx-auto">
-                      Welcome to the beginning of Forge.<br />
-                      Your feedback is helping shape a dating platform built on faith, family, commitment, and shared values.
-                    </p>
-                    <a href="/waitlist" className="inline-block bg-[#D62828] hover:bg-[#A61F1F] text-white px-10 py-4 rounded-2xl font-semibold transition">
-                      Support the Launch
-                    </a>
-                  </div>
-                ) : (
-                  <p className="text-[#444444]">
-                    Thank you for your honest feedback.<br />
-                    Every response helps us improve Forge.
-                  </p>
-                )}
-              </div>
-            )}
-          </div>
+      {/* Final CTA */}
+      <div className="bg-[#0B2D5C] py-20">
+        <div className="max-w-3xl mx-auto px-6 text-center">
+          <h2 className="text-3xl sm:text-4xl font-bold tracking-tight text-white mb-8 leading-tight">
+            Ready to find something more meaningful?
+          </h2>
+          <Link
+            href="/signup"
+            className="inline-block bg-[#D62828] hover:bg-[#A61F1F] text-white px-10 py-4 rounded-2xl font-semibold text-lg transition"
+          >
+            Sign Up for Forge
+          </Link>
+          <p className="mt-6 text-white/80 text-base">
+            Already have an account?{' '}
+            <Link href="/login" className="text-white font-semibold underline underline-offset-4 hover:text-[#D62828] transition">
+              Log in
+            </Link>
+          </p>
         </div>
       </div>
 
       {/* Footer */}
-      <footer className="bg-[#0B2D5C] text-white/80 py-8">
+      <footer className="bg-[#0B2D5C] text-white/80 py-8 border-t border-white/10">
         <div className="max-w-6xl mx-auto px-6">
           <div className="flex flex-col md:flex-row justify-between items-center gap-8">
             <div>

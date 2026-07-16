@@ -257,9 +257,8 @@ export default function DiscoveryProfilePrototype() {
                 <p className="mt-2 text-[15px] leading-relaxed text-[#5A6575]">
                   One important life preference may differ.
                 </p>
-                <p className="mt-4 text-sm font-semibold text-[#0B2D5C]">
-                  Tap to review the details
-                  <span aria-hidden="true"> →</span>
+                <p className="mt-4 text-sm font-semibold text-[#0B2D5C] underline decoration-[#0B2D5C]/55 underline-offset-[5px]">
+                  Review the Details
                 </p>
               </div>
             </div>
