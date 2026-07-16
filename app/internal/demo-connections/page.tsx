@@ -1,17 +1,17 @@
 import { notFound, redirect } from 'next/navigation';
 
-import { isInternalDemoAccessAllowed } from '@/lib/demo/demo-access';
+import { isBetaSeedAccessAllowed } from '@/lib/seed/access';
 
 export const dynamic = 'force-dynamic';
 
 /**
- * Retired custom showcase. Redirect into the real Connections experience
- * with sample injection enabled for preview/local.
+ * Retired internal route. Redirects into Connections with seed injection
+ * forced for allowed preview/local environments.
  */
 export default function RetiredDemoConnectionsRedirect() {
-  if (!isInternalDemoAccessAllowed()) {
+  if (!isBetaSeedAccessAllowed()) {
     notFound();
   }
 
-  redirect('/connections?demo=1');
+  redirect('/connections?seed=1');
 }

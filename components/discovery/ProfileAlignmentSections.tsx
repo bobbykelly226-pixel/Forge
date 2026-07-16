@@ -11,16 +11,16 @@ import ImportantAlignmentFactorsDrawer, {
 } from '@/components/ImportantAlignmentFactorsDrawer';
 import type { CharacterSignalId } from '@/lib/character-signals-mock';
 import {
-  sampleFactorSeverityLabel,
-  type SampleAlignmentFactor,
-  type SampleAlignmentItem,
-} from '@/lib/demo/sample-connections';
+  seedFactorSeverityLabel,
+  type SeedAlignmentFactor,
+  type SeedAlignmentItem,
+} from '@/lib/seed/adapters';
 
 export type ProfileAlignmentSectionsProps = {
   profileName: string;
   alignmentLabel: string;
-  sharedStrengths: SampleAlignmentItem[];
-  importantFactors: SampleAlignmentFactor[];
+  sharedStrengths: SeedAlignmentItem[];
+  importantFactors: SeedAlignmentFactor[];
   importantFactorsSummary: string | null;
   characterSignalIds: CharacterSignalId[];
   incompleteAssessmentCopy?: string;
@@ -67,11 +67,11 @@ function toDrawerContent(props: ProfileAlignmentSectionsProps): AlignmentDetails
 }
 
 function toFactorDetails(
-  factors: SampleAlignmentFactor[]
+  factors: SeedAlignmentFactor[]
 ): ImportantAlignmentFactorDetail[] {
   return factors.map((factor) => ({
     title: factor.title,
-    severityLabel: sampleFactorSeverityLabel(factor.severity),
+    severityLabel: seedFactorSeverityLabel(factor.severity),
     explanation: factor.explanation,
     viewerAnswer: factor.viewerAnswer,
     partnerAnswer: factor.partnerAnswer,
@@ -80,7 +80,7 @@ function toFactorDetails(
 
 /**
  * Qualitative Relationship Alignment + Important Alignment Factors + Character Signals
- * for profiles that provide enrichment (e.g. preview sample connections).
+ * for profiles that provide enrichment (e.g. enriched seed profiles).
  * Reuses the approved drawers and Character Signals presentation.
  */
 export default function ProfileAlignmentSections({

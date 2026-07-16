@@ -5,11 +5,12 @@ import { loadConnectionsHubAction } from '@/app/actions/relationships';
 import ConnectionsHubPrototype from '@/components/connections/ConnectionsHubPrototype';
 import { ConnectionsHubProvider } from '@/components/connections/ConnectionsHubProvider';
 import ForgeAppCanvas from '@/components/ForgeAppCanvas';
+import { parseSeedQueryParam } from '@/lib/seed/access';
 import {
   countRealMutualConnections,
-  injectSampleConnections,
-  shouldInjectSampleConnectionsForRequest,
-} from '@/lib/demo/inject-sample-connections';
+  injectSeedConnections,
+  shouldInjectSeedConnectionsForRequest,
+} from '@/lib/seed/inject-connections';
 import { createClient } from '@/lib/supabase/server';
 import type { ConnectionsHubData } from '@/lib/data/connections-hub';
 
@@ -55,7 +56,7 @@ const EMPTY_HUB: ConnectionsHubData = {
 export default async function ConnectionsHubPage({
   searchParams,
 }: {
-  searchParams?: Promise<{ demo?: string }>;
+  searchParams?: Promise<{ seed?: string; demo?: string }>;
 }) {
   const supabase = await createClient();
   const {
@@ -71,17 +72,19 @@ export default async function ConnectionsHubPage({
   const loadError = result.success ? null : result.message;
 
   const params = searchParams ? await searchParams : {};
-  const forceDemoQuery = params.demo === '1';
-  const realMutualCount = countRealMutualConnections(initialData.mutual);
-  const shouldInject = shouldInjectSampleConnectionsForRequest({
+  const seedFlags = parseSeedQueryParam(params.seed);
+  const forceSeed = seedFlags.forceSeed || params.demo === '1';
+  const realMutualCount = countRealMutualConnections(initialData);
+  const shouldInject = shouldInjectSeedConnectionsForRequest({
     realMutualCount,
-    forceDemoQuery,
+    forceSeed,
+    disableSeed: seedFlags.disableSeed,
   });
 
-  let sampleConnectionsInjected = false;
+  let seedConnectionsInjected = false;
   if (shouldInject) {
-    initialData = injectSampleConnections(initialData);
-    sampleConnectionsInjected = true;
+    initialData = injectSeedConnections(initialData);
+    seedConnectionsInjected = true;
   }
 
   return (
@@ -94,7 +97,8 @@ export default async function ConnectionsHubPage({
       <ConnectionsHubProvider initialData={initialData}>
         <ConnectionsHubPrototype
           loadError={loadError}
-          sampleConnectionsInjected={sampleConnectionsInjected}
+          seedConnectionsInjected={seedConnectionsInjected}
+          showSeedReset={seedFlags.showReset}
         />
       </ConnectionsHubProvider>
     </ForgeAppCanvas>

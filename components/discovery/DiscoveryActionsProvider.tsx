@@ -25,15 +25,16 @@ import {
   withdrawInterestAction,
 } from '@/app/actions/relationships';
 import {
-  clearSampleDiscoveryActionStateSession,
-  clearSampleDiscoveryEducationSeenSession,
-  mergeResetSampleDiscoveryActions,
-  readSampleDiscoveryActionStateFromSession,
-  readSampleDiscoveryEducationSeenFromSession,
+  clearSeedDiscoveryActionStateSession,
+  clearSeedDiscoveryEducationSeenSession,
+  mergeResetSeedDiscoveryActions,
+  readSeedDiscoveryActionStateFromSession,
+  readSeedDiscoveryEducationSeenFromSession,
+  resetAllSeedState,
   shouldSimulateDiscoveryAction,
-  writeSampleDiscoveryActionStateToSession,
-  writeSampleDiscoveryEducationSeenToSession,
-} from '@/lib/demo/demo-discovery-actions';
+  writeSeedDiscoveryActionStateToSession,
+  writeSeedDiscoveryEducationSeenToSession,
+} from '@/lib/seed/actions';
 import {
   createEmptyActionState,
   type DiscoveryActionConflict,
@@ -59,6 +60,8 @@ type DiscoveryActionsContextValue = {
   handleSaveForLater: (profileId: string, profileName: string) => void;
   handleNotForMe: (profileId: string, profileName: string) => void;
   registerOpenToChatTrigger: (profileId: string, element: HTMLButtonElement | null) => void;
+  resetSeedState: () => void;
+  /** @deprecated Use resetSeedState */
   resetSampleDiscoveryActions: () => void;
 };
 
@@ -93,25 +96,25 @@ export function DiscoveryActionsProvider({
   const [pending, setPending] = useState(false);
   const openToChatTriggers = useRef<Record<string, HTMLButtonElement | null>>({});
   const statusTimerRef = useRef<number | null>(null);
-  const sampleSessionHydrated = useRef(false);
+  const seedSessionHydrated = useRef(false);
 
-  // Hydrate preview-only sample action state across feed ↔ profile navigations.
-  // Full browser reload clears simulated sample actions (banner: reset on refresh).
+  // Hydrate preview-only seed action state across feed ↔ profile navigations.
+  // Full browser reload clears simulated seed actions.
   useEffect(() => {
-    if (sampleSessionHydrated.current) return;
-    sampleSessionHydrated.current = true;
+    if (seedSessionHydrated.current) return;
+    seedSessionHydrated.current = true;
 
     const navigation = performance.getEntriesByType(
       'navigation'
     )[0] as PerformanceNavigationTiming | undefined;
     if (navigation?.type === 'reload') {
-      clearSampleDiscoveryActionStateSession();
-      clearSampleDiscoveryEducationSeenSession();
+      clearSeedDiscoveryActionStateSession();
+      clearSeedDiscoveryEducationSeenSession();
       return;
     }
 
-    const stored = readSampleDiscoveryActionStateFromSession();
-    const storedEducation = readSampleDiscoveryEducationSeenFromSession();
+    const stored = readSeedDiscoveryActionStateFromSession();
+    const storedEducation = readSeedDiscoveryEducationSeenFromSession();
     if (Object.keys(stored).length === 0 && storedEducation !== true) {
       return;
     }
@@ -145,7 +148,7 @@ export function DiscoveryActionsProvider({
           [profileId]: { ...(prev[profileId] ?? createEmptyActionState()), ...patch },
         };
         if (shouldSimulateDiscoveryAction(profileId)) {
-          writeSampleDiscoveryActionStateToSession(next);
+          writeSeedDiscoveryActionStateToSession(next);
         }
         return next;
       });
@@ -214,7 +217,7 @@ export function DiscoveryActionsProvider({
         patchState(profileId, { interested: true });
         announce(
           `You've expressed interest in ${profileName}.`,
-          `If ${profileName} is also interested, Forge will let you both know. Sample preview — not saved to your account.`
+          `If ${profileName} is also interested, Forge will let you both know.`
         );
         return;
       }
@@ -320,7 +323,7 @@ export function DiscoveryActionsProvider({
         patchState(profileId, { saved: true, passed: false });
         announce(
           `${profileName} was saved for later.`,
-          'Sample preview — only available in this browser session.'
+          'Only you can see saved profiles.'
         );
         return;
       }
@@ -368,7 +371,7 @@ export function DiscoveryActionsProvider({
         passed: true,
       });
       setNotForMePrompt(null);
-      announce('Introduction passed.', 'Sample preview — not saved to your account.');
+      announce('Introduction passed.');
       return;
     }
     const previous = getState(profileId);
@@ -421,12 +424,12 @@ export function DiscoveryActionsProvider({
           openToChatNote: note,
         });
         setEducationSeen(true);
-        writeSampleDiscoveryEducationSeenToSession(true);
+        writeSeedDiscoveryEducationSeenToSession(true);
         announce(
           `Open to Chat sent to ${openToChatPrompt.profileName}.`,
           note
-            ? 'Your note was included. Sample preview — no request or notification was sent.'
-            : 'Sample preview — no request or notification was sent.'
+            ? 'Your note was included with the request.'
+            : 'Your request was sent without a note.'
         );
         return true;
       }
@@ -455,21 +458,20 @@ export function DiscoveryActionsProvider({
     setEducationSeen(true);
     const profileId = openToChatPrompt?.profileId;
     if (profileId && shouldSimulateDiscoveryAction(profileId)) {
-      writeSampleDiscoveryEducationSeenToSession(true);
+      writeSeedDiscoveryEducationSeenToSession(true);
       return;
     }
     void markOpenToChatEducationSeenAction();
   }, [openToChatPrompt]);
 
-  const resetSampleDiscoveryActions = useCallback(() => {
+  const resetSeedState = useCallback(() => {
     setByProfileId((prev) => {
-      const next = mergeResetSampleDiscoveryActions(prev);
-      clearSampleDiscoveryActionStateSession();
-      writeSampleDiscoveryActionStateToSession(next);
+      const next = mergeResetSeedDiscoveryActions(prev);
+      resetAllSeedState();
+      writeSeedDiscoveryActionStateToSession(next);
       return next;
     });
-    clearSampleDiscoveryEducationSeenSession();
-    announce('Sample Discovery actions were reset.');
+    announce('Seed state was reset.');
   }, [announce]);
 
   const value = useMemo<DiscoveryActionsContextValue>(
@@ -489,7 +491,8 @@ export function DiscoveryActionsProvider({
       },
       handleNotForMe,
       registerOpenToChatTrigger,
-      resetSampleDiscoveryActions,
+      resetSeedState,
+      resetSampleDiscoveryActions: resetSeedState,
     }),
     [
       getState,
@@ -503,7 +506,7 @@ export function DiscoveryActionsProvider({
       handleSaveForLater,
       handleNotForMe,
       registerOpenToChatTrigger,
-      resetSampleDiscoveryActions,
+      resetSeedState,
     ]
   );
 

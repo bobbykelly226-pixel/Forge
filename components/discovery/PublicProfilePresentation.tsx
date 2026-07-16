@@ -32,7 +32,7 @@ export type PublicProfilePresentationProps = {
   /** Show “Why Forge surfaced this profile” (Discovery only). */
   showSurfacedReason?: boolean;
   /**
-   * Optional qualitative alignment enrichment (preview sample profiles).
+   * Optional qualitative alignment enrichment (enriched profiles).
    * When set, replaces the neutral placeholder alignment card.
    */
   alignmentPresentation?: Omit<ProfileAlignmentSectionsProps, 'profileName' | 'cardClassName'> | null;

@@ -6,12 +6,13 @@ import { getOpenToChatEducationSeenAction } from '@/app/actions/relationships';
 import DiscoveryFeed from '@/components/DiscoveryFeedPrototype';
 import ForgeAppCanvas from '@/components/ForgeAppCanvas';
 import { DiscoveryActionsProvider } from '@/components/discovery/DiscoveryActionsProvider';
+import { parseSeedQueryParam } from '@/lib/seed/access';
 import {
-  buildSampleDiscoveryActionState,
+  buildSeedDiscoveryActionState,
   countRealDiscoveryCandidates,
-  injectSampleDiscoveryProfiles,
-  shouldInjectSampleDiscoveryForRequest,
-} from '@/lib/demo/inject-sample-discovery';
+  injectSeedDiscoveryProfiles,
+  shouldInjectSeedDiscoveryForRequest,
+} from '@/lib/seed/inject-discovery';
 import { createEmptyActionState } from '@/lib/discovery-actions-types';
 import { createClient } from '@/lib/supabase/server';
 import { getCurrentUserProfile } from '@/lib/data/profile';
@@ -41,7 +42,7 @@ export const metadata = {
 export default async function DiscoveryFeedPage({
   searchParams,
 }: {
-  searchParams?: Promise<{ demo?: string }>;
+  searchParams?: Promise<{ seed?: string; demo?: string }>;
 }) {
   const supabase = await createClient();
   const {
@@ -59,18 +60,20 @@ export default async function DiscoveryFeedPage({
   ]);
 
   const params = searchParams ? await searchParams : {};
-  const forceDemoQuery = params.demo === '1';
+  const seedFlags = parseSeedQueryParam(params.seed);
+  const forceSeed = seedFlags.forceSeed || params.demo === '1';
   const realProfiles = feed.success ? feed.profiles : [];
   const realCandidateCount = countRealDiscoveryCandidates(realProfiles);
-  const shouldInject = shouldInjectSampleDiscoveryForRequest({
+  const shouldInject = shouldInjectSeedDiscoveryForRequest({
     realCandidateCount,
-    forceDemoQuery,
+    forceSeed,
+    disableSeed: seedFlags.disableSeed,
   });
 
   const profiles = shouldInject
-    ? injectSampleDiscoveryProfiles(realProfiles)
+    ? injectSeedDiscoveryProfiles(realProfiles)
     : realProfiles;
-  const sampleProfilesInjected = shouldInject;
+  const seedProfilesInjected = shouldInject;
 
   const baseActionState = Object.fromEntries(
     Object.entries(feed.actionState ?? {}).map(([id, state]) => [
@@ -86,8 +89,8 @@ export default async function DiscoveryFeedPage({
     ])
   );
 
-  const initialActionState = sampleProfilesInjected
-    ? { ...buildSampleDiscoveryActionState(), ...baseActionState }
+  const initialActionState = seedProfilesInjected
+    ? { ...buildSeedDiscoveryActionState(), ...baseActionState }
     : baseActionState;
 
   const viewerName = profile.success
@@ -109,7 +112,8 @@ export default async function DiscoveryFeedPage({
           profiles={profiles}
           viewerName={viewerName}
           loadError={feed.success ? null : feed.message}
-          sampleProfilesInjected={sampleProfilesInjected}
+          seedProfilesInjected={seedProfilesInjected}
+          showSeedReset={seedFlags.showReset}
         />
       </DiscoveryActionsProvider>
     </ForgeAppCanvas>

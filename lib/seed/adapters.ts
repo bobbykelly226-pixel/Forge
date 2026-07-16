@@ -20,6 +20,8 @@ import {
   type SeedProfile,
 } from '@/lib/seed/catalog';
 
+export type { SeedAlignmentFactor, SeedFactorSeverity } from '@/lib/seed/catalog';
+
 export type SeedAlignmentItem = {
   title: string;
   copy: string;

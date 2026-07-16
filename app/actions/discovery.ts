@@ -8,20 +8,11 @@ import {
   setDiscoveryVisibility,
 } from '@/lib/data/discovery';
 import {
-  canInjectSampleConnections,
-  canInjectSampleDiscovery,
-  isDemoConnectionProfileId,
-  isDemoDiscoveryProfileId,
-  isDemoProfileId,
-} from '@/lib/demo/demo-access';
-import {
-  getSampleConnectionById,
-  toSamplePublicDiscoveryProfile,
-} from '@/lib/demo/sample-connections';
-import {
-  getSampleDiscoveryProfileById,
-  toSampleDiscoveryPublicProfile,
-} from '@/lib/demo/sample-discovery-profiles';
+  canInjectSeedData,
+  isSeedProfileId,
+} from '@/lib/seed/access';
+import { toSeedPublicDiscoveryProfile } from '@/lib/seed/adapters';
+import { getSeedProfileById } from '@/lib/seed/catalog';
 import { toDiscoveryFeedCard } from '@/lib/discovery/presentation';
 import { createEmptyActionState } from '@/lib/discovery-actions-types';
 
@@ -31,10 +22,10 @@ export async function fetchDiscoveryFeedAction() {
     return { success: false as const, message: result.message, profiles: [], actionState: {} };
   }
 
-  // Keep this action free of sample injection so Supabase results stay untouched.
+  // Keep this action free of seed injection so Supabase results stay untouched.
   // Preview injection happens in app/discovery/page.tsx.
   const cards = result.data.map(toDiscoveryFeedCard);
-  const realIds = cards.map((c) => c.id).filter((id) => !isDemoProfileId(id));
+  const realIds = cards.map((c) => c.id).filter((id) => !isSeedProfileId(id));
   const actionState = await loadActionStateForProfiles(realIds);
 
   return {
@@ -45,9 +36,9 @@ export async function fetchDiscoveryFeedAction() {
 }
 
 export async function fetchDiscoveryProfileAction(profileId: string) {
-  // Preview-only Discovery fixtures — never query Supabase for demo-discovery-* ids.
-  if (isDemoDiscoveryProfileId(profileId)) {
-    if (!canInjectSampleDiscovery()) {
+  // Runtime-only seed fixtures — never query Supabase for seed-* ids.
+  if (isSeedProfileId(profileId)) {
+    if (!canInjectSeedData()) {
       return {
         success: true as const,
         unavailable: true as const,
@@ -55,35 +46,8 @@ export async function fetchDiscoveryProfileAction(profileId: string) {
         actionState: null,
       };
     }
-    const sample = getSampleDiscoveryProfileById(profileId);
-    if (!sample) {
-      return {
-        success: true as const,
-        unavailable: true as const,
-        profile: null,
-        actionState: null,
-      };
-    }
-    return {
-      success: true as const,
-      unavailable: false as const,
-      profile: toSampleDiscoveryPublicProfile(sample),
-      actionState: createEmptyActionState(),
-    };
-  }
-
-  // Preview-only Connections mutual fixtures opened via View Profile.
-  if (isDemoConnectionProfileId(profileId)) {
-    if (!canInjectSampleConnections()) {
-      return {
-        success: true as const,
-        unavailable: true as const,
-        profile: null,
-        actionState: null,
-      };
-    }
-    const sample = getSampleConnectionById(profileId);
-    if (!sample) {
+    const seed = getSeedProfileById(profileId);
+    if (!seed) {
       return {
         success: true as const,
         unavailable: true as const,
@@ -94,7 +58,7 @@ export async function fetchDiscoveryProfileAction(profileId: string) {
     return {
       success: true as const,
       unavailable: false as const,
-      profile: toSamplePublicDiscoveryProfile(sample),
+      profile: toSeedPublicDiscoveryProfile(seed),
       actionState: createEmptyActionState(),
     };
   }

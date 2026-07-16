@@ -16,16 +16,20 @@ import {
 } from '@/components/connections/ConnectionCards';
 import ConnectionsTabs from '@/components/connections/ConnectionsTabs';
 import { useConnectionsHub } from '@/components/connections/ConnectionsHubProvider';
-import { isDemoProfileId } from '@/lib/demo/demo-access';
-import { SAMPLE_CONNECTIONS_BANNER } from '@/lib/demo/inject-sample-connections';
+import { resetAllSeedState } from '@/lib/seed/actions';
 
 export default function ConnectionsHubPrototype({
   loadError = null,
-  sampleConnectionsInjected = false,
+  seedConnectionsInjected: _seedConnectionsInjected = false,
+  showSeedReset = false,
+  onResetSeedState,
 }: {
   loadError?: string | null;
-  /** Preview/local only — sample mutuals were injected into hub data. */
-  sampleConnectionsInjected?: boolean;
+  /** Preview/local only — seed mutuals were injected into hub data. */
+  seedConnectionsInjected?: boolean;
+  /** Developer-only reset control (?seed=1). */
+  showSeedReset?: boolean;
+  onResetSeedState?: () => void;
 }) {
   const {
     activeTab,
@@ -40,11 +44,19 @@ export default function ConnectionsHubPrototype({
     isSentWithdrawn,
   } = useConnectionsHub();
   const [desktopNote, setDesktopNote] = useState<string | null>(null);
-  const [hideSampleConnections, setHideSampleConnections] = useState(false);
 
   const flashNote = (message: string) => {
     setDesktopNote(message);
     window.setTimeout(() => setDesktopNote(null), 2200);
+  };
+
+  const handleResetSeedState = () => {
+    if (onResetSeedState) {
+      onResetSeedState();
+      return;
+    }
+    resetAllSeedState();
+    flashNote('Seed state was reset.');
   };
 
   const visibleOpenToChat = useMemo(
@@ -64,15 +76,8 @@ export default function ConnectionsHubPrototype({
       (profile) => getInterestStatus(profile.id) === 'mutual'
     );
     const ids = new Set(base.map((p) => p.id));
-    const merged = [...base, ...newlyMutual.filter((p) => !ids.has(p.id))];
-    if (!hideSampleConnections) return merged;
-    return merged.filter((profile) => !isDemoProfileId(profile.id));
-  }, [getInterestStatus, hideSampleConnections, interestReceived, mutual]);
-
-  const hasVisibleSampleConnections =
-    sampleConnectionsInjected &&
-    !hideSampleConnections &&
-    visibleMutual.some((profile) => isDemoProfileId(profile.id));
+    return [...base, ...newlyMutual.filter((p) => !ids.has(p.id))];
+  }, [getInterestStatus, interestReceived, mutual]);
 
   const visibleSaved = useMemo(
     () => saved.filter((profile) => !isSavedRemoved(profile.id)),
@@ -91,6 +96,18 @@ export default function ConnectionsHubPrototype({
     forYouOpenToChat.length > 0 ||
     visibleInterest.length > 0 ||
     visibleMutual.length > 0;
+
+  const seedResetControl = showSeedReset ? (
+    <div className="flex justify-center pt-2">
+      <button
+        type="button"
+        onClick={handleResetSeedState}
+        className="text-xs text-[#8A93A0] underline-offset-2 transition hover:text-[#5A6575] hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0B2D5C]"
+      >
+        Reset Seed State
+      </button>
+    </div>
+  ) : null;
 
   const tabPanels = {
     forYou: (
@@ -166,28 +183,20 @@ export default function ConnectionsHubPrototype({
     ),
     mutual: (
       <div className="flex flex-col gap-6">
-        {hasVisibleSampleConnections ? (
-          <div className="flex flex-col gap-2 rounded-2xl border border-[#0B2D5C]/08 bg-white/70 px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
-            <p className="text-sm leading-relaxed text-[#5A6575]">{SAMPLE_CONNECTIONS_BANNER}</p>
-            <button
-              type="button"
-              onClick={() => setHideSampleConnections(true)}
-              className="shrink-0 text-sm font-semibold text-[#0B2D5C] underline-offset-4 transition hover:text-[#D62828] hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0B2D5C]"
-            >
-              Hide sample connections
-            </button>
-          </div>
-        ) : null}
         {visibleMutual.length === 0 ? (
           <EmptyState
             title="No mutual connections yet."
             description="Thoughtful introductions take time."
           />
         ) : (
-          visibleMutual.map((profile) => (
-            <MutualConnectionCard key={profile.id} profile={profile} />
-          ))
+          <>
+            {visibleMutual.map((profile) => (
+              <MutualConnectionCard key={profile.id} profile={profile} />
+            ))}
+            {seedResetControl}
+          </>
         )}
+        {visibleMutual.length === 0 ? seedResetControl : null}
       </div>
     ),
     saved: (
