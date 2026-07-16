@@ -99,6 +99,7 @@ export default async function DiscoveryFeedPage({
 
   return (
     <ForgeAppCanvas
+      desktopViewportLock
       className={`${display.variable} ${sans.variable}`}
       style={{
         fontFamily: 'var(--font-discovery-sans), ui-sans-serif, system-ui, sans-serif',
