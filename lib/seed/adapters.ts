@@ -11,6 +11,7 @@ import {
   type DiscoveryFeedCardModel,
   type PublicDiscoveryProfile,
 } from '@/lib/discovery/presentation';
+import { resolveUnifiedAbout } from '@/lib/profile/unified-about';
 import {
   characterSignalTitles,
   photos,
@@ -76,8 +77,8 @@ export function toSeedPublicDiscoveryProfile(
     relationship_goal: profile.relationshipGoal,
     faith_importance: profile.faithImportance,
     service_background: profile.serviceBackground,
-    short_bio: profile.aboutPreview,
-    more_about: profile.moreAbout,
+    short_bio: resolveUnifiedAbout(profile.aboutPreview, profile.moreAbout),
+    more_about: null,
     children: profile.children,
     has_children: profile.hasChildren,
     open_to_partner_with_children: profile.openToPartnerWithChildren,

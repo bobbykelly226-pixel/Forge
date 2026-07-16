@@ -17,6 +17,7 @@ import {
   resolvePublicLocation,
   type PublicDiscoveryProfile,
 } from '@/lib/discovery/presentation';
+import { resolveUnifiedAbout } from '@/lib/profile/unified-about';
 import { sortPhotosByDisplayOrder } from '@/lib/profile-photo';
 
 export type PublicProfilePresentationProps = {
@@ -60,8 +61,8 @@ export default function PublicProfilePresentation({
   const musicSongs = nonEmptyStringList(profile.favorite_music_songs);
   const hasMusic = musicArtists.length > 0 || musicSongs.length > 0;
   const locationLabel = resolvePublicLocation(profile);
-  const hasAbout = Boolean(profile.short_bio?.trim());
-  const hasMoreAbout = Boolean(profile.more_about?.trim());
+  const aboutCopy = resolveUnifiedAbout(profile.short_bio, profile.more_about);
+  const hasAbout = Boolean(aboutCopy);
   const useEnrichedAlignment = Boolean(alignmentPresentation) && showAlignmentCard;
 
   return (
@@ -123,19 +124,9 @@ export default function PublicProfilePresentation({
               >
                 About
               </h2>
-              <p className="mt-3 text-[15px] leading-relaxed text-[#5A6575]">{profile.short_bio}</p>
-            </section>
-          ) : null}
-
-          {hasMoreAbout ? (
-            <section>
-              <h2
-                className="text-xl text-[#0B2D5C]"
-                style={{ fontFamily: 'var(--font-discovery-display), Georgia, serif' }}
-              >
-                More About {firstName}
-              </h2>
-              <p className="mt-3 text-[15px] leading-relaxed text-[#5A6575]">{profile.more_about}</p>
+              <p className="mt-3 whitespace-pre-line text-[15px] leading-relaxed text-[#5A6575]">
+                {aboutCopy}
+              </p>
             </section>
           ) : null}
 

@@ -10,6 +10,7 @@ import {
   collectStructuredPublicProfileDetails,
   publicLocationLabel,
 } from '@/lib/profile/public-labels';
+import { resolveAboutPreview } from '@/lib/profile/unified-about';
 
 export type PublicDiscoveryProfile = {
   id: string;
@@ -80,10 +81,6 @@ const PORTRAIT_GRADIENTS = [
   'linear-gradient(155deg, #1F3348 0%, #6B7C8C 48%, #C9B8A4 100%)',
 ];
 
-function hasMeaningfulText(value: string | null | undefined): value is string {
-  return typeof value === 'string' && value.trim().length > 0;
-}
-
 export function firstNameFromFullName(fullName: string | null | undefined): string {
   const trimmed = fullName?.trim() ?? '';
   if (!trimmed) return 'Member';
@@ -123,7 +120,7 @@ export function toDiscoveryFeedCard(profile: PublicDiscoveryProfile): DiscoveryF
     alignmentLabel: DISCOVERY_NEUTRAL_ALIGNMENT_LABEL,
     confidence: DISCOVERY_NEUTRAL_CONFIDENCE,
     hasImportantFactors: false,
-    aboutPreview: hasMeaningfulText(profile.short_bio) ? profile.short_bio.trim() : null,
+    aboutPreview: resolveAboutPreview(profile.short_bio, profile.more_about),
     characterSignals: [],
     portraitGradient: stablePortraitGradient(profile.id),
     photoUrl: profile.profile_photo_url,

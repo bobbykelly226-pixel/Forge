@@ -677,11 +677,10 @@ export async function saveProfileSection(
   }
 
   if (sectionId === 'about') {
+    // Canonical public biography lives in short_bio. Clear legacy more_about on save
+    // so dual-field content is not re-combined on the next read.
     fields.short_bio = readOptionalString(formData, 'short_bio');
-  }
-
-  if (sectionId === 'more_about') {
-    fields.more_about = readOptionalString(formData, 'more_about');
+    fields.more_about = null;
   }
 
   if (sectionId === 'career') {
@@ -879,7 +878,6 @@ function isValidSectionId(value: string): boolean {
     'basics',
     'location',
     'about',
-    'more_about',
     'relationship',
     'children',
     'faith',

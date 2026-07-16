@@ -77,7 +77,11 @@ describe('unified My Profile workspace', () => {
     assert.equal(summarizeProfileSection('relationship', profile), 'Marriage');
     assert.equal(summarizeProfileSection('smoking', profile), 'Never');
     assert.match(summarizeProfileSection('about', profile), /Hello/);
-    assert.equal(summarizeProfileSection('more_about', profile), 'Not added yet');
+    assert.equal(
+      summarizeProfileSection('about', minimalProfile({ short_bio: null, more_about: 'Legacy more' })),
+      'Legacy more'
+    );
+    assert.ok(!PROFILE_SECTIONS.some((section) => String(section.id) === 'more_about'));
   });
 
   it('maps checklist items to the correct editable sections', () => {

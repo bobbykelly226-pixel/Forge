@@ -97,6 +97,7 @@ export default function ProfileAlignmentSections({
 }: ProfileAlignmentSectionsProps) {
   const [alignmentOpen, setAlignmentOpen] = useState(false);
   const [factorsOpen, setFactorsOpen] = useState(false);
+  const [whySurfacedExpanded, setWhySurfacedExpanded] = useState(false);
   const alignmentTriggerRef = useRef<HTMLButtonElement>(null);
   const factorsTriggerRef = useRef<HTMLButtonElement>(null);
 
@@ -111,6 +112,12 @@ export default function ProfileAlignmentSections({
   }, []);
 
   const hasFactors = importantFactors.length > 0;
+  const WHY_SURFACED_PREVIEW_COUNT = 3;
+  const hasWhySurfacedOverflow = !whySurfacedCopy && sharedStrengths.length > WHY_SURFACED_PREVIEW_COUNT;
+  const visibleStrengths =
+    whySurfacedExpanded || !hasWhySurfacedOverflow
+      ? sharedStrengths
+      : sharedStrengths.slice(0, WHY_SURFACED_PREVIEW_COUNT);
   const drawerContent = toDrawerContent({
     profileName,
     alignmentLabel,
@@ -218,22 +225,34 @@ export default function ProfileAlignmentSections({
         {whySurfacedCopy ? (
           <p className="mt-3 text-[15px] leading-relaxed text-[#5A6575]">{whySurfacedCopy}</p>
         ) : (
-          <ul className="mt-4 space-y-3">
-            {sharedStrengths.map((item) => (
-              <li
-                key={`${item.title}-${item.copy}`}
-                className="flex items-start gap-3 text-[15px] leading-relaxed text-[#5A6575]"
-              >
-                <span
-                  className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-[#0B2D5C] text-[10px] font-bold text-white"
-                  aria-hidden="true"
+          <>
+            <ul className="mt-4 space-y-3">
+              {visibleStrengths.map((item) => (
+                <li
+                  key={`${item.title}-${item.copy}`}
+                  className="flex items-start gap-3 text-[15px] leading-relaxed text-[#5A6575]"
                 >
-                  ✓
-                </span>
-                <span>{item.copy}</span>
-              </li>
-            ))}
-          </ul>
+                  <span
+                    className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-[#0B2D5C] text-[10px] font-bold text-white"
+                    aria-hidden="true"
+                  >
+                    ✓
+                  </span>
+                  <span>{item.copy}</span>
+                </li>
+              ))}
+            </ul>
+            {hasWhySurfacedOverflow ? (
+              <button
+                type="button"
+                onClick={() => setWhySurfacedExpanded((open) => !open)}
+                className="mt-4 inline-flex min-h-11 items-center text-left text-sm font-semibold text-[#0B2D5C] underline decoration-[#0B2D5C]/55 underline-offset-[5px] transition hover:text-[#D62828] hover:decoration-[#D62828] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0B2D5C]"
+                aria-expanded={whySurfacedExpanded}
+              >
+                {whySurfacedExpanded ? 'Show Less' : 'More'}
+              </button>
+            ) : null}
+          </>
         )}
       </section>
 

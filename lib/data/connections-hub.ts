@@ -7,6 +7,7 @@ import {
   type PublicDiscoveryProfile,
 } from '@/lib/discovery/presentation';
 import { DISCOVERY_NEUTRAL_ALIGNMENT_LABEL, DISCOVERY_NEUTRAL_CONFIDENCE } from '@/lib/discovery/config';
+import { resolveAboutPreview } from '@/lib/profile/unified-about';
 
 async function requireUser() {
   const supabase = await createClient();
@@ -116,7 +117,7 @@ function toHubCard(profile: PublicDiscoveryProfile | null, id: string): HubProfi
     alignmentLabel: DISCOVERY_NEUTRAL_ALIGNMENT_LABEL,
     confidence: DISCOVERY_NEUTRAL_CONFIDENCE,
     hasImportantFactors: false,
-    aboutPreview: profile.short_bio?.trim() || null,
+    aboutPreview: resolveAboutPreview(profile.short_bio, profile.more_about),
     characterSignals: [],
     portraitGradient: stablePortraitGradient(profile.id),
     photoUrl: profile.profile_photo_url,
