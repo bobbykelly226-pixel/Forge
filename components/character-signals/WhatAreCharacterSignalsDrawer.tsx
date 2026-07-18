@@ -153,25 +153,65 @@ export default function WhatAreCharacterSignalsDrawer({
         </div>
 
         <div className="flex-1 overflow-y-auto overscroll-contain px-5 py-5 sm:px-6 sm:py-6">
-          <div id={descriptionId} className="space-y-4 text-[15px] leading-relaxed text-[#5A6575]">
-            <p>
-              Character Signals highlight positive qualities demonstrated through interactions with
-              other Forge members. They are designed to reflect consistent, respectful behavior—not
-              popularity.
-            </p>
-            <p>Signals may include qualities such as:</p>
-            <ul className="space-y-2 pl-1">
-              {EXAMPLE_SIGNALS.map((signal) => (
-                <li key={signal} className="flex items-start gap-2.5 text-[15px] leading-snug text-[#3D4654]">
-                  <span className="mt-[0.55em] h-1.5 w-1.5 shrink-0 rounded-full bg-[#0B2D5C]" aria-hidden="true" />
-                  <span>{signal}</span>
+          <div id={descriptionId} className="space-y-5 text-[15px] leading-relaxed text-[#5A6575]">
+            <div className="space-y-3">
+              <p>
+                Character Signals highlight positive qualities consistently recognized by other Forge
+                members after meaningful interactions.
+              </p>
+              <p>
+                They are designed to provide additional context—not popularity scores, ratings,
+                guarantees, or proof of compatibility.
+              </p>
+            </div>
+
+            <section aria-labelledby="how-they-work-heading">
+              <h3
+                id="how-they-work-heading"
+                className="text-sm font-semibold uppercase tracking-[0.14em] text-[#0B2D5C]"
+              >
+                How They Work
+              </h3>
+              <ol className="mt-3 space-y-2.5 text-[15px] leading-relaxed text-[#3D4654]">
+                <li className="flex gap-2.5">
+                  <span className="font-semibold text-[#0B2D5C]">1.</span>
+                  <span>A member recognizes a positive quality after a meaningful interaction.</span>
                 </li>
-              ))}
-            </ul>
-            <p>
-              Character Signals are intended to provide additional context and help build trust. They
-              do not guarantee compatibility, safety, or a specific relationship outcome.
-            </p>
+                <li className="flex gap-2.5">
+                  <span className="font-semibold text-[#0B2D5C]">2.</span>
+                  <span>Forge waits for additional independent confirmations.</span>
+                </li>
+                <li className="flex gap-2.5">
+                  <span className="font-semibold text-[#0B2D5C]">3.</span>
+                  <span>The recipient chooses whether to display the signal publicly.</span>
+                </li>
+              </ol>
+              <p className="mt-3">
+                A signal only appears after it has been recognized by more than one person and
+                approved by the recipient.
+              </p>
+            </section>
+
+            <section aria-labelledby="example-signals-heading">
+              <h3 id="example-signals-heading" className="sr-only">
+                Example Character Signals
+              </h3>
+              <p>Character Signals may include qualities such as:</p>
+              <ul className="mt-3 space-y-2 pl-1">
+                {EXAMPLE_SIGNALS.map((signal) => (
+                  <li
+                    key={signal}
+                    className="flex items-start gap-2.5 text-[15px] leading-snug text-[#3D4654]"
+                  >
+                    <span
+                      className="mt-[0.55em] h-1.5 w-1.5 shrink-0 rounded-full bg-[#0B2D5C]"
+                      aria-hidden="true"
+                    />
+                    <span>{signal}</span>
+                  </li>
+                ))}
+              </ul>
+            </section>
           </div>
         </div>
 

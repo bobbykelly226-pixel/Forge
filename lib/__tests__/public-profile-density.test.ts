@@ -87,6 +87,8 @@ describe('public profile information density', () => {
     assert.match(signals, /WhatAreCharacterSignalsDrawer/);
     assert.match(signals, /aria-haspopup="dialog"/);
     assert.match(infoDrawer, /What Are Character Signals\?/);
+    assert.match(infoDrawer, /How They Work/);
+    assert.match(infoDrawer, /additional independent confirmations/);
     assert.match(infoDrawer, /Return to Profile/);
   });
 
