@@ -5,6 +5,7 @@ import type {
   TablesUpdate,
 } from '@/lib/supabase/database.types';
 import { OWNER_EDITABLE_PROFILE_COLUMNS } from '@/lib/data-model-rules';
+import { logSupabaseError } from '@/lib/supabase/log-error';
 
 export type DataAccessError = {
   success: false;
@@ -329,7 +330,9 @@ export async function upsertCurrentUserProfile(
     .single();
 
   if (error) {
-    console.error('upsertCurrentUserProfile:', error.message);
+    logSupabaseError('upsertCurrentUserProfile', error, {
+      fieldKeys: Object.keys(safeFields).sort(),
+    });
     return { success: false, message: 'Could not save your profile.' };
   }
 

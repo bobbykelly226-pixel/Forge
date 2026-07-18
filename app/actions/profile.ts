@@ -982,6 +982,18 @@ export async function saveProfileSection(
 
   const result = await upsertCurrentUserProfile(fields);
   if (!result.success) {
+    // Upsert already logs the underlying Supabase/Postgres error in preview/dev.
+    // Include section context here so Vercel function logs show which section failed.
+    if (
+      process.env.VERCEL_ENV === 'preview' ||
+      process.env.NODE_ENV === 'development'
+    ) {
+      console.error('saveProfileSection failed:', {
+        sectionId,
+        fieldKeys: Object.keys(fields).sort(),
+        message: result.message,
+      });
+    }
     return { success: false, message: result.message };
   }
 
