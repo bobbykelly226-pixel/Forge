@@ -1,9 +1,11 @@
 'use client';
 
+import { Info } from 'lucide-react';
 import { useCallback, useRef, useState } from 'react';
 
 import CharacterSignalIcon from '@/components/character-signals/CharacterSignalIcon';
 import CharacterSignalDetailDrawer from '@/components/character-signals/CharacterSignalDetailDrawer';
+import WhatAreCharacterSignalsDrawer from '@/components/character-signals/WhatAreCharacterSignalsDrawer';
 import {
   DISCOVERY_PROFILE_PUBLIC_SIGNALS,
   getSignalDefinition,
@@ -34,12 +36,15 @@ export default function PublicCharacterSignalsSection({
   void cardClassName;
   const [detailSignalId, setDetailSignalId] = useState<CharacterSignalId | null>(null);
   const [detailCount, setDetailCount] = useState(0);
+  const [infoOpen, setInfoOpen] = useState(false);
   const triggers = useRef<Record<string, HTMLButtonElement | null>>({});
+  const infoTriggerRef = useRef<HTMLButtonElement>(null);
   const activeKeyRef = useRef<string | null>(null);
   const list = signals ?? DISCOVERY_PROFILE_PUBLIC_SIGNALS;
 
   const openDetail = (signalId: CharacterSignalId, count: number) => {
     activeKeyRef.current = signalId;
+    setInfoOpen(false);
     setDetailSignalId(signalId);
     setDetailCount(count);
   };
@@ -52,19 +57,46 @@ export default function PublicCharacterSignalsSection({
     });
   }, []);
 
+  const openInfo = () => {
+    setDetailSignalId(null);
+    setInfoOpen(true);
+  };
+
+  const closeInfo = useCallback(() => {
+    setInfoOpen(false);
+    window.requestAnimationFrame(() => {
+      infoTriggerRef.current?.focus();
+    });
+  }, []);
+
   return (
     <>
       <section
         className="mt-4 rounded-[1.75rem] border border-[#0B2D5C]/08 bg-white/90 p-4 sm:p-5"
         aria-labelledby="signals-title"
       >
-        <h2
-          id="signals-title"
-          className="text-lg tracking-[-0.01em] text-[#0B2D5C] sm:text-xl"
-          style={{ fontFamily: 'var(--font-discovery-display), Georgia, serif' }}
-        >
-          Character Signals
-        </h2>
+        <div className="flex items-center gap-1.5">
+          <h2
+            id="signals-title"
+            className="text-lg tracking-[-0.01em] text-[#0B2D5C] sm:text-xl"
+            style={{ fontFamily: 'var(--font-discovery-display), Georgia, serif' }}
+          >
+            Character Signals
+          </h2>
+          <button
+            ref={infoTriggerRef}
+            type="button"
+            onClick={openInfo}
+            aria-label="Learn about Character Signals"
+            aria-haspopup="dialog"
+            aria-expanded={infoOpen}
+            className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-[#6B7585] transition hover:bg-[#0B2D5C]/06 hover:text-[#0B2D5C] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0B2D5C]"
+          >
+            <span className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-[#0B2D5C]/15 bg-white/80">
+              <Info className="h-4 w-4" strokeWidth={1.75} aria-hidden="true" />
+            </span>
+          </button>
+        </div>
         <p className="mt-1.5 text-sm leading-snug text-[#7A8494]">
           Positive qualities recognized through meaningful interactions on Forge.
         </p>
@@ -117,6 +149,7 @@ export default function PublicCharacterSignalsSection({
         onClose={closeDetail}
         returnLabel="Return to Profile"
       />
+      <WhatAreCharacterSignalsDrawer open={infoOpen} onClose={closeInfo} />
     </>
   );
 }

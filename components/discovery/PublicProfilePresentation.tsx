@@ -28,13 +28,13 @@ export type PublicProfilePresentationProps = {
   header?: React.ReactNode;
   /** Optional footer (actions, edit CTAs). */
   footer?: React.ReactNode;
-  /** Show neutral alignment card (Discovery only). */
+  /** Show Relationship Alignment card for Discovery when enrichment is unavailable. */
   showAlignmentCard?: boolean;
   /** Show “Why Forge Introduced You” (Discovery only). */
   showSurfacedReason?: boolean;
   /**
    * Optional qualitative alignment enrichment (enriched profiles).
-   * When set, replaces the neutral placeholder alignment card.
+   * When set, replaces the default More to Discover alignment card.
    */
   alignmentPresentation?: Omit<ProfileAlignmentSectionsProps, 'profileName' | 'cardClassName'> | null;
 };
@@ -111,7 +111,9 @@ export default function PublicProfilePresentation({
                 {DISCOVERY_NEUTRAL_ALIGNMENT_LABEL}
               </h2>
               <p className="mt-3 text-sm leading-relaxed text-[#5A6575]">
-                Matching scores are not calculated yet. This label is a neutral placeholder.
+                Forge needs a little more information before it can confidently evaluate your
+                Relationship Alignment. As you complete your profile and compatibility questions,
+                your alignment will become more personalized.
               </p>
             </section>
           ) : null}

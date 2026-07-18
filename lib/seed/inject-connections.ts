@@ -16,14 +16,13 @@ export function countRealMutualConnections(data: ConnectionsHubData): number {
   return data.mutual.filter((item) => !isSeedProfileId(item.id)).length;
 }
 
+/**
+ * Controlled seed-only Mutual Connections dataset.
+ * Replaces live mutuals so beta preview Mutual never mixes real connection rows
+ * into the seeded walkthrough. Other hub tabs keep their relationship-backed data.
+ */
 export function injectSeedConnections(data: ConnectionsHubData): ConnectionsHubData {
-  const seeds = getSeedMutualConnectionProfiles().map(toSeedMutualConnectionItem);
-  const realMutual = data.mutual.filter((item) => !isSeedProfileId(item.id));
-  const realIds = new Set(realMutual.map((item) => item.id));
-  const mutual = [
-    ...seeds.filter((seed) => !realIds.has(seed.id)),
-    ...realMutual,
-  ];
+  const mutual = getSeedMutualConnectionProfiles().map(toSeedMutualConnectionItem);
 
   return {
     ...data,

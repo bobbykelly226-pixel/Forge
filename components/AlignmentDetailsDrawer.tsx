@@ -6,6 +6,7 @@ import {
   useEffect,
   useId,
   useRef,
+  useState,
   type KeyboardEvent as ReactKeyboardEvent,
 } from 'react';
 
@@ -84,6 +85,8 @@ function getFocusableElements(container: HTMLElement): HTMLElement[] {
   );
 }
 
+const ALIGNMENTS_PREVIEW_COUNT = 3;
+
 export default function AlignmentDetailsDrawer({
   open,
   onClose,
@@ -91,8 +94,15 @@ export default function AlignmentDetailsDrawer({
 }: AlignmentDetailsDrawerProps) {
   const titleId = useId();
   const descriptionId = useId();
+  const alignmentsHeadingId = useId();
   const panelRef = useRef<HTMLDivElement>(null);
   const closeButtonRef = useRef<HTMLButtonElement>(null);
+  const [alignmentsExpanded, setAlignmentsExpanded] = useState(false);
+
+  // Collapse the list whenever the drawer closes so the next open starts at three items.
+  if (!open && alignmentsExpanded) {
+    setAlignmentsExpanded(false);
+  }
 
   const alignmentLabel = content?.alignmentLabel ?? 'Promising Alignment';
   const intro =
@@ -104,6 +114,11 @@ export default function AlignmentDetailsDrawer({
   const strongAlignment = content?.strongAlignment ?? DEFAULT_STRONG_ALIGNMENT;
   const growingAlignment = content?.growingAlignment ?? DEFAULT_GROWING_ALIGNMENT;
   const moreInformation = content?.moreInformation ?? DEFAULT_MORE_INFORMATION;
+  const hasAlignmentsOverflow = strongAlignment.length > ALIGNMENTS_PREVIEW_COUNT;
+  const visibleAlignments =
+    alignmentsExpanded || !hasAlignmentsOverflow
+      ? strongAlignment
+      : strongAlignment.slice(0, ALIGNMENTS_PREVIEW_COUNT);
   const importantFactorPreview =
     content === undefined
       ? {
@@ -267,35 +282,39 @@ export default function AlignmentDetailsDrawer({
           </section>
 
           {strongAlignment.length > 0 ? (
-            <section className="mt-8" aria-labelledby="strong-alignment-heading">
+            <section className="mt-8" aria-labelledby={alignmentsHeadingId}>
               <h3
-                id="strong-alignment-heading"
+                id={alignmentsHeadingId}
                 className="text-lg tracking-[-0.01em] text-[#0B2D5C]"
                 style={{ fontFamily: 'var(--font-discovery-display), Georgia, serif' }}
               >
-                Why you align
+                Alignments
               </h3>
-              <ul className="mt-4 space-y-4">
-                {strongAlignment.map((item) => (
+              <ul className="mt-3 space-y-2.5">
+                {visibleAlignments.map((item) => (
                   <li
                     key={`${item.title}-${item.copy}`}
-                    className="rounded-[1.25rem] border border-[#0B2D5C]/06 bg-white/80 px-4 py-4"
+                    className="flex items-start gap-2.5 text-[15px] leading-snug text-[#3D4654]"
                   >
-                    <div className="flex items-start gap-3">
-                      <span
-                        className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-[#0B2D5C] text-[11px] font-bold text-white"
-                        aria-hidden="true"
-                      >
-                        ✓
-                      </span>
-                      <div>
-                        <p className="font-semibold text-[#0B2D5C]">{item.title}</p>
-                        <p className="mt-1.5 text-sm leading-relaxed text-[#5A6575]">{item.copy}</p>
-                      </div>
-                    </div>
+                    <span
+                      className="mt-[0.55em] h-1.5 w-1.5 shrink-0 rounded-full bg-[#0B2D5C]"
+                      aria-hidden="true"
+                    />
+                    {/* Prefer copy so seed "Aligned" titles are never repeated as labels. */}
+                    <span>{item.copy}</span>
                   </li>
                 ))}
               </ul>
+              {hasAlignmentsOverflow ? (
+                <button
+                  type="button"
+                  onClick={() => setAlignmentsExpanded((openState) => !openState)}
+                  className="mt-3 inline-flex min-h-11 items-center text-left text-sm font-semibold text-[#0B2D5C] underline decoration-[#0B2D5C]/55 underline-offset-[5px] transition hover:text-[#D62828] hover:decoration-[#D62828] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0B2D5C]"
+                  aria-expanded={alignmentsExpanded}
+                >
+                  {alignmentsExpanded ? 'Show Less' : 'More'}
+                </button>
+              ) : null}
             </section>
           ) : null}
 

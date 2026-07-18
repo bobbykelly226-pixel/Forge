@@ -197,7 +197,7 @@ describe('beta seed injection', () => {
     assert.ok(hub.mutual.every((item) => isSeedProfileId(item.id)));
   });
 
-  it('keeps real candidates and counts them via hub data', () => {
+  it('replaces live candidates with a seed-only Discovery and Mutual dataset', () => {
     const real: DiscoveryFeedCardModel = {
       id: 'real-candidate-1',
       firstName: 'Real',
@@ -212,8 +212,13 @@ describe('beta seed injection', () => {
       photoUrl: null,
     };
     const discovery = injectSeedDiscoveryProfiles([real]);
-    assert.equal(countRealDiscoveryCandidates(discovery), 1);
-    assert.equal(discovery.length, 41);
+    assert.equal(countRealDiscoveryCandidates(discovery), 0);
+    assert.equal(discovery.length, 40);
+    assert.ok(discovery.every((card) => isSeedProfileId(card.id)));
+    assert.equal(
+      discovery.some((card) => card.id === 'real-candidate-1'),
+      false
+    );
 
     const withReal = emptyHub();
     withReal.mutual = [
@@ -234,10 +239,34 @@ describe('beta seed injection', () => {
         relativeTime: 'Recently',
       },
     ];
+    withReal.saved = [
+      {
+        id: 'real-saved-1',
+        firstName: 'Saved',
+        age: 33,
+        location: 'Denver, Colorado',
+        alignmentLabel: 'More to Discover',
+        confidence: '—',
+        hasImportantFactors: false,
+        aboutPreview: null,
+        characterSignals: [],
+        portraitGradient: 'linear-gradient(#000,#fff)',
+        photoUrl: null,
+        relativeTime: 'Recently',
+      },
+    ];
     assert.equal(countRealMutualConnections(withReal), 1);
     const injected = injectSeedConnections(withReal);
-    assert.equal(countRealMutualConnections(injected), 1);
-    assert.equal(injected.mutual.length, 11);
+    assert.equal(countRealMutualConnections(injected), 0);
+    assert.equal(injected.mutual.length, 10);
+    assert.ok(injected.mutual.every((item) => isSeedProfileId(item.id)));
+    assert.equal(
+      injected.mutual.some((item) => item.id === 'real-mutual-1'),
+      false
+    );
+    // Other relationship-backed tabs are unchanged by seed Mutual injection.
+    assert.equal(injected.saved.length, 1);
+    assert.equal(injected.saved[0]?.id, 'real-saved-1');
   });
 });
 
@@ -292,7 +321,18 @@ describe('beta seed UI wiring', () => {
     assert.match(docs, /\?seed=0/);
     assert.match(docs, /40/);
     assert.match(docs, /lib\/seed\//);
+    assert.match(docs, /seed-only/);
+    assert.match(docs, /does \*\*not\*\* merge/);
     assert.doesNotMatch(docs, /Hide sample/);
+  });
+
+  it('keeps Discovery action state seed-only when seeds are injected', () => {
+    const discoveryPage = read('app/discovery/page.tsx');
+    assert.match(discoveryPage, /buildSeedDiscoveryActionState\(\)/);
+    assert.doesNotMatch(
+      discoveryPage,
+      /\{\s*\.\.\.buildSeedDiscoveryActionState\(\),\s*\.\.\.baseActionState\s*\}/
+    );
   });
 
   it('no longer depends on lib/demo', () => {

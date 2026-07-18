@@ -25,9 +25,14 @@ export type ProfileAlignmentSectionsProps = {
   characterSignalIds: CharacterSignalId[];
   incompleteAssessmentCopy?: string;
   noFactorsCopy?: string;
+  /** Optional paragraph when list reasons are not available (e.g. incomplete assessment). */
   whySurfacedCopy?: string;
   cardClassName?: string;
 };
+
+const WHY_SURFACED_PREVIEW_COUNT = 3;
+const WHY_SURFACED_INTRO =
+  'These are some of the strongest factors that led Forge to introduce this profile to you.';
 
 function toDrawerContent(props: ProfileAlignmentSectionsProps): AlignmentDetailsContent {
   const worthDiscussing = props.importantFactors
@@ -79,9 +84,9 @@ function toFactorDetails(
 }
 
 /**
- * Qualitative Relationship Alignment + Important Alignment Factors + Character Signals
- * for profiles that provide enrichment (e.g. enriched seed profiles).
- * Reuses the approved drawers and Character Signals presentation.
+ * Qualitative Relationship Alignment + Important Alignment Factors +
+ * Why Forge Introduced You + Character Signals for enriched profiles.
+ * See Why You Align remains a separate drawer experience.
  */
 export default function ProfileAlignmentSections({
   profileName,
@@ -112,12 +117,15 @@ export default function ProfileAlignmentSections({
   }, []);
 
   const hasFactors = importantFactors.length > 0;
-  const WHY_SURFACED_PREVIEW_COUNT = 3;
-  const hasWhySurfacedOverflow = !whySurfacedCopy && sharedStrengths.length > WHY_SURFACED_PREVIEW_COUNT;
+  const hasAlignmentReasons = sharedStrengths.length > 0 || Boolean(incompleteAssessmentCopy);
+  const hasWhySurfacedOverflow =
+    !whySurfacedCopy && sharedStrengths.length > WHY_SURFACED_PREVIEW_COUNT;
   const visibleStrengths =
     whySurfacedExpanded || !hasWhySurfacedOverflow
       ? sharedStrengths
       : sharedStrengths.slice(0, WHY_SURFACED_PREVIEW_COUNT);
+  const showWhySurfaced =
+    Boolean(whySurfacedCopy) || sharedStrengths.length > 0;
   const drawerContent = toDrawerContent({
     profileName,
     alignmentLabel,
@@ -154,19 +162,21 @@ export default function ProfileAlignmentSections({
             qualitative guidance — not a numeric score.
           </p>
         )}
-        <button
-          ref={alignmentTriggerRef}
-          type="button"
-          onClick={() => {
-            setFactorsOpen(false);
-            setAlignmentOpen(true);
-          }}
-          className="mt-5 inline-flex min-h-11 items-center text-left text-sm font-semibold text-[#0B2D5C] underline decoration-[#0B2D5C]/55 underline-offset-[5px] transition hover:text-[#D62828] hover:decoration-[#D62828] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0B2D5C]"
-          aria-haspopup="dialog"
-          aria-expanded={alignmentOpen}
-        >
-          See Why You Align
-        </button>
+        {hasAlignmentReasons ? (
+          <button
+            ref={alignmentTriggerRef}
+            type="button"
+            onClick={() => {
+              setFactorsOpen(false);
+              setAlignmentOpen(true);
+            }}
+            className="mt-5 inline-flex min-h-11 items-center text-left text-sm font-semibold text-[#0B2D5C] underline decoration-[#0B2D5C]/55 underline-offset-[5px] transition hover:text-[#D62828] hover:decoration-[#D62828] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0B2D5C]"
+            aria-haspopup="dialog"
+            aria-expanded={alignmentOpen}
+          >
+            See Why You Align
+          </button>
+        ) : null}
       </section>
 
       {hasFactors ? (
@@ -213,47 +223,48 @@ export default function ProfileAlignmentSections({
         </section>
       ) : null}
 
-      <section className={`${cardClassName} mt-4`} aria-labelledby="why-surfaced-heading">
-        <h2
-          id="why-surfaced-heading"
-          className="text-xl text-[#0B2D5C]"
-          style={{ fontFamily: 'var(--font-discovery-display), Georgia, serif' }}
-        >
-          Why Forge Introduced You
-        </h2>
-        {whySurfacedCopy ? (
-          <p className="mt-3 text-[15px] leading-relaxed text-[#5A6575]">{whySurfacedCopy}</p>
-        ) : (
-          <>
-            <ul className="mt-4 space-y-3">
-              {visibleStrengths.map((item) => (
-                <li
-                  key={`${item.title}-${item.copy}`}
-                  className="flex items-start gap-3 text-[15px] leading-relaxed text-[#5A6575]"
-                >
-                  <span
-                    className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-[#0B2D5C] text-[10px] font-bold text-white"
-                    aria-hidden="true"
+      {showWhySurfaced ? (
+        <section className={`${cardClassName} mt-4`} aria-labelledby="why-surfaced-heading">
+          <h2
+            id="why-surfaced-heading"
+            className="text-xl text-[#0B2D5C]"
+            style={{ fontFamily: 'var(--font-discovery-display), Georgia, serif' }}
+          >
+            Why Forge Introduced You
+          </h2>
+          {whySurfacedCopy ? (
+            <p className="mt-3 text-[15px] leading-relaxed text-[#5A6575]">{whySurfacedCopy}</p>
+          ) : (
+            <>
+              <p className="mt-3 text-[15px] leading-relaxed text-[#5A6575]">{WHY_SURFACED_INTRO}</p>
+              <ul className="mt-3 space-y-2.5">
+                {visibleStrengths.map((item) => (
+                  <li
+                    key={`${item.title}-${item.copy}`}
+                    className="flex items-start gap-2.5 text-[15px] leading-snug text-[#3D4654]"
                   >
-                    ✓
-                  </span>
-                  <span>{item.copy}</span>
-                </li>
-              ))}
-            </ul>
-            {hasWhySurfacedOverflow ? (
-              <button
-                type="button"
-                onClick={() => setWhySurfacedExpanded((open) => !open)}
-                className="mt-4 inline-flex min-h-11 items-center text-left text-sm font-semibold text-[#0B2D5C] underline decoration-[#0B2D5C]/55 underline-offset-[5px] transition hover:text-[#D62828] hover:decoration-[#D62828] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0B2D5C]"
-                aria-expanded={whySurfacedExpanded}
-              >
-                {whySurfacedExpanded ? 'Show Less' : 'More'}
-              </button>
-            ) : null}
-          </>
-        )}
-      </section>
+                    <span
+                      className="mt-[0.55em] h-1.5 w-1.5 shrink-0 rounded-full bg-[#0B2D5C]"
+                      aria-hidden="true"
+                    />
+                    <span>{item.copy}</span>
+                  </li>
+                ))}
+              </ul>
+              {hasWhySurfacedOverflow ? (
+                <button
+                  type="button"
+                  onClick={() => setWhySurfacedExpanded((open) => !open)}
+                  className="mt-3 inline-flex min-h-11 items-center text-left text-sm font-semibold text-[#0B2D5C] underline decoration-[#0B2D5C]/55 underline-offset-[5px] transition hover:text-[#D62828] hover:decoration-[#D62828] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0B2D5C]"
+                  aria-expanded={whySurfacedExpanded}
+                >
+                  {whySurfacedExpanded ? 'Show Less' : 'Show More'}
+                </button>
+              ) : null}
+            </>
+          )}
+        </section>
+      ) : null}
 
       <PublicCharacterSignalsSection
         cardClassName={cardClassName}
