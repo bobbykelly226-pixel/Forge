@@ -79,6 +79,8 @@ export const faithEvaluator: CompatibilityEvaluator = {
         explanation:
           'Faith plays a noticeably different role in each of your lives. A respectful conversation would help you understand what that means day to day.',
         isHighImpact: true,
+        viewerSummary: viewerImportance,
+        partnerSummary: partnerImportance,
       });
     }
 
@@ -89,6 +91,8 @@ export const faithEvaluator: CompatibilityEvaluator = {
       explanation:
         'Faith appears central for one of you and far less so for the other. This is an important difference to understand early — without judging either person.',
       isHighImpact: true,
+      viewerSummary: viewerImportance,
+      partnerSummary: partnerImportance,
     });
   },
 };
