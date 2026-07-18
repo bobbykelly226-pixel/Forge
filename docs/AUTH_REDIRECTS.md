@@ -5,6 +5,8 @@ Production site: `https://forgedinlife.com`
 ## Application routes
 
 - Signup `emailRedirectTo`: `{origin}/auth/callback?next=/onboarding`
+- Password reset `redirectTo`: `{origin}/auth/callback?next=/auth/update-password`
+- Update password page: `/auth/update-password` (set a new password after recovery session)
 - Callback page: `/auth/callback` (handles URL hash tokens, PKCE `code`, and `token_hash`)
 - Confirm route: `/auth/confirm` (SSR `token_hash` + `type` template flow)
 - Result page: `/auth/result?outcome=…` (confirmed / already confirmed / invalid-or-expired)
@@ -33,7 +35,16 @@ Custom SMTP (Resend) remains required for reliable delivery — see below. Re-te
    - `http://localhost:3000/**`
    - `http://127.0.0.1:3000/**`
    - `https://*-bobbykelly226-pixel.vercel.app/**`
+   - `https://*-forgedbydesign.vercel.app/**` (current Vercel team previews)
 4. Save.
+
+### Password policy (recommended before public launch)
+
+1. Open **Authentication → Providers → Email** (or **Authentication → Settings** depending on dashboard version)
+2. Set **Minimum password length** to **8** (app already enforces 8; local `config.toml` still defaults to 6)
+3. Enable **Leaked password protection** if available on the plan (**Authentication → Attack Protection** / password strength)
+4. Review **Attack Protection**: enable CAPTCHA (hCaptcha/Turnstile) for signup/login/recovery before broad public traffic
+5. Enable **Secure password change** so password updates require recent reauthentication once an in-app change-password path is expanded beyond recovery links
 
 ### Custom SMTP (required for reliable confirmation email)
 

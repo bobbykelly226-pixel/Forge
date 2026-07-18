@@ -1,6 +1,7 @@
 'use client';
 
 import { requestPasswordReset, resendConfirmationEmail } from '@/app/actions/auth';
+import PasswordInput from '@/components/auth/PasswordInput';
 import Header from '@/components/Header';
 import { AUTH_RESEND_COOLDOWN_MS, mapAuthErrorMessage } from '@/lib/auth/messages';
 import { createClient } from '@/lib/supabase/client';
@@ -130,6 +131,7 @@ export default function LoginForm() {
             </label>
             <input
               id="email"
+              name="email"
               type="email"
               value={email}
               onChange={(event) => setEmail(event.target.value)}
@@ -140,21 +142,16 @@ export default function LoginForm() {
             />
           </div>
 
-          <div>
-            <label htmlFor="password" className="sr-only">
-              Password
-            </label>
-            <input
-              id="password"
-              type="password"
-              value={password}
-              onChange={(event) => setPassword(event.target.value)}
-              placeholder="Password"
-              autoComplete="current-password"
-              required
-              className="w-full px-6 py-5 rounded-2xl border border-[#0B2D5C]/30 focus:border-[#0B2D5C] focus:outline-none focus:ring-2 focus:ring-[#0B2D5C]/20 text-lg"
-            />
-          </div>
+          <PasswordInput
+            id="password"
+            name="password"
+            value={password}
+            onChange={(event) => setPassword(event.target.value)}
+            placeholder="Password"
+            autoComplete="current-password"
+            required
+            disabled={isSubmitting}
+          />
 
           {error && (
             <p className="text-sm text-red-600" role="alert">
