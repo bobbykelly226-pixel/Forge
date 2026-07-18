@@ -14,6 +14,7 @@ import {
   SMOKING_PRODUCT_OPTIONS,
   derivePetsTypesFromLegacyIdentity,
   normalizePetsIdentity,
+  parsePetsAllergyConstraintFormValue,
   petsAllergyConstraintToFormValue,
   smokingUsesProducts,
 } from '@/lib/profile/lifestyle-compatibility';
@@ -100,8 +101,9 @@ export function PetsFields({
             ]}
             value={allergyConstraint}
             onChange={(next) => {
-              setAllergyConstraint(next);
-              if (next !== 'yes') setAllergyTypes([]);
+              const parsed = parsePetsAllergyConstraintFormValue(next);
+              setAllergyConstraint(petsAllergyConstraintToFormValue(parsed));
+              if (parsed !== true) setAllergyTypes([]);
             }}
             optionalNote="Optional — this is a living constraint, not just a preference."
             disabled={disabled}
