@@ -11,6 +11,8 @@ import {
   normalizePetsPartnerPreferences,
   normalizeSmokingPartnerPreferences,
   normalizeSmokingProductSelection,
+  parsePetsAllergyConstraintFormValue,
+  petsAllergyConstraintToFormValue,
   smokingUsesProducts,
 } from '../profile/lifestyle-compatibility';
 import {
@@ -110,6 +112,30 @@ describe('lifestyle compatibility catalogs', () => {
     assert.equal(pets?.value, 'Has pets · Dogs and Cats');
     assert.equal(drinking?.value, 'Drinks rarely');
   });
+
+  it('round-trips pets allergy constraint true/false/unanswered without truthiness collapse', () => {
+    assert.equal(petsAllergyConstraintToFormValue(true), 'yes');
+    assert.equal(petsAllergyConstraintToFormValue(false), 'no');
+    assert.equal(petsAllergyConstraintToFormValue(null), '');
+    assert.equal(petsAllergyConstraintToFormValue(undefined), '');
+
+    assert.equal(parsePetsAllergyConstraintFormValue('yes'), true);
+    assert.equal(parsePetsAllergyConstraintFormValue('no'), false);
+    assert.equal(parsePetsAllergyConstraintFormValue(''), null);
+    assert.equal(parsePetsAllergyConstraintFormValue(null), null);
+    assert.equal(parsePetsAllergyConstraintFormValue(undefined), null);
+
+    // Full round-trips
+    assert.equal(parsePetsAllergyConstraintFormValue(petsAllergyConstraintToFormValue(true)), true);
+    assert.equal(
+      parsePetsAllergyConstraintFormValue(petsAllergyConstraintToFormValue(false)),
+      false
+    );
+    assert.equal(parsePetsAllergyConstraintFormValue(petsAllergyConstraintToFormValue(null)), null);
+
+    // Truthiness must not treat false as unanswered
+    assert.notEqual(Boolean(false) ? 'yes' : '', petsAllergyConstraintToFormValue(false));
+  });
 });
 
 describe('lifestyle compatibility UI wiring', () => {
@@ -146,5 +172,17 @@ describe('lifestyle compatibility UI wiring', () => {
     assert.match(migration, /smoking_product_types/);
     assert.match(migration, /drinking_partner_preferences/);
     assert.match(migration, /pets_allergy_constraint/);
+
+    const allergyNullableMigration = readFileSync(
+      join(
+        process.cwd(),
+        'supabase/migrations/20260718210000_pets_allergy_constraint_nullable.sql'
+      ),
+      'utf8'
+    );
+    assert.match(allergyNullableMigration, /drop not null/i);
+    assert.match(allergyNullableMigration, /set default null/i);
+    assert.match(fields, /petsAllergyConstraintToFormValue/);
+    assert.match(actions, /parsePetsAllergyConstraintFormValue/);
   });
 });

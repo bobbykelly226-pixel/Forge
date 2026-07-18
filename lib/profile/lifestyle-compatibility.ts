@@ -202,6 +202,30 @@ export function normalizePetsIdentity(
   return '';
 }
 
+/**
+ * Pets allergy constraint is optional and tri-state:
+ * - true  → explicit Yes
+ * - false → explicit No
+ * - null / undefined → unanswered (must not collapse false via truthiness)
+ */
+export type PetsAllergyConstraintFormValue = '' | 'yes' | 'no';
+
+export function petsAllergyConstraintToFormValue(
+  value: boolean | null | undefined
+): PetsAllergyConstraintFormValue {
+  if (value === true) return 'yes';
+  if (value === false) return 'no';
+  return '';
+}
+
+export function parsePetsAllergyConstraintFormValue(
+  value: string | null | undefined
+): boolean | null {
+  if (value === 'yes') return true;
+  if (value === 'no') return false;
+  return null;
+}
+
 /** Derive pets_types from legacy single-select pets when types were never saved. */
 export function derivePetsTypesFromLegacyIdentity(
   pets: string | null | undefined,

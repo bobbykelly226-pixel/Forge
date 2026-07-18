@@ -291,7 +291,7 @@ export function summarizeProfileSection(
         (profile.pets_partner_preferences?.length ?? 0) > 0
           ? 'Partner comfort added'
           : null,
-        profile.pets_allergy_constraint ? 'Allergy constraint noted' : null,
+        profile.pets_allergy_constraint === true ? 'Allergy constraint noted' : null,
       ].filter(Boolean);
       return parts.length ? parts.join(' · ') : 'Not added yet';
     }

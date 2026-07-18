@@ -399,7 +399,7 @@ export type Database = {
           onboarding_completed_at: string | null
           open_to_partner_with_children: string | null
           pets: string | null
-          pets_allergy_constraint: boolean
+          pets_allergy_constraint: boolean | null
           pets_allergy_types: string[]
           pets_partner_preferences: string[]
           pets_types: string[]
@@ -447,7 +447,7 @@ export type Database = {
           onboarding_completed_at?: string | null
           open_to_partner_with_children?: string | null
           pets?: string | null
-          pets_allergy_constraint?: boolean
+          pets_allergy_constraint?: boolean | null
           pets_allergy_types?: string[]
           pets_partner_preferences?: string[]
           pets_types?: string[]
@@ -495,7 +495,7 @@ export type Database = {
           onboarding_completed_at?: string | null
           open_to_partner_with_children?: string | null
           pets?: string | null
-          pets_allergy_constraint?: boolean
+          pets_allergy_constraint?: boolean | null
           pets_allergy_types?: string[]
           pets_partner_preferences?: string[]
           pets_types?: string[]
@@ -773,7 +773,7 @@ export type Database = {
           onboarding_completed_at: string | null
           open_to_partner_with_children: string | null
           pets: string | null
-          pets_allergy_constraint: boolean
+          pets_allergy_constraint: boolean | null
           pets_allergy_types: string[]
           pets_partner_preferences: string[]
           pets_types: string[]

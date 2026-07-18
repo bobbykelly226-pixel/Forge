@@ -27,6 +27,7 @@ import {
   normalizePetsPartnerPreferences,
   normalizeSmokingPartnerPreferences,
   normalizeSmokingProductSelection,
+  parsePetsAllergyConstraintFormValue,
   smokingUsesProducts,
 } from '@/lib/profile/lifestyle-compatibility';
 import {
@@ -82,12 +83,16 @@ function readLifestylePetsFields(formData: FormData) {
   const partnerPrefs = answeredIdentity
     ? normalizePetsPartnerPreferences(readMultiField(formData, 'pets_partner_preferences'))
     : [];
+  // Tri-state: yes → true, no → false, unanswered/empty → null.
+  // Do not collapse false with a truthiness check (false === unanswered).
   const allergyRaw = answeredIdentity
     ? readOptionalString(formData, 'pets_allergy_constraint')
     : null;
-  const allergyConstraint = allergyRaw === 'yes';
+  const allergyConstraint = answeredIdentity
+    ? parsePetsAllergyConstraintFormValue(allergyRaw)
+    : null;
   const allergyTypes =
-    answeredIdentity && allergyConstraint
+    answeredIdentity && allergyConstraint === true
       ? normalizePetsAllergyTypes(readMultiField(formData, 'pets_allergy_types'))
       : [];
 

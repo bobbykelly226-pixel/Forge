@@ -14,6 +14,7 @@ import {
   SMOKING_PRODUCT_OPTIONS,
   derivePetsTypesFromLegacyIdentity,
   normalizePetsIdentity,
+  petsAllergyConstraintToFormValue,
   smokingUsesProducts,
 } from '@/lib/profile/lifestyle-compatibility';
 import { DRINKING_OPTIONS, PETS_OPTIONS, SMOKING_OPTIONS } from '@/lib/profile/structured-options';
@@ -36,7 +37,7 @@ export function PetsFields({
     profile.pets_partner_preferences ?? []
   );
   const [allergyConstraint, setAllergyConstraint] = useState(
-    profile.pets_allergy_constraint ? 'yes' : ''
+    petsAllergyConstraintToFormValue(profile.pets_allergy_constraint)
   );
   const [allergyTypes, setAllergyTypes] = useState<string[]>(
     profile.pets_allergy_types ?? []
