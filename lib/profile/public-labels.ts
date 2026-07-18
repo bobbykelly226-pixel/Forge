@@ -3,6 +3,7 @@
  * Prefer-not-to-say and unanswered values are omitted from public presentation.
  */
 
+import { petsTypeDisplayLabel } from './lifestyle-compatibility';
 import {
   isPreferNotToSay,
   labelForStructuredValue,
@@ -24,6 +25,7 @@ export type PublicProfileLabelSource = {
   education?: string | null;
   career?: string | null;
   pets?: string | null;
+  pets_types?: string[] | null;
   smoking?: string | null;
   drinking?: string | null;
   relocation?: string | null;
@@ -63,8 +65,9 @@ function drinkingPublicLabel(value: string | null | undefined): string | null {
   switch (value) {
     case 'never':
       return 'Never drinks';
+    case 'rarely':
     case 'occasionally':
-      return 'Drinks occasionally';
+      return 'Drinks rarely';
     case 'socially':
       return 'Drinks socially';
     case 'regularly':
@@ -74,6 +77,19 @@ function drinkingPublicLabel(value: string | null | undefined): string | null {
     default:
       return labelForStructuredValue('drinking', value);
   }
+}
+
+function petsPublicLabel(
+  pets: string | null | undefined,
+  petsTypes?: string[] | null
+): string | null {
+  if (!pets || isPreferNotToSay(pets)) return null;
+  if (pets === 'no' || pets === 'no_pets') return 'No pets';
+  if (pets === 'yes' || ['dog', 'cat', 'multiple_pets', 'other'].includes(pets)) {
+    const types = petsTypeDisplayLabel(petsTypes);
+    return types ? `Has pets · ${types}` : 'Has pets';
+  }
+  return labelForStructuredValue('pets', pets);
 }
 
 function wantsChildrenPublicLabel(value: string | null | undefined): string | null {
@@ -188,7 +204,7 @@ export function collectStructuredPublicProfileDetails(
     },
     {
       label: 'Pets',
-      value: visibleStructuredLabel('pets', profile.pets),
+      value: petsPublicLabel(profile.pets, profile.pets_types),
     },
     { label: 'Smoking', value: smokingPublicLabel(profile.smoking) },
     { label: 'Drinking', value: drinkingPublicLabel(profile.drinking) },

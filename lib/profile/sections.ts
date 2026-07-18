@@ -5,6 +5,10 @@
 
 import type { Profile } from '@/lib/types/profile';
 import {
+  normalizePetsIdentity,
+  petsTypeDisplayLabel,
+} from '@/lib/profile/lifestyle-compatibility';
+import {
   labelForStructuredValue,
   serviceBackgroundDisplayLabel,
   isPreferNotToSay,
@@ -91,13 +95,13 @@ export const PROFILE_SECTIONS: ProfileSectionDefinition[] = [
   {
     id: 'smoking',
     title: 'Smoking',
-    description: 'Optional lifestyle detail.',
+    description: 'Your habits, what you use, and partner comfort — kept separate.',
     editable: true,
   },
   {
     id: 'drinking',
     title: 'Drinking',
-    description: 'Optional lifestyle detail.',
+    description: 'Your relationship with alcohol and partner comfort — kept separate.',
     editable: true,
   },
   {
@@ -109,7 +113,7 @@ export const PROFILE_SECTIONS: ProfileSectionDefinition[] = [
   {
     id: 'pets',
     title: 'Pets',
-    description: 'Optional structured choice.',
+    description: 'Your pets, partner comfort, and allergy constraints — kept separate.',
     editable: true,
   },
   {
@@ -250,14 +254,47 @@ export function summarizeProfileSection(
       ].filter(Boolean);
       return parts.length ? parts.join(' · ') : 'Not added yet';
     }
-    case 'smoking':
-      return structuredLabel('smoking', profile.smoking) ?? 'Not added yet';
-    case 'drinking':
-      return structuredLabel('drinking', profile.drinking) ?? 'Not added yet';
+    case 'smoking': {
+      const parts = [
+        structuredLabel('smoking', profile.smoking),
+        (profile.smoking_partner_preferences?.length ?? 0) > 0
+          ? 'Partner comfort added'
+          : null,
+      ].filter(Boolean);
+      return parts.length ? parts.join(' · ') : 'Not added yet';
+    }
+    case 'drinking': {
+      const drinkingLabel =
+        profile.drinking === 'occasionally'
+          ? 'Rarely'
+          : structuredLabel('drinking', profile.drinking);
+      const parts = [
+        drinkingLabel,
+        (profile.drinking_partner_preferences?.length ?? 0) > 0
+          ? 'Partner comfort added'
+          : null,
+      ].filter(Boolean);
+      return parts.length ? parts.join(' · ') : 'Not added yet';
+    }
     case 'education':
       return structuredLabel('education', profile.education) ?? 'Not added yet';
-    case 'pets':
-      return structuredLabel('pets', profile.pets) ?? 'Not added yet';
+    case 'pets': {
+      const identity = normalizePetsIdentity(profile.pets);
+      const identityLabel =
+        identity === 'yes'
+          ? petsTypeDisplayLabel(profile.pets_types) ?? 'Has pets'
+          : identity === 'no'
+            ? 'No pets'
+            : structuredLabel('pets', identity || profile.pets);
+      const parts = [
+        identityLabel,
+        (profile.pets_partner_preferences?.length ?? 0) > 0
+          ? 'Partner comfort added'
+          : null,
+        profile.pets_allergy_constraint ? 'Allergy constraint noted' : null,
+      ].filter(Boolean);
+      return parts.length ? parts.join(' · ') : 'Not added yet';
+    }
     case 'relocation':
       return structuredLabel('relocation', profile.relocation) ?? 'Not added yet';
     case 'career':

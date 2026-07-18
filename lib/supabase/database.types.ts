@@ -399,6 +399,14 @@ export type Database = {
           onboarding_completed_at: string | null
           open_to_partner_with_children: string | null
           pets: string | null
+          pets_allergy_constraint: boolean
+          pets_allergy_types: string[]
+          pets_partner_preferences: string[]
+          pets_types: string[]
+          smoking_partner_preferences: string[]
+          smoking_product_other: string | null
+          smoking_product_types: string[]
+          drinking_partner_preferences: string[]
           profile_completed_at: string | null
           profile_photo_url: string | null
           relationship_goal: string | null
@@ -439,6 +447,14 @@ export type Database = {
           onboarding_completed_at?: string | null
           open_to_partner_with_children?: string | null
           pets?: string | null
+          pets_allergy_constraint?: boolean
+          pets_allergy_types?: string[]
+          pets_partner_preferences?: string[]
+          pets_types?: string[]
+          smoking_partner_preferences?: string[]
+          smoking_product_other?: string | null
+          smoking_product_types?: string[]
+          drinking_partner_preferences?: string[]
           profile_completed_at?: string | null
           profile_photo_url?: string | null
           relationship_goal?: string | null
@@ -479,6 +495,14 @@ export type Database = {
           onboarding_completed_at?: string | null
           open_to_partner_with_children?: string | null
           pets?: string | null
+          pets_allergy_constraint?: boolean
+          pets_allergy_types?: string[]
+          pets_partner_preferences?: string[]
+          pets_types?: string[]
+          smoking_partner_preferences?: string[]
+          smoking_product_other?: string | null
+          smoking_product_types?: string[]
+          drinking_partner_preferences?: string[]
           profile_completed_at?: string | null
           profile_photo_url?: string | null
           relationship_goal?: string | null
@@ -620,6 +644,7 @@ export type Database = {
           more_about: string | null
           open_to_partner_with_children: string | null
           pets: string | null
+          pets_types: string[] | null
           profile_photo_url: string | null
           relationship_goal: string | null
           relocation: string | null
@@ -652,6 +677,7 @@ export type Database = {
           more_about?: string | null
           open_to_partner_with_children?: string | null
           pets?: string | null
+          pets_types?: string[] | null
           profile_photo_url?: string | null
           relationship_goal?: string | null
           relocation?: string | null
@@ -684,6 +710,7 @@ export type Database = {
           more_about?: string | null
           open_to_partner_with_children?: string | null
           pets?: string | null
+          pets_types?: string[] | null
           profile_photo_url?: string | null
           relationship_goal?: string | null
           relocation?: string | null
@@ -746,6 +773,14 @@ export type Database = {
           onboarding_completed_at: string | null
           open_to_partner_with_children: string | null
           pets: string | null
+          pets_allergy_constraint: boolean
+          pets_allergy_types: string[]
+          pets_partner_preferences: string[]
+          pets_types: string[]
+          smoking_partner_preferences: string[]
+          smoking_product_other: string | null
+          smoking_product_types: string[]
+          drinking_partner_preferences: string[]
           profile_completed_at: string | null
           profile_photo_url: string | null
           relationship_goal: string | null
