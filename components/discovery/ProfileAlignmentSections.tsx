@@ -213,30 +213,28 @@ export default function ProfileAlignmentSections({
         </section>
       ) : null}
 
-      <section className={`${cardClassName} mt-4`} aria-labelledby="why-surfaced-heading">
+      <section className={`${cardClassName} mt-4`} aria-labelledby="alignments-heading">
         <h2
-          id="why-surfaced-heading"
+          id="alignments-heading"
           className="text-xl text-[#0B2D5C]"
           style={{ fontFamily: 'var(--font-discovery-display), Georgia, serif' }}
         >
-          Why Forge Introduced You
+          Alignments
         </h2>
         {whySurfacedCopy ? (
           <p className="mt-3 text-[15px] leading-relaxed text-[#5A6575]">{whySurfacedCopy}</p>
         ) : (
           <>
-            <ul className="mt-4 space-y-3">
+            <ul className="mt-3 space-y-2.5">
               {visibleStrengths.map((item) => (
                 <li
                   key={`${item.title}-${item.copy}`}
-                  className="flex items-start gap-3 text-[15px] leading-relaxed text-[#5A6575]"
+                  className="flex items-start gap-2.5 text-[15px] leading-snug text-[#3D4654]"
                 >
                   <span
-                    className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-[#0B2D5C] text-[10px] font-bold text-white"
+                    className="mt-[0.55em] h-1.5 w-1.5 shrink-0 rounded-full bg-[#0B2D5C]"
                     aria-hidden="true"
-                  >
-                    ✓
-                  </span>
+                  />
                   <span>{item.copy}</span>
                 </li>
               ))}
@@ -245,7 +243,7 @@ export default function ProfileAlignmentSections({
               <button
                 type="button"
                 onClick={() => setWhySurfacedExpanded((open) => !open)}
-                className="mt-4 inline-flex min-h-11 items-center text-left text-sm font-semibold text-[#0B2D5C] underline decoration-[#0B2D5C]/55 underline-offset-[5px] transition hover:text-[#D62828] hover:decoration-[#D62828] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0B2D5C]"
+                className="mt-3 inline-flex min-h-11 items-center text-left text-sm font-semibold text-[#0B2D5C] underline decoration-[#0B2D5C]/55 underline-offset-[5px] transition hover:text-[#D62828] hover:decoration-[#D62828] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0B2D5C]"
                 aria-expanded={whySurfacedExpanded}
               >
                 {whySurfacedExpanded ? 'Show Less' : 'More'}

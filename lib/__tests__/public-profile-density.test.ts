@@ -47,17 +47,47 @@ describe('unified About biography', () => {
 });
 
 describe('public profile information density', () => {
-  it('collapses Why Forge Introduced You reasons after three with More / Show Less', () => {
+  it('collapses Alignments reasons after three with More / Show Less', () => {
     const source = readFileSync(
       join(process.cwd(), 'components/discovery/ProfileAlignmentSections.tsx'),
       'utf8'
     );
     assert.match(source, /WHY_SURFACED_PREVIEW_COUNT = 3/);
     assert.match(source, /sharedStrengths\.slice\(0, WHY_SURFACED_PREVIEW_COUNT\)/);
-    assert.match(source, /Why Forge Introduced You/);
+    assert.match(source, />\s*Alignments\s*</);
     assert.match(source, /\{whySurfacedExpanded \? 'Show Less' : 'More'\}/);
     assert.match(source, /aria-expanded=\{whySurfacedExpanded\}/);
     assert.doesNotMatch(source, /More About/);
+    assert.doesNotMatch(source, /Why Forge Introduced You/);
+  });
+
+  it('simplifies See Why You Align into a compact Alignments list', () => {
+    const drawer = readFileSync(
+      join(process.cwd(), 'components/AlignmentDetailsDrawer.tsx'),
+      'utf8'
+    );
+    assert.match(drawer, /ALIGNMENTS_PREVIEW_COUNT = 3/);
+    assert.match(drawer, /strongAlignment\.slice\(0, ALIGNMENTS_PREVIEW_COUNT\)/);
+    assert.match(drawer, />\s*Alignments\s*</);
+    assert.match(drawer, /\{alignmentsExpanded \? 'Show Less' : 'More'\}/);
+    assert.doesNotMatch(drawer, /Why you align/);
+    assert.doesNotMatch(drawer, /font-semibold text-\[#0B2D5C\]\}>\{item\.title\}/);
+  });
+
+  it('adds an accessible Character Signals information control on profiles', () => {
+    const signals = readFileSync(
+      join(process.cwd(), 'components/character-signals/PublicCharacterSignalsSection.tsx'),
+      'utf8'
+    );
+    const infoDrawer = readFileSync(
+      join(process.cwd(), 'components/character-signals/WhatAreCharacterSignalsDrawer.tsx'),
+      'utf8'
+    );
+    assert.match(signals, /Learn about Character Signals/);
+    assert.match(signals, /WhatAreCharacterSignalsDrawer/);
+    assert.match(signals, /aria-haspopup="dialog"/);
+    assert.match(infoDrawer, /What Are Character Signals\?/);
+    assert.match(infoDrawer, /Return to Profile/);
   });
 
   it('presents one About section and omits More About on the public profile', () => {
