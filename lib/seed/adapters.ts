@@ -1,8 +1,16 @@
 /**
  * Adapters from SeedProfile catalog → Discovery / Connections presentation models.
  * Qualitative Relationship Alignment only — no numeric scores or rankings.
+ * Seed profile detail/feed alignment is produced by Compatibility Engine V1.
  */
 
+import {
+  evaluateCompatibility,
+  personFromSeedCompatibilityFields,
+  toAlignmentPresentation,
+  toFeedAlignmentFields,
+} from '@/lib/compatibility';
+import { SEED_DEMO_VIEWER } from '@/lib/compatibility/seed-viewer';
 import type { CharacterSignalId } from '@/lib/character-signals-mock';
 import type { HubProfileCard, MutualConnectionItem } from '@/lib/data/connections-hub';
 import { DISCOVERY_NEUTRAL_CONFIDENCE } from '@/lib/discovery/config';
@@ -45,16 +53,44 @@ function primaryPhotoUrl(profile: SeedProfile): string | null {
   return mapped[0]?.public_url ?? null;
 }
 
+function evaluateSeedAgainstDemoViewer(profile: SeedProfile) {
+  return evaluateCompatibility(
+    personFromSeedCompatibilityFields(SEED_DEMO_VIEWER),
+    personFromSeedCompatibilityFields({
+      id: profile.id,
+      firstName: profile.firstName,
+      relationshipGoal: profile.relationshipGoal,
+      faithImportance: profile.faithImportance,
+      faithIdentity: profile.faithIdentity ?? null,
+      children: profile.children,
+      hasChildren: profile.hasChildren,
+      openToPartnerWithChildren: profile.openToPartnerWithChildren,
+      pets: profile.pets,
+      petsTypes: profile.petsTypes,
+      petsPartnerPreferences: profile.petsPartnerPreferences,
+      petsAllergyConstraint: profile.petsAllergyConstraint,
+      petsAllergyTypes: profile.petsAllergyTypes,
+      smoking: profile.smoking,
+      smokingPartnerPreferences: profile.smokingPartnerPreferences,
+      drinking: profile.drinking,
+      drinkingPartnerPreferences: profile.drinkingPartnerPreferences,
+      coreValues: profile.coreValues,
+    })
+  );
+}
+
 export function toSeedDiscoveryFeedCard(profile: SeedProfile): DiscoveryFeedCardModel {
+  const engine = evaluateSeedAgainstDemoViewer(profile);
+  const feed = toFeedAlignmentFields(engine);
   return {
     id: profile.id,
     firstName: profile.firstName,
     age: profile.age,
     location: `${profile.locationCity}, ${profile.locationRegion}`,
-    alignmentLabel: profile.alignmentLabel,
+    alignmentLabel: feed.alignmentLabel,
     confidence: DISCOVERY_NEUTRAL_CONFIDENCE,
-    hasImportantFactors: profile.importantFactors.length > 0,
-    importantFactorsSummary: profile.importantFactorsSummary ?? undefined,
+    hasImportantFactors: feed.hasImportantFactors,
+    importantFactorsSummary: feed.importantFactorsSummary,
     aboutPreview: profile.aboutPreview,
     characterSignals: characterSignalTitles(profile.characterSignalIds),
     portraitGradient: stablePortraitGradient(profile.id),
@@ -84,6 +120,7 @@ export function toSeedPublicDiscoveryProfile(
     open_to_partner_with_children: profile.openToPartnerWithChildren,
     education: profile.education,
     pets: profile.pets,
+    pets_types: profile.petsTypes ?? null,
     smoking: profile.smoking,
     drinking: profile.drinking,
     career: profile.career,
@@ -99,35 +136,24 @@ export function toSeedPublicDiscoveryProfile(
 export function toSeedAlignmentPresentation(
   profile: SeedProfile
 ): SeedProfileAlignmentPresentation {
-  return {
-    alignmentLabel: profile.alignmentLabel,
-    sharedStrengths: profile.sharedStrengths.map((copy) => ({
-      title: 'Aligned',
-      copy,
-    })),
-    importantFactors: profile.importantFactors,
-    importantFactorsSummary: profile.importantFactorsSummary,
+  const engine = evaluateSeedAgainstDemoViewer(profile);
+  return toAlignmentPresentation(engine, {
     characterSignalIds: profile.characterSignalIds,
-    incompleteAssessmentCopy: profile.incompleteAssessmentCopy,
-    noFactorsCopy:
-      profile.noFactorsCopy ??
-      (profile.importantFactors.length === 0 && !profile.incompleteAssessmentCopy
-        ? 'No major alignment concerns surfaced from the information currently available.'
-        : undefined),
-    whySurfacedCopy: profile.whySurfacedCopy,
-  };
+  });
 }
 
 export function toSeedHubProfileCard(profile: SeedProfile): HubProfileCard {
+  const engine = evaluateSeedAgainstDemoViewer(profile);
+  const feed = toFeedAlignmentFields(engine);
   return {
     id: profile.id,
     firstName: profile.firstName,
     age: profile.age,
     location: `${profile.locationCity}, ${profile.locationRegion}`,
-    alignmentLabel: profile.alignmentLabel,
+    alignmentLabel: feed.alignmentLabel,
     confidence: DISCOVERY_NEUTRAL_CONFIDENCE,
-    hasImportantFactors: profile.importantFactors.length > 0,
-    importantFactorsSummary: profile.importantFactorsSummary ?? undefined,
+    hasImportantFactors: feed.hasImportantFactors,
+    importantFactorsSummary: feed.importantFactorsSummary,
     aboutPreview: profile.aboutPreview,
     characterSignals: characterSignalTitles(profile.characterSignalIds),
     portraitGradient: stablePortraitGradient(profile.id),

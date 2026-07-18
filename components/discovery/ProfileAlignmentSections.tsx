@@ -158,8 +158,9 @@ export default function ProfileAlignmentSections({
           </p>
         ) : (
           <p className="mt-3 text-sm leading-relaxed text-[#5A6575]">
-            Based on shared values, life goals, and completed compatibility questions. This is
-            qualitative guidance — not a numeric score.
+            Based on shared values, life goals, and completed profile answers. This is
+            qualitative guidance — not a numeric score, and missing answers are not treated as
+            mismatches.
           </p>
         )}
         {hasAlignmentReasons ? (

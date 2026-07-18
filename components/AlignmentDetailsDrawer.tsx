@@ -57,7 +57,7 @@ const DEFAULT_STRONG_ALIGNMENT: AlignmentDetailItem[] = [
 const DEFAULT_GROWING_ALIGNMENT: AlignmentDetailItem[] = [
   {
     title: 'Faith',
-    copy: 'Your answers suggest some shared perspective, but more information would improve confidence.',
+    copy: 'Your answers suggest some shared perspective, though more profile details would refine this area.',
   },
   {
     title: 'Communication Style',

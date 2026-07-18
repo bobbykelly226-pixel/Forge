@@ -1,6 +1,7 @@
 'use client';
 
 import { signUpWithEmail } from '@/app/actions/auth';
+import PasswordInput from '@/components/auth/PasswordInput';
 import Header from '@/components/Header';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -11,6 +12,7 @@ export default function SignupForm() {
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -19,6 +21,12 @@ export default function SignupForm() {
     event.preventDefault();
     setError(null);
     setMessage(null);
+
+    if (password !== confirmPassword) {
+      setError('Passwords do not match.');
+      return;
+    }
+
     setIsSubmitting(true);
 
     try {
@@ -70,6 +78,7 @@ export default function SignupForm() {
             </label>
             <input
               id="email"
+              name="email"
               type="email"
               value={email}
               onChange={(event) => setEmail(event.target.value)}
@@ -80,22 +89,31 @@ export default function SignupForm() {
             />
           </div>
 
-          <div>
-            <label htmlFor="password" className="sr-only">
-              Password
-            </label>
-            <input
-              id="password"
-              type="password"
-              value={password}
-              onChange={(event) => setPassword(event.target.value)}
-              placeholder="Password"
-              autoComplete="new-password"
-              minLength={8}
-              required
-              className="w-full px-6 py-5 rounded-2xl border border-[#0B2D5C]/30 focus:border-[#0B2D5C] focus:outline-none focus:ring-2 focus:ring-[#0B2D5C]/20 text-lg"
-            />
-          </div>
+          <PasswordInput
+            id="password"
+            name="password"
+            value={password}
+            onChange={(event) => setPassword(event.target.value)}
+            placeholder="Password"
+            autoComplete="new-password"
+            minLength={8}
+            required
+            disabled={isSubmitting}
+            label="Password"
+          />
+
+          <PasswordInput
+            id="confirm-password"
+            name="confirm-password"
+            value={confirmPassword}
+            onChange={(event) => setConfirmPassword(event.target.value)}
+            placeholder="Confirm password"
+            autoComplete="new-password"
+            minLength={8}
+            required
+            disabled={isSubmitting}
+            label="Confirm password"
+          />
 
           {error && (
             <p className="text-sm text-red-600" role="alert">

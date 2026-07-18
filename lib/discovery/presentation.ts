@@ -35,6 +35,8 @@ export type PublicDiscoveryProfile = {
   open_to_partner_with_children?: string | null;
   education: string | null;
   pets: string | null;
+  /** Public pet types when available on discoverable profiles. */
+  pets_types?: string[] | null;
   smoking: string | null;
   drinking: string | null;
   career: string | null;
