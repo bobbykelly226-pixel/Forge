@@ -3,23 +3,25 @@ import { afterEach, describe, it } from 'node:test';
 
 import { logSupabaseError } from '@/lib/supabase/log-error';
 
+const env = process.env as Record<string, string | undefined>;
+
 describe('logSupabaseError', () => {
-  const originalUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const originalVercelEnv = process.env.VERCEL_ENV;
-  const originalNodeEnv = process.env.NODE_ENV;
+  const originalUrl = env.NEXT_PUBLIC_SUPABASE_URL;
+  const originalVercelEnv = env.VERCEL_ENV;
+  const originalNodeEnv = env.NODE_ENV;
 
   afterEach(() => {
-    if (originalUrl === undefined) delete process.env.NEXT_PUBLIC_SUPABASE_URL;
-    else process.env.NEXT_PUBLIC_SUPABASE_URL = originalUrl;
-    if (originalVercelEnv === undefined) delete process.env.VERCEL_ENV;
-    else process.env.VERCEL_ENV = originalVercelEnv;
-    if (originalNodeEnv === undefined) delete process.env.NODE_ENV;
-    else process.env.NODE_ENV = originalNodeEnv;
+    if (originalUrl === undefined) delete env.NEXT_PUBLIC_SUPABASE_URL;
+    else env.NEXT_PUBLIC_SUPABASE_URL = originalUrl;
+    if (originalVercelEnv === undefined) delete env.VERCEL_ENV;
+    else env.VERCEL_ENV = originalVercelEnv;
+    if (originalNodeEnv === undefined) delete env.NODE_ENV;
+    else env.NODE_ENV = originalNodeEnv;
   });
 
   it('logs structured fields in preview including project ref (no secrets)', () => {
-    process.env.VERCEL_ENV = 'preview';
-    process.env.NEXT_PUBLIC_SUPABASE_URL = 'https://uwgjdqzwcgbaaudbrvgx.supabase.co';
+    env.VERCEL_ENV = 'preview';
+    env.NEXT_PUBLIC_SUPABASE_URL = 'https://uwgjdqzwcgbaaudbrvgx.supabase.co';
 
     const errors: unknown[] = [];
     const originalError = console.error;
@@ -54,9 +56,9 @@ describe('logSupabaseError', () => {
   });
 
   it('logs only the message outside preview/development', () => {
-    process.env.VERCEL_ENV = 'production';
-    process.env.NODE_ENV = 'production';
-    process.env.NEXT_PUBLIC_SUPABASE_URL = 'https://uwgjdqzwcgbaaudbrvgx.supabase.co';
+    env.VERCEL_ENV = 'production';
+    env.NODE_ENV = 'production';
+    env.NEXT_PUBLIC_SUPABASE_URL = 'https://uwgjdqzwcgbaaudbrvgx.supabase.co';
 
     const errors: unknown[] = [];
     const originalError = console.error;
