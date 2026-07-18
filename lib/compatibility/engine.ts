@@ -27,6 +27,8 @@ function toExplanation(evaluation: CategoryEvaluation): AlignmentExplanationItem
     categoryKey: evaluation.categoryKey,
     title: evaluation.categoryLabel,
     copy: evaluation.explanation,
+    viewerAnswer: evaluation.viewerSummary,
+    partnerAnswer: evaluation.partnerSummary,
   };
 }
 

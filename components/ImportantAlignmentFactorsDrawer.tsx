@@ -9,6 +9,11 @@ import {
   type KeyboardEvent as ReactKeyboardEvent,
 } from 'react';
 
+import {
+  partnerSaidLabel,
+  viewerSaidLabel,
+} from '@/lib/compatibility/answer-labels';
+
 export type ImportantAlignmentFactorDetail = {
   title: string;
   severityLabel: string;
@@ -26,6 +31,8 @@ type ImportantAlignmentFactorsDrawerProps = {
   factors?: ImportantAlignmentFactorDetail[];
   intro?: string;
   hideReviewAnswerLink?: boolean;
+  /** Existing review destination — defaults to onboarding when no safer deep link exists. */
+  reviewAnswerHref?: string;
 };
 
 function getFocusableElements(container: HTMLElement): HTMLElement[] {
@@ -43,8 +50,8 @@ const DEFAULT_FACTORS: ImportantAlignmentFactorDetail[] = [
     severityLabel: 'Important difference',
     explanation:
       'Questions about children can shape long-term plans, timing, family expectations, and the kind of future each person hopes to build. Forge surfaces this difference early so neither person has to discover it after investing significant time or emotion.',
-    viewerAnswer: 'Does not want children',
-    partnerAnswer: 'Wants children',
+    viewerAnswer: 'I do not want children',
+    partnerAnswer: 'I want children',
     conversationPrompt:
       'How do you currently picture children fitting into your future, and how certain do you feel about that?',
   },
@@ -53,10 +60,11 @@ const DEFAULT_FACTORS: ImportantAlignmentFactorDetail[] = [
 export default function ImportantAlignmentFactorsDrawer({
   open,
   onClose,
-  profileName = 'Jessica',
+  profileName,
   factors,
   intro,
   hideReviewAnswerLink = false,
+  reviewAnswerHref = '/onboarding',
 }: ImportantAlignmentFactorsDrawerProps) {
   const titleId = useId();
   const descriptionId = useId();
@@ -68,6 +76,8 @@ export default function ImportantAlignmentFactorsDrawer({
     (resolvedFactors.length === 1
       ? 'Forge identified one meaningful difference in your current answers.'
       : 'Forge identified meaningful differences in your current answers.');
+  const youSaid = viewerSaidLabel();
+  const theySaid = partnerSaidLabel(profileName);
 
   const handleKeyDown = useCallback(
     (event: ReactKeyboardEvent<HTMLDivElement>) => {
@@ -232,34 +242,44 @@ export default function ImportantAlignmentFactorsDrawer({
                       {factor.title}
                     </h3>
 
-                    {(factor.partnerAnswer || factor.viewerAnswer) && (
-                      <dl className="mt-4 space-y-3">
-                        {factor.partnerAnswer ? (
-                          <div className="rounded-2xl bg-white/80 px-4 py-3">
-                            <dt className="text-[11px] font-semibold uppercase tracking-[0.12em] text-[#8A93A0]">
-                              {profileName}
-                            </dt>
-                            <dd className="mt-1 text-[15px] font-medium text-[#0B2D5C]">
-                              {factor.partnerAnswer}
-                            </dd>
-                          </div>
-                        ) : null}
-                        {factor.viewerAnswer ? (
-                          <div className="rounded-2xl bg-white/80 px-4 py-3">
-                            <dt className="text-[11px] font-semibold uppercase tracking-[0.12em] text-[#8A93A0]">
-                              You
-                            </dt>
-                            <dd className="mt-1 text-[15px] font-medium text-[#0B2D5C]">
-                              {factor.viewerAnswer}
-                            </dd>
-                          </div>
-                        ) : null}
-                      </dl>
+                    {(factor.viewerAnswer || factor.partnerAnswer) && (
+                      <div className="mt-4">
+                        <p className="text-xs font-semibold uppercase tracking-[0.12em] text-[#7A8494]">
+                          Answer context
+                        </p>
+                        <dl className="mt-3 space-y-3">
+                          {factor.viewerAnswer ? (
+                            <div className="rounded-2xl bg-white/80 px-4 py-3">
+                              <dt className="text-[11px] font-semibold uppercase tracking-[0.12em] text-[#8A93A0]">
+                                {youSaid}
+                              </dt>
+                              <dd className="mt-1 text-[15px] font-medium leading-relaxed text-[#0B2D5C]">
+                                “{factor.viewerAnswer}”
+                              </dd>
+                            </div>
+                          ) : null}
+                          {factor.partnerAnswer ? (
+                            <div className="rounded-2xl bg-white/80 px-4 py-3">
+                              <dt className="text-[11px] font-semibold uppercase tracking-[0.12em] text-[#8A93A0]">
+                                {theySaid}
+                              </dt>
+                              <dd className="mt-1 text-[15px] font-medium leading-relaxed text-[#0B2D5C]">
+                                “{factor.partnerAnswer}”
+                              </dd>
+                            </div>
+                          ) : null}
+                        </dl>
+                      </div>
                     )}
 
-                    <p className="mt-4 text-[15px] leading-relaxed text-[#3D4654]">
-                      {factor.explanation}
-                    </p>
+                    <div className="mt-4">
+                      <p className="text-xs font-semibold uppercase tracking-[0.12em] text-[#7A8494]">
+                        Why this matters
+                      </p>
+                      <p className="mt-2 text-[15px] leading-relaxed text-[#3D4654]">
+                        {factor.explanation}
+                      </p>
+                    </div>
 
                     {factor.conversationPrompt ? (
                       <div className="mt-4 rounded-[1.25rem] border border-[#0B2D5C]/08 bg-white px-4 py-4">
@@ -310,7 +330,7 @@ export default function ImportantAlignmentFactorsDrawer({
           {!hideReviewAnswerLink ? (
             <div className="mt-3 text-center">
               <Link
-                href="/onboarding"
+                href={reviewAnswerHref}
                 className="text-sm font-medium text-[#6B7585] transition hover:text-[#0B2D5C]"
               >
                 Review my answer
