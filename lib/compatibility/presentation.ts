@@ -8,7 +8,18 @@ import type {
   SeedProfileAlignmentPresentation,
 } from '@/lib/seed/adapters';
 
-import type { CompatibilityEngineResult } from './types';
+import { humanizeFactorAnswer } from './answer-labels';
+import type { AlignmentExplanationItem, CompatibilityEngineResult } from './types';
+
+function toFactorAnswers(item: AlignmentExplanationItem): {
+  viewerAnswer?: string;
+  partnerAnswer?: string;
+} {
+  return {
+    viewerAnswer: humanizeFactorAnswer(item.viewerAnswer, item.categoryKey),
+    partnerAnswer: humanizeFactorAnswer(item.partnerAnswer, item.categoryKey),
+  };
+}
 
 export function toAlignmentPresentation(
   result: CompatibilityEngineResult,
@@ -22,6 +33,7 @@ export function toAlignmentPresentation(
       summary: item.copy,
       explanation: item.copy,
       isPotentialDealbreaker: true,
+      ...toFactorAnswers(item),
     })),
     ...result.worthDiscussing.map((item, index) => ({
       id: `engine-discuss-${item.categoryKey}-${index}`,
@@ -30,6 +42,7 @@ export function toAlignmentPresentation(
       summary: item.copy,
       explanation: item.copy,
       isPotentialDealbreaker: false,
+      ...toFactorAnswers(item),
     })),
   ];
 

@@ -287,7 +287,7 @@ export default function ProfileAlignmentSections({
         onClose={closeFactors}
         profileName={profileName}
         factors={toFactorDetails(importantFactors)}
-        hideReviewAnswerLink
+        reviewAnswerHref="/onboarding"
       />
     </>
   );

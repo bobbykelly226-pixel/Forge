@@ -1,5 +1,10 @@
 export { evaluateCompatibility } from './engine';
 export {
+  humanizeFactorAnswer,
+  partnerSaidLabel,
+  viewerSaidLabel,
+} from './answer-labels';
+export {
   personFromOwnerProfile,
   personFromPublicDiscoveryProfile,
   personFromSeedCompatibilityFields,
