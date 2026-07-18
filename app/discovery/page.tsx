@@ -89,8 +89,9 @@ export default async function DiscoveryFeedPage({
     ])
   );
 
+  // Seed preview is an isolated dataset — do not carry live profile action state into it.
   const initialActionState = seedProfilesInjected
-    ? { ...buildSeedDiscoveryActionState(), ...baseActionState }
+    ? buildSeedDiscoveryActionState()
     : baseActionState;
 
   const viewerName = profile.success

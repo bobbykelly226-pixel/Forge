@@ -47,16 +47,16 @@ describe('unified About biography', () => {
 });
 
 describe('public profile information density', () => {
-  it('collapses Alignments reasons after three with More / Show Less', () => {
+  it('keeps alignment reasons inside See Why You Align, not a permanent profile card', () => {
     const source = readFileSync(
       join(process.cwd(), 'components/discovery/ProfileAlignmentSections.tsx'),
       'utf8'
     );
-    assert.match(source, /WHY_SURFACED_PREVIEW_COUNT = 3/);
-    assert.match(source, /sharedStrengths\.slice\(0, WHY_SURFACED_PREVIEW_COUNT\)/);
-    assert.match(source, />\s*Alignments\s*</);
-    assert.match(source, /\{whySurfacedExpanded \? 'Show Less' : 'More'\}/);
-    assert.match(source, /aria-expanded=\{whySurfacedExpanded\}/);
+    assert.match(source, /See Why You Align/);
+    assert.match(source, /Relationship Alignment/);
+    assert.match(source, /Important Alignment Factors/);
+    assert.doesNotMatch(source, /id="alignments-heading"/);
+    assert.doesNotMatch(source, /whySurfacedExpanded/);
     assert.doesNotMatch(source, /More About/);
     assert.doesNotMatch(source, /Why Forge Introduced You/);
   });
@@ -90,6 +90,21 @@ describe('public profile information density', () => {
     assert.match(infoDrawer, /How They Work/);
     assert.match(infoDrawer, /additional independent confirmations/);
     assert.match(infoDrawer, /Return to Profile/);
+  });
+
+  it('keeps individual signal drawers signal-specific without system education', () => {
+    const detail = readFileSync(
+      join(process.cwd(), 'components/character-signals/CharacterSignalDetailDrawer.tsx'),
+      'utf8'
+    );
+    assert.match(detail, /Confirmed by \{confirmationCount\} people/);
+    assert.match(detail, /signal\.detailDescription/);
+    assert.match(detail, /not a guarantee or rating/);
+    assert.match(detail, /Return to Profile/);
+    assert.doesNotMatch(detail, /How Character Signals work/);
+    assert.doesNotMatch(detail, /recipient&apos;s approval/);
+    assert.doesNotMatch(detail, /What this means/);
+    assert.doesNotMatch(detail, /multiple meaningful interactions/);
   });
 
   it('presents one About section and omits More About on the public profile', () => {

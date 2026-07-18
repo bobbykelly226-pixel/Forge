@@ -141,36 +141,10 @@ export default function CharacterSignalDetailDrawer({
           <div id={descriptionId} className="mt-5 space-y-4 text-[15px] leading-relaxed text-[#5A6575]">
             <p>{signal.detailDescription}</p>
             <p>
-              Character Signals appear only after multiple meaningful interactions and are displayed
-              with the recipient&apos;s approval.
+              This signal reflects recurring positive experiences reported independently by other
+              Forge members. It is not a guarantee or rating.
             </p>
           </div>
-
-          <section className="mt-7 rounded-2xl border border-[#0B2D5C]/08 bg-white/80 px-4 py-4">
-            <h3 className="text-sm font-semibold text-[#0B2D5C]">What this means</h3>
-            <p className="mt-2 text-sm leading-relaxed text-[#5A6575]">
-              This signal reflects a recurring positive experience reported by more than one person.
-              It is not a guarantee or a rating.
-            </p>
-          </section>
-
-          <section className="mt-5">
-            <h3 className="text-sm font-semibold text-[#0B2D5C]">How Character Signals work</h3>
-            <ol className="mt-3 space-y-2.5 text-sm leading-relaxed text-[#5A6575]">
-              <li className="flex gap-2">
-                <span className="font-semibold text-[#0B2D5C]">1.</span>
-                Someone recognizes a positive quality after meaningful interaction.
-              </li>
-              <li className="flex gap-2">
-                <span className="font-semibold text-[#0B2D5C]">2.</span>
-                Forge waits for additional independent confirmations.
-              </li>
-              <li className="flex gap-2">
-                <span className="font-semibold text-[#0B2D5C]">3.</span>
-                The recipient chooses whether to display the signal publicly.
-              </li>
-            </ol>
-          </section>
 
           <button
             ref={primaryRef}

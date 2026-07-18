@@ -52,15 +52,16 @@ export function buildSampleDiscoveryActionState(): Record<
 }
 
 /**
- * Prepend seed cards; keep all real candidates. De-dupe by id.
+ * Controlled seed-only Discovery dataset.
+ * Replaces live candidates so beta preview never mixes newly created real profiles
+ * into the seeded walkthrough. The `profiles` argument is ignored for the result
+ * and kept for call-site compatibility.
  */
 export function injectSeedDiscoveryProfiles(
   profiles: DiscoveryFeedCardModel[]
 ): DiscoveryFeedCardModel[] {
-  const seeds = buildSeedDiscoveryFeedCards();
-  const real = profiles.filter((profile) => !isSeedProfileId(profile.id));
-  const realIds = new Set(real.map((profile) => profile.id));
-  return [...seeds.filter((seed) => !realIds.has(seed.id)), ...real];
+  void profiles;
+  return buildSeedDiscoveryFeedCards();
 }
 
 /** @deprecated */
