@@ -24,6 +24,11 @@ import LocationPicker, {
 } from '@/components/profile/LocationPicker';
 import ProfilePhotoManager from '@/components/profile/ProfilePhotoManager';
 import {
+  DrinkingFields,
+  PetsFields,
+  SmokingFields,
+} from '@/components/profile/LifestyleCompatibilityFields';
+import {
   ChoiceChips,
   MultiChoiceChips,
 } from '@/components/profile/StructuredChoices';
@@ -31,17 +36,14 @@ import type { ManagedProfilePhoto } from '@/lib/profile-photo';
 import { resolveUnifiedAbout } from '@/lib/profile/unified-about';
 import {
   CHILDREN_COUNT_OPTIONS,
-  DRINKING_OPTIONS,
   EDUCATION_OPTIONS,
   FAITH_IDENTITY_OPTIONS,
   FAITH_IMPORTANCE_OPTIONS,
   HAS_CHILDREN_OPTIONS,
   OPEN_TO_PARTNER_WITH_CHILDREN_OPTIONS,
-  PETS_OPTIONS,
   RELATIONSHIP_GOAL_OPTIONS,
   RELOCATION_OPTIONS,
   SERVICE_BACKGROUND_OPTIONS,
-  SMOKING_OPTIONS,
   WANTS_CHILDREN_OPTIONS,
 } from '@/lib/profile/structured-options';
 import {
@@ -525,24 +527,8 @@ function SectionEditor({
 
       {sectionId === 'faith' ? <FaithFields profile={profile} disabled={saving} /> : null}
 
-      {sectionId === 'smoking' ? (
-        <SingleChoiceFields
-          name="smoking"
-          legend="Smoking"
-          options={SMOKING_OPTIONS}
-          defaultValue={profile.smoking ?? ''}
-          disabled={saving}
-        />
-      ) : null}
-      {sectionId === 'drinking' ? (
-        <SingleChoiceFields
-          name="drinking"
-          legend="Drinking"
-          options={DRINKING_OPTIONS}
-          defaultValue={profile.drinking ?? ''}
-          disabled={saving}
-        />
-      ) : null}
+      {sectionId === 'smoking' ? <SmokingFields profile={profile} disabled={saving} /> : null}
+      {sectionId === 'drinking' ? <DrinkingFields profile={profile} disabled={saving} /> : null}
       {sectionId === 'education' ? (
         <SingleChoiceFields
           name="education"
@@ -552,15 +538,7 @@ function SectionEditor({
           disabled={saving}
         />
       ) : null}
-      {sectionId === 'pets' ? (
-        <SingleChoiceFields
-          name="pets"
-          legend="Pets"
-          options={PETS_OPTIONS}
-          defaultValue={profile.pets ?? ''}
-          disabled={saving}
-        />
-      ) : null}
+      {sectionId === 'pets' ? <PetsFields profile={profile} disabled={saving} /> : null}
       {sectionId === 'relocation' ? (
         <SingleChoiceFields
           name="relocation"

@@ -92,7 +92,7 @@ describe('legacy value migration', () => {
     assert.equal(mapLegacyRelationshipGoal('Marriage')?.mapped, 'marriage');
     assert.equal(mapLegacyRelationshipGoal('Marriage-minded')?.mapped, 'marriage');
     assert.equal(mapLegacySmoking('Never')?.mapped, 'never');
-    assert.equal(mapLegacyPets('No')?.mapped, 'no_pets');
+    assert.equal(mapLegacyPets('No')?.mapped, 'no');
     assert.equal(mapLegacyHasChildren('yes')?.mapped, 'yes');
     assert.equal(mapLegacyWantsChildren('yes')?.mapped, 'yes');
     assert.equal(mapLegacyRelocation('no')?.mapped, 'not_open');

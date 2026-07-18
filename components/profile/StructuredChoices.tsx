@@ -92,6 +92,7 @@ type MultiChoiceProps = {
   values: string[];
   onChange: (values: string[]) => void;
   hint?: string;
+  optionalNote?: string;
   exclusiveValues?: string[];
   disabled?: boolean;
 };
@@ -103,6 +104,7 @@ export function MultiChoiceChips({
   values,
   onChange,
   hint,
+  optionalNote = 'Optional — select all that apply, or leave unanswered.',
   exclusiveValues = ['none', 'prefer_not_to_say'],
   disabled,
 }: MultiChoiceProps) {
@@ -129,7 +131,7 @@ export function MultiChoiceChips({
     >
       <legend className="mb-1 block text-sm font-medium text-[#0B2D5C]">{legend}</legend>
       {hint ? <p className="text-sm text-[#666666]">{hint}</p> : null}
-      <p className="text-xs text-[#888888]">Optional — select all that apply, or leave unanswered.</p>
+      <p className="text-xs text-[#888888]">{optionalNote}</p>
       {values.map((value) => (
         <input key={value} type="hidden" name={name} value={value} />
       ))}

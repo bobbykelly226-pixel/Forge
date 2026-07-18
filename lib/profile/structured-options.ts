@@ -154,7 +154,7 @@ export const SMOKING_OPTIONS: StructuredOption<SmokingValue>[] = [
 
 export const DRINKING_VALUES = [
   'never',
-  'occasionally',
+  'rarely',
   'socially',
   'regularly',
   'in_recovery',
@@ -162,9 +162,12 @@ export const DRINKING_VALUES = [
 ] as const;
 export type DrinkingValue = (typeof DRINKING_VALUES)[number];
 
+/** Legacy drinking slug retained as valid for unread/unmigrated rows. */
+export const LEGACY_DRINKING_VALUES = ['occasionally'] as const;
+
 export const DRINKING_OPTIONS: StructuredOption<DrinkingValue>[] = [
   { value: 'never', label: 'Never' },
-  { value: 'occasionally', label: 'Occasionally' },
+  { value: 'rarely', label: 'Rarely' },
   { value: 'socially', label: 'Socially' },
   { value: 'regularly', label: 'Regularly' },
   { value: 'in_recovery', label: 'In recovery' },
@@ -194,22 +197,22 @@ export const EDUCATION_OPTIONS: StructuredOption<EducationValue>[] = [
   { value: PREFER_NOT_TO_SAY, label: 'Prefer not to say' },
 ];
 
-export const PETS_VALUES = [
+/** Pets identity — who you are today (types live in pets_types). */
+export const PETS_VALUES = ['yes', 'no', PREFER_NOT_TO_SAY] as const;
+export type PetsValue = (typeof PETS_VALUES)[number];
+
+/** Legacy pets single-select slugs retained for unread/unmigrated rows. */
+export const LEGACY_PETS_VALUES = [
   'no_pets',
   'dog',
   'cat',
   'multiple_pets',
   'other',
-  PREFER_NOT_TO_SAY,
 ] as const;
-export type PetsValue = (typeof PETS_VALUES)[number];
 
 export const PETS_OPTIONS: StructuredOption<PetsValue>[] = [
-  { value: 'no_pets', label: 'No pets' },
-  { value: 'dog', label: 'Dog' },
-  { value: 'cat', label: 'Cat' },
-  { value: 'multiple_pets', label: 'Multiple pets' },
-  { value: 'other', label: 'Other' },
+  { value: 'yes', label: 'Yes' },
+  { value: 'no', label: 'No' },
   { value: PREFER_NOT_TO_SAY, label: 'Prefer not to say' },
 ];
 
@@ -285,7 +288,17 @@ export function isValidStructuredValue(
   value: string | null | undefined
 ): boolean {
   if (!value) return false;
-  return OPTION_SETS[field].some((option) => option.value === value);
+  if (OPTION_SETS[field].some((option) => option.value === value)) {
+    return true;
+  }
+  // Accept pre-migration lifestyle slugs so existing profiles remain valid.
+  if (field === 'pets') {
+    return (LEGACY_PETS_VALUES as readonly string[]).includes(value);
+  }
+  if (field === 'drinking') {
+    return (LEGACY_DRINKING_VALUES as readonly string[]).includes(value);
+  }
+  return false;
 }
 
 export function isPreferNotToSay(value: string | null | undefined): boolean {

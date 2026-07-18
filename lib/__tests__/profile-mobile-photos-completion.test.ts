@@ -81,10 +81,15 @@ describe('mobile structured controls', () => {
       join(process.cwd(), 'components/profile/ProfileWorkspace.tsx'),
       'utf8'
     );
+    const lifestyle = readFileSync(
+      join(process.cwd(), 'components/profile/LifestyleCompatibilityFields.tsx'),
+      'utf8'
+    );
     const choices = readFileSync(
       join(process.cwd(), 'components/profile/StructuredChoices.tsx'),
       'utf8'
     );
+    const structuredSources = `${workspace}\n${lifestyle}`;
 
     assert.match(choices, /data-structured-control-type="single"/);
     assert.match(choices, /data-structured-control-type="multi"/);
@@ -108,12 +113,18 @@ describe('mobile structured controls', () => {
       'faith_identity',
       'faith_importance',
       'relationship_goal',
+      'pets_types',
+      'pets_partner_preferences',
+      'smoking_product_types',
+      'smoking_partner_preferences',
+      'drinking_partner_preferences',
     ]) {
-      assert.match(workspace, new RegExp(`name="${name}"`));
+      assert.match(structuredSources, new RegExp(`name="${name}"`));
     }
 
     assert.match(workspace, /HAS_CHILDREN_OPTIONS/);
     assert.match(workspace, /SERVICE_BACKGROUND_OPTIONS/);
+    assert.match(workspace, /PetsFields|SmokingFields|DrinkingFields/);
     assert.match(workspace, /ChoiceChips/);
     assert.match(workspace, /MultiChoiceChips/);
     assert.doesNotMatch(workspace, /name="has_children"[\s\S]{0,80}type="text"/);

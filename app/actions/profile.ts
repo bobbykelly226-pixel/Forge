@@ -20,6 +20,17 @@ import {
   toPublicLocationFields,
 } from '@/lib/profile/location-format';
 import {
+  normalizeDrinkingPartnerPreferences,
+  normalizePetTypeSelection,
+  normalizePetsAllergyTypes,
+  normalizePetsIdentity,
+  normalizePetsPartnerPreferences,
+  normalizeSmokingPartnerPreferences,
+  normalizeSmokingProductSelection,
+  parsePetsAllergyConstraintFormValue,
+  smokingUsesProducts,
+} from '@/lib/profile/lifestyle-compatibility';
+import {
   isValidStructuredValue,
   normalizeServiceBackgroundSelection,
   serviceBackgroundDisplayLabel,
@@ -47,6 +58,104 @@ function parseEnjoySelection(formData: FormData): string[] {
   return THINGS_I_ENJOY_OPTIONS.filter((label) => selected.includes(label)).filter((label) =>
     allowed.has(label)
   );
+}
+
+function readMultiField(formData: FormData, key: string): string[] {
+  return formData
+    .getAll(key)
+    .map(String)
+    .map((value) => value.trim())
+    .filter(Boolean);
+}
+
+function readLifestylePetsFields(formData: FormData) {
+  const petsRaw = readOptionalString(formData, 'pets');
+  const petsIdentity = petsRaw ? normalizePetsIdentity(petsRaw) || petsRaw : null;
+  if (petsIdentity && !isValidStructuredValue('pets', petsIdentity)) {
+    return { ok: false as const, message: 'Please choose a valid option for pets.' };
+  }
+
+  const hasPets = petsIdentity === 'yes';
+  const answeredIdentity = Boolean(petsIdentity);
+  const petsTypes = hasPets
+    ? normalizePetTypeSelection(readMultiField(formData, 'pets_types'))
+    : [];
+  const partnerPrefs = answeredIdentity
+    ? normalizePetsPartnerPreferences(readMultiField(formData, 'pets_partner_preferences'))
+    : [];
+  // Tri-state: yes → true, no → false, unanswered/empty → null.
+  // Do not collapse false with a truthiness check (false === unanswered).
+  const allergyRaw = answeredIdentity
+    ? readOptionalString(formData, 'pets_allergy_constraint')
+    : null;
+  const allergyConstraint = answeredIdentity
+    ? parsePetsAllergyConstraintFormValue(allergyRaw)
+    : null;
+  const allergyTypes =
+    answeredIdentity && allergyConstraint === true
+      ? normalizePetsAllergyTypes(readMultiField(formData, 'pets_allergy_types'))
+      : [];
+
+  return {
+    ok: true as const,
+    fields: {
+      pets: petsIdentity === '' ? null : petsIdentity,
+      pets_types: petsTypes,
+      pets_partner_preferences: partnerPrefs,
+      pets_allergy_constraint: allergyConstraint,
+      pets_allergy_types: allergyTypes,
+    },
+  };
+}
+
+function readLifestyleSmokingFields(formData: FormData) {
+  const smoking = readStructuredField(formData, 'smoking', 'smoking');
+  if (!smoking.ok) return smoking;
+
+  const usesProducts = smokingUsesProducts(smoking.value);
+  const productTypes = usesProducts
+    ? normalizeSmokingProductSelection(readMultiField(formData, 'smoking_product_types'))
+    : [];
+  const productOther =
+    usesProducts && productTypes.includes('other')
+      ? readOptionalString(formData, 'smoking_product_other')
+      : null;
+  const partnerPrefs = smoking.value
+    ? normalizeSmokingPartnerPreferences(readMultiField(formData, 'smoking_partner_preferences'))
+    : [];
+
+  return {
+    ok: true as const,
+    fields: {
+      smoking: smoking.value,
+      smoking_product_types: productTypes,
+      smoking_product_other: productOther,
+      smoking_partner_preferences: partnerPrefs,
+    },
+  };
+}
+
+function readLifestyleDrinkingFields(formData: FormData) {
+  const drinking = readStructuredField(formData, 'drinking', 'drinking');
+  if (!drinking.ok) return drinking;
+
+  // Normalize legacy occasionally → rarely at write time.
+  const normalized =
+    drinking.value === 'occasionally' ? 'rarely' : drinking.value;
+
+  const partnerPrefs = normalized
+    ? normalizeDrinkingPartnerPreferences(
+        readMultiField(formData, 'drinking_partner_preferences')
+      )
+    : [];
+
+  return {
+    ok: true as const,
+    fields: {
+      drinking: normalized,
+      drinking_partner_preferences: partnerPrefs,
+    },
+  };
 }
 
 function readOptionalString(formData: FormData, key: string): string | null {
@@ -143,6 +252,19 @@ export async function saveProfile(formData: FormData): Promise<ProfileActionResu
   // Conditional children count — only keep when has_children = yes
   if (structuredValues.has_children !== 'yes') {
     structuredValues.children_count = null;
+  }
+
+  const petsLifestyle = readLifestylePetsFields(formData);
+  if (!petsLifestyle.ok) {
+    return { success: false, message: petsLifestyle.message };
+  }
+  const smokingLifestyle = readLifestyleSmokingFields(formData);
+  if (!smokingLifestyle.ok) {
+    return { success: false, message: smokingLifestyle.message };
+  }
+  const drinkingLifestyle = readLifestyleDrinkingFields(formData);
+  if (!drinkingLifestyle.ok) {
+    return { success: false, message: drinkingLifestyle.message };
   }
 
   // Faith follow-ups
@@ -304,10 +426,18 @@ export async function saveProfile(formData: FormData): Promise<ProfileActionResu
     faith_tradition: resolvedFaithTradition,
     faith_other: resolvedFaithOther,
     faith_importance: structuredValues.faith_importance,
-    smoking: structuredValues.smoking,
-    drinking: structuredValues.drinking,
+    smoking: smokingLifestyle.fields.smoking,
+    smoking_product_types: smokingLifestyle.fields.smoking_product_types,
+    smoking_product_other: smokingLifestyle.fields.smoking_product_other,
+    smoking_partner_preferences: smokingLifestyle.fields.smoking_partner_preferences,
+    drinking: drinkingLifestyle.fields.drinking,
+    drinking_partner_preferences: drinkingLifestyle.fields.drinking_partner_preferences,
     education: structuredValues.education,
-    pets: structuredValues.pets,
+    pets: petsLifestyle.fields.pets,
+    pets_types: petsLifestyle.fields.pets_types,
+    pets_partner_preferences: petsLifestyle.fields.pets_partner_preferences,
+    pets_allergy_constraint: petsLifestyle.fields.pets_allergy_constraint,
+    pets_allergy_types: petsLifestyle.fields.pets_allergy_types,
     relocation: structuredValues.relocation,
     career: career,
     service_backgrounds: serviceBackgrounds,
@@ -735,11 +865,29 @@ export async function saveProfileSection(
     if (importance.value) answeredUnmapped.push('faith_importance');
   }
 
+  if (sectionId === 'pets') {
+    const parsed = readLifestylePetsFields(formData);
+    if (!parsed.ok) return { success: false, message: parsed.message };
+    Object.assign(fields, parsed.fields);
+    if (parsed.fields.pets) answeredUnmapped.push('pets');
+  }
+
+  if (sectionId === 'smoking') {
+    const parsed = readLifestyleSmokingFields(formData);
+    if (!parsed.ok) return { success: false, message: parsed.message };
+    Object.assign(fields, parsed.fields);
+    if (parsed.fields.smoking) answeredUnmapped.push('smoking');
+  }
+
+  if (sectionId === 'drinking') {
+    const parsed = readLifestyleDrinkingFields(formData);
+    if (!parsed.ok) return { success: false, message: parsed.message };
+    Object.assign(fields, parsed.fields);
+    if (parsed.fields.drinking) answeredUnmapped.push('drinking');
+  }
+
   for (const single of [
-    { id: 'smoking', key: 'smoking', field: 'smoking' as const },
-    { id: 'drinking', key: 'drinking', field: 'drinking' as const },
     { id: 'education', key: 'education', field: 'education' as const },
-    { id: 'pets', key: 'pets', field: 'pets' as const },
     { id: 'relocation', key: 'relocation', field: 'relocation' as const },
   ] as const) {
     if (sectionId === single.id) {
@@ -839,6 +987,18 @@ export async function saveProfileSection(
 
   const result = await upsertCurrentUserProfile(fields);
   if (!result.success) {
+    // Upsert already logs the underlying Supabase/Postgres error in preview/dev.
+    // Include section context here so Vercel function logs show which section failed.
+    if (
+      process.env.VERCEL_ENV === 'preview' ||
+      process.env.NODE_ENV === 'development'
+    ) {
+      console.error('saveProfileSection failed:', {
+        sectionId,
+        fieldKeys: Object.keys(fields).sort(),
+        message: result.message,
+      });
+    }
     return { success: false, message: result.message };
   }
 
