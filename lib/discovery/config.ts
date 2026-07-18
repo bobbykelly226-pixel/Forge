@@ -10,7 +10,7 @@ export const OPEN_TO_CHAT_DAILY_LIMIT: number | null = null;
 export const OPEN_TO_CHAT_DAILY_LIMIT_STATUS =
   'Product decision pending — reusable daily-count infrastructure is ready; no numeric limit is enforced.' as const;
 
-/** Neutral Discovery alignment placeholder until matching scores exist. */
+/** Neutral Discovery alignment label when more profile context is still needed. */
 export const DISCOVERY_NEUTRAL_ALIGNMENT_LABEL = 'More to Discover';
 
 export const DISCOVERY_NEUTRAL_CONFIDENCE = '—';
