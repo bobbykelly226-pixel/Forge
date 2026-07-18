@@ -48,6 +48,19 @@ export type SeedProfile = {
   relocation: string | null;
   serviceBackground: string | null;
   pets: string | null;
+  /** Optional structured lifestyle fields for Compatibility Engine V1 demos. */
+  petsTypes?: string[];
+  petsPartnerPreferences?: string[];
+  petsAllergyConstraint?: boolean | null;
+  petsAllergyTypes?: string[];
+  smokingPartnerPreferences?: string[];
+  drinkingPartnerPreferences?: string[];
+  faithIdentity?: string | null;
+  coreValues?: string[];
+  /**
+   * Catalog label retained for documentation / filters.
+   * Discovery presentation prefers Compatibility Engine output when available.
+   */
   alignmentLabel:
     | 'Strong Alignment'
     | 'Promising Alignment'
@@ -121,6 +134,13 @@ export const SEED_PROFILES: SeedProfile[] = [
     relocation: "possibly",
     serviceBackground: "community_service",
     pets: "dog",
+    petsTypes: ["dogs"],
+    petsPartnerPreferences: ["has_dogs", "has_cats", "has_no_pets", "open_to_any"],
+    petsAllergyConstraint: false,
+    smokingPartnerPreferences: ["does_not_use", "trying_to_quit"],
+    drinkingPartnerPreferences: ["does_not_drink", "drinks_rarely", "drinks_socially"],
+    faithIdentity: "christian",
+    coreValues: ["Faith", "Family", "Loyalty", "Communication", "Shared goals"],
     alignmentLabel: "Strong Alignment",
     sharedStrengths: [
           "Long-term relationship intentions align",
@@ -160,7 +180,15 @@ export const SEED_PROFILES: SeedProfile[] = [
     drinking: "socially",
     relocation: "not_open",
     serviceBackground: null,
-    pets: "dog",
+    pets: "no",
+    petsTypes: [],
+    petsPartnerPreferences: ["has_no_pets", "has_fish"],
+    petsAllergyConstraint: true,
+    petsAllergyTypes: ["dogs"],
+    smokingPartnerPreferences: ["does_not_use"],
+    drinkingPartnerPreferences: ["drinks_socially", "drinks_rarely"],
+    faithIdentity: "spiritual",
+    coreValues: ["Family", "Communication", "Growth"],
     alignmentLabel: "Promising Alignment",
     sharedStrengths: [
           "Both are looking for commitment",
@@ -961,11 +989,16 @@ export const SEED_PROFILES: SeedProfile[] = [
     children: "no",
     hasChildren: "no",
     openToPartnerWithChildren: "no",
-    smoking: "occasionally",
-    drinking: "occasionally",
+    smoking: "regularly",
+    drinking: "socially",
     relocation: "open",
     serviceBackground: null,
-    pets: null,
+    pets: "no",
+    petsPartnerPreferences: ["has_no_pets"],
+    petsAllergyConstraint: null,
+    smokingPartnerPreferences: ["cigarettes_regularly", "open_to_any"],
+    drinkingPartnerPreferences: ["drinks_socially", "drinks_regularly"],
+    coreValues: ["Communication", "Growth"],
     alignmentLabel: "More to Discover",
     sharedStrengths: [
           "Both value respectful communication",

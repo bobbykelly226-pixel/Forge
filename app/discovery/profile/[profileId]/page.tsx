@@ -7,7 +7,14 @@ import { getOpenToChatEducationSeenAction } from '@/app/actions/relationships';
 import ForgeAppCanvas from '@/components/ForgeAppCanvas';
 import { DiscoveryActionsProvider } from '@/components/discovery/DiscoveryActionsProvider';
 import DiscoveryProfileView from '@/components/discovery/DiscoveryProfileView';
+import {
+  evaluateCompatibility,
+  personFromPublicDiscoveryProfile,
+  toAlignmentPresentation,
+} from '@/lib/compatibility';
+import { loadViewerCompatibilityPerson } from '@/lib/compatibility/load-viewer';
 import { createEmptyActionState } from '@/lib/discovery-actions-types';
+import { isSeedProfileId } from '@/lib/seed/access';
 import { createClient } from '@/lib/supabase/server';
 
 const display = Fraunces({
@@ -115,6 +122,18 @@ export default async function DiscoveryProfilePage({
       }
     : {};
 
+  let liveAlignmentPresentation = null;
+  if (!isSeedProfileId(profileId)) {
+    const viewer = await loadViewerCompatibilityPerson();
+    if (viewer.success) {
+      const engineResult = evaluateCompatibility(
+        viewer.person,
+        personFromPublicDiscoveryProfile(result.profile)
+      );
+      liveAlignmentPresentation = toAlignmentPresentation(engineResult);
+    }
+  }
+
   return (
     <ForgeAppCanvas
       className={`${display.variable} ${sans.variable}`}
@@ -126,7 +145,10 @@ export default async function DiscoveryProfilePage({
         initialActionState={actionState}
         initialEducationSeen={education.success ? education.data : false}
       >
-        <DiscoveryProfileView profile={result.profile} />
+        <DiscoveryProfileView
+          profile={result.profile}
+          alignmentPresentation={liveAlignmentPresentation}
+        />
       </DiscoveryActionsProvider>
     </ForgeAppCanvas>
   );

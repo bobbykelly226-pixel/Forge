@@ -8,7 +8,10 @@ import PublicProfilePresentation, {
   PublicProfileBackLink,
 } from '@/components/discovery/PublicProfilePresentation';
 import { isSeedProfileId } from '@/lib/seed/access';
-import { toSeedAlignmentPresentation } from '@/lib/seed/adapters';
+import {
+  toSeedAlignmentPresentation,
+  type SeedProfileAlignmentPresentation,
+} from '@/lib/seed/adapters';
 import { getSeedProfileById } from '@/lib/seed/catalog';
 import {
   firstNameFromFullName,
@@ -17,9 +20,14 @@ import {
 
 type Props = {
   profile: PublicDiscoveryProfile;
+  /** Live engine presentation from the server; seed profiles compute locally. */
+  alignmentPresentation?: SeedProfileAlignmentPresentation | null;
 };
 
-export default function DiscoveryProfileView({ profile }: Props) {
+export default function DiscoveryProfileView({
+  profile,
+  alignmentPresentation: liveAlignmentPresentation = null,
+}: Props) {
   const profileId = profile.id;
   const firstName = firstNameFromFullName(profile.full_name);
   const { isPassed } = useDiscoveryActions();
@@ -30,7 +38,7 @@ export default function DiscoveryProfileView({ profile }: Props) {
 
   const alignmentPresentation = seedProfile
     ? toSeedAlignmentPresentation(seedProfile)
-    : null;
+    : liveAlignmentPresentation;
 
   if (passed && !isSeed) {
     return (
@@ -75,7 +83,7 @@ export default function DiscoveryProfileView({ profile }: Props) {
         profile={profile}
         mode="discovery"
         showAlignmentCard
-        showSurfacedReason={!isSeed}
+        showSurfacedReason={!isSeed && !alignmentPresentation}
         alignmentPresentation={alignmentPresentation}
         header={
           <div className="flex flex-wrap items-center justify-between gap-3">

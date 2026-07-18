@@ -13,6 +13,10 @@ export const OPEN_TO_CHAT_DAILY_LIMIT_STATUS =
 /** Neutral Discovery alignment label when more profile context is still needed. */
 export const DISCOVERY_NEUTRAL_ALIGNMENT_LABEL = 'More to Discover';
 
+/**
+ * Placeholder for legacy feed/hub card field.
+ * Not a Confidence metric — never display High/Medium/Low confidence.
+ */
 export const DISCOVERY_NEUTRAL_CONFIDENCE = '—';
 
 export const DISCOVERY_SURFACED_REASON =
