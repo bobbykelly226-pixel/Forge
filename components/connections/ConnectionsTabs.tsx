@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useRef, type KeyboardEvent } from 'react';
+import { useRouter } from 'next/navigation';
 
 import {
   useConnectionsHub,
@@ -11,6 +12,7 @@ const TAB_DEFS: { id: ConnectionsTabId; label: string }[] = [
   { id: 'forYou', label: 'For You' },
   { id: 'openToChat', label: 'Open to Chat' },
   { id: 'mutual', label: 'Mutual' },
+  { id: 'conversations', label: 'Messages' },
   { id: 'saved', label: 'Saved' },
   { id: 'sent', label: 'Sent' },
 ];
@@ -20,6 +22,7 @@ type ConnectionsTabsProps = {
 };
 
 export default function ConnectionsTabs({ layout = 'horizontal' }: ConnectionsTabsProps) {
+  const router = useRouter();
   const { activeTab, setActiveTab, tabCounts } = useConnectionsHub();
   const tabListRef = useRef<HTMLDivElement>(null);
 
@@ -27,6 +30,16 @@ export default function ConnectionsTabs({ layout = 'horizontal' }: ConnectionsTa
     ...tab,
     count: tabCounts[tab.id],
   }));
+
+  const selectTab = useCallback(
+    (tabId: ConnectionsTabId) => {
+      setActiveTab(tabId);
+      const href =
+        tabId === 'forYou' ? '/connections' : `/connections?tab=${tabId}`;
+      router.replace(href, { scroll: false });
+    },
+    [router, setActiveTab]
+  );
 
   const focusTab = useCallback((tabId: ConnectionsTabId) => {
     const button = tabListRef.current?.querySelector<HTMLButtonElement>(
@@ -59,10 +72,10 @@ export default function ConnectionsTabs({ layout = 'horizontal' }: ConnectionsTa
       }
 
       const nextTab = tabs[nextIndex];
-      setActiveTab(nextTab.id);
+      selectTab(nextTab.id);
       focusTab(nextTab.id);
     },
-    [activeTab, focusTab, setActiveTab, tabs]
+    [activeTab, focusTab, selectTab, tabs]
   );
 
   const isVertical = layout === 'vertical';
@@ -91,7 +104,7 @@ export default function ConnectionsTabs({ layout = 'horizontal' }: ConnectionsTa
             aria-selected={isActive}
             aria-controls={`connections-panel-${tab.id}`}
             tabIndex={isActive ? 0 : -1}
-            onClick={() => setActiveTab(tab.id)}
+            onClick={() => selectTab(tab.id)}
             className={
               isVertical
                 ? `inline-flex w-full items-center justify-between gap-3 rounded-2xl px-4 py-3 text-left text-sm font-semibold transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0B2D5C] ${

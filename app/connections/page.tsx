@@ -1,18 +1,24 @@
 import { Fraunces, Manrope } from 'next/font/google';
 import { redirect } from 'next/navigation';
 
+import { listMyConversationsAction } from '@/app/actions/conversations';
 import { loadConnectionsHubAction } from '@/app/actions/relationships';
 import ConnectionsHubPrototype from '@/components/connections/ConnectionsHubPrototype';
-import { ConnectionsHubProvider } from '@/components/connections/ConnectionsHubProvider';
+import {
+  ConnectionsHubProvider,
+  type ConnectionsTabId,
+} from '@/components/connections/ConnectionsHubProvider';
 import ForgeAppCanvas from '@/components/ForgeAppCanvas';
+import type { ConversationListItem } from '@/lib/conversations/types';
+import type { ConnectionsHubData } from '@/lib/data/connections-hub';
 import { parseSeedQueryParam } from '@/lib/seed/access';
+import { buildSeedConversationList } from '@/lib/seed/conversations';
 import {
   countRealMutualConnections,
   injectSeedConnections,
   shouldInjectSeedConnectionsForRequest,
 } from '@/lib/seed/inject-connections';
 import { createClient } from '@/lib/supabase/server';
-import type { ConnectionsHubData } from '@/lib/data/connections-hub';
 
 const display = Fraunces({
   subsets: ['latin'],
@@ -29,7 +35,7 @@ const sans = Manrope({
 export const metadata = {
   title: 'Connections | Forge',
   description:
-    'Review Open to Chat requests, mutual interest, and profiles you saved on Forge.',
+    'Review Open to Chat requests, mutual interest, conversations, and profiles you saved on Forge.',
   robots: {
     index: false,
     follow: false,
@@ -48,15 +54,25 @@ const EMPTY_HUB: ConnectionsHubData = {
     forYou: 0,
     openToChat: 0,
     mutual: 0,
+    conversations: 0,
     saved: 0,
     sent: 0,
   },
 };
 
+const VALID_TABS: ConnectionsTabId[] = [
+  'forYou',
+  'openToChat',
+  'mutual',
+  'conversations',
+  'saved',
+  'sent',
+];
+
 export default async function ConnectionsHubPage({
   searchParams,
 }: {
-  searchParams?: Promise<{ seed?: string; demo?: string }>;
+  searchParams?: Promise<{ seed?: string; demo?: string; tab?: string }>;
 }) {
   const supabase = await createClient();
   const {
@@ -87,6 +103,36 @@ export default async function ConnectionsHubPage({
     seedConnectionsInjected = true;
   }
 
+  const conversationsResult = await listMyConversationsAction();
+  let conversations: ConversationListItem[] = conversationsResult.success
+    ? (conversationsResult.data ?? [])
+    : [];
+  const conversationsError = conversationsResult.success
+    ? null
+    : conversationsResult.message;
+
+  // Seed fixtures may append for QA, but must never hide real production conversations.
+  if (seedConnectionsInjected) {
+    const seedConversations = buildSeedConversationList();
+    const realIds = new Set(conversations.map((item) => item.conversationId));
+    conversations = [
+      ...conversations,
+      ...seedConversations.filter((item) => !realIds.has(item.conversationId)),
+    ];
+  }
+
+  initialData = {
+    ...initialData,
+    tabCounts: {
+      ...initialData.tabCounts,
+      conversations: conversations.length,
+    },
+  };
+
+  const initialTab = VALID_TABS.includes(params.tab as ConnectionsTabId)
+    ? (params.tab as ConnectionsTabId)
+    : undefined;
+
   return (
     <ForgeAppCanvas
       desktopViewportLock
@@ -95,7 +141,13 @@ export default async function ConnectionsHubPage({
         fontFamily: 'var(--font-discovery-sans), ui-sans-serif, system-ui, sans-serif',
       }}
     >
-      <ConnectionsHubProvider initialData={initialData}>
+      <ConnectionsHubProvider
+        initialData={initialData}
+        initialConversations={conversations}
+        conversationsError={conversationsError}
+        initialTab={initialTab}
+        viewerUserId={user.id}
+      >
         <ConnectionsHubPrototype
           loadError={loadError}
           seedConnectionsInjected={seedConnectionsInjected}

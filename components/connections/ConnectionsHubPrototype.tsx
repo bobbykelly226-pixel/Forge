@@ -17,10 +17,12 @@ import {
 } from '@/components/connections/ConnectionCards';
 import ConnectionsTabs from '@/components/connections/ConnectionsTabs';
 import { useConnectionsHub } from '@/components/connections/ConnectionsHubProvider';
+import ConversationHub from '@/components/conversations/ConversationHub';
 import { resetAllSeedState } from '@/lib/seed/actions';
 
 export default function ConnectionsHubPrototype({
   loadError = null,
+  seedConnectionsInjected = false,
   showSeedReset = false,
   onResetSeedState,
 }: {
@@ -38,6 +40,8 @@ export default function ConnectionsHubPrototype({
     mutual,
     saved,
     sent,
+    conversations,
+    conversationsError,
     getOpenToChatStatus,
     getInterestStatus,
     isSavedRemoved,
@@ -199,6 +203,13 @@ export default function ConnectionsHubPrototype({
         {visibleMutual.length === 0 ? seedResetControl : null}
       </div>
     ),
+    conversations: (
+      <ConversationHub
+        initialItems={conversations}
+        error={conversationsError}
+        seedMode={Boolean(seedConnectionsInjected)}
+      />
+    ),
     saved: (
       <div className="flex flex-col gap-6">
         <p className="rounded-2xl border border-[#0B2D5C]/08 bg-white/60 px-4 py-3 text-sm text-[#5A6575]">
@@ -268,7 +279,9 @@ export default function ConnectionsHubPrototype({
               Review conversations, mutual interest, and profiles you chose to revisit.
             </p>
 
-            <ForgeDesktopAppNav active="connections" />
+            <ForgeDesktopAppNav
+              active={activeTab === 'conversations' ? 'messages' : 'connections'}
+            />
 
             <div className="mt-8 border-t border-[#0B2D5C]/08 pt-6">
               <p className="mb-3 text-[11px] font-semibold uppercase tracking-[0.16em] text-[#D62828]">
@@ -350,7 +363,9 @@ export default function ConnectionsHubPrototype({
         </div>
       </ForgeAuthenticatedTwoColumnShell>
 
-      <ForgeAppBottomNav active="connections" />
+      <ForgeAppBottomNav
+        active={activeTab === 'conversations' ? 'messages' : 'connections'}
+      />
     </>
   );
 }

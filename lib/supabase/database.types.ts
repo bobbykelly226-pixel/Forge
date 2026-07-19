@@ -113,6 +113,143 @@ export type Database = {
         }
         Relationships: []
       }
+      conversation_participants: {
+        Row: {
+          conversation_id: string
+          created_at: string
+          last_read_at: string | null
+          user_id: string
+        }
+        Insert: {
+          conversation_id: string
+          created_at?: string
+          last_read_at?: string | null
+          user_id: string
+        }
+        Update: {
+          conversation_id?: string
+          created_at?: string
+          last_read_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "conversation_participants_conversation_id_fkey"
+            columns: ["conversation_id"]
+            isOneToOne: false
+            referencedRelation: "conversations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      conversations: {
+        Row: {
+          connection_id: string
+          created_at: string
+          id: string
+          last_message_at: string | null
+          status: Database["public"]["Enums"]["conversation_status"]
+          updated_at: string
+        }
+        Insert: {
+          connection_id: string
+          created_at?: string
+          id?: string
+          last_message_at?: string | null
+          status?: Database["public"]["Enums"]["conversation_status"]
+          updated_at?: string
+        }
+        Update: {
+          connection_id?: string
+          created_at?: string
+          id?: string
+          last_message_at?: string | null
+          status?: Database["public"]["Enums"]["conversation_status"]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "conversations_connection_id_fkey"
+            columns: ["connection_id"]
+            isOneToOne: true
+            referencedRelation: "connections"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      messages: {
+        Row: {
+          body: string
+          client_message_id: string | null
+          conversation_id: string
+          created_at: string
+          id: string
+          sender_id: string
+        }
+        Insert: {
+          body: string
+          client_message_id?: string | null
+          conversation_id: string
+          created_at?: string
+          id?: string
+          sender_id: string
+        }
+        Update: {
+          body?: string
+          client_message_id?: string | null
+          conversation_id?: string
+          created_at?: string
+          id?: string
+          sender_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "messages_conversation_id_fkey"
+            columns: ["conversation_id"]
+            isOneToOne: false
+            referencedRelation: "conversations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_reports: {
+        Row: {
+          conversation_id: string | null
+          created_at: string
+          details: string | null
+          id: string
+          reason: Database["public"]["Enums"]["report_reason"]
+          reported_user_id: string
+          reporter_id: string
+        }
+        Insert: {
+          conversation_id?: string | null
+          created_at?: string
+          details?: string | null
+          id?: string
+          reason: Database["public"]["Enums"]["report_reason"]
+          reported_user_id: string
+          reporter_id: string
+        }
+        Update: {
+          conversation_id?: string | null
+          created_at?: string
+          details?: string | null
+          id?: string
+          reason?: Database["public"]["Enums"]["report_reason"]
+          reported_user_id?: string
+          reporter_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_reports_conversation_id_fkey"
+            columns: ["conversation_id"]
+            isOneToOne: false
+            referencedRelation: "conversations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       feedback: {
         Row: {
           choice: string
@@ -901,12 +1038,57 @@ export type Database = {
         Args: { p_user_id: string }
         Returns: boolean
       }
+      block_user: { Args: { p_blocked_user_id: string }; Returns: Json }
+      end_connection: { Args: { p_connection_id: string }; Returns: Json }
+      ensure_conversation_for_connection: {
+        Args: { p_connection_id: string }
+        Returns: Json
+      }
+      forge_is_conversation_participant: {
+        Args: { p_conversation_id: string; p_user_id: string }
+        Returns: boolean
+      }
+      get_conversation_thread_meta: {
+        Args: { p_conversation_id: string }
+        Returns: Json
+      }
+      list_conversation_messages: {
+        Args: {
+          p_before?: string
+          p_before_id?: string
+          p_conversation_id: string
+          p_limit?: number
+        }
+        Returns: Json
+      }
+      list_my_conversations: { Args: Record<PropertyKey, never>; Returns: Json }
+      mark_conversation_read: {
+        Args: { p_conversation_id: string }
+        Returns: Json
+      }
       remove_saved_profile: { Args: { p_profile_id: string }; Returns: Json }
+      report_user: {
+        Args: {
+          p_conversation_id?: string
+          p_details?: string
+          p_reason: Database["public"]["Enums"]["report_reason"]
+          p_reported_user_id: string
+        }
+        Returns: Json
+      }
       respond_open_to_chat: {
         Args: { p_action: string; p_request_id: string }
         Returns: Json
       }
       save_profile_for_later: { Args: { p_profile_id: string }; Returns: Json }
+      send_conversation_message: {
+        Args: {
+          p_body: string
+          p_client_message_id?: string
+          p_conversation_id: string
+        }
+        Returns: Json
+      }
       send_interest: { Args: { p_recipient_id: string }; Returns: Json }
       send_open_to_chat: {
         Args: { p_note?: string; p_recipient_id: string }
@@ -924,6 +1106,7 @@ export type Database = {
       character_signal_status: "pending" | "approved" | "declined"
       connection_source: "mutual_interest" | "open_to_chat"
       connection_status: "active" | "ended"
+      conversation_status: "active" | "ended"
       interest_status: "pending" | "mutual" | "withdrawn"
       open_to_chat_status:
         | "pending"
@@ -933,6 +1116,13 @@ export type Database = {
         | "deferred"
       photo_moderation_status: "pending" | "approved" | "rejected"
       profile_status: "draft" | "active" | "paused" | "hidden" | "deactivated"
+      report_reason:
+        | "unwanted_behavior"
+        | "harassment"
+        | "fake_profile"
+        | "inappropriate_content"
+        | "safety_concern"
+        | "other"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -1065,6 +1255,7 @@ export const Constants = {
       character_signal_status: ["pending", "approved", "declined"],
       connection_source: ["mutual_interest", "open_to_chat"],
       connection_status: ["active", "ended"],
+      conversation_status: ["active", "ended"],
       interest_status: ["pending", "mutual", "withdrawn"],
       open_to_chat_status: [
         "pending",
@@ -1075,6 +1266,14 @@ export const Constants = {
       ],
       photo_moderation_status: ["pending", "approved", "rejected"],
       profile_status: ["draft", "active", "paused", "hidden", "deactivated"],
+      report_reason: [
+        "unwanted_behavior",
+        "harassment",
+        "fake_profile",
+        "inappropriate_content",
+        "safety_concern",
+        "other",
+      ],
     },
   },
 } as const

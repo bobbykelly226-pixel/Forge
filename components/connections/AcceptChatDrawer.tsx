@@ -15,6 +15,8 @@ type AcceptChatDrawerProps = {
   note?: string | null;
   onClose: () => void;
   onConfirm: () => void;
+  onStartConversation?: () => void;
+  onViewMutual?: () => void;
 };
 
 function getFocusableElements(container: HTMLElement): HTMLElement[] {
@@ -33,6 +35,8 @@ export default function AcceptChatDrawer({
   note = null,
   onClose,
   onConfirm,
+  onStartConversation,
+  onViewMutual,
 }: AcceptChatDrawerProps) {
   const titleId = useId();
   const descriptionId = useId();
@@ -128,9 +132,9 @@ export default function AcceptChatDrawer({
           <div id={descriptionId} className="mt-3 space-y-3 text-[15px] leading-relaxed text-[#5A6575]">
             {isSuccess ? (
               <>
-                <p>You&apos;re connected.</p>
-                <p className="text-sm text-[#8A93A0]">
-                  Messaging is coming later.
+                <p>You and {profileName} are connected.</p>
+                <p className="text-sm text-[#5A6575]">
+                  You can start a conversation now, or find this connection under Mutual.
                 </p>
               </>
             ) : (
@@ -149,14 +153,30 @@ export default function AcceptChatDrawer({
           </div>
           <div className="mt-6 flex flex-col gap-3">
             {isSuccess ? (
-              <button
-                ref={primaryRef}
-                type="button"
-                onClick={onClose}
-                className="inline-flex w-full items-center justify-center rounded-2xl bg-[#0B2D5C] px-6 py-3.5 text-base font-semibold text-white transition hover:bg-[#0A2540]"
-              >
-                Return to Connections
-              </button>
+              <>
+                {onStartConversation ? (
+                  <button
+                    ref={primaryRef}
+                    type="button"
+                    onClick={onStartConversation}
+                    className="inline-flex w-full items-center justify-center rounded-2xl bg-[#0B2D5C] px-6 py-3.5 text-base font-semibold text-white transition hover:bg-[#0A2540]"
+                  >
+                    Start Conversation
+                  </button>
+                ) : null}
+                <button
+                  ref={onStartConversation ? undefined : primaryRef}
+                  type="button"
+                  onClick={onViewMutual ?? onClose}
+                  className={`inline-flex w-full items-center justify-center rounded-2xl px-6 py-3.5 text-base font-semibold transition ${
+                    onStartConversation
+                      ? 'border border-[#0B2D5C]/20 bg-white text-[#0B2D5C] hover:bg-[#F8F6F2]'
+                      : 'bg-[#0B2D5C] text-white hover:bg-[#0A2540]'
+                  }`}
+                >
+                  View Mutual Connections
+                </button>
+              </>
             ) : (
               <>
                 <button
@@ -165,7 +185,7 @@ export default function AcceptChatDrawer({
                   onClick={onConfirm}
                   className="inline-flex w-full items-center justify-center rounded-2xl bg-[#0B2D5C] px-6 py-3.5 text-base font-semibold text-white transition hover:bg-[#0A2540]"
                 >
-                  Open Conversation
+                  Accept &amp; Connect
                 </button>
                 <button
                   type="button"

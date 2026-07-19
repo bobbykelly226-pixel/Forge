@@ -47,6 +47,8 @@ function ViewProfileLink({
 export function OpenToChatRequestCard({ profile }: { profile: IncomingOpenToChatItem }) {
   const {
     getOpenToChatStatus,
+    getConversationForPeer,
+    startMutualConversation,
     acceptOpenToChat,
     saveOpenToChatForLater,
     declineOpenToChat,
@@ -60,6 +62,7 @@ export function OpenToChatRequestCard({ profile }: { profile: IncomingOpenToChat
   const isAccepted = status === 'accepted';
   const isSavedLater = status === 'saved_later';
   const hasNote = Boolean(profile.note && profile.note.trim().length > 0);
+  const existingConversation = getConversationForPeer(profile.id);
 
   return (
     <article className={cardShell}>
@@ -94,7 +97,7 @@ export function OpenToChatRequestCard({ profile }: { profile: IncomingOpenToChat
           )}
           {isAccepted && (
             <p className="mt-3 inline-flex rounded-full bg-[#E8EEF6] px-3 py-1 text-xs font-semibold text-[#0B2D5C]">
-              Conversation opened
+              Connected
             </p>
           )}
         </div>
@@ -111,7 +114,7 @@ export function OpenToChatRequestCard({ profile }: { profile: IncomingOpenToChat
             className="inline-flex flex-1 items-center justify-center gap-2 rounded-2xl bg-[#0B2D5C] px-4 py-3 text-sm font-semibold text-white transition hover:bg-[#0A2540] sm:min-w-[10rem]"
           >
             <MessageCircle className="h-4 w-4" strokeWidth={1.75} aria-hidden="true" />
-            Open Conversation
+            Review Request
           </button>
           {!isSavedLater && (
             <button
@@ -133,8 +136,26 @@ export function OpenToChatRequestCard({ profile }: { profile: IncomingOpenToChat
         </div>
       )}
       {isAccepted && (
-        <div className="border-t border-[#0B2D5C]/08 px-5 py-4 sm:px-6 lg:px-7">
-          <ViewProfileLink profileId={profile.id} />
+        <div
+          className="flex flex-col gap-2 border-t border-[#0B2D5C]/08 px-5 py-4 sm:flex-row sm:flex-wrap sm:px-6 lg:px-7"
+          onClick={(e) => e.stopPropagation()}
+        >
+          <button
+            type="button"
+            onClick={() =>
+              startMutualConversation(
+                profile.id,
+                profile.firstName,
+                undefined,
+                'OpenToChatRequestCard'
+              )
+            }
+            className="inline-flex flex-1 items-center justify-center gap-2 rounded-2xl bg-[#0B2D5C] px-4 py-3 text-sm font-semibold text-white transition hover:bg-[#0A2540] sm:min-w-[10rem]"
+          >
+            <MessageCircle className="h-4 w-4" strokeWidth={1.75} aria-hidden="true" />
+            {existingConversation ? 'Open Conversation' : 'Start Conversation'}
+          </button>
+          <ViewProfileLink profileId={profile.id} className="w-full sm:w-auto" />
         </div>
       )}
     </article>
@@ -142,12 +163,19 @@ export function OpenToChatRequestCard({ profile }: { profile: IncomingOpenToChat
 }
 
 export function InterestReceivedCard({ profile }: { profile: IncomingInterestItem }) {
-  const { getInterestStatus, expressMutualInterest, declineInterest } = useConnectionsHub();
+  const {
+    getInterestStatus,
+    getConversationForPeer,
+    expressMutualInterest,
+    declineInterest,
+    startMutualConversation,
+  } = useConnectionsHub();
   const status = getInterestStatus(profile.id);
 
   if (status === 'declined') return null;
 
   const isMutual = status === 'mutual';
+  const existingConversation = getConversationForPeer(profile.id);
 
   return (
     <article className={cardShell}>
@@ -187,7 +215,22 @@ export function InterestReceivedCard({ profile }: { profile: IncomingInterestIte
           </div>
         )}
         {isMutual && (
-          <div className="mt-5 flex gap-2">
+          <div className="mt-5 flex flex-col gap-2 sm:flex-row sm:flex-wrap" onClick={(e) => e.stopPropagation()}>
+            <button
+              type="button"
+              onClick={() =>
+                startMutualConversation(
+                  profile.id,
+                  profile.firstName,
+                  undefined,
+                  'InterestReceivedCard'
+                )
+              }
+              className="inline-flex items-center justify-center gap-2 rounded-2xl bg-[#0B2D5C] px-4 py-3 text-sm font-semibold text-white transition hover:bg-[#0A2540]"
+            >
+              <MessageCircle className="h-4 w-4" strokeWidth={1.75} aria-hidden="true" />
+              {existingConversation ? 'Open Conversation' : 'Start Conversation'}
+            </button>
             <ViewProfileLink profileId={profile.id} />
           </div>
         )}
@@ -201,8 +244,8 @@ export function MutualConnectionCard({
 }: {
   profile: MutualConnectionItem | HubProfileCard;
 }) {
-  const { isMutualConversationReady, startMutualConversation } = useConnectionsHub();
-  const ready = isMutualConversationReady(profile.id);
+  const { getConversationForPeer, startMutualConversation } = useConnectionsHub();
+  const existingConversation = getConversationForPeer(profile.id);
   const [recognitionOpen, setRecognitionOpen] = useState(false);
   const recognizeTriggerRef = useRef<HTMLButtonElement>(null);
   const isSeed = isSeedProfileId(profile.id);
@@ -242,31 +285,34 @@ export function MutualConnectionCard({
             </>
           )}
           <p className="mt-4 text-xs text-[#8A93A0]">
-            {relativeTime ? `Connected ${relativeTime}` : 'Connected'} · Not yet messaging
+            {relativeTime ? `Connected ${relativeTime}` : 'Connected'}
           </p>
-          {ready && !isSeed && (
-            <div className="mt-4 rounded-2xl border border-[#0B2D5C]/10 bg-[#E8EEF6] px-4 py-3">
-              <p className="text-sm font-semibold text-[#0B2D5C]">Conversation Ready</p>
-              <p className="mt-1 text-xs leading-relaxed text-[#5A6575]">
-                Messaging will be available here once the communication system is connected.
-              </p>
-            </div>
-          )}
+          <div className="mt-4 rounded-2xl border border-[#0B2D5C]/10 bg-[#E8EEF6] px-4 py-3">
+            <p className="text-sm font-semibold text-[#0B2D5C]">
+              You and {profile.firstName} would both like to get to know each other.
+            </p>
+            <p className="mt-1 text-xs leading-relaxed text-[#5A6575]">
+              {existingConversation
+                ? 'Continue your conversation whenever you are ready.'
+                : 'A calm place to begin — when you are ready.'}
+            </p>
+          </div>
           <div className="mt-5 flex flex-col gap-2 sm:flex-row sm:flex-wrap" onClick={(e) => e.stopPropagation()}>
-            {isSeed ? (
-              <span className="inline-flex items-center justify-center gap-2 rounded-2xl border border-[#0B2D5C]/12 px-4 py-3 text-sm font-medium text-[#8A93A0]">
-                Start Conversation
-              </span>
-            ) : !ready ? (
-              <button
-                type="button"
-                onClick={() => startMutualConversation(profile.id, profile.firstName)}
-                className="inline-flex items-center justify-center gap-2 rounded-2xl bg-[#0B2D5C] px-4 py-3 text-sm font-semibold text-white transition hover:bg-[#0A2540]"
-              >
-                <MessageCircle className="h-4 w-4" strokeWidth={1.75} aria-hidden="true" />
-                Start Conversation
-              </button>
-            ) : null}
+            <button
+              type="button"
+              onClick={() =>
+                startMutualConversation(
+                  profile.id,
+                  profile.firstName,
+                  'connectionId' in profile ? profile.connectionId : undefined,
+                  'MutualConnectionCard'
+                )
+              }
+              className="inline-flex items-center justify-center gap-2 rounded-2xl bg-[#0B2D5C] px-4 py-3 text-sm font-semibold text-white transition hover:bg-[#0A2540]"
+            >
+              <MessageCircle className="h-4 w-4" strokeWidth={1.75} aria-hidden="true" />
+              {existingConversation ? 'Open Conversation' : 'Start Conversation'}
+            </button>
             <ViewProfileLink profileId={profile.id} />
             {recipient && (
               <button
@@ -505,7 +551,11 @@ export function ForYouOverviewCard({
   profile,
   variant,
 }: {
-  profile: HubProfileCard & { note?: string | null; relativeTime?: string };
+  profile: HubProfileCard & {
+    note?: string | null;
+    relativeTime?: string;
+    connectionId?: string;
+  };
   variant: 'open_to_chat' | 'interest' | 'mutual';
 }) {
   const {
@@ -515,7 +565,7 @@ export function ForYouOverviewCard({
     declineInterest,
     getOpenToChatStatus,
     getInterestStatus,
-    isMutualConversationReady,
+    getConversationForPeer,
   } = useConnectionsHub();
 
   if (variant === 'open_to_chat' && getOpenToChatStatus(profile.id) === 'declined') {
@@ -526,8 +576,8 @@ export function ForYouOverviewCard({
     return null;
   }
 
-  const conversationReady =
-    variant === 'mutual' && isMutualConversationReady(profile.id);
+  const existingConversation =
+    variant === 'mutual' ? getConversationForPeer(profile.id) : null;
   const incomingNote = variant === 'open_to_chat' ? profile.note ?? null : null;
   const hasIncomingNote = Boolean(incomingNote && incomingNote.trim().length > 0);
 
@@ -585,19 +635,21 @@ export function ForYouOverviewCard({
             Interested Too
           </button>
         )}
-        {variant === 'mutual' && !conversationReady && (
+        {variant === 'mutual' && (
           <button
             type="button"
-            onClick={() => startMutualConversation(profile.id, profile.firstName)}
+            onClick={() =>
+              startMutualConversation(
+                profile.id,
+                profile.firstName,
+                profile.connectionId,
+                'ForYouOverviewCard'
+              )
+            }
             className="rounded-2xl bg-[#0B2D5C] px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-[#0A2540]"
           >
-            Start Conversation
+            {existingConversation ? 'Open Conversation' : 'Start Conversation'}
           </button>
-        )}
-        {conversationReady && (
-          <span className="rounded-2xl border border-[#0B2D5C]/12 bg-[#E8EEF6] px-4 py-2.5 text-sm font-semibold text-[#0B2D5C]">
-            Conversation Ready
-          </span>
         )}
         <ViewProfileLink profileId={profile.id} />
         {variant === 'interest' && (

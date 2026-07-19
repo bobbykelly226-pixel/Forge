@@ -13,7 +13,8 @@ Authoritative documentation for the Forge Backend Foundation persistence layer.
 - Every concept helps users understand and respectfully connect with another person.
 - Prefer the existing Profile V2 / onboarding vocabulary over inventing parallel fields.
 - Private by default; public only when actively discoverable.
-- No matching, messaging, notifications, Voice, Video, Spotify, or Stripe in this foundation.
+- No matching, notifications, Voice, Video, Spotify, or Stripe in this foundation.
+- Messaging / conversations are defined in `20260719000000_conversation_experience_v1.sql` and documented in `docs/CONVERSATION_EXPERIENCE_V1.md`.
 
 ---
 
