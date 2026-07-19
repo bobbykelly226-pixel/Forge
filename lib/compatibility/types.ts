@@ -65,6 +65,10 @@ export type AlignmentExplanationItem = {
   categoryKey: CompatibilityCategoryKey;
   title: string;
   copy: string;
+  /** Signed-in user's human-readable answer for this factor (when available). */
+  viewerAnswer?: string;
+  /** Viewed profile's human-readable answer for this factor (when available). */
+  partnerAnswer?: string;
 };
 
 export type CompatibilityEngineResult = {
