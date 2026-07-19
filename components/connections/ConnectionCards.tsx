@@ -536,7 +536,11 @@ export function ForYouOverviewCard({
   profile,
   variant,
 }: {
-  profile: HubProfileCard & { note?: string | null; relativeTime?: string };
+  profile: HubProfileCard & {
+    note?: string | null;
+    relativeTime?: string;
+    connectionId?: string;
+  };
   variant: 'open_to_chat' | 'interest' | 'mutual';
 }) {
   const {
@@ -623,7 +627,7 @@ export function ForYouOverviewCard({
               startMutualConversation(
                 profile.id,
                 profile.firstName,
-                'connectionId' in profile ? profile.connectionId : undefined
+                profile.connectionId
               )
             }
             className="rounded-2xl bg-[#0B2D5C] px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-[#0A2540]"
