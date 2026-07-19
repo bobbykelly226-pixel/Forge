@@ -17,10 +17,12 @@ import {
 } from '@/components/connections/ConnectionCards';
 import ConnectionsTabs from '@/components/connections/ConnectionsTabs';
 import { useConnectionsHub } from '@/components/connections/ConnectionsHubProvider';
+import ConversationHub from '@/components/conversations/ConversationHub';
 import { resetAllSeedState } from '@/lib/seed/actions';
 
 export default function ConnectionsHubPrototype({
   loadError = null,
+  seedConnectionsInjected = false,
   showSeedReset = false,
   onResetSeedState,
 }: {
@@ -38,6 +40,8 @@ export default function ConnectionsHubPrototype({
     mutual,
     saved,
     sent,
+    conversations,
+    conversationsError,
     getOpenToChatStatus,
     getInterestStatus,
     isSavedRemoved,
@@ -198,6 +202,13 @@ export default function ConnectionsHubPrototype({
         )}
         {visibleMutual.length === 0 ? seedResetControl : null}
       </div>
+    ),
+    conversations: (
+      <ConversationHub
+        initialItems={conversations}
+        error={conversationsError}
+        seedMode={Boolean(seedConnectionsInjected)}
+      />
     ),
     saved: (
       <div className="flex flex-col gap-6">

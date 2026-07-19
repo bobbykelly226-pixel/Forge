@@ -88,6 +88,7 @@ export type ConnectionsHubData = {
     forYou: number;
     openToChat: number;
     mutual: number;
+    conversations: number;
     saved: number;
     sent: number;
   };
@@ -320,6 +321,7 @@ export async function loadConnectionsHub(): Promise<DataAccessResult<Connections
         forYou: forYouCount,
         openToChat: openToChat.length,
         mutual: mutual.length,
+        conversations: 0,
         saved: saved.length,
         sent: sent.length,
       },

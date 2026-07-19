@@ -11,6 +11,7 @@ const TAB_DEFS: { id: ConnectionsTabId; label: string }[] = [
   { id: 'forYou', label: 'For You' },
   { id: 'openToChat', label: 'Open to Chat' },
   { id: 'mutual', label: 'Mutual' },
+  { id: 'conversations', label: 'Messages' },
   { id: 'saved', label: 'Saved' },
   { id: 'sent', label: 'Sent' },
 ];

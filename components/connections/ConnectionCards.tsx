@@ -242,31 +242,33 @@ export function MutualConnectionCard({
             </>
           )}
           <p className="mt-4 text-xs text-[#8A93A0]">
-            {relativeTime ? `Connected ${relativeTime}` : 'Connected'} · Not yet messaging
+            {relativeTime ? `Connected ${relativeTime}` : 'Connected'}
           </p>
-          {ready && !isSeed && (
+          {ready ? (
             <div className="mt-4 rounded-2xl border border-[#0B2D5C]/10 bg-[#E8EEF6] px-4 py-3">
-              <p className="text-sm font-semibold text-[#0B2D5C]">Conversation Ready</p>
+              <p className="text-sm font-semibold text-[#0B2D5C]">
+                You and {profile.firstName} would both like to get to know each other.
+              </p>
               <p className="mt-1 text-xs leading-relaxed text-[#5A6575]">
-                Messaging will be available here once the communication system is connected.
+                A calm place to begin — when you are ready.
               </p>
             </div>
-          )}
+          ) : null}
           <div className="mt-5 flex flex-col gap-2 sm:flex-row sm:flex-wrap" onClick={(e) => e.stopPropagation()}>
-            {isSeed ? (
-              <span className="inline-flex items-center justify-center gap-2 rounded-2xl border border-[#0B2D5C]/12 px-4 py-3 text-sm font-medium text-[#8A93A0]">
-                Start Conversation
-              </span>
-            ) : !ready ? (
-              <button
-                type="button"
-                onClick={() => startMutualConversation(profile.id, profile.firstName)}
-                className="inline-flex items-center justify-center gap-2 rounded-2xl bg-[#0B2D5C] px-4 py-3 text-sm font-semibold text-white transition hover:bg-[#0A2540]"
-              >
-                <MessageCircle className="h-4 w-4" strokeWidth={1.75} aria-hidden="true" />
-                Start Conversation
-              </button>
-            ) : null}
+            <button
+              type="button"
+              onClick={() =>
+                startMutualConversation(
+                  profile.id,
+                  profile.firstName,
+                  'connectionId' in profile ? profile.connectionId : undefined
+                )
+              }
+              className="inline-flex items-center justify-center gap-2 rounded-2xl bg-[#0B2D5C] px-4 py-3 text-sm font-semibold text-white transition hover:bg-[#0A2540]"
+            >
+              <MessageCircle className="h-4 w-4" strokeWidth={1.75} aria-hidden="true" />
+              Start a conversation
+            </button>
             <ViewProfileLink profileId={profile.id} />
             {recipient && (
               <button

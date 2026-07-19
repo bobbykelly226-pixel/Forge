@@ -9,7 +9,9 @@ import {
   useState,
   type ReactNode,
 } from 'react';
+import { useRouter } from 'next/navigation';
 
+import { ensureConversationAction } from '@/app/actions/conversations';
 import {
   markOpenToChatEducationSeenAction,
   passOnProfileAction,
@@ -22,6 +24,7 @@ import {
 import AcceptChatDrawer from '@/components/connections/AcceptChatDrawer';
 import ActionConflictDrawer from '@/components/discovery/ActionConflictDrawer';
 import OpenToChatDrawer from '@/components/OpenToChatDrawer';
+import type { ConversationListItem } from '@/lib/conversations/types';
 import type {
   ConnectionsHubData,
   IncomingInterestItem,
@@ -34,11 +37,18 @@ import type {
   DiscoveryActionConflict,
   OpenToChatPrompt,
 } from '@/lib/discovery-actions-types';
+import { isSeedProfileId } from '@/lib/seed/access';
 
 export type OpenToChatRequestStatus = 'pending' | 'saved_later' | 'accepted' | 'declined';
 export type InterestReceivedStatus = 'pending' | 'mutual' | 'declined';
 
-export type ConnectionsTabId = 'forYou' | 'openToChat' | 'mutual' | 'saved' | 'sent';
+export type ConnectionsTabId =
+  | 'forYou'
+  | 'openToChat'
+  | 'mutual'
+  | 'conversations'
+  | 'saved'
+  | 'sent';
 
 export type SavedProfileActionState = {
   interested: boolean;
@@ -81,7 +91,13 @@ type ConnectionsHubContextValue = {
   declineOpenToChat: (profileId: string, profileName: string) => void;
   expressMutualInterest: (profileId: string, profileName: string) => void;
   declineInterest: (profileId: string, profileName: string) => void;
-  startMutualConversation: (profileId: string, profileName: string) => void;
+  startMutualConversation: (
+    profileId: string,
+    profileName: string,
+    connectionId?: string
+  ) => void;
+  conversations: ConversationListItem[];
+  conversationsError: string | null;
   removeSavedProfile: (profileId: string, profileName: string) => void;
   withdrawSentActivity: (entryId: string, profileName: string) => void;
   handleSavedInterested: (profileId: string, profileName: string) => void;
@@ -148,7 +164,8 @@ function computeTabCounts(
   openToChatStatus: Record<string, OpenToChatRequestStatus>,
   interestStatus: Record<string, InterestReceivedStatus>,
   savedRemoved: Record<string, boolean>,
-  sentWithdrawn: Record<string, boolean>
+  sentWithdrawn: Record<string, boolean>,
+  conversationCount: number
 ): ConnectionsHubData['tabCounts'] {
   const visibleOtc = openToChat.filter((item) => {
     const status = openToChatStatus[item.id] ?? (item.status === 'deferred' ? 'saved_later' : 'pending');
@@ -173,6 +190,7 @@ function computeTabCounts(
     forYou: pendingOtc.slice(0, 2).length + visibleInterest.length + mutualCount,
     openToChat: visibleOtc.length,
     mutual: mutualCount,
+    conversations: conversationCount,
     saved: savedCount,
     sent: sentCount,
   };
@@ -181,16 +199,24 @@ function computeTabCounts(
 export function ConnectionsHubProvider({
   children,
   initialData,
+  initialConversations = [],
+  conversationsError = null,
+  initialTab,
 }: {
   children: ReactNode;
   initialData: ConnectionsHubData;
+  initialConversations?: ConversationListItem[];
+  conversationsError?: string | null;
+  initialTab?: ConnectionsTabId;
 }) {
-  const [activeTab, setActiveTab] = useState<ConnectionsTabId>('forYou');
+  const router = useRouter();
+  const [activeTab, setActiveTab] = useState<ConnectionsTabId>(initialTab ?? 'forYou');
   const [openToChat, setOpenToChat] = useState(initialData.openToChat);
   const [interestReceived, setInterestReceived] = useState(initialData.interestReceived);
   const [mutual, setMutual] = useState(initialData.mutual);
   const [saved, setSaved] = useState(initialData.saved);
   const [sent, setSent] = useState(initialData.sent);
+  const [conversations, setConversations] = useState(initialConversations);
   const [educationSeen, setEducationSeen] = useState(initialData.educationSeen);
   const [openToChatStatus, setOpenToChatStatus] = useState(() =>
     buildInitialOtcStatus(initialData.openToChat)
@@ -484,11 +510,69 @@ export function ConnectionsHubProvider({
   );
 
   const startMutualConversation = useCallback(
-    (profileId: string, profileName: string) => {
+    async (profileId: string, profileName: string, connectionId?: string) => {
       setMutualConversationReady((prev) => ({ ...prev, [profileId]: true }));
-      announce(`You're connected with ${profileName}.`, 'Messaging is coming later.');
+
+      if (isSeedProfileId(profileId)) {
+        const seedConversationId = `seed-conversation-${profileId}`;
+        announce(`You and ${profileName} can begin a conversation.`);
+        router.push(`/connections/c/${seedConversationId}`);
+        return;
+      }
+
+      const resolvedConnectionId =
+        connectionId ??
+        mutual.find((item) => item.id === profileId)?.connectionId ??
+        null;
+
+      if (!resolvedConnectionId) {
+        announce('Could not open this conversation yet.', 'Please try again from Mutual.');
+        return;
+      }
+
+      if (pending) return;
+      setPending(true);
+      const result = await ensureConversationAction(resolvedConnectionId);
+      setPending(false);
+
+      if (!result.success) {
+        announce(result.message);
+        return;
+      }
+      if (!result.data) {
+        announce('Could not open this conversation.');
+        return;
+      }
+
+      const conversationId = result.data.conversationId;
+      setConversations((prev) => {
+        if (prev.some((item) => item.conversationId === conversationId)) {
+          return prev;
+        }
+        return [
+          {
+            conversationId,
+            connectionId: resolvedConnectionId,
+            status: 'active' as const,
+            createdAt: new Date().toISOString(),
+            lastMessageAt: null,
+            peerUserId: profileId,
+            peerFirstName: profileName,
+            peerAge: mutual.find((item) => item.id === profileId)?.age ?? null,
+            peerPhotoUrl: mutual.find((item) => item.id === profileId)?.photoUrl ?? null,
+            latestMessageBody: null,
+            latestMessageAt: null,
+            latestMessageSenderId: null,
+            unread: false,
+          },
+          ...prev,
+        ];
+      });
+
+      announce(`You and ${profileName} can begin a conversation.`);
+      router.push(`/connections/c/${result.data.conversationId}`);
     },
-    [announce]
+    [announce, mutual, pending, router]
   );
 
   const removeSavedProfile = useCallback(
@@ -713,7 +797,8 @@ export function ConnectionsHubProvider({
         openToChatStatus,
         interestStatus,
         savedRemoved,
-        sentWithdrawn
+        sentWithdrawn,
+        conversations.length
       ),
     [
       openToChat,
@@ -725,6 +810,7 @@ export function ConnectionsHubProvider({
       interestStatus,
       savedRemoved,
       sentWithdrawn,
+      conversations.length,
     ]
   );
 
@@ -761,7 +847,11 @@ export function ConnectionsHubProvider({
       declineInterest: (profileId, profileName) => {
         void declineInterest(profileId, profileName);
       },
-      startMutualConversation,
+      startMutualConversation: (profileId, profileName, connectionId) => {
+        void startMutualConversation(profileId, profileName, connectionId);
+      },
+      conversations,
+      conversationsError,
       removeSavedProfile: (profileId, profileName) => {
         void removeSavedProfile(profileId, profileName);
       },
@@ -786,6 +876,8 @@ export function ConnectionsHubProvider({
       mutual,
       saved,
       sent,
+      conversations,
+      conversationsError,
       getOpenToChatStatus,
       getInterestStatus,
       isMutualConversationReady,

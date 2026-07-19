@@ -30,6 +30,7 @@ export function injectSeedConnections(data: ConnectionsHubData): ConnectionsHubD
     tabCounts: {
       ...data.tabCounts,
       mutual: mutual.length,
+      conversations: data.tabCounts.conversations ?? 0,
     },
   };
 }
