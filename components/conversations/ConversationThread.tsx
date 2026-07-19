@@ -18,6 +18,10 @@ import {
 import ConversationSafetyMenu from '@/components/conversations/ConversationSafetyMenu';
 import ConversationStarters from '@/components/conversations/ConversationStarters';
 import { partnerSaidLabel, viewerSaidLabel } from '@/lib/compatibility/answer-labels';
+import {
+  normalizeComposerOutboundText,
+  shouldSubmitComposerOnKeyDown,
+} from '@/lib/conversations/composer';
 import { MESSAGE_MAX_LENGTH } from '@/lib/conversations/constants';
 import { formatConversationTimestamp } from '@/lib/conversations/format';
 import type {
@@ -165,21 +169,22 @@ export default function ConversationThread({
   };
 
   const sendMessage = async (body: string, existingClientMessageId?: string) => {
-    const trimmed = body.trim();
-    if (!trimmed || sending || composerDisabled) return;
+    const outbound = normalizeComposerOutboundText(body);
+    if (!outbound || sending || composerDisabled) return false;
 
     const clientMessageId = existingClientMessageId ?? createClientMessageId();
     const optimisticMessage: ConversationMessage = {
       id: `optimistic-${clientMessageId}`,
       conversationId: meta.conversationId,
       senderId: viewerUserId,
-      body: trimmed,
+      body: outbound,
       clientMessageId,
       createdAt: new Date().toISOString(),
       localStatus: 'pending',
     };
 
     setSending(true);
+    setComposerText('');
     setMessages((current) => mergeMessages(current, [optimisticMessage]));
 
     try {
@@ -196,12 +201,12 @@ export default function ConversationThread({
           )
         );
         setLiveMessage('Message sent.');
-        return;
+        return true;
       }
 
       const result = await sendConversationMessageAction({
         conversationId: meta.conversationId,
-        body: trimmed,
+        body: outbound,
         clientMessageId,
       });
 
@@ -214,7 +219,7 @@ export default function ConversationThread({
           )
         );
         setLiveMessage(result.message ?? 'Message could not be sent.');
-        return;
+        return false;
       }
       if (!result.data) {
         setMessages((current) =>
@@ -225,7 +230,7 @@ export default function ConversationThread({
           )
         );
         setLiveMessage('Message could not be sent.');
-        return;
+        return false;
       }
 
       setMessages((current) =>
@@ -234,6 +239,7 @@ export default function ConversationThread({
         )
       );
       setLiveMessage('Message sent.');
+      return true;
     } catch {
       setMessages((current) =>
         current.map((message) =>
@@ -243,24 +249,22 @@ export default function ConversationThread({
         )
       );
       setLiveMessage('Message could not be sent.');
+      return false;
     } finally {
       setSending(false);
     }
   };
 
   const handleComposerKeyDown = (event: ReactKeyboardEvent<HTMLTextAreaElement>) => {
-    if (event.key === 'Enter' && !event.shiftKey) {
-      event.preventDefault();
-      const text = composerText;
-      setComposerText('');
-      void sendMessage(text);
+    if (!shouldSubmitComposerOnKeyDown(event)) {
+      return;
     }
+    event.preventDefault();
+    void sendMessage(composerText);
   };
 
   const handleSendClick = () => {
-    const text = composerText;
-    setComposerText('');
-    void sendMessage(text);
+    void sendMessage(composerText);
   };
 
   const handleStarterSelect = (text: string) => {
@@ -525,6 +529,12 @@ export default function ConversationThread({
               onKeyDown={handleComposerKeyDown}
               disabled={composerDisabled}
               rows={2}
+              spellCheck={true}
+              autoCorrect="on"
+              autoCapitalize="sentences"
+              autoComplete="off"
+              inputMode="text"
+              enterKeyHint="send"
               placeholder={
                 threadStatus === 'ended'
                   ? 'Messaging is closed for this connection.'

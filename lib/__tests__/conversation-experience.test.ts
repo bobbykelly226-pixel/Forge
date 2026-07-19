@@ -4,6 +4,10 @@ import { join } from 'node:path';
 import { describe, it } from 'node:test';
 
 import { partnerSaidLabel, viewerSaidLabel } from '@/lib/compatibility/answer-labels';
+import {
+  normalizeComposerOutboundText,
+  shouldSubmitComposerOnKeyDown,
+} from '@/lib/conversations/composer';
 import { buildConversationStarters } from '@/lib/conversations/starters';
 import {
   buildSeedConversationList,
@@ -149,5 +153,71 @@ describe('safety controls are present', () => {
     assert.match(menu, /Block/);
     assert.match(menu, /Report/);
     assert.match(menu, /endConnectionAction|blockUserAction|reportUserAction/);
+  });
+});
+
+describe('message composer polish', () => {
+  it('enables native writing assistance on the message textarea', () => {
+    const thread = read('components/conversations/ConversationThread.tsx');
+    assert.match(thread, /<textarea[\s\S]*spellCheck=\{true\}/);
+    assert.match(thread, /autoCorrect="on"/);
+    assert.match(thread, /autoCapitalize="sentences"/);
+    assert.match(thread, /inputMode="text"/);
+    assert.match(thread, /shouldSubmitComposerOnKeyDown/);
+    assert.match(thread, /normalizeComposerOutboundText/);
+  });
+
+  it('sends on Enter and keeps Shift+Enter as a newline', () => {
+    assert.equal(
+      shouldSubmitComposerOnKeyDown({ key: 'Enter', shiftKey: false }),
+      true
+    );
+    assert.equal(
+      shouldSubmitComposerOnKeyDown({ key: 'Enter', shiftKey: true }),
+      false
+    );
+    assert.equal(
+      shouldSubmitComposerOnKeyDown({ key: 'a', shiftKey: false }),
+      false
+    );
+  });
+
+  it('does not submit during IME / predictive composition', () => {
+    assert.equal(
+      shouldSubmitComposerOnKeyDown({
+        key: 'Enter',
+        shiftKey: false,
+        isComposing: true,
+      }),
+      false
+    );
+    assert.equal(
+      shouldSubmitComposerOnKeyDown({
+        key: 'Enter',
+        shiftKey: false,
+        nativeEvent: { isComposing: true },
+      }),
+      false
+    );
+    assert.equal(
+      shouldSubmitComposerOnKeyDown({
+        key: 'Enter',
+        shiftKey: false,
+        nativeEvent: { keyCode: 229 },
+      }),
+      false
+    );
+  });
+
+  it('trims whitespace-only messages and preserves non-empty content', () => {
+    assert.equal(normalizeComposerOutboundText('   '), null);
+    assert.equal(normalizeComposerOutboundText('\n\t'), null);
+    assert.equal(normalizeComposerOutboundText(''), null);
+    assert.equal(normalizeComposerOutboundText('  Hello Amanda  '), 'Hello Amanda');
+    // Internal spacing and spelling are not rewritten by Forge.
+    assert.equal(
+      normalizeComposerOutboundText('I apreciate your note.'),
+      'I apreciate your note.'
+    );
   });
 });
