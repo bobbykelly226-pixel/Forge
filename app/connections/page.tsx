@@ -111,8 +111,14 @@ export default async function ConnectionsHubPage({
     ? null
     : conversationsResult.message;
 
+  // Seed fixtures may append for QA, but must never hide real production conversations.
   if (seedConnectionsInjected) {
-    conversations = buildSeedConversationList();
+    const seedConversations = buildSeedConversationList();
+    const realIds = new Set(conversations.map((item) => item.conversationId));
+    conversations = [
+      ...conversations,
+      ...seedConversations.filter((item) => !realIds.has(item.conversationId)),
+    ];
   }
 
   initialData = {

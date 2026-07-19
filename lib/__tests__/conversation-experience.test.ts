@@ -8,7 +8,13 @@ import {
   normalizeComposerOutboundText,
   shouldSubmitComposerOnKeyDown,
 } from '@/lib/conversations/composer';
+import {
+  connectionIdFromRpcData,
+  findConversationForPeer,
+  isPersistedConnectionId,
+} from '@/lib/conversations/resolve';
 import { buildConversationStarters } from '@/lib/conversations/starters';
+import type { ConversationListItem } from '@/lib/conversations/types';
 import {
   buildSeedConversationList,
   buildSeedMessages,
@@ -27,13 +33,17 @@ describe('conversation experience routes and wiring', () => {
     const page = read('app/connections/page.tsx');
     const thread = read('app/connections/c/[conversationId]/page.tsx');
     const nav = read('components/ForgeAppBottomNav.tsx');
+    const desktopNav = read('components/ForgeDesktopAppNav.tsx');
 
     assert.match(tabs, /conversations/);
     assert.match(tabs, /Messages/);
     assert.match(page, /tab=conversations|initialTab|listMyConversationsAction/);
     assert.match(thread, /ConversationThread/);
+    assert.match(thread, /markConversationReadAction/);
     assert.match(nav, /\/connections\?tab=conversations/);
+    assert.match(desktopNav, /\/connections\?tab=conversations/);
     assert.doesNotMatch(nav, /#messages/);
+    assert.doesNotMatch(desktopNav, /#messages/);
   });
 
   it('migration defines conversations, participants, messages, reports, and RPCs', () => {
@@ -221,3 +231,102 @@ describe('message composer polish', () => {
     );
   });
 });
+
+describe('navigation and mutual conversation integration', () => {
+  it('Mutual cards show Start Conversation when no conversation exists', () => {
+    const cards = read('components/connections/ConnectionCards.tsx');
+    assert.match(cards, /existingConversation \? 'Open Conversation' : 'Start Conversation'/);
+    assert.doesNotMatch(cards, /Conversation Ready/);
+    assert.doesNotMatch(cards, /Messaging is coming later/i);
+    assert.doesNotMatch(cards, /messaging will be available later/i);
+  });
+
+  it('either participant can start or open via ensure_conversation_for_connection', () => {
+    const provider = read('components/connections/ConnectionsHubProvider.tsx');
+    assert.match(provider, /ensureConversationAction/);
+    assert.match(provider, /findConversationForPeer/);
+    assert.match(provider, /isPersistedConnectionId/);
+    assert.match(provider, /connectionIdFromRpcData/);
+    assert.doesNotMatch(provider, /Messaging is coming later/);
+    assert.doesNotMatch(provider, /local-\$\{requestId\}/);
+    assert.doesNotMatch(provider, /local-interest-/);
+  });
+
+  it('existing conversation is reused and not duplicated in the hub client', () => {
+    const existing: ConversationListItem = {
+      conversationId: 'conv-1',
+      connectionId: 'conn-1',
+      status: 'active',
+      createdAt: '2026-07-01T00:00:00.000Z',
+      lastMessageAt: null,
+      peerUserId: 'user-b',
+      peerFirstName: 'Lisa',
+      peerAge: 34,
+      peerPhotoUrl: null,
+      latestMessageBody: 'Hello',
+      latestMessageAt: '2026-07-01T01:00:00.000Z',
+      latestMessageSenderId: 'user-a',
+      unread: true,
+    };
+    assert.equal(findConversationForPeer([existing], 'user-b')?.conversationId, 'conv-1');
+    assert.equal(findConversationForPeer([existing], 'user-c'), null);
+    assert.equal(isPersistedConnectionId('conn-1'), true);
+    assert.equal(isPersistedConnectionId('local-abc'), false);
+    assert.equal(isPersistedConnectionId('seed-connection-1'), false);
+    assert.equal(
+      connectionIdFromRpcData({ ok: true, connection_id: 'conn-99' }),
+      'conn-99'
+    );
+    assert.equal(connectionIdFromRpcData({ ok: true, connection_id: 'local-x' }), null);
+  });
+
+  it('placeholder messaging copy is absent from the real Mutual / accept flow', () => {
+    const accept = read('components/connections/AcceptChatDrawer.tsx');
+    const provider = read('components/connections/ConnectionsHubProvider.tsx');
+    const profileView = read('components/discovery/DiscoveryProfileView.tsx');
+    const cta = read('components/discovery/DiscoveryProfileConversationCta.tsx');
+
+    assert.doesNotMatch(accept, /Messaging is coming later/i);
+    assert.doesNotMatch(accept, /coming soon/i);
+    assert.match(accept, /Start Conversation/);
+    assert.match(accept, /View Mutual Connections/);
+    assert.doesNotMatch(provider, /Messaging is coming later/i);
+    assert.doesNotMatch(profileView, /Conversation tools will appear/i);
+    assert.match(cta, /ensureConversationAction/);
+    assert.match(cta, /Start Conversation|Open Conversation/);
+  });
+
+  it('Messages nav opens the conversations hub route', () => {
+    const bottom = read('components/ForgeAppBottomNav.tsx');
+    const desktop = read('components/ForgeDesktopAppNav.tsx');
+    assert.match(bottom, /id: 'messages'[\s\S]*href: '\/connections\?tab=conversations'/);
+    assert.match(desktop, /id: 'messages'[\s\S]*href: '\/connections\?tab=conversations'/);
+  });
+
+  it('Conversation Hub displays received conversation fields including unread', () => {
+    const hub = read('components/conversations/ConversationHub.tsx');
+    assert.match(hub, /peerFirstName/);
+    assert.match(hub, /peerPhotoUrl/);
+    assert.match(hub, /latestMessageBody/);
+    assert.match(hub, /formatConversationTimestamp/);
+    assert.match(hub, /item\.unread/);
+    assert.match(hub, /Connection ended/);
+    assert.match(hub, /\/connections\/c\/\$\{item\.conversationId\}/);
+  });
+
+  it('opening the thread marks the conversation read', () => {
+    const threadPage = read('app/connections/c/[conversationId]/page.tsx');
+    assert.match(threadPage, /markConversationReadAction/);
+  });
+
+  it('seed injection does not replace real production conversations', () => {
+    const page = read('app/connections/page.tsx');
+    assert.match(page, /must never hide real production conversations/);
+    assert.match(page, /seedConversations\.filter/);
+    assert.doesNotMatch(
+      page,
+      /if \(seedConnectionsInjected\) \{\s*conversations = buildSeedConversationList\(\);\s*\}/
+    );
+  });
+});
+

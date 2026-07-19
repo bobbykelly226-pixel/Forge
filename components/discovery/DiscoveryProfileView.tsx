@@ -3,6 +3,7 @@
 import Link from 'next/link';
 
 import DiscoveryActionTiles from '@/components/discovery/DiscoveryActionTiles';
+import DiscoveryProfileConversationCta from '@/components/discovery/DiscoveryProfileConversationCta';
 import { useDiscoveryActions } from '@/components/discovery/DiscoveryActionsProvider';
 import PublicProfilePresentation, {
   PublicProfileBackLink,
@@ -22,11 +23,17 @@ type Props = {
   profile: PublicDiscoveryProfile;
   /** Live engine presentation from the server; seed profiles compute locally. */
   alignmentPresentation?: SeedProfileAlignmentPresentation | null;
+  /** Active mutual connection id when the viewer is already connected. */
+  mutualConnectionId?: string | null;
+  /** Existing conversation id for this peer when one already exists. */
+  existingConversationId?: string | null;
 };
 
 export default function DiscoveryProfileView({
   profile,
   alignmentPresentation: liveAlignmentPresentation = null,
+  mutualConnectionId = null,
+  existingConversationId = null,
 }: Props) {
   const profileId = profile.id;
   const firstName = firstNameFromFullName(profile.full_name);
@@ -34,7 +41,8 @@ export default function DiscoveryProfileView({
   const passed = isPassed(profileId);
   const seedProfile = isSeedProfileId(profileId) ? getSeedProfileById(profileId) : undefined;
   const isSeed = Boolean(seedProfile);
-  const isMutualConnection = seedProfile?.isMutualConnection === true;
+  const isSeedMutual = seedProfile?.isMutualConnection === true;
+  const isMutualConnection = isSeedMutual || Boolean(mutualConnectionId);
 
   const alignmentPresentation = seedProfile
     ? toSeedAlignmentPresentation(seedProfile)
@@ -74,7 +82,7 @@ export default function DiscoveryProfileView({
     );
   }
 
-  const backHref = isMutualConnection ? '/connections' : '/discovery';
+  const backHref = isMutualConnection ? '/connections?tab=mutual' : '/discovery';
   const backLabel = isMutualConnection ? '← Back to Connections' : '← Back to Discovery';
 
   return (
@@ -92,11 +100,13 @@ export default function DiscoveryProfileView({
         }
         footer={
           isMutualConnection ? (
-            <div className="rounded-[1.75rem] border border-[#0B2D5C]/08 bg-white/80 px-5 py-4">
-              <p className="text-sm leading-relaxed text-[#5A6575]">
-                Conversation tools will appear as Forge messaging rolls out.
-              </p>
-            </div>
+            <DiscoveryProfileConversationCta
+              profileId={profileId}
+              firstName={firstName}
+              connectionId={mutualConnectionId}
+              existingConversationId={existingConversationId}
+              isSeed={isSeedMutual}
+            />
           ) : (
             <DiscoveryActionTiles
               profileId={profileId}

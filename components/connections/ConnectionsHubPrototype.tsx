@@ -279,7 +279,9 @@ export default function ConnectionsHubPrototype({
               Review conversations, mutual interest, and profiles you chose to revisit.
             </p>
 
-            <ForgeDesktopAppNav active="connections" />
+            <ForgeDesktopAppNav
+              active={activeTab === 'conversations' ? 'messages' : 'connections'}
+            />
 
             <div className="mt-8 border-t border-[#0B2D5C]/08 pt-6">
               <p className="mb-3 text-[11px] font-semibold uppercase tracking-[0.16em] text-[#D62828]">
@@ -361,7 +363,9 @@ export default function ConnectionsHubPrototype({
         </div>
       </ForgeAuthenticatedTwoColumnShell>
 
-      <ForgeAppBottomNav active="connections" />
+      <ForgeAppBottomNav
+        active={activeTab === 'conversations' ? 'messages' : 'connections'}
+      />
     </>
   );
 }

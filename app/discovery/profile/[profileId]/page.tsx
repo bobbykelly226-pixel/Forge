@@ -2,6 +2,7 @@ import { Fraunces, Manrope } from 'next/font/google';
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
 
+import { listMyConversationsAction } from '@/app/actions/conversations';
 import { fetchDiscoveryProfileAction } from '@/app/actions/discovery';
 import { getOpenToChatEducationSeenAction } from '@/app/actions/relationships';
 import ForgeAppCanvas from '@/components/ForgeAppCanvas';
@@ -13,6 +14,8 @@ import {
   toAlignmentPresentation,
 } from '@/lib/compatibility';
 import { loadViewerCompatibilityPerson } from '@/lib/compatibility/load-viewer';
+import { findConversationForPeer } from '@/lib/conversations/resolve';
+import { getActiveConnectionIdWithPeer } from '@/lib/data/active-connection';
 import { createEmptyActionState } from '@/lib/discovery-actions-types';
 import { isSeedProfileId } from '@/lib/seed/access';
 import { createClient } from '@/lib/supabase/server';
@@ -123,14 +126,28 @@ export default async function DiscoveryProfilePage({
     : {};
 
   let liveAlignmentPresentation = null;
+  let mutualConnectionId: string | null = null;
+  let existingConversationId: string | null = null;
+
   if (!isSeedProfileId(profileId)) {
-    const viewer = await loadViewerCompatibilityPerson();
+    const [viewer, connectionResult, conversationsResult] = await Promise.all([
+      loadViewerCompatibilityPerson(),
+      getActiveConnectionIdWithPeer(profileId),
+      listMyConversationsAction(),
+    ]);
     if (viewer.success) {
       const engineResult = evaluateCompatibility(
         viewer.person,
         personFromPublicDiscoveryProfile(result.profile)
       );
       liveAlignmentPresentation = toAlignmentPresentation(engineResult);
+    }
+    if (connectionResult.success) {
+      mutualConnectionId = connectionResult.data ?? null;
+    }
+    if (conversationsResult.success && conversationsResult.data) {
+      existingConversationId =
+        findConversationForPeer(conversationsResult.data, profileId)?.conversationId ?? null;
     }
   }
 
@@ -148,6 +165,8 @@ export default async function DiscoveryProfilePage({
         <DiscoveryProfileView
           profile={result.profile}
           alignmentPresentation={liveAlignmentPresentation}
+          mutualConnectionId={mutualConnectionId}
+          existingConversationId={existingConversationId}
         />
       </DiscoveryActionsProvider>
     </ForgeAppCanvas>

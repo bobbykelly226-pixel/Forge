@@ -28,17 +28,16 @@
 | Save / Pass | RPCs `save_profile_for_later`, `remove_saved_profile`, `pass_on_profile` |
 | Mutual surfaces | Active rows in `connections` loaded into Mutual tab |
 
-### Messaging today
+### Messaging (Conversation Experience V1 — integrated)
 
 | Item | Status |
 |------|--------|
-| `messages` / `conversations` tables | **Do not exist** |
-| Chat routes | **None** |
-| `startMutualConversation` | Client stub; toast “Messaging is coming later.” |
-| Bottom nav Messages | Placeholder `#messages` |
-| Unmatch / report UI | **None** |
-| `user_blocks` | Schema + RPC checks exist; **no product UI** |
-| `connection_status = ended` | Enum exists; **no end flow** |
+| `messages` / `conversations` tables | Migration `20260719000000_conversation_experience_v1.sql` |
+| Chat routes | `/connections?tab=conversations`, `/connections/c/[conversationId]` |
+| `startMutualConversation` | Calls `ensure_conversation_for_connection`, opens thread |
+| Bottom + desktop nav Messages | `/connections?tab=conversations` |
+| End / block / report | Conversation safety menu + RPCs |
+| One conversation per connection | Unique constraint + ensure RPC reuse |
 
 ### Reuse (do not duplicate)
 
