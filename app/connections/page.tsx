@@ -146,6 +146,7 @@ export default async function ConnectionsHubPage({
         initialConversations={conversations}
         conversationsError={conversationsError}
         initialTab={initialTab}
+        viewerUserId={user.id}
       >
         <ConnectionsHubPrototype
           loadError={loadError}

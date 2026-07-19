@@ -27,8 +27,11 @@ import OpenToChatDrawer from '@/components/OpenToChatDrawer';
 import {
   connectionIdFromRpcData,
   findConversationForPeer,
-  isPersistedConnectionId,
 } from '@/lib/conversations/resolve';
+import {
+  logStartMutualConversationTrace,
+  planStartMutualConversation,
+} from '@/lib/conversations/start-mutual-conversation';
 import type { ConversationListItem } from '@/lib/conversations/types';
 import type {
   ConnectionsHubData,
@@ -100,7 +103,8 @@ type ConnectionsHubContextValue = {
   startMutualConversation: (
     profileId: string,
     profileName: string,
-    connectionId?: string
+    connectionId?: string,
+    componentName?: string
   ) => void;
   conversations: ConversationListItem[];
   conversationsError: string | null;
@@ -208,12 +212,15 @@ export function ConnectionsHubProvider({
   initialConversations = [],
   conversationsError = null,
   initialTab,
+  viewerUserId = null,
 }: {
   children: ReactNode;
   initialData: ConnectionsHubData;
   initialConversations?: ConversationListItem[];
   conversationsError?: string | null;
   initialTab?: ConnectionsTabId;
+  /** Signed-in user id for temporary Start Conversation QA logging. */
+  viewerUserId?: string | null;
 }) {
   const router = useRouter();
   const [activeTab, setActiveTab] = useState<ConnectionsTabId>(initialTab ?? 'forYou');
@@ -536,52 +543,109 @@ export function ConnectionsHubProvider({
   );
 
   const startMutualConversation = useCallback(
-    async (profileId: string, profileName: string, connectionId?: string) => {
-      if (isSeedProfileId(profileId)) {
-        const seedConversationId = `seed-conversation-${profileId}`;
-        announce(`You and ${profileName} can begin a conversation.`);
-        router.push(`/connections/c/${seedConversationId}`);
-        return;
-      }
-
+    async (
+      profileId: string,
+      profileName: string,
+      connectionId?: string,
+      componentName = 'ConnectionsHubProvider'
+    ) => {
+      const mutualItem = mutual.find((item) => item.id === profileId);
       const existing = findConversationForPeer(conversations, profileId);
-      if (existing) {
-        router.push(`/connections/c/${existing.conversationId}`);
+      const plan = planStartMutualConversation({
+        componentName,
+        currentUserId: viewerUserId,
+        peerUserId: profileId,
+        peerFirstName: profileName,
+        connectionId,
+        mutualConnectionId: mutualItem?.connectionId ?? null,
+        existingConversationId: existing?.conversationId ?? null,
+        isSeedPeer: isSeedProfileId(profileId),
+      });
+
+      logStartMutualConversationTrace({
+        componentName,
+        connection_id:
+          plan.action === 'ensure'
+            ? plan.connectionId
+            : plan.action === 'navigate_existing' || plan.action === 'blocked'
+              ? plan.connectionId
+              : connectionId ?? mutualItem?.connectionId ?? null,
+        current_user_id: viewerUserId,
+        peer_user_id: profileId,
+        handler: plan.handler,
+        rpc: plan.rpc,
+        plan_action: plan.action,
+        conversation_id:
+          plan.action === 'navigate_seed' || plan.action === 'navigate_existing'
+            ? plan.conversationId
+            : null,
+      });
+
+      if (plan.action === 'navigate_seed') {
+        announce(`You and ${profileName} can begin a conversation.`);
+        router.push(`/connections/c/${plan.conversationId}`);
         return;
       }
 
-      const candidateConnectionId =
-        connectionId ??
-        mutual.find((item) => item.id === profileId)?.connectionId ??
-        null;
-      const resolvedConnectionId = isPersistedConnectionId(candidateConnectionId)
-        ? candidateConnectionId
-        : null;
+      if (plan.action === 'navigate_existing') {
+        router.push(`/connections/c/${plan.conversationId}`);
+        return;
+      }
 
-      if (!resolvedConnectionId) {
-        announce(
-          'Could not open this conversation yet.',
-          'Open Mutual Connections and try again.'
-        );
+      if (plan.action === 'blocked') {
+        announce(plan.reason, plan.detail);
         setActiveTab('mutual');
         return;
       }
 
       if (pending) return;
       setPending(true);
-      const result = await ensureConversationAction(resolvedConnectionId);
+      const result = await ensureConversationAction(plan.connectionId);
       setPending(false);
 
       if (!result.success) {
+        logStartMutualConversationTrace({
+          componentName,
+          connection_id: plan.connectionId,
+          current_user_id: viewerUserId,
+          peer_user_id: profileId,
+          handler: plan.handler,
+          rpc: plan.rpc,
+          plan_action: plan.action,
+          conversation_id: null,
+          error: result.message,
+        });
         announce(result.message);
         return;
       }
       if (!result.data) {
+        logStartMutualConversationTrace({
+          componentName,
+          connection_id: plan.connectionId,
+          current_user_id: viewerUserId,
+          peer_user_id: profileId,
+          handler: plan.handler,
+          rpc: plan.rpc,
+          plan_action: plan.action,
+          conversation_id: null,
+          error: 'empty_ensure_response',
+        });
         announce('Could not open this conversation.');
         return;
       }
 
       const conversationId = result.data.conversationId;
+      logStartMutualConversationTrace({
+        componentName,
+        connection_id: plan.connectionId,
+        current_user_id: viewerUserId,
+        peer_user_id: profileId,
+        handler: plan.handler,
+        rpc: plan.rpc,
+        plan_action: plan.action,
+        conversation_id: conversationId,
+      });
+
       setConversations((prev) => {
         if (prev.some((item) => item.conversationId === conversationId)) {
           return prev;
@@ -589,14 +653,14 @@ export function ConnectionsHubProvider({
         return [
           {
             conversationId,
-            connectionId: resolvedConnectionId,
+            connectionId: plan.connectionId,
             status: 'active' as const,
             createdAt: new Date().toISOString(),
             lastMessageAt: null,
             peerUserId: profileId,
             peerFirstName: profileName,
-            peerAge: mutual.find((item) => item.id === profileId)?.age ?? null,
-            peerPhotoUrl: mutual.find((item) => item.id === profileId)?.photoUrl ?? null,
+            peerAge: mutualItem?.age ?? null,
+            peerPhotoUrl: mutualItem?.photoUrl ?? null,
             latestMessageBody: null,
             latestMessageAt: null,
             latestMessageSenderId: null,
@@ -613,14 +677,19 @@ export function ConnectionsHubProvider({
       );
       router.push(`/connections/c/${conversationId}`);
     },
-    [announce, conversations, mutual, pending, router]
+    [announce, conversations, mutual, pending, router, viewerUserId]
   );
 
   const startConversationFromAcceptDrawer = useCallback(() => {
     if (!acceptDrawer) return;
     const { profileId, profileName, connectionId } = acceptDrawer;
     setAcceptDrawer(null);
-    void startMutualConversation(profileId, profileName, connectionId ?? undefined);
+    void startMutualConversation(
+      profileId,
+      profileName,
+      connectionId ?? undefined,
+      'AcceptChatDrawer'
+    );
   }, [acceptDrawer, startMutualConversation]);
 
   const removeSavedProfile = useCallback(
@@ -895,8 +964,13 @@ export function ConnectionsHubProvider({
       declineInterest: (profileId, profileName) => {
         void declineInterest(profileId, profileName);
       },
-      startMutualConversation: (profileId, profileName, connectionId) => {
-        void startMutualConversation(profileId, profileName, connectionId);
+      startMutualConversation: (profileId, profileName, connectionId, componentName) => {
+        void startMutualConversation(
+          profileId,
+          profileName,
+          connectionId,
+          componentName
+        );
       },
       conversations,
       conversationsError,

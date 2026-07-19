@@ -239,13 +239,18 @@ describe('navigation and mutual conversation integration', () => {
     assert.doesNotMatch(cards, /Conversation Ready/);
     assert.doesNotMatch(cards, /Messaging is coming later/i);
     assert.doesNotMatch(cards, /messaging will be available later/i);
+    assert.doesNotMatch(
+      cards,
+      /Messaging will be available here once the communication system is connected/
+    );
+    assert.doesNotMatch(cards, /Not yet messaging/);
   });
 
   it('either participant can start or open via ensure_conversation_for_connection', () => {
     const provider = read('components/connections/ConnectionsHubProvider.tsx');
     assert.match(provider, /ensureConversationAction/);
     assert.match(provider, /findConversationForPeer/);
-    assert.match(provider, /isPersistedConnectionId/);
+    assert.match(provider, /planStartMutualConversation/);
     assert.match(provider, /connectionIdFromRpcData/);
     assert.doesNotMatch(provider, /Messaging is coming later/);
     assert.doesNotMatch(provider, /local-\$\{requestId\}/);

@@ -142,7 +142,14 @@ export function OpenToChatRequestCard({ profile }: { profile: IncomingOpenToChat
         >
           <button
             type="button"
-            onClick={() => startMutualConversation(profile.id, profile.firstName)}
+            onClick={() =>
+              startMutualConversation(
+                profile.id,
+                profile.firstName,
+                undefined,
+                'OpenToChatRequestCard'
+              )
+            }
             className="inline-flex flex-1 items-center justify-center gap-2 rounded-2xl bg-[#0B2D5C] px-4 py-3 text-sm font-semibold text-white transition hover:bg-[#0A2540] sm:min-w-[10rem]"
           >
             <MessageCircle className="h-4 w-4" strokeWidth={1.75} aria-hidden="true" />
@@ -211,7 +218,14 @@ export function InterestReceivedCard({ profile }: { profile: IncomingInterestIte
           <div className="mt-5 flex flex-col gap-2 sm:flex-row sm:flex-wrap" onClick={(e) => e.stopPropagation()}>
             <button
               type="button"
-              onClick={() => startMutualConversation(profile.id, profile.firstName)}
+              onClick={() =>
+                startMutualConversation(
+                  profile.id,
+                  profile.firstName,
+                  undefined,
+                  'InterestReceivedCard'
+                )
+              }
               className="inline-flex items-center justify-center gap-2 rounded-2xl bg-[#0B2D5C] px-4 py-3 text-sm font-semibold text-white transition hover:bg-[#0A2540]"
             >
               <MessageCircle className="h-4 w-4" strokeWidth={1.75} aria-hidden="true" />
@@ -290,7 +304,8 @@ export function MutualConnectionCard({
                 startMutualConversation(
                   profile.id,
                   profile.firstName,
-                  'connectionId' in profile ? profile.connectionId : undefined
+                  'connectionId' in profile ? profile.connectionId : undefined,
+                  'MutualConnectionCard'
                 )
               }
               className="inline-flex items-center justify-center gap-2 rounded-2xl bg-[#0B2D5C] px-4 py-3 text-sm font-semibold text-white transition hover:bg-[#0A2540]"
@@ -627,7 +642,8 @@ export function ForYouOverviewCard({
               startMutualConversation(
                 profile.id,
                 profile.firstName,
-                profile.connectionId
+                profile.connectionId,
+                'ForYouOverviewCard'
               )
             }
             className="rounded-2xl bg-[#0B2D5C] px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-[#0A2540]"
