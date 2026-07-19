@@ -47,7 +47,14 @@ function emptyHub(): ConnectionsHubData {
     saved: [],
     sent: [],
     educationSeen: true,
-    tabCounts: { forYou: 0, openToChat: 0, mutual: 0, saved: 0, sent: 0 },
+    tabCounts: {
+      forYou: 0,
+      openToChat: 0,
+      mutual: 0,
+      conversations: 0,
+      saved: 0,
+      sent: 0,
+    },
   };
 }
 
