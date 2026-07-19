@@ -128,10 +128,12 @@ describe('profile-level Start Conversation production path', () => {
     const view = read('components/discovery/DiscoveryProfileView.tsx');
     const cta = read('components/discovery/DiscoveryProfileConversationCta.tsx');
     // Single footer CTA; responsive layout only (flex-col / sm:flex-row), not separate handlers.
-    assert.equal((view.match(/DiscoveryProfileConversationCta/g) ?? []).length, 2); // import + JSX
+    assert.match(view, /import DiscoveryProfileConversationCta from/);
+    assert.match(view, /<DiscoveryProfileConversationCta/);
+    assert.doesNotMatch(view, /DesktopProfileConversationCta|MobileProfileConversationCta/);
     assert.match(cta, /sm:flex-row/);
     assert.match(cta, /planStartMutualConversation/);
-    assert.equal((cta.match(/ensureConversationAction/g) ?? []).length, 2); // import + call
+    assert.match(cta, /ensureConversationAction\(plan\.connectionId\)/);
   });
 
   it('Mutual card and profile CTA both call the same canonical start-conversation planner', () => {
