@@ -329,10 +329,8 @@ export default function OpenToChatDrawer({
                   : 'Your request was sent without a note.'}
               </p>
               <p className="mt-3 text-[15px] leading-relaxed text-[#5A6575]">
-                {profileName} can choose whether to open the conversation.
-              </p>
-              <p className="mt-6 text-sm leading-relaxed text-[#8A93A0]">
-                Prototype only — no real message, notification, or chat was created.
+                {profileName} can choose whether to accept. If they do, you can start a
+                conversation from Mutual Connections or their profile.
               </p>
             </>
           )}
