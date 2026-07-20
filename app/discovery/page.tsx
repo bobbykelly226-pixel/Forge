@@ -6,6 +6,7 @@ import { getOpenToChatEducationSeenAction } from '@/app/actions/relationships';
 import DiscoveryFeed from '@/components/DiscoveryFeedPrototype';
 import ForgeAppCanvas from '@/components/ForgeAppCanvas';
 import { DiscoveryActionsProvider } from '@/components/discovery/DiscoveryActionsProvider';
+import NotificationsProvider from '@/components/notifications/NotificationsProvider';
 import { parseSeedQueryParam } from '@/lib/seed/access';
 import {
   buildSeedDiscoveryActionState,
@@ -106,18 +107,20 @@ export default async function DiscoveryFeedPage({
         fontFamily: 'var(--font-discovery-sans), ui-sans-serif, system-ui, sans-serif',
       }}
     >
-      <DiscoveryActionsProvider
-        initialActionState={initialActionState}
-        initialEducationSeen={education.success ? education.data : false}
-      >
-        <DiscoveryFeed
-          profiles={profiles}
-          viewerName={viewerName}
-          loadError={feed.success ? null : feed.message}
-          seedProfilesInjected={seedProfilesInjected}
-          showSeedReset={seedFlags.showReset}
-        />
-      </DiscoveryActionsProvider>
+      <NotificationsProvider>
+        <DiscoveryActionsProvider
+          initialActionState={initialActionState}
+          initialEducationSeen={education.success ? education.data : false}
+        >
+          <DiscoveryFeed
+            profiles={profiles}
+            viewerName={viewerName}
+            loadError={feed.success ? null : feed.message}
+            seedProfilesInjected={seedProfilesInjected}
+            showSeedReset={seedFlags.showReset}
+          />
+        </DiscoveryActionsProvider>
+      </NotificationsProvider>
     </ForgeAppCanvas>
   );
 }

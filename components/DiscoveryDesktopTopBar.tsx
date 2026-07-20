@@ -1,73 +1,79 @@
 'use client';
 
-import { Bell, ChevronDown, MessageCircle, UserRound } from 'lucide-react';
+import Link from 'next/link';
+import { Bell, MessageCircle, UserRound } from 'lucide-react';
+
+import { useNotificationsOptional } from '@/components/notifications/NotificationsProvider';
 
 type DiscoveryDesktopTopBarProps = {
-  onPrototypeAction: (label: string) => void;
+  /** When true, also show the utility controls on mobile (restrained icon row). */
+  showOnMobile?: boolean;
 };
 
-const ACTIONS = [
-  {
-    id: 'messages',
-    label: 'Messages',
-    icon: MessageCircle,
-    showBadge: false,
-    showChevron: false,
-  },
-  {
-    id: 'notifications',
-    label: 'Notifications',
-    icon: Bell,
-    showBadge: true,
-    showChevron: false,
-  },
-  {
-    id: 'profile',
-    label: 'My Profile',
-    icon: UserRound,
-    showBadge: false,
-    showChevron: true,
-  },
-] as const;
-
 /**
- * Desktop-only top utility bar for Discovery Feed.
- * Hidden below the lg breakpoint so mobile layout is untouched.
+ * Authenticated utility controls: Messages, Notifications drawer, My Profile.
+ * Desktop-first; optionally visible on mobile as a compact icon row.
  */
-export default function DiscoveryDesktopTopBar({ onPrototypeAction }: DiscoveryDesktopTopBarProps) {
+export default function DiscoveryDesktopTopBar({
+  showOnMobile = true,
+}: DiscoveryDesktopTopBarProps) {
+  const notifications = useNotificationsOptional();
+  const messagesUnread = notifications?.messagesUnread ?? false;
+  const notificationsUnreadCount = notifications?.notificationsUnreadCount ?? 0;
+
+  const visibility = showOnMobile
+    ? 'mb-5 flex items-center justify-end gap-2 lg:mb-8'
+    : 'mb-8 hidden items-center justify-end gap-2 lg:flex';
+
   return (
-    <div className="mb-8 hidden items-center justify-end gap-2 lg:flex">
-      <p className="mr-3 rounded-full border border-[#0B2D5C]/10 bg-white/70 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.16em] text-[#0B2D5C]/60">
-        Prototype
-      </p>
-      {ACTIONS.map((action) => {
-        const Icon = action.icon;
-        return (
-          <button
-            key={action.id}
-            type="button"
-            onClick={() =>
-              onPrototypeAction(`Prototype only — ${action.label} is not connected yet.`)
-            }
-            className="relative inline-flex items-center gap-2 rounded-full border border-[#0B2D5C]/10 bg-white/75 px-3.5 py-2 text-sm font-medium text-[#0B2D5C] transition hover:border-[#0B2D5C]/22 hover:bg-white"
-            aria-label={action.label}
-          >
-            <span className="relative inline-flex">
-              <Icon className="h-[18px] w-[18px]" strokeWidth={1.75} aria-hidden="true" />
-              {action.showBadge && (
-                <span
-                  className="absolute -right-0.5 -top-0.5 h-2 w-2 rounded-full bg-[#D62828]"
-                  aria-hidden="true"
-                />
-              )}
-            </span>
-            <span className="hidden xl:inline">{action.label}</span>
-            {action.showChevron && (
-              <ChevronDown className="hidden h-3.5 w-3.5 xl:inline" strokeWidth={1.75} aria-hidden="true" />
-            )}
-          </button>
-        );
-      })}
+    <div className={visibility}>
+      <Link
+        href="/connections?tab=conversations"
+        className="relative inline-flex items-center gap-2 rounded-full border border-[#0B2D5C]/10 bg-white/75 px-3.5 py-2 text-sm font-medium text-[#0B2D5C] transition hover:border-[#0B2D5C]/22 hover:bg-white"
+        aria-label={messagesUnread ? 'Messages, unread' : 'Messages'}
+      >
+        <span className="relative inline-flex">
+          <MessageCircle className="h-[18px] w-[18px]" strokeWidth={1.75} aria-hidden="true" />
+          {messagesUnread ? (
+            <span
+              className="absolute -right-0.5 -top-0.5 h-2 w-2 rounded-full bg-[#D62828]"
+              aria-hidden="true"
+            />
+          ) : null}
+        </span>
+        <span className="hidden xl:inline">Messages</span>
+      </Link>
+
+      <button
+        type="button"
+        onClick={() => notifications?.openNotifications()}
+        className="relative inline-flex items-center gap-2 rounded-full border border-[#0B2D5C]/10 bg-white/75 px-3.5 py-2 text-sm font-medium text-[#0B2D5C] transition hover:border-[#0B2D5C]/22 hover:bg-white"
+        aria-label={
+          notificationsUnreadCount > 0
+            ? `Notifications, ${notificationsUnreadCount} unread`
+            : 'Notifications'
+        }
+      >
+        <span className="relative inline-flex">
+          <Bell className="h-[18px] w-[18px]" strokeWidth={1.75} aria-hidden="true" />
+          {notificationsUnreadCount > 0 ? (
+            <span
+              className="absolute -right-0.5 -top-0.5 h-2 w-2 rounded-full bg-[#D62828]"
+              aria-hidden="true"
+            />
+          ) : null}
+        </span>
+        <span className="hidden xl:inline">Notifications</span>
+      </button>
+
+      <Link
+        href="/profile"
+        className="relative inline-flex items-center gap-2 rounded-full border border-[#0B2D5C]/10 bg-white/75 px-3.5 py-2 text-sm font-medium text-[#0B2D5C] transition hover:border-[#0B2D5C]/22 hover:bg-white"
+        aria-label="My Profile"
+      >
+        <UserRound className="h-[18px] w-[18px]" strokeWidth={1.75} aria-hidden="true" />
+        <span className="hidden xl:inline">My Profile</span>
+      </Link>
     </div>
   );
 }

@@ -113,6 +113,45 @@ export type Database = {
         }
         Relationships: []
       }
+      notifications: {
+        Row: {
+          id: string
+          recipient_user_id: string
+          actor_user_id: string | null
+          notification_type: Database["public"]["Enums"]["notification_type"]
+          body: string
+          entity_type: Database["public"]["Enums"]["notification_entity_type"]
+          entity_id: string
+          destination_path: string
+          read_at: string | null
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          recipient_user_id: string
+          actor_user_id?: string | null
+          notification_type: Database["public"]["Enums"]["notification_type"]
+          body: string
+          entity_type: Database["public"]["Enums"]["notification_entity_type"]
+          entity_id: string
+          destination_path: string
+          read_at?: string | null
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          recipient_user_id?: string
+          actor_user_id?: string | null
+          notification_type?: Database["public"]["Enums"]["notification_type"]
+          body?: string
+          entity_type?: Database["public"]["Enums"]["notification_entity_type"]
+          entity_id?: string
+          destination_path?: string
+          read_at?: string | null
+          created_at?: string
+        }
+        Relationships: []
+      }
       conversation_participants: {
         Row: {
           conversation_id: string
@@ -1062,8 +1101,17 @@ export type Database = {
         Returns: Json
       }
       list_my_conversations: { Args: Record<PropertyKey, never>; Returns: Json }
+      list_my_notifications: { Args: { p_limit?: number }; Returns: Json }
+      mark_all_notifications_read: {
+        Args: Record<PropertyKey, never>
+        Returns: Json
+      }
       mark_conversation_read: {
         Args: { p_conversation_id: string }
+        Returns: Json
+      }
+      mark_notification_read: {
+        Args: { p_notification_id: string }
         Returns: Json
       }
       remove_saved_profile: { Args: { p_profile_id: string }; Returns: Json }
@@ -1107,6 +1155,17 @@ export type Database = {
       connection_source: "mutual_interest" | "open_to_chat"
       connection_status: "active" | "ended"
       conversation_status: "active" | "ended"
+      notification_entity_type:
+        | "message"
+        | "conversation"
+        | "connection"
+        | "open_to_chat_request"
+        | "interest"
+      notification_type:
+        | "new_message"
+        | "mutual_connection"
+        | "open_to_chat_accepted"
+        | "interest_received"
       interest_status: "pending" | "mutual" | "withdrawn"
       open_to_chat_status:
         | "pending"
@@ -1256,6 +1315,19 @@ export const Constants = {
       connection_source: ["mutual_interest", "open_to_chat"],
       connection_status: ["active", "ended"],
       conversation_status: ["active", "ended"],
+      notification_entity_type: [
+        "message",
+        "conversation",
+        "connection",
+        "open_to_chat_request",
+        "interest",
+      ],
+      notification_type: [
+        "new_message",
+        "mutual_connection",
+        "open_to_chat_accepted",
+        "interest_received",
+      ],
       interest_status: ["pending", "mutual", "withdrawn"],
       open_to_chat_status: [
         "pending",

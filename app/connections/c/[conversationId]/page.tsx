@@ -10,6 +10,7 @@ import {
 import ConversationThread from '@/components/conversations/ConversationThread';
 import ForgeAppBottomNav from '@/components/ForgeAppBottomNav';
 import ForgeAppCanvas from '@/components/ForgeAppCanvas';
+import NotificationsProvider from '@/components/notifications/NotificationsProvider';
 import { loadConversationAlignmentContext } from '@/lib/conversations/alignment-context';
 import { buildConversationStarters } from '@/lib/conversations/starters';
 import { getCurrentUserProfile } from '@/lib/data/profile';
@@ -150,25 +151,27 @@ export default async function ConversationThreadPage({
         fontFamily: 'var(--font-discovery-sans), ui-sans-serif, system-ui, sans-serif',
       }}
     >
-      <div className="mx-auto min-h-screen w-full max-w-3xl px-4 pb-28 pt-4 sm:px-6 lg:pb-10">
-        <p className="mb-3">
-          <Link
-            href="/connections?tab=conversations"
-            className="text-sm font-semibold text-[#0B2D5C] underline decoration-[#0B2D5C]/35 underline-offset-4"
-          >
-            ← Messages
-          </Link>
-        </p>
-        <ConversationThread
-          meta={meta}
-          initialMessages={messages}
-          hasMoreInitial={hasMore}
-          viewerUserId={user.id}
-          alignmentContext={alignmentContext}
-          starters={starters}
-        />
-      </div>
-      <ForgeAppBottomNav active="messages" />
+      <NotificationsProvider initialMessagesUnread={false}>
+        <div className="mx-auto min-h-screen w-full max-w-3xl px-4 pb-28 pt-4 sm:px-6 lg:pb-10">
+          <p className="mb-3">
+            <Link
+              href="/connections?tab=conversations"
+              className="text-sm font-semibold text-[#0B2D5C] underline decoration-[#0B2D5C]/35 underline-offset-4"
+            >
+              ← Messages
+            </Link>
+          </p>
+          <ConversationThread
+            meta={meta}
+            initialMessages={messages}
+            hasMoreInitial={hasMore}
+            viewerUserId={user.id}
+            alignmentContext={alignmentContext}
+            starters={starters}
+          />
+        </div>
+        <ForgeAppBottomNav active="messages" />
+      </NotificationsProvider>
     </ForgeAppCanvas>
   );
 }

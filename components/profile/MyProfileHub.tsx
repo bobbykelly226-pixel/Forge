@@ -94,9 +94,6 @@ export default function MyProfileHub({
   const [photoUrl, setPhotoUrl] = useState(initialPhotoUrl);
   const [completionPercent, setCompletionPercent] = useState(initialCompletionPercent);
   const showCompletionUi = completionPercent < 100;
-  const flashNote = (message: string) => {
-    void message;
-  };
 
   return (
     <>
@@ -130,8 +127,8 @@ export default function MyProfileHub({
           </div>
         }
       >
-        <div className="hidden px-0 lg:block">
-          <DiscoveryDesktopTopBar onPrototypeAction={flashNote} />
+        <div className="px-0">
+          <DiscoveryDesktopTopBar />
         </div>
 
         <div className="mx-auto flex w-full max-w-lg flex-col px-4 pb-[7.5rem] pt-5 sm:px-6 sm:pt-7 lg:mx-0 lg:max-w-none lg:px-0 lg:pb-10 lg:pt-0">
