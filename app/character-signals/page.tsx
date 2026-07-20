@@ -2,6 +2,7 @@ import { Fraunces, Manrope } from 'next/font/google';
 
 import CharacterSignalsPrototype from '@/components/character-signals/CharacterSignalsPrototype';
 import ForgeAppCanvas from '@/components/ForgeAppCanvas';
+import NotificationsProvider from '@/components/notifications/NotificationsProvider';
 
 const display = Fraunces({
   subsets: ['latin'],
@@ -34,7 +35,9 @@ export default function CharacterSignalsPage() {
         fontFamily: 'var(--font-discovery-sans), ui-sans-serif, system-ui, sans-serif',
       }}
     >
-      <CharacterSignalsPrototype />
+      <NotificationsProvider>
+        <CharacterSignalsPrototype />
+      </NotificationsProvider>
     </ForgeAppCanvas>
   );
 }

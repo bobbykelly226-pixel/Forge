@@ -9,6 +9,7 @@ import {
   type ConnectionsTabId,
 } from '@/components/connections/ConnectionsHubProvider';
 import ForgeAppCanvas from '@/components/ForgeAppCanvas';
+import NotificationsProvider from '@/components/notifications/NotificationsProvider';
 import type { ConversationListItem } from '@/lib/conversations/types';
 import type { ConnectionsHubData } from '@/lib/data/connections-hub';
 import { parseSeedQueryParam } from '@/lib/seed/access';
@@ -141,19 +142,23 @@ export default async function ConnectionsHubPage({
         fontFamily: 'var(--font-discovery-sans), ui-sans-serif, system-ui, sans-serif',
       }}
     >
-      <ConnectionsHubProvider
-        initialData={initialData}
-        initialConversations={conversations}
-        conversationsError={conversationsError}
-        initialTab={initialTab}
-        viewerUserId={user.id}
+      <NotificationsProvider
+        initialMessagesUnread={conversations.some((item) => item.unread)}
       >
-        <ConnectionsHubPrototype
-          loadError={loadError}
-          seedConnectionsInjected={seedConnectionsInjected}
-          showSeedReset={seedFlags.showReset}
-        />
-      </ConnectionsHubProvider>
+        <ConnectionsHubProvider
+          initialData={initialData}
+          initialConversations={conversations}
+          conversationsError={conversationsError}
+          initialTab={initialTab}
+          viewerUserId={user.id}
+        >
+          <ConnectionsHubPrototype
+            loadError={loadError}
+            seedConnectionsInjected={seedConnectionsInjected}
+            showSeedReset={seedFlags.showReset}
+          />
+        </ConnectionsHubProvider>
+      </NotificationsProvider>
     </ForgeAppCanvas>
   );
 }

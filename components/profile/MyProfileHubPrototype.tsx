@@ -78,10 +78,6 @@ function CompletionRing({ percent }: { percent: number }) {
 }
 
 export default function MyProfileHubPrototype() {
-  const flashNote = (_message: string) => {
-    // Desktop top-bar prototype actions remain placeholders.
-  };
-
   return (
     <>
       <style>{`
@@ -117,8 +113,8 @@ export default function MyProfileHubPrototype() {
           </aside>
 
           <div className="min-h-screen w-full min-w-0 lg:min-h-0">
-            <div className="hidden px-0 lg:block">
-              <DiscoveryDesktopTopBar onPrototypeAction={flashNote} />
+            <div className="px-0">
+              <DiscoveryDesktopTopBar />
             </div>
 
             <div className="mx-auto flex w-full max-w-lg flex-col px-4 pb-[7.5rem] pt-5 sm:px-6 sm:pt-7 lg:mx-0 lg:max-w-none lg:px-0 lg:pb-10 lg:pt-0">

@@ -2,6 +2,7 @@ import { Fraunces, Manrope } from 'next/font/google';
 import { redirect } from 'next/navigation';
 
 import ForgeAppCanvas from '@/components/ForgeAppCanvas';
+import NotificationsProvider from '@/components/notifications/NotificationsProvider';
 import MyProfileHub from '@/components/profile/MyProfileHub';
 import { loadCurrentUserProfileBundle } from '@/lib/data/bundle';
 import { resolveAuthoritativeProfilePhotoUrl, toManagedProfilePhoto } from '@/lib/profile-photo';
@@ -118,27 +119,29 @@ export default async function MyProfileHubPage({ searchParams }: PageProps) {
         fontFamily: 'var(--font-discovery-sans), ui-sans-serif, system-ui, sans-serif',
       }}
     >
-      <MyProfileHub
-        displayName={displayName}
-        location={profile.location ?? null}
-        photoUrl={photoUrl}
-        completionPercent={completionPercent}
-        onboardingCompleted={Boolean(appState?.onboarding_completed)}
-        discoveryVisibility={{
-          enabled: Boolean(profile.is_discoverable),
-          canEnable: discoveryCanEnable,
-          message: discoveryCanEnable
-            ? null
-            : 'Discovery visibility is unavailable for this account.',
-        }}
-        profile={profileForWorkspace}
-        privateDetails={privateDetailsResult.data ?? null}
-        coreValues={coreValues}
-        hasRelationshipAlignment={hasRelationshipAlignment}
-        hasImportantAlignmentFactors={hasImportantAlignmentFactors}
-        photos={photos.map(toManagedProfilePhoto)}
-        initialSection={initialSection}
-      />
+      <NotificationsProvider>
+        <MyProfileHub
+          displayName={displayName}
+          location={profile.location ?? null}
+          photoUrl={photoUrl}
+          completionPercent={completionPercent}
+          onboardingCompleted={Boolean(appState?.onboarding_completed)}
+          discoveryVisibility={{
+            enabled: Boolean(profile.is_discoverable),
+            canEnable: discoveryCanEnable,
+            message: discoveryCanEnable
+              ? null
+              : 'Discovery visibility is unavailable for this account.',
+          }}
+          profile={profileForWorkspace}
+          privateDetails={privateDetailsResult.data ?? null}
+          coreValues={coreValues}
+          hasRelationshipAlignment={hasRelationshipAlignment}
+          hasImportantAlignmentFactors={hasImportantAlignmentFactors}
+          photos={photos.map(toManagedProfilePhoto)}
+          initialSection={initialSection}
+        />
+      </NotificationsProvider>
     </ForgeAppCanvas>
   );
 }
