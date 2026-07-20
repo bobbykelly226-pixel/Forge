@@ -16,6 +16,10 @@ import {
   type InteractionType,
   type RecognitionRecipient,
 } from '@/lib/character-signals-mock';
+import {
+  getRecognitionFlowInitialState,
+  type RecognitionFlowStep,
+} from '@/lib/character-signals/recognition-flow-state';
 
 type RecognitionFlowDrawerProps = {
   open: boolean;
@@ -30,7 +34,12 @@ type RecognitionFlowDrawerProps = {
   successReturnLabel?: string;
 };
 
-type Step = 'context' | 'select' | 'confirm' | 'success';
+type RecognitionFlowDrawerInnerProps = {
+  recipient: RecognitionRecipient;
+  onClose: () => void;
+  onSubmitted?: RecognitionFlowDrawerProps['onSubmitted'];
+  successReturnLabel: string;
+};
 
 function getFocusableElements(container: HTMLElement): HTMLElement[] {
   const nodes = container.querySelectorAll<HTMLElement>(
@@ -41,27 +50,22 @@ function getFocusableElements(container: HTMLElement): HTMLElement[] {
   );
 }
 
-export default function RecognitionFlowDrawer({
-  open,
+function RecognitionFlowDrawerInner({
   recipient,
   onClose,
   onSubmitted,
-  successReturnLabel = 'Return to Connections',
-}: RecognitionFlowDrawerProps) {
+  successReturnLabel,
+}: RecognitionFlowDrawerInnerProps) {
   const titleId = useId();
   const descriptionId = useId();
   const panelRef = useRef<HTMLDivElement>(null);
   const primaryRef = useRef<HTMLButtonElement>(null);
-  const [step, setStep] = useState<Step>('context');
-  const [interactionType, setInteractionType] = useState<InteractionType>('in_app');
-  const [selectedSignalId, setSelectedSignalId] = useState<CharacterSignalId | null>(null);
-
-  useEffect(() => {
-    if (!open || !recipient) return;
-    setStep('context');
-    setInteractionType(recipient.defaultInteractionType);
-    setSelectedSignalId(null);
-  }, [open, recipient]);
+  const initial = getRecognitionFlowInitialState(recipient);
+  const [step, setStep] = useState<RecognitionFlowStep>(initial.step);
+  const [interactionType, setInteractionType] = useState<InteractionType>(initial.interactionType);
+  const [selectedSignalId, setSelectedSignalId] = useState<CharacterSignalId | null>(
+    initial.selectedSignalId
+  );
 
   const handleKeyDown = useCallback(
     (event: ReactKeyboardEvent<HTMLDivElement>) => {
@@ -97,8 +101,6 @@ export default function RecognitionFlowDrawer({
   );
 
   useEffect(() => {
-    if (!open) return;
-
     const previousOverflow = document.body.style.overflow;
     document.body.style.overflow = 'hidden';
     const focusTimer = window.setTimeout(() => primaryRef.current?.focus(), 30);
@@ -113,9 +115,7 @@ export default function RecognitionFlowDrawer({
       window.clearTimeout(focusTimer);
       document.removeEventListener('keydown', onDocumentKeyDown);
     };
-  }, [open, onClose, step]);
-
-  if (!open || !recipient) return null;
+  }, [onClose, step]);
 
   const availableSignals = getSignalsForInteractionType(interactionType);
   const selectedSignal = availableSignals.find((signal) => signal.id === selectedSignalId);
@@ -382,5 +382,30 @@ export default function RecognitionFlowDrawer({
         </div>
       </div>
     </div>
+  );
+}
+
+/**
+ * Recognition drawer. Remounts inner state when the drawer opens (closed → null)
+ * or when the recipient identity changes (`key={recipient.id}`), avoiding
+ * setState-in-effect resets.
+ */
+export default function RecognitionFlowDrawer({
+  open,
+  recipient,
+  onClose,
+  onSubmitted,
+  successReturnLabel = 'Return to Connections',
+}: RecognitionFlowDrawerProps) {
+  if (!open || !recipient) return null;
+
+  return (
+    <RecognitionFlowDrawerInner
+      key={recipient.id}
+      recipient={recipient}
+      onClose={onClose}
+      onSubmitted={onSubmitted}
+      successReturnLabel={successReturnLabel}
+    />
   );
 }

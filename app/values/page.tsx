@@ -31,7 +31,7 @@ export default function Values() {
             </div>
             <h3 className="text-2xl font-semibold text-[#0B2D5C] mb-4">Family</h3>
             <p className="text-[#444444] leading-relaxed">
-              Strong families strengthen communities. Whether you're hoping to start a family, grow one, or simply cherish the relationships you already have, family matters here.
+              Strong families strengthen communities. Whether you&apos;re hoping to start a family, grow one, or simply cherish the relationships you already have, family matters here.
             </p>
           </div>
 

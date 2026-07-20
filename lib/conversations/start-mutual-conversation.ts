@@ -59,7 +59,6 @@ export type StartMutualConversationTrace = {
 
 /** Temporary QA logging for Mutual Start Conversation — no message bodies or profile content. */
 export function logStartMutualConversationTrace(trace: StartMutualConversationTrace): void {
-  // eslint-disable-next-line no-console -- temporary two-user QA trace
   console.info('[forge:start-conversation]', {
     componentName: trace.componentName,
     connection_id: trace.connection_id,

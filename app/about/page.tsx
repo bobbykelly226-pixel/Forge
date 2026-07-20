@@ -25,7 +25,7 @@ export default function About() {
 
           <h2 className="text-3xl font-semibold text-[#0B2D5C]">Who Forge Is For</h2>
           <p>
-            Forge is for people seeking something more intentional. Whether you're a professional, first responder, 
+            Forge is for people seeking something more intentional. Whether you&apos;re a professional, first responder, 
             military member, healthcare worker, parent, entrepreneur, blue-collar worker, person of faith, or simply 
             someone who values commitment and authenticity, Forge was created with you in mind.
           </p>
@@ -41,13 +41,13 @@ export default function About() {
             Forge is more than a name. It represents the belief that the strongest things in life are built with intention, guided by character, and created to last. We believe meaningful relationships grow the same way. They are built through shared values, mutual respect, trust, faith, commitment, and a genuine desire to build a life together.
           </p>
           <p>
-            Forge is the platform where those connections begin. Forged In Life is the philosophy behind it. It reflects our belief that life's strongest relationships are not built on chance alone. They are shaped by the choices we make, the values we live by, and the lives we build together.
+            Forge is the platform where those connections begin. Forged In Life is the philosophy behind it. It reflects our belief that life&apos;s strongest relationships are not built on chance alone. They are shaped by the choices we make, the values we live by, and the lives we build together.
           </p>
           <p>
-            Because meaningful relationships aren't simply found.
+            Because meaningful relationships aren&apos;t simply found.
           </p>
           <p>
-            They're Forged In Life.
+            They&apos;re Forged In Life.
           </p>
 
           <h2 className="text-3xl font-semibold text-[#0B2D5C]">Why We Built Forge</h2>
