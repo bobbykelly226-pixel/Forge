@@ -167,6 +167,7 @@ export default async function DiscoveryProfilePage({
           alignmentPresentation={liveAlignmentPresentation}
           mutualConnectionId={mutualConnectionId}
           existingConversationId={existingConversationId}
+          viewerUserId={user.id}
         />
       </DiscoveryActionsProvider>
     </ForgeAppCanvas>

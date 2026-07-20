@@ -8,6 +8,7 @@ import { useDiscoveryActions } from '@/components/discovery/DiscoveryActionsProv
 import PublicProfilePresentation, {
   PublicProfileBackLink,
 } from '@/components/discovery/PublicProfilePresentation';
+import { isPersistedConnectionId } from '@/lib/conversations/resolve';
 import { isSeedProfileId } from '@/lib/seed/access';
 import {
   toSeedAlignmentPresentation,
@@ -27,6 +28,8 @@ type Props = {
   mutualConnectionId?: string | null;
   /** Existing conversation id for this peer when one already exists. */
   existingConversationId?: string | null;
+  /** Signed-in viewer id for Start Conversation QA logging. */
+  viewerUserId?: string | null;
 };
 
 export default function DiscoveryProfileView({
@@ -34,6 +37,7 @@ export default function DiscoveryProfileView({
   alignmentPresentation: liveAlignmentPresentation = null,
   mutualConnectionId = null,
   existingConversationId = null,
+  viewerUserId = null,
 }: Props) {
   const profileId = profile.id;
   const firstName = firstNameFromFullName(profile.full_name);
@@ -42,7 +46,10 @@ export default function DiscoveryProfileView({
   const seedProfile = isSeedProfileId(profileId) ? getSeedProfileById(profileId) : undefined;
   const isSeed = Boolean(seedProfile);
   const isSeedMutual = seedProfile?.isMutualConnection === true;
-  const isMutualConnection = isSeedMutual || Boolean(mutualConnectionId);
+  const liveMutualConnectionId = isPersistedConnectionId(mutualConnectionId)
+    ? mutualConnectionId
+    : null;
+  const isMutualConnection = isSeedMutual || Boolean(liveMutualConnectionId);
 
   const alignmentPresentation = seedProfile
     ? toSeedAlignmentPresentation(seedProfile)
@@ -103,8 +110,9 @@ export default function DiscoveryProfileView({
             <DiscoveryProfileConversationCta
               profileId={profileId}
               firstName={firstName}
-              connectionId={mutualConnectionId}
+              connectionId={liveMutualConnectionId}
               existingConversationId={existingConversationId}
+              viewerUserId={viewerUserId}
               isSeed={isSeedMutual}
             />
           ) : (

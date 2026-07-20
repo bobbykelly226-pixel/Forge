@@ -298,7 +298,10 @@ describe('navigation and mutual conversation integration', () => {
     assert.doesNotMatch(provider, /Messaging is coming later/i);
     assert.doesNotMatch(profileView, /Conversation tools will appear/i);
     assert.match(cta, /ensureConversationAction/);
+    assert.match(cta, /planStartMutualConversation/);
     assert.match(cta, /Start Conversation|Open Conversation/);
+    assert.doesNotMatch(cta, /available later/i);
+    assert.doesNotMatch(cta, /coming later/i);
   });
 
   it('Messages nav opens the conversations hub route', () => {

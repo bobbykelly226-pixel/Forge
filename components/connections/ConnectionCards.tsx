@@ -53,6 +53,7 @@ export function OpenToChatRequestCard({ profile }: { profile: IncomingOpenToChat
     saveOpenToChatForLater,
     declineOpenToChat,
     acceptTriggerRef,
+    mutual,
   } = useConnectionsHub();
 
   const status = getOpenToChatStatus(profile.id);
@@ -63,6 +64,7 @@ export function OpenToChatRequestCard({ profile }: { profile: IncomingOpenToChat
   const isSavedLater = status === 'saved_later';
   const hasNote = Boolean(profile.note && profile.note.trim().length > 0);
   const existingConversation = getConversationForPeer(profile.id);
+  const mutualConnectionId = mutual.find((item) => item.id === profile.id)?.connectionId;
 
   return (
     <article className={cardShell}>
@@ -146,7 +148,7 @@ export function OpenToChatRequestCard({ profile }: { profile: IncomingOpenToChat
               startMutualConversation(
                 profile.id,
                 profile.firstName,
-                undefined,
+                mutualConnectionId,
                 'OpenToChatRequestCard'
               )
             }
@@ -169,6 +171,7 @@ export function InterestReceivedCard({ profile }: { profile: IncomingInterestIte
     expressMutualInterest,
     declineInterest,
     startMutualConversation,
+    mutual,
   } = useConnectionsHub();
   const status = getInterestStatus(profile.id);
 
@@ -176,6 +179,7 @@ export function InterestReceivedCard({ profile }: { profile: IncomingInterestIte
 
   const isMutual = status === 'mutual';
   const existingConversation = getConversationForPeer(profile.id);
+  const mutualConnectionId = mutual.find((item) => item.id === profile.id)?.connectionId;
 
   return (
     <article className={cardShell}>
@@ -222,7 +226,7 @@ export function InterestReceivedCard({ profile }: { profile: IncomingInterestIte
                 startMutualConversation(
                   profile.id,
                   profile.firstName,
-                  undefined,
+                  mutualConnectionId,
                   'InterestReceivedCard'
                 )
               }
