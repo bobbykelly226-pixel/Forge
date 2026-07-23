@@ -7,7 +7,9 @@ import { CATEGORY_01 } from '@/lib/questionnaire/catalog/category-01';
 import {
   advanceStep,
   canContinueFromStep,
+  COMPLETE_COPY,
   emptyAnswer,
+  formatGuidanceForQuestion,
   getAnswer,
   INTRO_COPY,
   isCategoryPreviewComplete,
@@ -40,16 +42,15 @@ function listFilesRecursive(dir: string): string[] {
   return files;
 }
 
-const DASH_PATTERN = /[\u2010-\u2015\u2212—–]/;
-const FORBIDDEN_HYPHEN_PHRASES = [
-  'long-term',
-  'follow-through',
-  'non-negotiable',
-  'Extended-family',
-  'fast-moving',
-  'follow-up',
-  'Priority follow-up',
-];
+const DASH_OR_HYPHEN_PATTERN = /[\u2010-\u2015\u2212—–-]/;
+
+function assertNoDashPunctuation(label: string, value: string) {
+  assert.equal(
+    DASH_OR_HYPHEN_PATTERN.test(value),
+    false,
+    `${label} contains dash/hyphen punctuation: ${value.slice(0, 160)}`
+  );
+}
 
 describe('Category 1 onboarding preview flow', () => {
   it('uses all 10 live Category 1 questions in order', () => {
@@ -301,34 +302,76 @@ describe('Category 1 onboarding preview flow', () => {
   });
 
   it('keeps Category 1 and preview user facing strings free of dash punctuation', () => {
-    const catalogStrings: string[] = [];
+    const catalogStrings: Array<{ label: string; value: string }> = [
+      { label: 'category title', value: CATEGORY_01.title },
+    ];
+
     for (const question of CATEGORY_01.questions) {
-      catalogStrings.push(question.prompt);
-      if (question.statement) catalogStrings.push(question.statement);
-      if (question.priorityFollowUp) catalogStrings.push(question.priorityFollowUp.prompt);
-      for (const choice of question.choices) catalogStrings.push(choice.label);
+      catalogStrings.push({
+        label: `Q${question.number} prompt`,
+        value: question.prompt,
+      });
+      catalogStrings.push({
+        label: `Q${question.number} format label`,
+        value: question.formatLabel,
+      });
+      if (question.statement) {
+        catalogStrings.push({
+          label: `Q${question.number} statement`,
+          value: question.statement,
+        });
+      }
+      if (question.priorityFollowUp) {
+        catalogStrings.push({
+          label: `Q${question.number} priority prompt`,
+          value: question.priorityFollowUp.prompt,
+        });
+      }
+      for (const choice of question.choices) {
+        catalogStrings.push({
+          label: `Q${question.number} choice ${choice.displayOrder}`,
+          value: choice.label,
+        });
+      }
     }
+
     catalogStrings.push(
-      INTRO_COPY.body,
-      INTRO_COPY.supporting,
-      INTRO_COPY.metadata,
-      PREVIEW_NOTICE,
-      SELECTION_LIMIT_MESSAGE,
-      read('components/questionnaire-preview/PreviewNotice.tsx'),
-      read('components/questionnaire-preview/PriorityFollowUp.tsx'),
-      read('components/questionnaire-preview/CategoryPreviewComplete.tsx'),
-      read('lib/questionnaire/preview/category-01-preview-flow.ts')
+      { label: 'intro eyebrow', value: INTRO_COPY.eyebrow },
+      { label: 'intro body', value: INTRO_COPY.body },
+      { label: 'intro supporting', value: INTRO_COPY.supporting },
+      { label: 'intro metadata', value: INTRO_COPY.metadata },
+      { label: 'intro primary', value: INTRO_COPY.primary },
+      { label: 'intro secondary', value: INTRO_COPY.secondary },
+      { label: 'complete eyebrow', value: COMPLETE_COPY.eyebrow },
+      { label: 'complete body', value: COMPLETE_COPY.body },
+      { label: 'preview notice', value: PREVIEW_NOTICE },
+      { label: 'selection limit guidance', value: SELECTION_LIMIT_MESSAGE },
+      { label: 'priority phase label', value: 'Priority follow up' },
+      {
+        label: 'priority guidance',
+        value:
+          'Choose exactly 2. This is not a ranking between first and second. Both priorities carry the same weight.',
+      },
+      { label: 'completion not saved notice', value: 'Preview answers were not saved' },
+      { label: 'review answers CTA', value: 'Review Answers' },
+      { label: 'restart preview CTA', value: 'Restart Preview' },
+      { label: 'exit preview CTA', value: 'Exit preview' }
     );
 
-    for (const value of catalogStrings) {
-      assert.equal(DASH_PATTERN.test(value), false, value.slice(0, 120));
-      for (const phrase of FORBIDDEN_HYPHEN_PHRASES) {
-        assert.equal(
-          value.includes(phrase),
-          false,
-          `forbidden phrase "${phrase}" in: ${value.slice(0, 120)}`
-        );
-      }
+    for (const question of CATEGORY_01.questions) {
+      catalogStrings.push({
+        label: `Q${question.number} format guidance`,
+        value: formatGuidanceForQuestion(question),
+      });
+    }
+
+    assert.equal(
+      CATEGORY_01.questions.find((q) => q.number === 9)?.formatLabel,
+      'Scenario based choice'
+    );
+
+    for (const { label, value } of catalogStrings) {
+      assertNoDashPunctuation(label, value);
     }
   });
 

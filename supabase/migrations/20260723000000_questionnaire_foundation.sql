@@ -2027,7 +2027,7 @@ insert into public.questionnaire_questions (
   9,
   'If a loving relationship revealed a major difference involving a core long term goal, what would you most likely do first?',
   null,
-  'Scenario-based choice',
+  'Scenario based choice',
   'scenario_choice'::public.questionnaire_response_behavior,
   null,
   null,

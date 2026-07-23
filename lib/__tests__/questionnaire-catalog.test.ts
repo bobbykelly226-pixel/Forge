@@ -133,6 +133,9 @@ describe('questionnaire catalog foundation', () => {
       'Of the areas you selected, which two allow the least room for difference?'
     );
 
+    assert.equal(byNumber[9].formatLabel, 'Scenario based choice');
+    assert.equal(byNumber[9].responseBehavior, 'scenario_choice');
+
     assert.equal(byNumber[10].formatLabel, 'Select up to five');
     assert.equal(byNumber[10].responseBehavior, 'multi_select');
     assert.equal(byNumber[10].maxSelections, 5);

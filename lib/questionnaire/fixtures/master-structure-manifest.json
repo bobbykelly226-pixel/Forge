@@ -157,7 +157,7 @@
       "categoryNumber": 1,
       "categoryTitle": "Relationship Vision & Intentions",
       "questionNumber": 9,
-      "formatLabel": "Scenario-based choice",
+      "formatLabel": "Scenario based choice",
       "responseBehavior": "scenario_choice",
       "listedChoiceCount": 6,
       "choiceCount": 6,

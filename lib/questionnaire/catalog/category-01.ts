@@ -221,7 +221,7 @@ const QUESTIONS: QuestionDefinition[] = [
     number: 9,
     prompt:
       'If a loving relationship revealed a major difference involving a core long term goal, what would you most likely do first?',
-    formatLabel: 'Scenario-based choice',
+    formatLabel: 'Scenario based choice',
     responseBehavior: 'scenario_choice',
     minSelections: 1,
     maxSelections: 1,

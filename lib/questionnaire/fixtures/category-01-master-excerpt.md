@@ -122,7 +122,7 @@ I am comfortable with partners having substantially different long term goals
 
 ### 9. If a loving relationship revealed a major difference involving a core long term goal, what would you most likely do first?
 
-**Format:** Scenario-based choice
+**Format:** Scenario based choice
 
 Determine whether either of us could genuinely change without resentment
 Look for a compromise that preserves what matters most to both people
