@@ -465,6 +465,8 @@ describe('questionnaire architecture coverage (self-contained)', () => {
     assert.match(migration, /for update/i);
     assert.match(migration, /Serialize selection mutations per response/);
     assert.match(migration, /Serialize priority mutations per response/);
+    assert.match(migration, /forge_questionnaire_response_identity_immutable/);
+    assert.match(migration, /user_questionnaire_responses_identity_immutable/);
     assert.match(migration, /structured_identity_config/);
     assert.match(migration, /opens_optional_context/);
     assert.match(migration, /context_text/);
@@ -477,6 +479,10 @@ describe('questionnaire architecture coverage (self-contained)', () => {
     assert.match(migration, /no_specific_requirement/);
     assert.match(migration, /limited_openness/);
     assert.match(migration, /evaluation_preference/);
+    assert.equal(
+      FOUNDATION_CAPABILITY_MANIFEST.databaseIntegrity.responseIdentityImmutableAfterInsert,
+      true
+    );
     assert.ok(migration.includes(MASTER_ELIGIBILITY_DESCRIPTION) === false); // not seeded; coverage only
   });
 

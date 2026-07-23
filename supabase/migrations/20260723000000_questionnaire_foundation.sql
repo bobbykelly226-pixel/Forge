@@ -259,7 +259,7 @@ create table if not exists public.user_questionnaire_responses (
 );
 
 comment on table public.user_questionnaire_responses is
-  'Private questionnaire responses. Not public profile data. Owner-only RLS. Identity fields are private configuration storage only.';
+  'Private questionnaire responses. Not public profile data. Owner-only RLS. Identity fields are private configuration storage only. Response identity columns (id, user_id, version_id, question_id) are immutable after insert.';
 
 drop trigger if exists user_questionnaire_responses_updated_at on public.user_questionnaire_responses;
 create trigger user_questionnaire_responses_updated_at
@@ -361,6 +361,32 @@ create trigger user_questionnaire_responses_version_match
 before insert or update on public.user_questionnaire_responses
 for each row
 execute function public.forge_questionnaire_response_version_matches_question();
+
+-- Response identity is immutable after insert so selected/priority choices cannot
+-- be orphaned onto a different question/version via parent-row UPDATE.
+-- Editable answer fields remain: response_state, active_qualifiers, identity_*.
+create or replace function public.forge_questionnaire_response_identity_immutable()
+returns trigger
+language plpgsql
+as $$
+begin
+  if new.id is distinct from old.id
+     or new.user_id is distinct from old.user_id
+     or new.version_id is distinct from old.version_id
+     or new.question_id is distinct from old.question_id then
+    raise exception
+      'questionnaire response identity is immutable after insert (id, user_id, version_id, question_id); create a separate response row for another question';
+  end if;
+  return new;
+end;
+$$;
+
+drop trigger if exists user_questionnaire_responses_identity_immutable
+  on public.user_questionnaire_responses;
+create trigger user_questionnaire_responses_identity_immutable
+before update on public.user_questionnaire_responses
+for each row
+execute function public.forge_questionnaire_response_identity_immutable();
 
 create or replace function public.forge_questionnaire_selected_choice_integrity()
 returns trigger

@@ -175,6 +175,7 @@ export const FOUNDATION_CAPABILITY_MANIFEST = {
     prioritySubsetOfSelected: true,
     responseMatchesProgressVersion: true,
     responseRowLockForSelectionMutations: true,
+    responseIdentityImmutableAfterInsert: true,
   },
 } as const;
 

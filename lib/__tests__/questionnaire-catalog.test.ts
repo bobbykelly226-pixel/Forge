@@ -236,10 +236,66 @@ describe('questionnaire migration privacy and integrity', () => {
     assert.match(migration, /forge_questionnaire_priority_choice_valid/);
     assert.match(migration, /forge_questionnaire_response_version_matches_question/);
     assert.match(migration, /forge_questionnaire_progress_category_version_match/);
+    assert.match(migration, /forge_questionnaire_response_identity_immutable/);
     assert.match(migration, /user_questionnaire_priority_selected_fk/);
     assert.match(migration, /priority selections exceed configured selection count/);
     assert.match(migration, /selected choices exceed max_selections/);
     assert.match(migration, /mutually exclusive choice cannot combine/);
+  });
+
+  it('makes response identity immutable after insert while keeping answer fields editable', () => {
+    const identityFnMatch = migration.match(
+      /create or replace function public\.forge_questionnaire_response_identity_immutable\(\)([\s\S]*?)\$\$;/
+    );
+    assert.ok(identityFnMatch, 'identity-immutable function must exist');
+    const identityFn = identityFnMatch[1];
+
+    // 1. Identity columns cannot change after insertion.
+    for (const column of ['id', 'user_id', 'version_id', 'question_id']) {
+      assert.match(
+        identityFn,
+        new RegExp(`new\\.${column}\\s+is distinct from\\s+old\\.${column}`)
+      );
+    }
+    assert.match(
+      identityFn,
+      /questionnaire response identity is immutable after insert \(id, user_id, version_id, question_id\)/
+    );
+    assert.match(
+      migration,
+      /create trigger user_questionnaire_responses_identity_immutable\s+before update on public\.user_questionnaire_responses/
+    );
+
+    // 2. Answer-state, qualifier, and identity-field updates remain permitted
+    // (function must not reject these editable columns).
+    for (const editable of [
+      'response_state',
+      'active_qualifiers',
+      'identity_refinement',
+      'identity_user_supplied',
+      'identity_public_display_allowed',
+      'identity_private_matching_allowed',
+    ]) {
+      assert.doesNotMatch(
+        identityFn,
+        new RegExp(`new\\.${editable}\\s+is distinct from\\s+old\\.${editable}`)
+      );
+      assert.match(migration, new RegExp(`\\b${editable}\\b`));
+    }
+
+    // 3. Selected-choice/question integrity cannot be broken by re-pointing the parent.
+    assert.match(
+      migration,
+      /selected choice must belong to the response question/
+    );
+    assert.match(
+      identityFn,
+      /create a separate response row for another question/
+    );
+    assert.match(
+      migration,
+      /Response identity is immutable after insert so selected\/priority choices cannot/
+    );
   });
 
   it('applies owner-only RLS for private responses and read-only catalog policies', () => {
