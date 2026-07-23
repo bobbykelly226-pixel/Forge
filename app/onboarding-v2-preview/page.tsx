@@ -4,6 +4,7 @@ import { redirect } from 'next/navigation';
 import ForgeAppCanvas from '@/components/ForgeAppCanvas';
 import Category01PreviewShell from '@/components/questionnaire-preview/Category01PreviewShell';
 import { CATEGORY_01 } from '@/lib/questionnaire/catalog';
+import { PREVIEW_PAGE_DESCRIPTION } from '@/lib/questionnaire/preview/category-01-preview-flow';
 import { createClient } from '@/lib/supabase/server';
 
 const display = Fraunces({
@@ -20,8 +21,7 @@ const sans = Manrope({
 
 export const metadata = {
   title: 'Onboarding 2.0 Preview | Forge',
-  description:
-    'Preview Category 1 — Relationship Vision & Intentions from the Forge Compatibility Profile.',
+  description: PREVIEW_PAGE_DESCRIPTION,
   robots: {
     index: false,
     follow: false,

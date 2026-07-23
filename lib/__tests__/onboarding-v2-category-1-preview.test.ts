@@ -15,6 +15,7 @@ import {
   isCategoryPreviewComplete,
   isMultiSelectAtMax,
   PREVIEW_NOTICE,
+  PREVIEW_PAGE_DESCRIPTION,
   questionsWithPriorityFollowUp,
   retreatStep,
   SELECTION_LIMIT_MESSAGE,
@@ -345,6 +346,7 @@ describe('Category 1 onboarding preview flow', () => {
       { label: 'complete eyebrow', value: COMPLETE_COPY.eyebrow },
       { label: 'complete body', value: COMPLETE_COPY.body },
       { label: 'preview notice', value: PREVIEW_NOTICE },
+      { label: 'preview page metadata description', value: PREVIEW_PAGE_DESCRIPTION },
       { label: 'selection limit guidance', value: SELECTION_LIMIT_MESSAGE },
       { label: 'priority phase label', value: 'Priority follow up' },
       {
@@ -369,6 +371,14 @@ describe('Category 1 onboarding preview flow', () => {
       CATEGORY_01.questions.find((q) => q.number === 9)?.formatLabel,
       'Scenario based choice'
     );
+
+    const previewPage = read('app/onboarding-v2-preview/page.tsx');
+    assert.match(previewPage, /PREVIEW_PAGE_DESCRIPTION/);
+    assert.match(
+      previewPage,
+      /description:\s*PREVIEW_PAGE_DESCRIPTION/
+    );
+    assert.doesNotMatch(previewPage, /Preview Category 1\s*[—–-]/);
 
     for (const { label, value } of catalogStrings) {
       assertNoDashPunctuation(label, value);

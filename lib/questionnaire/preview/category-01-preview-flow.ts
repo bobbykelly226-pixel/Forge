@@ -24,6 +24,10 @@ export type SelectionResult =
 export const PREVIEW_NOTICE =
   'Preview mode. Your answers are not being saved yet.' as const;
 
+/** Page metadata description for `/onboarding-v2-preview` (user facing). */
+export const PREVIEW_PAGE_DESCRIPTION =
+  'Preview Category 1. Relationship Vision & Intentions from the Forge Compatibility Profile.' as const;
+
 export const INTRO_COPY = {
   eyebrow: 'Compatibility Profile',
   body: 'The future you want and the way you build toward it shapes whether a relationship can grow with clarity. These questions help Forge understand your intentions, expectations, and room for flexibility.',
