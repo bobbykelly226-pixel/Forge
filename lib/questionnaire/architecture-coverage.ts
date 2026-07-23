@@ -9,6 +9,15 @@ import type { ResponseBehavior, ResponseState } from '@/lib/questionnaire/types'
 import masterStructureManifest from '@/lib/questionnaire/fixtures/master-structure-manifest.json';
 
 export { getArchitectureCoverageCatalog, ARCHITECTURE_COVERAGE_QUESTIONS } from '@/lib/questionnaire/architecture-coverage-examples';
+export {
+  getSyntheticCatalogFromManifest,
+  getManifestQuestion,
+  SYNTHETIC_ELIGIBILITY_DESCRIPTION,
+} from '@/lib/questionnaire/synthetic-catalog-from-manifest';
+export type {
+  ManifestQuestion,
+  ManifestSpecialChoice,
+} from '@/lib/questionnaire/synthetic-catalog-from-manifest';
 
 /** Exact HQ format labels observed in the master (trailing markdown asterisks normalized). */
 export const MASTER_FORMAT_LABELS = [
@@ -91,14 +100,22 @@ export const MASTER_STRUCTURE_MANIFEST = masterStructureManifest;
 export const MASTER_STRUCTURE_COUNTS = {
   questions: masterStructureManifest.questionCount,
   distinctFormatLabels: MASTER_FORMAT_LABELS.length,
-  contextNotes: 31,
-  implementationNotes: 18,
-  eligibilityRuleAttachments: 3,
+  contextNotes: masterStructureManifest.questions.filter((q) => q.hasContextNote).length,
+  implementationNotes: masterStructureManifest.questions.filter((q) => q.hasImplementationNote)
+    .length,
+  eligibilityRuleAttachments: masterStructureManifest.questions.filter((q) => q.hasEligibility)
+    .length,
   uniqueEligibilityDescriptions: 1,
-  priorityFollowUps: 38,
-  selectAllThatApply: 9,
-  conditionalScenarioQuestions: 4,
-  structuredIdentitySelections: 2,
+  priorityFollowUps: masterStructureManifest.questions.filter((q) => q.priorityFollowUp).length,
+  selectAllThatApply: masterStructureManifest.questions.filter((q) =>
+    q.features.includes('select_all')
+  ).length,
+  conditionalScenarioQuestions: masterStructureManifest.questions.filter(
+    (q) => q.isConditionalScenario
+  ).length,
+  structuredIdentitySelections: masterStructureManifest.questions.filter(
+    (q) => q.responseBehavior === 'structured_identity'
+  ).length,
 } as const;
 
 export const FOUNDATION_CAPABILITY_MANIFEST = {

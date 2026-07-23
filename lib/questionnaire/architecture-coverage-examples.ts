@@ -241,7 +241,7 @@ const INTEGRITY_QUALIFIERS = q('coverage_c10_q14', {
   responseBehavior: 'multi_select',
   selectAllThatApply: true,
   implementationNote:
-    'This is an unrestricted multi-select. An unselected difference cannot automatically be treated as rejection unless another answer establishes the boundary.',
+    'This is an unrestricted multi-select. Limited-openness and evaluation-preference are distinct architecture-only qualifiers that may coexist with concrete accepted differences.',
   alignmentPurpose:
     'Records genuine openness to differences in privacy, disclosure, repair, and moral reasoning without implying acceptance of deception, coercion, or unsafe conduct.',
   minSelections: 0,
@@ -253,15 +253,27 @@ const INTEGRITY_QUALIFIERS = q('coverage_c10_q14', {
       'Different levels of general openness',
       'Different needs for personal privacy',
       'Different timing when discussing sensitive information',
+      'Different preferences about sharing passwords or device access',
+      'Different comfort levels with seeking outside advice',
+      'Different definitions of minor or harmless omissions',
+      'Different approaches to forgiveness',
+      'Different timelines for rebuilding trust',
+      'Different expectations about public versus private relationship information',
+      'Different moral, cultural, religious, or personal frameworks',
+      'A partner who needs time before discussing a mistake',
+      'A partner whose capacity affects organization or follow-through',
+      'A past mistake that has been honestly disclosed and meaningfully addressed',
+      'Differences that do not compromise informed consent, safety, or essential trust',
+      // Architecture-only qualifier choices (master defines these outside the listed difference set).
       'I need substantial agreement and have limited openness to integrity-related differences',
       'Integrity is best evaluated through the relationship rather than predetermined compatibility rules',
     ],
     {
-      4: {
+      15: {
         qualifier: 'limited_openness',
         qualifierCoexistsWithSelections: true,
       },
-      5: {
+      16: {
         qualifier: 'evaluation_preference',
         qualifierCoexistsWithSelections: true,
       },

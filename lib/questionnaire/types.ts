@@ -216,6 +216,33 @@ export type QuestionnaireCatalog = {
   eligibilityRules: EligibilityRuleDefinition[];
 };
 
+/**
+ * Private response storage shape (owner-only). Architecture only —
+ * does not expose identity or answers on public profiles.
+ */
+export type PrivateSelectedChoice = {
+  choiceId: string;
+  /** Optional unscored context associated with the selected choice. */
+  contextText?: string | null;
+};
+
+export type PrivateIdentityFields = {
+  refinement?: string | null;
+  userSupplied?: string | null;
+  publicDisplayAllowed?: boolean | null;
+  privateMatchingAllowed?: boolean | null;
+};
+
+export type PrivateQuestionnaireResponse = {
+  questionId: string;
+  responseState: ResponseState;
+  activeQualifiers: readonly ResponseQualifier[];
+  selectedChoices: readonly PrivateSelectedChoice[];
+  /** Unordered priority subset of selectedChoices when configured. */
+  priorityChoiceIds?: readonly string[];
+  identity?: PrivateIdentityFields;
+};
+
 export type CatalogValidationIssue = {
   code: string;
   message: string;

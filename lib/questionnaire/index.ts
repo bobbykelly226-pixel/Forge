@@ -8,6 +8,9 @@ export type {
   EligibilityRuleDefinition,
   OptionalChoiceContextDefinition,
   PriorityFollowUpDefinition,
+  PrivateIdentityFields,
+  PrivateQuestionnaireResponse,
+  PrivateSelectedChoice,
   QuestionDefinition,
   QuestionnaireCatalog,
   ResponseBehavior,
@@ -46,5 +49,7 @@ export {
   MASTER_STRUCTURE_COUNTS,
   MASTER_STRUCTURE_MANIFEST,
   getArchitectureCoverageCatalog,
+  getManifestQuestion,
+  getSyntheticCatalogFromManifest,
   resolveResponseBehavior,
 } from '@/lib/questionnaire/architecture-coverage';
