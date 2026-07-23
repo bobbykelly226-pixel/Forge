@@ -1,0 +1,3110 @@
+{
+  "source": "Forge Compatibility Profile — 150 Final Locked Questions",
+  "note": "Derived structural/architecture metadata only. Not a live catalog import of Categories 2–10. Placeholder synthetic catalogs may be built from this manifest for validator coverage; user-facing prompts/options for Categories 2–10 are intentionally omitted.",
+  "questionCount": 150,
+  "questions": [
+    {
+      "categoryNumber": 1,
+      "categoryTitle": "Relationship Vision & Intentions",
+      "questionNumber": 1,
+      "formatLabel": "Single choice",
+      "responseBehavior": "single_choice",
+      "listedChoiceCount": 5,
+      "choiceCount": 5,
+      "minSelections": 1,
+      "maxSelections": 1,
+      "features": [],
+      "specialChoices": [],
+      "hasContextNote": false,
+      "hasImplementationNote": false,
+      "hasEligibility": false,
+      "isConditionalScenario": false
+    },
+    {
+      "categoryNumber": 1,
+      "categoryTitle": "Relationship Vision & Intentions",
+      "questionNumber": 2,
+      "formatLabel": "Importance scale",
+      "responseBehavior": "scale_range",
+      "listedChoiceCount": 5,
+      "choiceCount": 5,
+      "minSelections": 1,
+      "maxSelections": 1,
+      "features": [],
+      "specialChoices": [],
+      "hasContextNote": false,
+      "hasImplementationNote": false,
+      "hasEligibility": false,
+      "isConditionalScenario": false
+    },
+    {
+      "categoryNumber": 1,
+      "categoryTitle": "Relationship Vision & Intentions",
+      "questionNumber": 3,
+      "formatLabel": "Single choice",
+      "responseBehavior": "single_choice",
+      "listedChoiceCount": 5,
+      "choiceCount": 5,
+      "minSelections": 1,
+      "maxSelections": 1,
+      "features": [],
+      "specialChoices": [],
+      "hasContextNote": false,
+      "hasImplementationNote": false,
+      "hasEligibility": false,
+      "isConditionalScenario": false
+    },
+    {
+      "categoryNumber": 1,
+      "categoryTitle": "Relationship Vision & Intentions",
+      "questionNumber": 4,
+      "formatLabel": "Single choice",
+      "responseBehavior": "single_choice",
+      "listedChoiceCount": 5,
+      "choiceCount": 5,
+      "minSelections": 1,
+      "maxSelections": 1,
+      "features": [],
+      "specialChoices": [],
+      "hasContextNote": false,
+      "hasImplementationNote": false,
+      "hasEligibility": false,
+      "isConditionalScenario": false
+    },
+    {
+      "categoryNumber": 1,
+      "categoryTitle": "Relationship Vision & Intentions",
+      "questionNumber": 5,
+      "formatLabel": "Select up to four",
+      "responseBehavior": "multi_select",
+      "listedChoiceCount": 9,
+      "choiceCount": 9,
+      "minSelections": 1,
+      "maxSelections": 4,
+      "features": [
+        "priority_follow_up"
+      ],
+      "specialChoices": [],
+      "priorityFollowUp": {
+        "selectionCount": 2,
+        "unordered": true,
+        "minEligibleSelectionsBeforeDisplay": 2
+      },
+      "hasContextNote": false,
+      "hasImplementationNote": false,
+      "hasEligibility": false,
+      "isConditionalScenario": false
+    },
+    {
+      "categoryNumber": 1,
+      "categoryTitle": "Relationship Vision & Intentions",
+      "questionNumber": 6,
+      "formatLabel": "Agreement scale",
+      "responseBehavior": "scale_range",
+      "listedChoiceCount": 5,
+      "choiceCount": 5,
+      "minSelections": 1,
+      "maxSelections": 1,
+      "features": [],
+      "specialChoices": [],
+      "hasContextNote": false,
+      "hasImplementationNote": false,
+      "hasEligibility": false,
+      "isConditionalScenario": false
+    },
+    {
+      "categoryNumber": 1,
+      "categoryTitle": "Relationship Vision & Intentions",
+      "questionNumber": 7,
+      "formatLabel": "Single choice",
+      "responseBehavior": "single_choice",
+      "listedChoiceCount": 5,
+      "choiceCount": 5,
+      "minSelections": 1,
+      "maxSelections": 1,
+      "features": [],
+      "specialChoices": [],
+      "hasContextNote": false,
+      "hasImplementationNote": false,
+      "hasEligibility": false,
+      "isConditionalScenario": false
+    },
+    {
+      "categoryNumber": 1,
+      "categoryTitle": "Relationship Vision & Intentions",
+      "questionNumber": 8,
+      "formatLabel": "Frequency scale",
+      "responseBehavior": "scale_range",
+      "listedChoiceCount": 5,
+      "choiceCount": 5,
+      "minSelections": 1,
+      "maxSelections": 1,
+      "features": [],
+      "specialChoices": [],
+      "hasContextNote": false,
+      "hasImplementationNote": false,
+      "hasEligibility": false,
+      "isConditionalScenario": false
+    },
+    {
+      "categoryNumber": 1,
+      "categoryTitle": "Relationship Vision & Intentions",
+      "questionNumber": 9,
+      "formatLabel": "Select up to four",
+      "responseBehavior": "multi_select",
+      "listedChoiceCount": 9,
+      "choiceCount": 9,
+      "minSelections": 1,
+      "maxSelections": 4,
+      "features": [],
+      "specialChoices": [],
+      "hasContextNote": false,
+      "hasImplementationNote": false,
+      "hasEligibility": false,
+      "isConditionalScenario": false
+    },
+    {
+      "categoryNumber": 1,
+      "categoryTitle": "Relationship Vision & Intentions",
+      "questionNumber": 10,
+      "formatLabel": "Single choice",
+      "responseBehavior": "single_choice",
+      "listedChoiceCount": 5,
+      "choiceCount": 5,
+      "minSelections": 1,
+      "maxSelections": 1,
+      "features": [],
+      "specialChoices": [],
+      "hasContextNote": false,
+      "hasImplementationNote": false,
+      "hasEligibility": false,
+      "isConditionalScenario": false
+    },
+    {
+      "categoryNumber": 1,
+      "categoryTitle": "Relationship Vision & Intentions",
+      "questionNumber": 11,
+      "formatLabel": "Importance scale",
+      "responseBehavior": "scale_range",
+      "listedChoiceCount": 5,
+      "choiceCount": 5,
+      "minSelections": 1,
+      "maxSelections": 1,
+      "features": [],
+      "specialChoices": [],
+      "hasContextNote": false,
+      "hasImplementationNote": false,
+      "hasEligibility": false,
+      "isConditionalScenario": false
+    },
+    {
+      "categoryNumber": 1,
+      "categoryTitle": "Relationship Vision & Intentions",
+      "questionNumber": 12,
+      "formatLabel": "Select up to five",
+      "responseBehavior": "multi_select",
+      "listedChoiceCount": 12,
+      "choiceCount": 12,
+      "minSelections": 1,
+      "maxSelections": 5,
+      "features": [
+        "priority_follow_up"
+      ],
+      "specialChoices": [],
+      "priorityFollowUp": {
+        "selectionCount": 2,
+        "unordered": true,
+        "minEligibleSelectionsBeforeDisplay": 2
+      },
+      "hasContextNote": false,
+      "hasImplementationNote": false,
+      "hasEligibility": false,
+      "isConditionalScenario": false
+    },
+    {
+      "categoryNumber": 1,
+      "categoryTitle": "Relationship Vision & Intentions",
+      "questionNumber": 13,
+      "formatLabel": "Comfort range",
+      "responseBehavior": "scale_range",
+      "listedChoiceCount": 5,
+      "choiceCount": 5,
+      "minSelections": 1,
+      "maxSelections": 1,
+      "features": [],
+      "specialChoices": [],
+      "hasContextNote": false,
+      "hasImplementationNote": false,
+      "hasEligibility": false,
+      "isConditionalScenario": false
+    },
+    {
+      "categoryNumber": 1,
+      "categoryTitle": "Relationship Vision & Intentions",
+      "questionNumber": 14,
+      "formatLabel": "Scenario-based choice",
+      "responseBehavior": "scenario_choice",
+      "listedChoiceCount": 6,
+      "choiceCount": 6,
+      "minSelections": 1,
+      "maxSelections": 1,
+      "features": [],
+      "specialChoices": [],
+      "hasContextNote": false,
+      "hasImplementationNote": false,
+      "hasEligibility": false,
+      "isConditionalScenario": false
+    },
+    {
+      "categoryNumber": 1,
+      "categoryTitle": "Relationship Vision & Intentions",
+      "questionNumber": 15,
+      "formatLabel": "Select up to five",
+      "responseBehavior": "multi_select",
+      "listedChoiceCount": 12,
+      "choiceCount": 12,
+      "minSelections": 1,
+      "maxSelections": 5,
+      "features": [
+        "priority_follow_up"
+      ],
+      "specialChoices": [],
+      "priorityFollowUp": {
+        "selectionCount": 2,
+        "unordered": true,
+        "minEligibleSelectionsBeforeDisplay": 2
+      },
+      "hasContextNote": false,
+      "hasImplementationNote": false,
+      "hasEligibility": false,
+      "isConditionalScenario": false
+    },
+    {
+      "categoryNumber": 2,
+      "categoryTitle": "Values & Character",
+      "questionNumber": 1,
+      "formatLabel": "Select up to five",
+      "responseBehavior": "multi_select",
+      "listedChoiceCount": 15,
+      "choiceCount": 15,
+      "minSelections": 1,
+      "maxSelections": 5,
+      "features": [
+        "priority_follow_up"
+      ],
+      "specialChoices": [],
+      "priorityFollowUp": {
+        "selectionCount": 2,
+        "unordered": true,
+        "minEligibleSelectionsBeforeDisplay": 2
+      },
+      "hasContextNote": false,
+      "hasImplementationNote": false,
+      "hasEligibility": false,
+      "isConditionalScenario": false
+    },
+    {
+      "categoryNumber": 2,
+      "categoryTitle": "Values & Character",
+      "questionNumber": 2,
+      "formatLabel": "Scenario-based choice",
+      "responseBehavior": "scenario_choice",
+      "listedChoiceCount": 5,
+      "choiceCount": 5,
+      "minSelections": 1,
+      "maxSelections": 1,
+      "features": [],
+      "specialChoices": [],
+      "hasContextNote": false,
+      "hasImplementationNote": false,
+      "hasEligibility": false,
+      "isConditionalScenario": false
+    },
+    {
+      "categoryNumber": 2,
+      "categoryTitle": "Values & Character",
+      "questionNumber": 3,
+      "formatLabel": "Scenario-based choice",
+      "responseBehavior": "scenario_choice",
+      "listedChoiceCount": 6,
+      "choiceCount": 6,
+      "minSelections": 1,
+      "maxSelections": 1,
+      "features": [],
+      "specialChoices": [],
+      "hasContextNote": false,
+      "hasImplementationNote": false,
+      "hasEligibility": false,
+      "isConditionalScenario": false
+    },
+    {
+      "categoryNumber": 2,
+      "categoryTitle": "Values & Character",
+      "questionNumber": 4,
+      "formatLabel": "Select up to four",
+      "responseBehavior": "multi_select",
+      "listedChoiceCount": 8,
+      "choiceCount": 8,
+      "minSelections": 1,
+      "maxSelections": 4,
+      "features": [
+        "priority_follow_up"
+      ],
+      "specialChoices": [],
+      "priorityFollowUp": {
+        "selectionCount": 2,
+        "unordered": true,
+        "minEligibleSelectionsBeforeDisplay": 2
+      },
+      "hasContextNote": false,
+      "hasImplementationNote": false,
+      "hasEligibility": false,
+      "isConditionalScenario": false
+    },
+    {
+      "categoryNumber": 2,
+      "categoryTitle": "Values & Character",
+      "questionNumber": 5,
+      "formatLabel": "Single choice",
+      "responseBehavior": "single_choice",
+      "listedChoiceCount": 6,
+      "choiceCount": 6,
+      "minSelections": 1,
+      "maxSelections": 1,
+      "features": [],
+      "specialChoices": [],
+      "hasContextNote": false,
+      "hasImplementationNote": false,
+      "hasEligibility": false,
+      "isConditionalScenario": false
+    },
+    {
+      "categoryNumber": 2,
+      "categoryTitle": "Values & Character",
+      "questionNumber": 6,
+      "formatLabel": "Agreement scale",
+      "responseBehavior": "scale_range",
+      "listedChoiceCount": 5,
+      "choiceCount": 5,
+      "minSelections": 1,
+      "maxSelections": 1,
+      "features": [],
+      "specialChoices": [],
+      "hasContextNote": false,
+      "hasImplementationNote": false,
+      "hasEligibility": false,
+      "isConditionalScenario": false
+    },
+    {
+      "categoryNumber": 2,
+      "categoryTitle": "Values & Character",
+      "questionNumber": 7,
+      "formatLabel": "Single choice",
+      "responseBehavior": "single_choice",
+      "listedChoiceCount": 5,
+      "choiceCount": 5,
+      "minSelections": 1,
+      "maxSelections": 1,
+      "features": [],
+      "specialChoices": [],
+      "hasContextNote": false,
+      "hasImplementationNote": false,
+      "hasEligibility": false,
+      "isConditionalScenario": false
+    },
+    {
+      "categoryNumber": 2,
+      "categoryTitle": "Values & Character",
+      "questionNumber": 8,
+      "formatLabel": "Single choice",
+      "responseBehavior": "single_choice",
+      "listedChoiceCount": 6,
+      "choiceCount": 6,
+      "minSelections": 1,
+      "maxSelections": 1,
+      "features": [],
+      "specialChoices": [],
+      "hasContextNote": false,
+      "hasImplementationNote": false,
+      "hasEligibility": false,
+      "isConditionalScenario": false
+    },
+    {
+      "categoryNumber": 2,
+      "categoryTitle": "Values & Character",
+      "questionNumber": 9,
+      "formatLabel": "Single choice",
+      "responseBehavior": "single_choice",
+      "listedChoiceCount": 6,
+      "choiceCount": 6,
+      "minSelections": 1,
+      "maxSelections": 1,
+      "features": [],
+      "specialChoices": [],
+      "hasContextNote": false,
+      "hasImplementationNote": false,
+      "hasEligibility": false,
+      "isConditionalScenario": false
+    },
+    {
+      "categoryNumber": 2,
+      "categoryTitle": "Values & Character",
+      "questionNumber": 10,
+      "formatLabel": "Single choice",
+      "responseBehavior": "single_choice",
+      "listedChoiceCount": 5,
+      "choiceCount": 5,
+      "minSelections": 1,
+      "maxSelections": 1,
+      "features": [],
+      "specialChoices": [],
+      "hasContextNote": false,
+      "hasImplementationNote": false,
+      "hasEligibility": false,
+      "isConditionalScenario": false
+    },
+    {
+      "categoryNumber": 2,
+      "categoryTitle": "Values & Character",
+      "questionNumber": 11,
+      "formatLabel": "Comfort range",
+      "responseBehavior": "scale_range",
+      "listedChoiceCount": 5,
+      "choiceCount": 5,
+      "minSelections": 1,
+      "maxSelections": 1,
+      "features": [],
+      "specialChoices": [],
+      "hasContextNote": false,
+      "hasImplementationNote": false,
+      "hasEligibility": false,
+      "isConditionalScenario": false
+    },
+    {
+      "categoryNumber": 2,
+      "categoryTitle": "Values & Character",
+      "questionNumber": 12,
+      "formatLabel": "Scenario-based choice",
+      "responseBehavior": "scenario_choice",
+      "listedChoiceCount": 6,
+      "choiceCount": 6,
+      "minSelections": 1,
+      "maxSelections": 1,
+      "features": [],
+      "specialChoices": [],
+      "hasContextNote": false,
+      "hasImplementationNote": false,
+      "hasEligibility": false,
+      "isConditionalScenario": false
+    },
+    {
+      "categoryNumber": 2,
+      "categoryTitle": "Values & Character",
+      "questionNumber": 13,
+      "formatLabel": "Select up to five",
+      "responseBehavior": "multi_select",
+      "listedChoiceCount": 15,
+      "choiceCount": 15,
+      "minSelections": 1,
+      "maxSelections": 5,
+      "features": [
+        "priority_follow_up"
+      ],
+      "specialChoices": [],
+      "priorityFollowUp": {
+        "selectionCount": 2,
+        "unordered": true,
+        "minEligibleSelectionsBeforeDisplay": 2
+      },
+      "hasContextNote": false,
+      "hasImplementationNote": false,
+      "hasEligibility": false,
+      "isConditionalScenario": false
+    },
+    {
+      "categoryNumber": 2,
+      "categoryTitle": "Values & Character",
+      "questionNumber": 14,
+      "formatLabel": "Select up to three",
+      "responseBehavior": "multi_select",
+      "listedChoiceCount": 8,
+      "choiceCount": 8,
+      "minSelections": 1,
+      "maxSelections": 3,
+      "features": [],
+      "specialChoices": [],
+      "hasContextNote": false,
+      "hasImplementationNote": false,
+      "hasEligibility": false,
+      "isConditionalScenario": false
+    },
+    {
+      "categoryNumber": 2,
+      "categoryTitle": "Values & Character",
+      "questionNumber": 15,
+      "formatLabel": "Select up to five",
+      "responseBehavior": "multi_select",
+      "listedChoiceCount": 12,
+      "choiceCount": 12,
+      "minSelections": 1,
+      "maxSelections": 5,
+      "features": [
+        "priority_follow_up"
+      ],
+      "specialChoices": [],
+      "priorityFollowUp": {
+        "selectionCount": 2,
+        "unordered": true,
+        "minEligibleSelectionsBeforeDisplay": 2
+      },
+      "hasContextNote": false,
+      "hasImplementationNote": false,
+      "hasEligibility": false,
+      "isConditionalScenario": false
+    },
+    {
+      "categoryNumber": 3,
+      "categoryTitle": "Communication & Emotional Connection",
+      "questionNumber": 1,
+      "formatLabel": "Single choice",
+      "responseBehavior": "single_choice",
+      "listedChoiceCount": 5,
+      "choiceCount": 5,
+      "minSelections": 1,
+      "maxSelections": 1,
+      "features": [],
+      "specialChoices": [],
+      "hasContextNote": false,
+      "hasImplementationNote": false,
+      "hasEligibility": false,
+      "isConditionalScenario": false
+    },
+    {
+      "categoryNumber": 3,
+      "categoryTitle": "Communication & Emotional Connection",
+      "questionNumber": 2,
+      "formatLabel": "Directness scale",
+      "responseBehavior": "scale_range",
+      "listedChoiceCount": 5,
+      "choiceCount": 5,
+      "minSelections": 1,
+      "maxSelections": 1,
+      "features": [],
+      "specialChoices": [],
+      "hasContextNote": false,
+      "hasImplementationNote": false,
+      "hasEligibility": false,
+      "isConditionalScenario": false
+    },
+    {
+      "categoryNumber": 3,
+      "categoryTitle": "Communication & Emotional Connection",
+      "questionNumber": 3,
+      "formatLabel": "Select up to four",
+      "responseBehavior": "multi_select",
+      "listedChoiceCount": 10,
+      "choiceCount": 10,
+      "minSelections": 1,
+      "maxSelections": 4,
+      "features": [
+        "priority_follow_up"
+      ],
+      "specialChoices": [],
+      "priorityFollowUp": {
+        "selectionCount": 2,
+        "unordered": true,
+        "minEligibleSelectionsBeforeDisplay": 2
+      },
+      "hasContextNote": false,
+      "hasImplementationNote": false,
+      "hasEligibility": false,
+      "isConditionalScenario": false
+    },
+    {
+      "categoryNumber": 3,
+      "categoryTitle": "Communication & Emotional Connection",
+      "questionNumber": 4,
+      "formatLabel": "Single choice",
+      "responseBehavior": "single_choice",
+      "listedChoiceCount": 6,
+      "choiceCount": 6,
+      "minSelections": 1,
+      "maxSelections": 1,
+      "features": [],
+      "specialChoices": [],
+      "hasContextNote": false,
+      "hasImplementationNote": false,
+      "hasEligibility": false,
+      "isConditionalScenario": false
+    },
+    {
+      "categoryNumber": 3,
+      "categoryTitle": "Communication & Emotional Connection",
+      "questionNumber": 5,
+      "formatLabel": "Frequency range",
+      "responseBehavior": "scale_range",
+      "listedChoiceCount": 5,
+      "choiceCount": 5,
+      "minSelections": 1,
+      "maxSelections": 1,
+      "features": [],
+      "specialChoices": [],
+      "hasContextNote": false,
+      "hasImplementationNote": false,
+      "hasEligibility": false,
+      "isConditionalScenario": false
+    },
+    {
+      "categoryNumber": 3,
+      "categoryTitle": "Communication & Emotional Connection",
+      "questionNumber": 6,
+      "formatLabel": "Select up to four",
+      "responseBehavior": "multi_select",
+      "listedChoiceCount": 10,
+      "choiceCount": 10,
+      "minSelections": 1,
+      "maxSelections": 4,
+      "features": [],
+      "specialChoices": [],
+      "hasContextNote": false,
+      "hasImplementationNote": false,
+      "hasEligibility": false,
+      "isConditionalScenario": false
+    },
+    {
+      "categoryNumber": 3,
+      "categoryTitle": "Communication & Emotional Connection",
+      "questionNumber": 7,
+      "formatLabel": "Scenario-based choice",
+      "responseBehavior": "scenario_choice",
+      "listedChoiceCount": 5,
+      "choiceCount": 5,
+      "minSelections": 1,
+      "maxSelections": 1,
+      "features": [],
+      "specialChoices": [],
+      "hasContextNote": false,
+      "hasImplementationNote": false,
+      "hasEligibility": false,
+      "isConditionalScenario": false
+    },
+    {
+      "categoryNumber": 3,
+      "categoryTitle": "Communication & Emotional Connection",
+      "questionNumber": 8,
+      "formatLabel": "Comfort range",
+      "responseBehavior": "scale_range",
+      "listedChoiceCount": 5,
+      "choiceCount": 5,
+      "minSelections": 1,
+      "maxSelections": 1,
+      "features": [],
+      "specialChoices": [],
+      "hasContextNote": false,
+      "hasImplementationNote": false,
+      "hasEligibility": false,
+      "isConditionalScenario": false
+    },
+    {
+      "categoryNumber": 3,
+      "categoryTitle": "Communication & Emotional Connection",
+      "questionNumber": 9,
+      "formatLabel": "Select up to five",
+      "responseBehavior": "multi_select",
+      "listedChoiceCount": 11,
+      "choiceCount": 11,
+      "minSelections": 1,
+      "maxSelections": 5,
+      "features": [],
+      "specialChoices": [],
+      "hasContextNote": false,
+      "hasImplementationNote": false,
+      "hasEligibility": false,
+      "isConditionalScenario": false
+    },
+    {
+      "categoryNumber": 3,
+      "categoryTitle": "Communication & Emotional Connection",
+      "questionNumber": 10,
+      "formatLabel": "Single choice",
+      "responseBehavior": "single_choice",
+      "listedChoiceCount": 6,
+      "choiceCount": 6,
+      "minSelections": 1,
+      "maxSelections": 1,
+      "features": [],
+      "specialChoices": [],
+      "hasContextNote": false,
+      "hasImplementationNote": false,
+      "hasEligibility": false,
+      "isConditionalScenario": false
+    },
+    {
+      "categoryNumber": 3,
+      "categoryTitle": "Communication & Emotional Connection",
+      "questionNumber": 11,
+      "formatLabel": "Importance scale",
+      "responseBehavior": "scale_range",
+      "listedChoiceCount": 5,
+      "choiceCount": 5,
+      "minSelections": 1,
+      "maxSelections": 1,
+      "features": [],
+      "specialChoices": [],
+      "hasContextNote": false,
+      "hasImplementationNote": false,
+      "hasEligibility": false,
+      "isConditionalScenario": false
+    },
+    {
+      "categoryNumber": 3,
+      "categoryTitle": "Communication & Emotional Connection",
+      "questionNumber": 12,
+      "formatLabel": "Scenario-based choice",
+      "responseBehavior": "scenario_choice",
+      "listedChoiceCount": 6,
+      "choiceCount": 6,
+      "minSelections": 1,
+      "maxSelections": 1,
+      "features": [],
+      "specialChoices": [],
+      "hasContextNote": false,
+      "hasImplementationNote": false,
+      "hasEligibility": false,
+      "isConditionalScenario": false
+    },
+    {
+      "categoryNumber": 3,
+      "categoryTitle": "Communication & Emotional Connection",
+      "questionNumber": 13,
+      "formatLabel": "Select up to five",
+      "responseBehavior": "multi_select",
+      "listedChoiceCount": 12,
+      "choiceCount": 12,
+      "minSelections": 1,
+      "maxSelections": 5,
+      "features": [
+        "priority_follow_up"
+      ],
+      "specialChoices": [],
+      "priorityFollowUp": {
+        "selectionCount": 2,
+        "unordered": true,
+        "minEligibleSelectionsBeforeDisplay": 2
+      },
+      "hasContextNote": false,
+      "hasImplementationNote": false,
+      "hasEligibility": false,
+      "isConditionalScenario": false
+    },
+    {
+      "categoryNumber": 3,
+      "categoryTitle": "Communication & Emotional Connection",
+      "questionNumber": 14,
+      "formatLabel": "Select up to four",
+      "responseBehavior": "multi_select",
+      "listedChoiceCount": 10,
+      "choiceCount": 10,
+      "minSelections": 1,
+      "maxSelections": 4,
+      "features": [],
+      "specialChoices": [],
+      "hasContextNote": false,
+      "hasImplementationNote": false,
+      "hasEligibility": false,
+      "isConditionalScenario": false
+    },
+    {
+      "categoryNumber": 3,
+      "categoryTitle": "Communication & Emotional Connection",
+      "questionNumber": 15,
+      "formatLabel": "Select up to five",
+      "responseBehavior": "multi_select",
+      "listedChoiceCount": 12,
+      "choiceCount": 12,
+      "minSelections": 1,
+      "maxSelections": 5,
+      "features": [
+        "priority_follow_up"
+      ],
+      "specialChoices": [],
+      "priorityFollowUp": {
+        "selectionCount": 2,
+        "unordered": true,
+        "minEligibleSelectionsBeforeDisplay": 2
+      },
+      "hasContextNote": false,
+      "hasImplementationNote": false,
+      "hasEligibility": false,
+      "isConditionalScenario": false
+    },
+    {
+      "categoryNumber": 4,
+      "categoryTitle": "Conflict & Repair",
+      "questionNumber": 1,
+      "formatLabel": "Single choice",
+      "responseBehavior": "single_choice",
+      "listedChoiceCount": 6,
+      "choiceCount": 6,
+      "minSelections": 1,
+      "maxSelections": 1,
+      "features": [],
+      "specialChoices": [],
+      "hasContextNote": false,
+      "hasImplementationNote": false,
+      "hasEligibility": false,
+      "isConditionalScenario": false
+    },
+    {
+      "categoryNumber": 4,
+      "categoryTitle": "Conflict & Repair",
+      "questionNumber": 2,
+      "formatLabel": "Select up to four",
+      "responseBehavior": "multi_select",
+      "listedChoiceCount": 10,
+      "choiceCount": 10,
+      "minSelections": 1,
+      "maxSelections": 4,
+      "features": [
+        "priority_follow_up"
+      ],
+      "specialChoices": [],
+      "priorityFollowUp": {
+        "selectionCount": 2,
+        "unordered": true,
+        "minEligibleSelectionsBeforeDisplay": 2
+      },
+      "hasContextNote": false,
+      "hasImplementationNote": false,
+      "hasEligibility": false,
+      "isConditionalScenario": false
+    },
+    {
+      "categoryNumber": 4,
+      "categoryTitle": "Conflict & Repair",
+      "questionNumber": 3,
+      "formatLabel": "Comfort range",
+      "responseBehavior": "scale_range",
+      "listedChoiceCount": 5,
+      "choiceCount": 5,
+      "minSelections": 1,
+      "maxSelections": 1,
+      "features": [],
+      "specialChoices": [],
+      "hasContextNote": false,
+      "hasImplementationNote": false,
+      "hasEligibility": false,
+      "isConditionalScenario": false
+    },
+    {
+      "categoryNumber": 4,
+      "categoryTitle": "Conflict & Repair",
+      "questionNumber": 4,
+      "formatLabel": "Scenario-based choice",
+      "responseBehavior": "scenario_choice",
+      "listedChoiceCount": 6,
+      "choiceCount": 6,
+      "minSelections": 1,
+      "maxSelections": 1,
+      "features": [],
+      "specialChoices": [],
+      "hasContextNote": false,
+      "hasImplementationNote": false,
+      "hasEligibility": false,
+      "isConditionalScenario": false
+    },
+    {
+      "categoryNumber": 4,
+      "categoryTitle": "Conflict & Repair",
+      "questionNumber": 5,
+      "formatLabel": "Flexibility range",
+      "responseBehavior": "scale_range",
+      "listedChoiceCount": 5,
+      "choiceCount": 5,
+      "minSelections": 1,
+      "maxSelections": 1,
+      "features": [],
+      "specialChoices": [],
+      "hasContextNote": false,
+      "hasImplementationNote": false,
+      "hasEligibility": false,
+      "isConditionalScenario": false
+    },
+    {
+      "categoryNumber": 4,
+      "categoryTitle": "Conflict & Repair",
+      "questionNumber": 6,
+      "formatLabel": "Select up to four",
+      "responseBehavior": "multi_select",
+      "listedChoiceCount": 9,
+      "choiceCount": 9,
+      "minSelections": 1,
+      "maxSelections": 4,
+      "features": [
+        "priority_follow_up"
+      ],
+      "specialChoices": [],
+      "priorityFollowUp": {
+        "selectionCount": 2,
+        "unordered": true,
+        "minEligibleSelectionsBeforeDisplay": 2
+      },
+      "hasContextNote": false,
+      "hasImplementationNote": false,
+      "hasEligibility": false,
+      "isConditionalScenario": false
+    },
+    {
+      "categoryNumber": 4,
+      "categoryTitle": "Conflict & Repair",
+      "questionNumber": 7,
+      "formatLabel": "Single choice",
+      "responseBehavior": "single_choice",
+      "listedChoiceCount": 6,
+      "choiceCount": 6,
+      "minSelections": 1,
+      "maxSelections": 1,
+      "features": [],
+      "specialChoices": [],
+      "hasContextNote": false,
+      "hasImplementationNote": false,
+      "hasEligibility": false,
+      "isConditionalScenario": false
+    },
+    {
+      "categoryNumber": 4,
+      "categoryTitle": "Conflict & Repair",
+      "questionNumber": 8,
+      "formatLabel": "Single choice",
+      "responseBehavior": "single_choice",
+      "listedChoiceCount": 6,
+      "choiceCount": 6,
+      "minSelections": 1,
+      "maxSelections": 1,
+      "features": [],
+      "specialChoices": [],
+      "hasContextNote": false,
+      "hasImplementationNote": false,
+      "hasEligibility": false,
+      "isConditionalScenario": false
+    },
+    {
+      "categoryNumber": 4,
+      "categoryTitle": "Conflict & Repair",
+      "questionNumber": 9,
+      "formatLabel": "Select up to four",
+      "responseBehavior": "multi_select",
+      "listedChoiceCount": 9,
+      "choiceCount": 9,
+      "minSelections": 1,
+      "maxSelections": 4,
+      "features": [
+        "priority_follow_up"
+      ],
+      "specialChoices": [],
+      "priorityFollowUp": {
+        "selectionCount": 2,
+        "unordered": true,
+        "minEligibleSelectionsBeforeDisplay": 2
+      },
+      "hasContextNote": false,
+      "hasImplementationNote": false,
+      "hasEligibility": false,
+      "isConditionalScenario": false
+    },
+    {
+      "categoryNumber": 4,
+      "categoryTitle": "Conflict & Repair",
+      "questionNumber": 10,
+      "formatLabel": "Single choice",
+      "responseBehavior": "single_choice",
+      "listedChoiceCount": 6,
+      "choiceCount": 6,
+      "minSelections": 1,
+      "maxSelections": 1,
+      "features": [],
+      "specialChoices": [],
+      "hasContextNote": false,
+      "hasImplementationNote": false,
+      "hasEligibility": false,
+      "isConditionalScenario": false
+    },
+    {
+      "categoryNumber": 4,
+      "categoryTitle": "Conflict & Repair",
+      "questionNumber": 11,
+      "formatLabel": "Single choice",
+      "responseBehavior": "single_choice",
+      "listedChoiceCount": 6,
+      "choiceCount": 6,
+      "minSelections": 1,
+      "maxSelections": 1,
+      "features": [],
+      "specialChoices": [],
+      "hasContextNote": false,
+      "hasImplementationNote": false,
+      "hasEligibility": false,
+      "isConditionalScenario": false
+    },
+    {
+      "categoryNumber": 4,
+      "categoryTitle": "Conflict & Repair",
+      "questionNumber": 12,
+      "formatLabel": "Scenario-based choice",
+      "responseBehavior": "scenario_choice",
+      "listedChoiceCount": 6,
+      "choiceCount": 6,
+      "minSelections": 1,
+      "maxSelections": 1,
+      "features": [],
+      "specialChoices": [],
+      "hasContextNote": false,
+      "hasImplementationNote": false,
+      "hasEligibility": false,
+      "isConditionalScenario": false
+    },
+    {
+      "categoryNumber": 4,
+      "categoryTitle": "Conflict & Repair",
+      "questionNumber": 13,
+      "formatLabel": "Select up to five",
+      "responseBehavior": "multi_select",
+      "listedChoiceCount": 12,
+      "choiceCount": 12,
+      "minSelections": 1,
+      "maxSelections": 5,
+      "features": [
+        "priority_follow_up"
+      ],
+      "specialChoices": [],
+      "priorityFollowUp": {
+        "selectionCount": 2,
+        "unordered": true,
+        "minEligibleSelectionsBeforeDisplay": 2
+      },
+      "hasContextNote": false,
+      "hasImplementationNote": false,
+      "hasEligibility": false,
+      "isConditionalScenario": false
+    },
+    {
+      "categoryNumber": 4,
+      "categoryTitle": "Conflict & Repair",
+      "questionNumber": 14,
+      "formatLabel": "Select up to three",
+      "responseBehavior": "multi_select",
+      "listedChoiceCount": 9,
+      "choiceCount": 9,
+      "minSelections": 1,
+      "maxSelections": 3,
+      "features": [],
+      "specialChoices": [],
+      "hasContextNote": false,
+      "hasImplementationNote": false,
+      "hasEligibility": false,
+      "isConditionalScenario": false
+    },
+    {
+      "categoryNumber": 4,
+      "categoryTitle": "Conflict & Repair",
+      "questionNumber": 15,
+      "formatLabel": "Select up to five",
+      "responseBehavior": "multi_select",
+      "listedChoiceCount": 12,
+      "choiceCount": 12,
+      "minSelections": 1,
+      "maxSelections": 5,
+      "features": [
+        "priority_follow_up"
+      ],
+      "specialChoices": [],
+      "priorityFollowUp": {
+        "selectionCount": 2,
+        "unordered": true,
+        "minEligibleSelectionsBeforeDisplay": 2
+      },
+      "hasContextNote": false,
+      "hasImplementationNote": false,
+      "hasEligibility": false,
+      "isConditionalScenario": false
+    },
+    {
+      "categoryNumber": 5,
+      "categoryTitle": "Commitment & Partnership",
+      "questionNumber": 1,
+      "formatLabel": "Select up to four",
+      "responseBehavior": "multi_select",
+      "listedChoiceCount": 10,
+      "choiceCount": 10,
+      "minSelections": 1,
+      "maxSelections": 4,
+      "features": [
+        "priority_follow_up"
+      ],
+      "specialChoices": [],
+      "priorityFollowUp": {
+        "selectionCount": 2,
+        "unordered": true,
+        "minEligibleSelectionsBeforeDisplay": 2
+      },
+      "hasContextNote": false,
+      "hasImplementationNote": false,
+      "hasEligibility": false,
+      "isConditionalScenario": false
+    },
+    {
+      "categoryNumber": 5,
+      "categoryTitle": "Commitment & Partnership",
+      "questionNumber": 2,
+      "formatLabel": "Select up to four",
+      "responseBehavior": "multi_select",
+      "listedChoiceCount": 9,
+      "choiceCount": 9,
+      "minSelections": 1,
+      "maxSelections": 4,
+      "features": [
+        "priority_follow_up"
+      ],
+      "specialChoices": [],
+      "priorityFollowUp": {
+        "selectionCount": 2,
+        "unordered": true,
+        "minEligibleSelectionsBeforeDisplay": 2
+      },
+      "hasContextNote": false,
+      "hasImplementationNote": false,
+      "hasEligibility": false,
+      "isConditionalScenario": false
+    },
+    {
+      "categoryNumber": 5,
+      "categoryTitle": "Commitment & Partnership",
+      "questionNumber": 3,
+      "formatLabel": "Single choice",
+      "responseBehavior": "single_choice",
+      "listedChoiceCount": 6,
+      "choiceCount": 6,
+      "minSelections": 1,
+      "maxSelections": 1,
+      "features": [],
+      "specialChoices": [],
+      "hasContextNote": false,
+      "hasImplementationNote": false,
+      "hasEligibility": false,
+      "isConditionalScenario": false
+    },
+    {
+      "categoryNumber": 5,
+      "categoryTitle": "Commitment & Partnership",
+      "questionNumber": 4,
+      "formatLabel": "Scenario-based choice",
+      "responseBehavior": "scenario_choice",
+      "listedChoiceCount": 6,
+      "choiceCount": 6,
+      "minSelections": 1,
+      "maxSelections": 1,
+      "features": [],
+      "specialChoices": [],
+      "hasContextNote": false,
+      "hasImplementationNote": false,
+      "hasEligibility": false,
+      "isConditionalScenario": false
+    },
+    {
+      "categoryNumber": 5,
+      "categoryTitle": "Commitment & Partnership",
+      "questionNumber": 5,
+      "formatLabel": "Independence range",
+      "responseBehavior": "scale_range",
+      "listedChoiceCount": 5,
+      "choiceCount": 5,
+      "minSelections": 1,
+      "maxSelections": 1,
+      "features": [],
+      "specialChoices": [],
+      "hasContextNote": false,
+      "hasImplementationNote": false,
+      "hasEligibility": false,
+      "isConditionalScenario": false
+    },
+    {
+      "categoryNumber": 5,
+      "categoryTitle": "Commitment & Partnership",
+      "questionNumber": 6,
+      "formatLabel": "Select up to five",
+      "responseBehavior": "multi_select",
+      "listedChoiceCount": 10,
+      "choiceCount": 10,
+      "minSelections": 1,
+      "maxSelections": 5,
+      "features": [],
+      "specialChoices": [],
+      "hasContextNote": false,
+      "hasImplementationNote": false,
+      "hasEligibility": false,
+      "isConditionalScenario": false
+    },
+    {
+      "categoryNumber": 5,
+      "categoryTitle": "Commitment & Partnership",
+      "questionNumber": 7,
+      "formatLabel": "Scenario-based choice",
+      "responseBehavior": "scenario_choice",
+      "listedChoiceCount": 7,
+      "choiceCount": 7,
+      "minSelections": 1,
+      "maxSelections": 1,
+      "features": [],
+      "specialChoices": [],
+      "hasContextNote": false,
+      "hasImplementationNote": false,
+      "hasEligibility": false,
+      "isConditionalScenario": false
+    },
+    {
+      "categoryNumber": 5,
+      "categoryTitle": "Commitment & Partnership",
+      "questionNumber": 8,
+      "formatLabel": "Select up to four",
+      "responseBehavior": "multi_select",
+      "listedChoiceCount": 9,
+      "choiceCount": 9,
+      "minSelections": 1,
+      "maxSelections": 4,
+      "features": [
+        "priority_follow_up"
+      ],
+      "specialChoices": [],
+      "priorityFollowUp": {
+        "selectionCount": 2,
+        "unordered": true,
+        "minEligibleSelectionsBeforeDisplay": 2
+      },
+      "hasContextNote": false,
+      "hasImplementationNote": false,
+      "hasEligibility": false,
+      "isConditionalScenario": false
+    },
+    {
+      "categoryNumber": 5,
+      "categoryTitle": "Commitment & Partnership",
+      "questionNumber": 9,
+      "formatLabel": "Single choice",
+      "responseBehavior": "single_choice",
+      "listedChoiceCount": 7,
+      "choiceCount": 7,
+      "minSelections": 1,
+      "maxSelections": 1,
+      "features": [],
+      "specialChoices": [],
+      "hasContextNote": false,
+      "hasImplementationNote": false,
+      "hasEligibility": false,
+      "isConditionalScenario": false
+    },
+    {
+      "categoryNumber": 5,
+      "categoryTitle": "Commitment & Partnership",
+      "questionNumber": 10,
+      "formatLabel": "Select up to four",
+      "responseBehavior": "multi_select",
+      "listedChoiceCount": 10,
+      "choiceCount": 10,
+      "minSelections": 1,
+      "maxSelections": 4,
+      "features": [
+        "priority_follow_up"
+      ],
+      "specialChoices": [],
+      "priorityFollowUp": {
+        "selectionCount": 2,
+        "unordered": true,
+        "minEligibleSelectionsBeforeDisplay": 2
+      },
+      "hasContextNote": false,
+      "hasImplementationNote": false,
+      "hasEligibility": false,
+      "isConditionalScenario": false
+    },
+    {
+      "categoryNumber": 5,
+      "categoryTitle": "Commitment & Partnership",
+      "questionNumber": 11,
+      "formatLabel": "Single choice",
+      "responseBehavior": "single_choice",
+      "listedChoiceCount": 6,
+      "choiceCount": 6,
+      "minSelections": 1,
+      "maxSelections": 1,
+      "features": [],
+      "specialChoices": [],
+      "hasContextNote": false,
+      "hasImplementationNote": false,
+      "hasEligibility": false,
+      "isConditionalScenario": false
+    },
+    {
+      "categoryNumber": 5,
+      "categoryTitle": "Commitment & Partnership",
+      "questionNumber": 12,
+      "formatLabel": "Support range",
+      "responseBehavior": "scale_range",
+      "listedChoiceCount": 5,
+      "choiceCount": 5,
+      "minSelections": 1,
+      "maxSelections": 1,
+      "features": [
+        "context_note"
+      ],
+      "specialChoices": [],
+      "hasContextNote": true,
+      "hasImplementationNote": false,
+      "hasEligibility": false,
+      "isConditionalScenario": false
+    },
+    {
+      "categoryNumber": 5,
+      "categoryTitle": "Commitment & Partnership",
+      "questionNumber": 13,
+      "formatLabel": "Select up to five",
+      "responseBehavior": "multi_select",
+      "listedChoiceCount": 12,
+      "choiceCount": 12,
+      "minSelections": 1,
+      "maxSelections": 5,
+      "features": [
+        "priority_follow_up"
+      ],
+      "specialChoices": [],
+      "priorityFollowUp": {
+        "selectionCount": 2,
+        "unordered": true,
+        "minEligibleSelectionsBeforeDisplay": 2
+      },
+      "hasContextNote": false,
+      "hasImplementationNote": false,
+      "hasEligibility": false,
+      "isConditionalScenario": false
+    },
+    {
+      "categoryNumber": 5,
+      "categoryTitle": "Commitment & Partnership",
+      "questionNumber": 14,
+      "formatLabel": "Select up to four",
+      "responseBehavior": "multi_select",
+      "listedChoiceCount": 10,
+      "choiceCount": 10,
+      "minSelections": 1,
+      "maxSelections": 4,
+      "features": [],
+      "specialChoices": [],
+      "hasContextNote": false,
+      "hasImplementationNote": false,
+      "hasEligibility": false,
+      "isConditionalScenario": false
+    },
+    {
+      "categoryNumber": 5,
+      "categoryTitle": "Commitment & Partnership",
+      "questionNumber": 15,
+      "formatLabel": "Select up to five",
+      "responseBehavior": "multi_select",
+      "listedChoiceCount": 12,
+      "choiceCount": 12,
+      "minSelections": 1,
+      "maxSelections": 5,
+      "features": [
+        "priority_follow_up"
+      ],
+      "specialChoices": [],
+      "priorityFollowUp": {
+        "selectionCount": 2,
+        "unordered": true,
+        "minEligibleSelectionsBeforeDisplay": 2
+      },
+      "hasContextNote": false,
+      "hasImplementationNote": false,
+      "hasEligibility": false,
+      "isConditionalScenario": false
+    },
+    {
+      "categoryNumber": 6,
+      "categoryTitle": "Family, Children & Parenting",
+      "questionNumber": 1,
+      "formatLabel": "Family-involvement range",
+      "responseBehavior": "scale_range",
+      "listedChoiceCount": 5,
+      "choiceCount": 5,
+      "minSelections": 1,
+      "maxSelections": 1,
+      "features": [],
+      "specialChoices": [],
+      "hasContextNote": false,
+      "hasImplementationNote": false,
+      "hasEligibility": false,
+      "isConditionalScenario": false
+    },
+    {
+      "categoryNumber": 6,
+      "categoryTitle": "Family, Children & Parenting",
+      "questionNumber": 2,
+      "formatLabel": "Select up to four",
+      "responseBehavior": "multi_select",
+      "listedChoiceCount": 10,
+      "choiceCount": 10,
+      "minSelections": 1,
+      "maxSelections": 4,
+      "features": [
+        "priority_follow_up"
+      ],
+      "specialChoices": [],
+      "priorityFollowUp": {
+        "selectionCount": 2,
+        "unordered": true,
+        "minEligibleSelectionsBeforeDisplay": 2
+      },
+      "hasContextNote": false,
+      "hasImplementationNote": false,
+      "hasEligibility": false,
+      "isConditionalScenario": false
+    },
+    {
+      "categoryNumber": 6,
+      "categoryTitle": "Family, Children & Parenting",
+      "questionNumber": 3,
+      "formatLabel": "Importance scale",
+      "responseBehavior": "scale_range",
+      "listedChoiceCount": 5,
+      "choiceCount": 5,
+      "minSelections": 1,
+      "maxSelections": 1,
+      "features": [
+        "context_note"
+      ],
+      "specialChoices": [],
+      "hasContextNote": true,
+      "hasImplementationNote": false,
+      "hasEligibility": false,
+      "isConditionalScenario": false
+    },
+    {
+      "categoryNumber": 6,
+      "categoryTitle": "Family, Children & Parenting",
+      "questionNumber": 4,
+      "formatLabel": "Scenario-based choice",
+      "responseBehavior": "scenario_choice",
+      "listedChoiceCount": 6,
+      "choiceCount": 6,
+      "minSelections": 1,
+      "maxSelections": 1,
+      "features": [],
+      "specialChoices": [],
+      "hasContextNote": false,
+      "hasImplementationNote": false,
+      "hasEligibility": false,
+      "isConditionalScenario": false
+    },
+    {
+      "categoryNumber": 6,
+      "categoryTitle": "Family, Children & Parenting",
+      "questionNumber": 5,
+      "formatLabel": "Select up to five",
+      "responseBehavior": "multi_select",
+      "listedChoiceCount": 10,
+      "choiceCount": 10,
+      "minSelections": 1,
+      "maxSelections": 5,
+      "features": [
+        "priority_follow_up"
+      ],
+      "specialChoices": [],
+      "priorityFollowUp": {
+        "selectionCount": 2,
+        "unordered": true,
+        "minEligibleSelectionsBeforeDisplay": 2
+      },
+      "hasContextNote": false,
+      "hasImplementationNote": false,
+      "hasEligibility": false,
+      "isConditionalScenario": false
+    },
+    {
+      "categoryNumber": 6,
+      "categoryTitle": "Family, Children & Parenting",
+      "questionNumber": 6,
+      "formatLabel": "Scenario-based choice",
+      "responseBehavior": "scenario_choice",
+      "listedChoiceCount": 7,
+      "choiceCount": 7,
+      "minSelections": 1,
+      "maxSelections": 1,
+      "features": [],
+      "specialChoices": [],
+      "hasContextNote": false,
+      "hasImplementationNote": false,
+      "hasEligibility": false,
+      "isConditionalScenario": false
+    },
+    {
+      "categoryNumber": 6,
+      "categoryTitle": "Family, Children & Parenting",
+      "questionNumber": 7,
+      "formatLabel": "Support range",
+      "responseBehavior": "scale_range",
+      "listedChoiceCount": 5,
+      "choiceCount": 5,
+      "minSelections": 1,
+      "maxSelections": 1,
+      "features": [
+        "context_note"
+      ],
+      "specialChoices": [],
+      "hasContextNote": true,
+      "hasImplementationNote": false,
+      "hasEligibility": false,
+      "isConditionalScenario": false
+    },
+    {
+      "categoryNumber": 6,
+      "categoryTitle": "Family, Children & Parenting",
+      "questionNumber": 8,
+      "formatLabel": "Select all that apply",
+      "responseBehavior": "multi_select",
+      "listedChoiceCount": 10,
+      "choiceCount": 10,
+      "minSelections": 0,
+      "maxSelections": null,
+      "features": [
+        "select_all"
+      ],
+      "specialChoices": [],
+      "hasContextNote": false,
+      "hasImplementationNote": false,
+      "hasEligibility": false,
+      "isConditionalScenario": false
+    },
+    {
+      "categoryNumber": 6,
+      "categoryTitle": "Family, Children & Parenting",
+      "questionNumber": 9,
+      "formatLabel": "Scenario-based choice",
+      "responseBehavior": "scenario_choice",
+      "listedChoiceCount": 6,
+      "choiceCount": 6,
+      "minSelections": 1,
+      "maxSelections": 1,
+      "features": [],
+      "specialChoices": [],
+      "hasContextNote": false,
+      "hasImplementationNote": false,
+      "hasEligibility": false,
+      "isConditionalScenario": false
+    },
+    {
+      "categoryNumber": 6,
+      "categoryTitle": "Family, Children & Parenting",
+      "questionNumber": 10,
+      "formatLabel": "Single choice",
+      "responseBehavior": "single_choice",
+      "listedChoiceCount": 6,
+      "choiceCount": 6,
+      "minSelections": 1,
+      "maxSelections": 1,
+      "features": [],
+      "specialChoices": [],
+      "hasContextNote": false,
+      "hasImplementationNote": false,
+      "hasEligibility": false,
+      "isConditionalScenario": false
+    },
+    {
+      "categoryNumber": 6,
+      "categoryTitle": "Family, Children & Parenting",
+      "questionNumber": 11,
+      "formatLabel": "Select up to five",
+      "responseBehavior": "multi_select",
+      "listedChoiceCount": 12,
+      "choiceCount": 12,
+      "minSelections": 1,
+      "maxSelections": 5,
+      "features": [
+        "priority_follow_up"
+      ],
+      "specialChoices": [],
+      "priorityFollowUp": {
+        "selectionCount": 2,
+        "unordered": true,
+        "minEligibleSelectionsBeforeDisplay": 2
+      },
+      "hasContextNote": false,
+      "hasImplementationNote": false,
+      "hasEligibility": false,
+      "isConditionalScenario": false
+    },
+    {
+      "categoryNumber": 6,
+      "categoryTitle": "Family, Children & Parenting",
+      "questionNumber": 12,
+      "formatLabel": "Single choice",
+      "responseBehavior": "single_choice",
+      "listedChoiceCount": 6,
+      "choiceCount": 6,
+      "minSelections": 1,
+      "maxSelections": 1,
+      "features": [],
+      "specialChoices": [],
+      "hasContextNote": false,
+      "hasImplementationNote": false,
+      "hasEligibility": false,
+      "isConditionalScenario": false
+    },
+    {
+      "categoryNumber": 6,
+      "categoryTitle": "Family, Children & Parenting",
+      "questionNumber": 13,
+      "formatLabel": "Scenario-based choice",
+      "responseBehavior": "scenario_choice",
+      "listedChoiceCount": 6,
+      "choiceCount": 6,
+      "minSelections": 1,
+      "maxSelections": 1,
+      "features": [],
+      "specialChoices": [],
+      "hasContextNote": false,
+      "hasImplementationNote": false,
+      "hasEligibility": false,
+      "isConditionalScenario": false
+    },
+    {
+      "categoryNumber": 6,
+      "categoryTitle": "Family, Children & Parenting",
+      "questionNumber": 14,
+      "formatLabel": "Role range",
+      "responseBehavior": "scale_range",
+      "listedChoiceCount": 5,
+      "choiceCount": 5,
+      "minSelections": 1,
+      "maxSelections": 1,
+      "features": [
+        "context_note"
+      ],
+      "specialChoices": [],
+      "hasContextNote": true,
+      "hasImplementationNote": false,
+      "hasEligibility": false,
+      "isConditionalScenario": false
+    },
+    {
+      "categoryNumber": 6,
+      "categoryTitle": "Family, Children & Parenting",
+      "questionNumber": 15,
+      "formatLabel": "Select up to five",
+      "responseBehavior": "multi_select",
+      "listedChoiceCount": 12,
+      "choiceCount": 12,
+      "minSelections": 1,
+      "maxSelections": 5,
+      "features": [
+        "priority_follow_up"
+      ],
+      "specialChoices": [],
+      "priorityFollowUp": {
+        "selectionCount": 2,
+        "unordered": true,
+        "minEligibleSelectionsBeforeDisplay": 2
+      },
+      "hasContextNote": false,
+      "hasImplementationNote": false,
+      "hasEligibility": false,
+      "isConditionalScenario": false
+    },
+    {
+      "categoryNumber": 7,
+      "categoryTitle": "Faith, Spirituality & Worldview",
+      "questionNumber": 1,
+      "formatLabel": "Single choice",
+      "responseBehavior": "single_choice",
+      "listedChoiceCount": 7,
+      "choiceCount": 7,
+      "minSelections": 1,
+      "maxSelections": 1,
+      "features": [],
+      "specialChoices": [],
+      "hasContextNote": false,
+      "hasImplementationNote": false,
+      "hasEligibility": false,
+      "isConditionalScenario": false
+    },
+    {
+      "categoryNumber": 7,
+      "categoryTitle": "Faith, Spirituality & Worldview",
+      "questionNumber": 2,
+      "formatLabel": "Structured identity selection",
+      "responseBehavior": "structured_identity",
+      "listedChoiceCount": 18,
+      "choiceCount": 18,
+      "minSelections": 1,
+      "maxSelections": 1,
+      "features": [
+        "identity_privacy",
+        "identity_refinement",
+        "structured_identity",
+        "user_supplied_identity"
+      ],
+      "specialChoices": [],
+      "structuredIdentity": {
+        "allowsRefinement": true,
+        "allowsUserSuppliedIdentity": true,
+        "privacy": {
+          "userControlsPublicDisplay": true,
+          "userControlsPrivateMatchingUse": false
+        }
+      },
+      "hasContextNote": false,
+      "hasImplementationNote": false,
+      "hasEligibility": false,
+      "isConditionalScenario": false
+    },
+    {
+      "categoryNumber": 7,
+      "categoryTitle": "Faith, Spirituality & Worldview",
+      "questionNumber": 3,
+      "formatLabel": "Select all that apply",
+      "responseBehavior": "multi_select",
+      "listedChoiceCount": 16,
+      "choiceCount": 16,
+      "minSelections": 0,
+      "maxSelections": null,
+      "features": [
+        "implementation_note",
+        "mutually_exclusive_choice",
+        "select_all"
+      ],
+      "specialChoices": [
+        {
+          "index": 15,
+          "mutuallyExclusive": true
+        }
+      ],
+      "hasContextNote": false,
+      "hasImplementationNote": true,
+      "hasEligibility": false,
+      "isConditionalScenario": false
+    },
+    {
+      "categoryNumber": 7,
+      "categoryTitle": "Faith, Spirituality & Worldview",
+      "questionNumber": 4,
+      "formatLabel": "Importance scale",
+      "responseBehavior": "scale_range",
+      "listedChoiceCount": 6,
+      "choiceCount": 6,
+      "minSelections": 1,
+      "maxSelections": 1,
+      "features": [
+        "context_note"
+      ],
+      "specialChoices": [],
+      "hasContextNote": true,
+      "hasImplementationNote": false,
+      "hasEligibility": false,
+      "isConditionalScenario": false
+    },
+    {
+      "categoryNumber": 7,
+      "categoryTitle": "Faith, Spirituality & Worldview",
+      "questionNumber": 5,
+      "formatLabel": "Participation range",
+      "responseBehavior": "scale_range",
+      "listedChoiceCount": 6,
+      "choiceCount": 6,
+      "minSelections": 1,
+      "maxSelections": 1,
+      "features": [],
+      "specialChoices": [],
+      "hasContextNote": false,
+      "hasImplementationNote": false,
+      "hasEligibility": false,
+      "isConditionalScenario": false
+    },
+    {
+      "categoryNumber": 7,
+      "categoryTitle": "Faith, Spirituality & Worldview",
+      "questionNumber": 6,
+      "formatLabel": "Select up to five",
+      "responseBehavior": "multi_select",
+      "listedChoiceCount": 14,
+      "choiceCount": 14,
+      "minSelections": 1,
+      "maxSelections": 5,
+      "features": [
+        "priority_follow_up"
+      ],
+      "specialChoices": [],
+      "priorityFollowUp": {
+        "selectionCount": 2,
+        "unordered": true,
+        "minEligibleSelectionsBeforeDisplay": 2
+      },
+      "hasContextNote": false,
+      "hasImplementationNote": false,
+      "hasEligibility": false,
+      "isConditionalScenario": false
+    },
+    {
+      "categoryNumber": 7,
+      "categoryTitle": "Faith, Spirituality & Worldview",
+      "questionNumber": 7,
+      "formatLabel": "Select up to four",
+      "responseBehavior": "multi_select",
+      "listedChoiceCount": 11,
+      "choiceCount": 11,
+      "minSelections": 1,
+      "maxSelections": 4,
+      "features": [
+        "priority_follow_up"
+      ],
+      "specialChoices": [],
+      "priorityFollowUp": {
+        "selectionCount": 2,
+        "unordered": true,
+        "minEligibleSelectionsBeforeDisplay": 2
+      },
+      "hasContextNote": false,
+      "hasImplementationNote": false,
+      "hasEligibility": false,
+      "isConditionalScenario": false
+    },
+    {
+      "categoryNumber": 7,
+      "categoryTitle": "Faith, Spirituality & Worldview",
+      "questionNumber": 8,
+      "formatLabel": "Flexibility range",
+      "responseBehavior": "scale_range",
+      "listedChoiceCount": 5,
+      "choiceCount": 5,
+      "minSelections": 1,
+      "maxSelections": 1,
+      "features": [
+        "context_note"
+      ],
+      "specialChoices": [],
+      "hasContextNote": true,
+      "hasImplementationNote": false,
+      "hasEligibility": false,
+      "isConditionalScenario": false
+    },
+    {
+      "categoryNumber": 7,
+      "categoryTitle": "Faith, Spirituality & Worldview",
+      "questionNumber": 9,
+      "formatLabel": "Scenario-based choice",
+      "responseBehavior": "scenario_choice",
+      "listedChoiceCount": 7,
+      "choiceCount": 7,
+      "minSelections": 1,
+      "maxSelections": 1,
+      "features": [],
+      "specialChoices": [],
+      "hasContextNote": false,
+      "hasImplementationNote": false,
+      "hasEligibility": false,
+      "isConditionalScenario": false
+    },
+    {
+      "categoryNumber": 7,
+      "categoryTitle": "Faith, Spirituality & Worldview",
+      "questionNumber": 10,
+      "formatLabel": "Community-involvement range",
+      "responseBehavior": "scale_range",
+      "listedChoiceCount": 6,
+      "choiceCount": 6,
+      "minSelections": 1,
+      "maxSelections": 1,
+      "features": [
+        "context_note"
+      ],
+      "specialChoices": [],
+      "hasContextNote": true,
+      "hasImplementationNote": false,
+      "hasEligibility": false,
+      "isConditionalScenario": false
+    },
+    {
+      "categoryNumber": 7,
+      "categoryTitle": "Faith, Spirituality & Worldview",
+      "questionNumber": 11,
+      "formatLabel": "Select up to five",
+      "responseBehavior": "multi_select",
+      "listedChoiceCount": 13,
+      "choiceCount": 13,
+      "minSelections": 1,
+      "maxSelections": 5,
+      "features": [
+        "priority_follow_up"
+      ],
+      "specialChoices": [],
+      "priorityFollowUp": {
+        "selectionCount": 2,
+        "unordered": true,
+        "minEligibleSelectionsBeforeDisplay": 2
+      },
+      "hasContextNote": false,
+      "hasImplementationNote": false,
+      "hasEligibility": false,
+      "isConditionalScenario": false
+    },
+    {
+      "categoryNumber": 7,
+      "categoryTitle": "Faith, Spirituality & Worldview",
+      "questionNumber": 12,
+      "formatLabel": "Scenario-based choice",
+      "responseBehavior": "scenario_choice",
+      "listedChoiceCount": 6,
+      "choiceCount": 6,
+      "minSelections": 1,
+      "maxSelections": 1,
+      "features": [
+        "context_note"
+      ],
+      "specialChoices": [],
+      "hasContextNote": true,
+      "hasImplementationNote": false,
+      "hasEligibility": false,
+      "isConditionalScenario": false
+    },
+    {
+      "categoryNumber": 7,
+      "categoryTitle": "Faith, Spirituality & Worldview",
+      "questionNumber": 13,
+      "formatLabel": "Conditional scenario-based choice",
+      "responseBehavior": "scenario_choice",
+      "listedChoiceCount": 7,
+      "choiceCount": 7,
+      "minSelections": 1,
+      "maxSelections": 1,
+      "features": [
+        "conditional_scenario",
+        "context_note",
+        "eligibility"
+      ],
+      "specialChoices": [],
+      "hasContextNote": true,
+      "hasImplementationNote": false,
+      "hasEligibility": true,
+      "isConditionalScenario": true
+    },
+    {
+      "categoryNumber": 7,
+      "categoryTitle": "Faith, Spirituality & Worldview",
+      "questionNumber": 14,
+      "formatLabel": "Select all that apply",
+      "responseBehavior": "multi_select",
+      "listedChoiceCount": 14,
+      "choiceCount": 14,
+      "minSelections": 0,
+      "maxSelections": null,
+      "features": [
+        "implementation_note",
+        "select_all"
+      ],
+      "specialChoices": [],
+      "hasContextNote": false,
+      "hasImplementationNote": true,
+      "hasEligibility": false,
+      "isConditionalScenario": false
+    },
+    {
+      "categoryNumber": 7,
+      "categoryTitle": "Faith, Spirituality & Worldview",
+      "questionNumber": 15,
+      "formatLabel": "Select up to five",
+      "responseBehavior": "multi_select",
+      "listedChoiceCount": 14,
+      "choiceCount": 14,
+      "minSelections": 1,
+      "maxSelections": 5,
+      "features": [
+        "priority_follow_up"
+      ],
+      "specialChoices": [],
+      "priorityFollowUp": {
+        "selectionCount": 2,
+        "unordered": true,
+        "minEligibleSelectionsBeforeDisplay": 2
+      },
+      "hasContextNote": false,
+      "hasImplementationNote": false,
+      "hasEligibility": false,
+      "isConditionalScenario": false
+    },
+    {
+      "categoryNumber": 8,
+      "categoryTitle": "Politics, Civic Life & Social Issues",
+      "questionNumber": 1,
+      "formatLabel": "Importance range",
+      "responseBehavior": "scale_range",
+      "listedChoiceCount": 6,
+      "choiceCount": 6,
+      "minSelections": 1,
+      "maxSelections": 1,
+      "features": [],
+      "specialChoices": [],
+      "hasContextNote": false,
+      "hasImplementationNote": false,
+      "hasEligibility": false,
+      "isConditionalScenario": false
+    },
+    {
+      "categoryNumber": 8,
+      "categoryTitle": "Politics, Civic Life & Social Issues",
+      "questionNumber": 2,
+      "formatLabel": "Structured identity selection",
+      "responseBehavior": "structured_identity",
+      "listedChoiceCount": 13,
+      "choiceCount": 13,
+      "minSelections": 1,
+      "maxSelections": 1,
+      "features": [
+        "identity_privacy",
+        "identity_private_matching_control",
+        "identity_refinement",
+        "structured_identity",
+        "user_supplied_identity"
+      ],
+      "specialChoices": [],
+      "structuredIdentity": {
+        "allowsRefinement": true,
+        "allowsUserSuppliedIdentity": true,
+        "privacy": {
+          "userControlsPublicDisplay": true,
+          "userControlsPrivateMatchingUse": true
+        }
+      },
+      "hasContextNote": false,
+      "hasImplementationNote": false,
+      "hasEligibility": false,
+      "isConditionalScenario": false
+    },
+    {
+      "categoryNumber": 8,
+      "categoryTitle": "Politics, Civic Life & Social Issues",
+      "questionNumber": 3,
+      "formatLabel": "Importance scale",
+      "responseBehavior": "scale_range",
+      "listedChoiceCount": 6,
+      "choiceCount": 6,
+      "minSelections": 1,
+      "maxSelections": 1,
+      "features": [
+        "context_note"
+      ],
+      "specialChoices": [],
+      "hasContextNote": true,
+      "hasImplementationNote": false,
+      "hasEligibility": false,
+      "isConditionalScenario": false
+    },
+    {
+      "categoryNumber": 8,
+      "categoryTitle": "Politics, Civic Life & Social Issues",
+      "questionNumber": 4,
+      "formatLabel": "Select all that apply",
+      "responseBehavior": "multi_select",
+      "listedChoiceCount": 16,
+      "choiceCount": 16,
+      "minSelections": 0,
+      "maxSelections": null,
+      "features": [
+        "implementation_note",
+        "mutually_exclusive_choice",
+        "select_all"
+      ],
+      "specialChoices": [
+        {
+          "index": 15,
+          "mutuallyExclusive": true
+        }
+      ],
+      "hasContextNote": false,
+      "hasImplementationNote": true,
+      "hasEligibility": false,
+      "isConditionalScenario": false
+    },
+    {
+      "categoryNumber": 8,
+      "categoryTitle": "Politics, Civic Life & Social Issues",
+      "questionNumber": 5,
+      "formatLabel": "Select up to five",
+      "responseBehavior": "multi_select",
+      "listedChoiceCount": 16,
+      "choiceCount": 16,
+      "minSelections": 1,
+      "maxSelections": 5,
+      "features": [
+        "priority_follow_up"
+      ],
+      "specialChoices": [],
+      "priorityFollowUp": {
+        "selectionCount": 2,
+        "unordered": true,
+        "minEligibleSelectionsBeforeDisplay": 2
+      },
+      "hasContextNote": false,
+      "hasImplementationNote": false,
+      "hasEligibility": false,
+      "isConditionalScenario": false
+    },
+    {
+      "categoryNumber": 8,
+      "categoryTitle": "Politics, Civic Life & Social Issues",
+      "questionNumber": 6,
+      "formatLabel": "Select up to five",
+      "responseBehavior": "multi_select",
+      "listedChoiceCount": 18,
+      "choiceCount": 18,
+      "minSelections": 1,
+      "maxSelections": 5,
+      "features": [
+        "implementation_note",
+        "priority_follow_up"
+      ],
+      "specialChoices": [],
+      "priorityFollowUp": {
+        "selectionCount": 2,
+        "unordered": true,
+        "minEligibleSelectionsBeforeDisplay": 2
+      },
+      "hasContextNote": false,
+      "hasImplementationNote": true,
+      "hasEligibility": false,
+      "isConditionalScenario": false
+    },
+    {
+      "categoryNumber": 8,
+      "categoryTitle": "Politics, Civic Life & Social Issues",
+      "questionNumber": 7,
+      "formatLabel": "Scenario-based choice",
+      "responseBehavior": "scenario_choice",
+      "listedChoiceCount": 8,
+      "choiceCount": 8,
+      "minSelections": 1,
+      "maxSelections": 1,
+      "features": [],
+      "specialChoices": [],
+      "hasContextNote": false,
+      "hasImplementationNote": false,
+      "hasEligibility": false,
+      "isConditionalScenario": false
+    },
+    {
+      "categoryNumber": 8,
+      "categoryTitle": "Politics, Civic Life & Social Issues",
+      "questionNumber": 8,
+      "formatLabel": "Discussion-frequency range with separate no-preference response",
+      "responseBehavior": "scale_range",
+      "listedChoiceCount": 6,
+      "choiceCount": 6,
+      "minSelections": 1,
+      "maxSelections": 1,
+      "features": [
+        "implementation_note",
+        "no_preference_state"
+      ],
+      "specialChoices": [
+        {
+          "index": 6,
+          "specialResponseState": "no_preference"
+        }
+      ],
+      "allowedSpecialResponseStates": [
+        "no_preference"
+      ],
+      "hasContextNote": false,
+      "hasImplementationNote": true,
+      "hasEligibility": false,
+      "isConditionalScenario": false
+    },
+    {
+      "categoryNumber": 8,
+      "categoryTitle": "Politics, Civic Life & Social Issues",
+      "questionNumber": 9,
+      "formatLabel": "Autonomy range",
+      "responseBehavior": "scale_range",
+      "listedChoiceCount": 6,
+      "choiceCount": 6,
+      "minSelections": 1,
+      "maxSelections": 1,
+      "features": [
+        "context_note"
+      ],
+      "specialChoices": [],
+      "hasContextNote": true,
+      "hasImplementationNote": false,
+      "hasEligibility": false,
+      "isConditionalScenario": false
+    },
+    {
+      "categoryNumber": 8,
+      "categoryTitle": "Politics, Civic Life & Social Issues",
+      "questionNumber": 10,
+      "formatLabel": "Scenario-based choice",
+      "responseBehavior": "scenario_choice",
+      "listedChoiceCount": 7,
+      "choiceCount": 7,
+      "minSelections": 1,
+      "maxSelections": 1,
+      "features": [
+        "context_note"
+      ],
+      "specialChoices": [],
+      "hasContextNote": true,
+      "hasImplementationNote": false,
+      "hasEligibility": false,
+      "isConditionalScenario": false
+    },
+    {
+      "categoryNumber": 8,
+      "categoryTitle": "Politics, Civic Life & Social Issues",
+      "questionNumber": 11,
+      "formatLabel": "Household-media range",
+      "responseBehavior": "scale_range",
+      "listedChoiceCount": 6,
+      "choiceCount": 6,
+      "minSelections": 1,
+      "maxSelections": 1,
+      "features": [
+        "context_note"
+      ],
+      "specialChoices": [],
+      "hasContextNote": true,
+      "hasImplementationNote": false,
+      "hasEligibility": false,
+      "isConditionalScenario": false
+    },
+    {
+      "categoryNumber": 8,
+      "categoryTitle": "Politics, Civic Life & Social Issues",
+      "questionNumber": 12,
+      "formatLabel": "Scenario-based choice",
+      "responseBehavior": "scenario_choice",
+      "listedChoiceCount": 6,
+      "choiceCount": 6,
+      "minSelections": 1,
+      "maxSelections": 1,
+      "features": [
+        "context_note"
+      ],
+      "specialChoices": [],
+      "hasContextNote": true,
+      "hasImplementationNote": false,
+      "hasEligibility": false,
+      "isConditionalScenario": false
+    },
+    {
+      "categoryNumber": 8,
+      "categoryTitle": "Politics, Civic Life & Social Issues",
+      "questionNumber": 13,
+      "formatLabel": "Conditional scenario-based choice",
+      "responseBehavior": "scenario_choice",
+      "listedChoiceCount": 7,
+      "choiceCount": 7,
+      "minSelections": 1,
+      "maxSelections": 1,
+      "features": [
+        "conditional_scenario",
+        "context_note",
+        "eligibility"
+      ],
+      "specialChoices": [],
+      "hasContextNote": true,
+      "hasImplementationNote": false,
+      "hasEligibility": true,
+      "isConditionalScenario": true
+    },
+    {
+      "categoryNumber": 8,
+      "categoryTitle": "Politics, Civic Life & Social Issues",
+      "questionNumber": 14,
+      "formatLabel": "Select all that apply",
+      "responseBehavior": "multi_select",
+      "listedChoiceCount": 15,
+      "choiceCount": 15,
+      "minSelections": 0,
+      "maxSelections": null,
+      "features": [
+        "implementation_note",
+        "select_all"
+      ],
+      "specialChoices": [],
+      "hasContextNote": false,
+      "hasImplementationNote": true,
+      "hasEligibility": false,
+      "isConditionalScenario": false
+    },
+    {
+      "categoryNumber": 8,
+      "categoryTitle": "Politics, Civic Life & Social Issues",
+      "questionNumber": 15,
+      "formatLabel": "Select up to five",
+      "responseBehavior": "multi_select",
+      "listedChoiceCount": 15,
+      "choiceCount": 15,
+      "minSelections": 1,
+      "maxSelections": 5,
+      "features": [
+        "priority_follow_up"
+      ],
+      "specialChoices": [],
+      "priorityFollowUp": {
+        "selectionCount": 2,
+        "unordered": true,
+        "minEligibleSelectionsBeforeDisplay": 2
+      },
+      "hasContextNote": false,
+      "hasImplementationNote": false,
+      "hasEligibility": false,
+      "isConditionalScenario": false
+    },
+    {
+      "categoryNumber": 9,
+      "categoryTitle": "Service, Community & Contribution",
+      "questionNumber": 1,
+      "formatLabel": "Importance range",
+      "responseBehavior": "scale_range",
+      "listedChoiceCount": 6,
+      "choiceCount": 6,
+      "minSelections": 1,
+      "maxSelections": 1,
+      "features": [
+        "context_note"
+      ],
+      "specialChoices": [],
+      "hasContextNote": true,
+      "hasImplementationNote": false,
+      "hasEligibility": false,
+      "isConditionalScenario": false
+    },
+    {
+      "categoryNumber": 9,
+      "categoryTitle": "Service, Community & Contribution",
+      "questionNumber": 2,
+      "formatLabel": "Select all that apply",
+      "responseBehavior": "multi_select",
+      "listedChoiceCount": 19,
+      "choiceCount": 19,
+      "minSelections": 0,
+      "maxSelections": null,
+      "features": [
+        "implementation_note",
+        "mutually_exclusive_choice",
+        "optional_choice_context",
+        "qualifier_may_coexist",
+        "select_all"
+      ],
+      "specialChoices": [
+        {
+          "index": 17,
+          "qualifier": "limited_capacity_contribution",
+          "qualifierCoexistsWithSelections": true
+        },
+        {
+          "index": 18,
+          "mutuallyExclusive": true
+        },
+        {
+          "index": 19,
+          "opensOptionalContext": true,
+          "optionalContext": {
+            "kind": "free_text",
+            "required": false,
+            "scored": false
+          }
+        }
+      ],
+      "allowedQualifiers": [
+        "limited_capacity_contribution"
+      ],
+      "hasContextNote": false,
+      "hasImplementationNote": true,
+      "hasEligibility": false,
+      "isConditionalScenario": false
+    },
+    {
+      "categoryNumber": 9,
+      "categoryTitle": "Service, Community & Contribution",
+      "questionNumber": 3,
+      "formatLabel": "Select up to four, with a separate current-priority state",
+      "responseBehavior": "multi_select",
+      "listedChoiceCount": 15,
+      "choiceCount": 15,
+      "minSelections": 1,
+      "maxSelections": 4,
+      "features": [
+        "current_priority_state",
+        "implementation_note",
+        "mutually_exclusive_choice",
+        "priority_excluded_choices",
+        "priority_follow_up",
+        "priority_min_eligible"
+      ],
+      "specialChoices": [
+        {
+          "index": 14,
+          "excludeFromPriority": true
+        },
+        {
+          "index": 15,
+          "mutuallyExclusive": true,
+          "specialResponseState": "current_priority"
+        }
+      ],
+      "allowedSpecialResponseStates": [
+        "current_priority"
+      ],
+      "priorityFollowUp": {
+        "selectionCount": 2,
+        "unordered": true,
+        "minEligibleSelectionsBeforeDisplay": 2,
+        "excludedChoiceIndexes": [
+          14,
+          15
+        ]
+      },
+      "hasContextNote": false,
+      "hasImplementationNote": true,
+      "hasEligibility": false,
+      "isConditionalScenario": false
+    },
+    {
+      "categoryNumber": 9,
+      "categoryTitle": "Service, Community & Contribution",
+      "questionNumber": 4,
+      "formatLabel": "Importance scale",
+      "responseBehavior": "scale_range",
+      "listedChoiceCount": 6,
+      "choiceCount": 6,
+      "minSelections": 1,
+      "maxSelections": 1,
+      "features": [
+        "context_note"
+      ],
+      "specialChoices": [],
+      "hasContextNote": true,
+      "hasImplementationNote": false,
+      "hasEligibility": false,
+      "isConditionalScenario": false
+    },
+    {
+      "categoryNumber": 9,
+      "categoryTitle": "Service, Community & Contribution",
+      "questionNumber": 5,
+      "formatLabel": "Select up to five",
+      "responseBehavior": "multi_select",
+      "listedChoiceCount": 15,
+      "choiceCount": 15,
+      "minSelections": 1,
+      "maxSelections": 5,
+      "features": [
+        "mutually_exclusive_choice",
+        "no_specific_requirement",
+        "priority_excluded_choices",
+        "priority_follow_up",
+        "priority_min_eligible"
+      ],
+      "specialChoices": [
+        {
+          "index": 15,
+          "qualifier": "no_specific_requirement",
+          "qualifierCoexistsWithSelections": false,
+          "mutuallyExclusive": true,
+          "specialResponseState": "no_specific_requirement"
+        }
+      ],
+      "allowedSpecialResponseStates": [
+        "no_specific_requirement"
+      ],
+      "allowedQualifiers": [
+        "no_specific_requirement"
+      ],
+      "priorityFollowUp": {
+        "selectionCount": 2,
+        "unordered": true,
+        "minEligibleSelectionsBeforeDisplay": 2,
+        "excludedChoiceIndexes": [
+          15
+        ]
+      },
+      "hasContextNote": false,
+      "hasImplementationNote": false,
+      "hasEligibility": false,
+      "isConditionalScenario": false
+    },
+    {
+      "categoryNumber": 9,
+      "categoryTitle": "Service, Community & Contribution",
+      "questionNumber": 6,
+      "formatLabel": "Shared-participation range with separate no-preference state",
+      "responseBehavior": "scale_range",
+      "listedChoiceCount": 7,
+      "choiceCount": 7,
+      "minSelections": 1,
+      "maxSelections": 1,
+      "features": [
+        "implementation_note",
+        "no_preference_state"
+      ],
+      "specialChoices": [
+        {
+          "index": 7,
+          "specialResponseState": "no_preference"
+        }
+      ],
+      "allowedSpecialResponseStates": [
+        "no_preference"
+      ],
+      "hasContextNote": false,
+      "hasImplementationNote": true,
+      "hasEligibility": false,
+      "isConditionalScenario": false
+    },
+    {
+      "categoryNumber": 9,
+      "categoryTitle": "Service, Community & Contribution",
+      "questionNumber": 7,
+      "formatLabel": "Scenario-based choice",
+      "responseBehavior": "scenario_choice",
+      "listedChoiceCount": 7,
+      "choiceCount": 7,
+      "minSelections": 1,
+      "maxSelections": 1,
+      "features": [
+        "context_note"
+      ],
+      "specialChoices": [],
+      "hasContextNote": true,
+      "hasImplementationNote": false,
+      "hasEligibility": false,
+      "isConditionalScenario": false
+    },
+    {
+      "categoryNumber": 9,
+      "categoryTitle": "Service, Community & Contribution",
+      "questionNumber": 8,
+      "formatLabel": "Financial-coordination range",
+      "responseBehavior": "scale_range",
+      "listedChoiceCount": 7,
+      "choiceCount": 7,
+      "minSelections": 1,
+      "maxSelections": 1,
+      "features": [
+        "context_note",
+        "implementation_note"
+      ],
+      "specialChoices": [],
+      "hasContextNote": true,
+      "hasImplementationNote": true,
+      "hasEligibility": false,
+      "isConditionalScenario": false
+    },
+    {
+      "categoryNumber": 9,
+      "categoryTitle": "Service, Community & Contribution",
+      "questionNumber": 9,
+      "formatLabel": "Scenario-based choice",
+      "responseBehavior": "scenario_choice",
+      "listedChoiceCount": 7,
+      "choiceCount": 7,
+      "minSelections": 1,
+      "maxSelections": 1,
+      "features": [
+        "context_note"
+      ],
+      "specialChoices": [],
+      "hasContextNote": true,
+      "hasImplementationNote": false,
+      "hasEligibility": false,
+      "isConditionalScenario": false
+    },
+    {
+      "categoryNumber": 9,
+      "categoryTitle": "Service, Community & Contribution",
+      "questionNumber": 10,
+      "formatLabel": "Scenario-based choice",
+      "responseBehavior": "scenario_choice",
+      "listedChoiceCount": 8,
+      "choiceCount": 8,
+      "minSelections": 1,
+      "maxSelections": 1,
+      "features": [
+        "context_note"
+      ],
+      "specialChoices": [],
+      "hasContextNote": true,
+      "hasImplementationNote": false,
+      "hasEligibility": false,
+      "isConditionalScenario": false
+    },
+    {
+      "categoryNumber": 9,
+      "categoryTitle": "Service, Community & Contribution",
+      "questionNumber": 11,
+      "formatLabel": "Visibility-preference range",
+      "responseBehavior": "scale_range",
+      "listedChoiceCount": 6,
+      "choiceCount": 6,
+      "minSelections": 1,
+      "maxSelections": 1,
+      "features": [
+        "implementation_note",
+        "no_preference_state"
+      ],
+      "specialChoices": [
+        {
+          "index": 6,
+          "specialResponseState": "no_preference"
+        }
+      ],
+      "allowedSpecialResponseStates": [
+        "no_preference"
+      ],
+      "hasContextNote": false,
+      "hasImplementationNote": true,
+      "hasEligibility": false,
+      "isConditionalScenario": false
+    },
+    {
+      "categoryNumber": 9,
+      "categoryTitle": "Service, Community & Contribution",
+      "questionNumber": 12,
+      "formatLabel": "Scenario-based choice",
+      "responseBehavior": "scenario_choice",
+      "listedChoiceCount": 7,
+      "choiceCount": 7,
+      "minSelections": 1,
+      "maxSelections": 1,
+      "features": [
+        "context_note"
+      ],
+      "specialChoices": [],
+      "hasContextNote": true,
+      "hasImplementationNote": false,
+      "hasEligibility": false,
+      "isConditionalScenario": false
+    },
+    {
+      "categoryNumber": 9,
+      "categoryTitle": "Service, Community & Contribution",
+      "questionNumber": 13,
+      "formatLabel": "Conditional scenario-based choice",
+      "responseBehavior": "scenario_choice",
+      "listedChoiceCount": 8,
+      "choiceCount": 8,
+      "minSelections": 1,
+      "maxSelections": 1,
+      "features": [
+        "conditional_scenario",
+        "context_note",
+        "eligibility"
+      ],
+      "specialChoices": [],
+      "hasContextNote": true,
+      "hasImplementationNote": false,
+      "hasEligibility": true,
+      "isConditionalScenario": true
+    },
+    {
+      "categoryNumber": 9,
+      "categoryTitle": "Service, Community & Contribution",
+      "questionNumber": 14,
+      "formatLabel": "Select all that apply",
+      "responseBehavior": "multi_select",
+      "listedChoiceCount": 16,
+      "choiceCount": 16,
+      "minSelections": 0,
+      "maxSelections": null,
+      "features": [
+        "implementation_note",
+        "select_all"
+      ],
+      "specialChoices": [],
+      "hasContextNote": false,
+      "hasImplementationNote": true,
+      "hasEligibility": false,
+      "isConditionalScenario": false
+    },
+    {
+      "categoryNumber": 9,
+      "categoryTitle": "Service, Community & Contribution",
+      "questionNumber": 15,
+      "formatLabel": "Select up to five",
+      "responseBehavior": "multi_select",
+      "listedChoiceCount": 15,
+      "choiceCount": 15,
+      "minSelections": 1,
+      "maxSelections": 5,
+      "features": [
+        "priority_follow_up"
+      ],
+      "specialChoices": [],
+      "priorityFollowUp": {
+        "selectionCount": 2,
+        "unordered": true,
+        "minEligibleSelectionsBeforeDisplay": 2
+      },
+      "hasContextNote": false,
+      "hasImplementationNote": false,
+      "hasEligibility": false,
+      "isConditionalScenario": false
+    },
+    {
+      "categoryNumber": 10,
+      "categoryTitle": "Integrity, Honesty & Trust",
+      "questionNumber": 1,
+      "formatLabel": "Importance scale",
+      "responseBehavior": "scale_range",
+      "listedChoiceCount": 6,
+      "choiceCount": 6,
+      "minSelections": 1,
+      "maxSelections": 1,
+      "features": [
+        "context_dependent_state",
+        "context_note"
+      ],
+      "specialChoices": [
+        {
+          "index": 4,
+          "specialResponseState": "context_dependent"
+        }
+      ],
+      "allowedSpecialResponseStates": [
+        "context_dependent"
+      ],
+      "hasContextNote": true,
+      "hasImplementationNote": false,
+      "hasEligibility": false,
+      "isConditionalScenario": false
+    },
+    {
+      "categoryNumber": 10,
+      "categoryTitle": "Integrity, Honesty & Trust",
+      "questionNumber": 2,
+      "formatLabel": "Select up to five",
+      "responseBehavior": "multi_select",
+      "listedChoiceCount": 15,
+      "choiceCount": 15,
+      "minSelections": 1,
+      "maxSelections": 5,
+      "features": [
+        "priority_follow_up"
+      ],
+      "specialChoices": [],
+      "priorityFollowUp": {
+        "selectionCount": 2,
+        "unordered": true,
+        "minEligibleSelectionsBeforeDisplay": 2
+      },
+      "hasContextNote": false,
+      "hasImplementationNote": false,
+      "hasEligibility": false,
+      "isConditionalScenario": false
+    },
+    {
+      "categoryNumber": 10,
+      "categoryTitle": "Integrity, Honesty & Trust",
+      "questionNumber": 3,
+      "formatLabel": "Transparency range with a separate context-dependent state",
+      "responseBehavior": "scale_range",
+      "listedChoiceCount": 7,
+      "choiceCount": 7,
+      "minSelections": 1,
+      "maxSelections": 1,
+      "features": [
+        "implementation_note"
+      ],
+      "specialChoices": [],
+      "hasContextNote": false,
+      "hasImplementationNote": true,
+      "hasEligibility": false,
+      "isConditionalScenario": false
+    },
+    {
+      "categoryNumber": 10,
+      "categoryTitle": "Integrity, Honesty & Trust",
+      "questionNumber": 4,
+      "formatLabel": "Select all that apply",
+      "responseBehavior": "multi_select",
+      "listedChoiceCount": 15,
+      "choiceCount": 15,
+      "minSelections": 0,
+      "maxSelections": null,
+      "features": [
+        "implementation_note",
+        "mutually_exclusive_choice",
+        "qualifier_may_coexist",
+        "select_all"
+      ],
+      "specialChoices": [
+        {
+          "index": 14,
+          "mutuallyExclusive": true
+        }
+      ],
+      "hasContextNote": false,
+      "hasImplementationNote": true,
+      "hasEligibility": false,
+      "isConditionalScenario": false
+    },
+    {
+      "categoryNumber": 10,
+      "categoryTitle": "Integrity, Honesty & Trust",
+      "questionNumber": 5,
+      "formatLabel": "Privacy-boundary range",
+      "responseBehavior": "scale_range",
+      "listedChoiceCount": 7,
+      "choiceCount": 7,
+      "minSelections": 1,
+      "maxSelections": 1,
+      "features": [
+        "context_note",
+        "implementation_note"
+      ],
+      "specialChoices": [],
+      "hasContextNote": true,
+      "hasImplementationNote": true,
+      "hasEligibility": false,
+      "isConditionalScenario": false
+    },
+    {
+      "categoryNumber": 10,
+      "categoryTitle": "Integrity, Honesty & Trust",
+      "questionNumber": 6,
+      "formatLabel": "Scenario-based choice",
+      "responseBehavior": "scenario_choice",
+      "listedChoiceCount": 8,
+      "choiceCount": 8,
+      "minSelections": 1,
+      "maxSelections": 1,
+      "features": [
+        "context_note"
+      ],
+      "specialChoices": [],
+      "hasContextNote": true,
+      "hasImplementationNote": false,
+      "hasEligibility": false,
+      "isConditionalScenario": false
+    },
+    {
+      "categoryNumber": 10,
+      "categoryTitle": "Integrity, Honesty & Trust",
+      "questionNumber": 7,
+      "formatLabel": "Scenario-based choice",
+      "responseBehavior": "scenario_choice",
+      "listedChoiceCount": 8,
+      "choiceCount": 8,
+      "minSelections": 1,
+      "maxSelections": 1,
+      "features": [],
+      "specialChoices": [],
+      "hasContextNote": false,
+      "hasImplementationNote": false,
+      "hasEligibility": false,
+      "isConditionalScenario": false
+    },
+    {
+      "categoryNumber": 10,
+      "categoryTitle": "Integrity, Honesty & Trust",
+      "questionNumber": 8,
+      "formatLabel": "Select up to five",
+      "responseBehavior": "multi_select",
+      "listedChoiceCount": 14,
+      "choiceCount": 14,
+      "minSelections": 1,
+      "maxSelections": 5,
+      "features": [
+        "priority_follow_up"
+      ],
+      "specialChoices": [],
+      "priorityFollowUp": {
+        "selectionCount": 2,
+        "unordered": true,
+        "minEligibleSelectionsBeforeDisplay": 2
+      },
+      "hasContextNote": false,
+      "hasImplementationNote": false,
+      "hasEligibility": false,
+      "isConditionalScenario": false
+    },
+    {
+      "categoryNumber": 10,
+      "categoryTitle": "Integrity, Honesty & Trust",
+      "questionNumber": 9,
+      "formatLabel": "Scenario-based choice",
+      "responseBehavior": "scenario_choice",
+      "listedChoiceCount": 8,
+      "choiceCount": 8,
+      "minSelections": 1,
+      "maxSelections": 1,
+      "features": [
+        "context_note"
+      ],
+      "specialChoices": [],
+      "hasContextNote": true,
+      "hasImplementationNote": false,
+      "hasEligibility": false,
+      "isConditionalScenario": false
+    },
+    {
+      "categoryNumber": 10,
+      "categoryTitle": "Integrity, Honesty & Trust",
+      "questionNumber": 10,
+      "formatLabel": "Trust-repair posture with a separate context-dependent state",
+      "responseBehavior": "scale_range",
+      "listedChoiceCount": 7,
+      "choiceCount": 7,
+      "minSelections": 1,
+      "maxSelections": 1,
+      "features": [
+        "context_dependent_state",
+        "context_note",
+        "implementation_note"
+      ],
+      "specialChoices": [
+        {
+          "index": 7,
+          "specialResponseState": "context_dependent"
+        }
+      ],
+      "allowedSpecialResponseStates": [
+        "context_dependent"
+      ],
+      "hasContextNote": true,
+      "hasImplementationNote": true,
+      "hasEligibility": false,
+      "isConditionalScenario": false
+    },
+    {
+      "categoryNumber": 10,
+      "categoryTitle": "Integrity, Honesty & Trust",
+      "questionNumber": 11,
+      "formatLabel": "Reassurance-and-access range",
+      "responseBehavior": "scale_range",
+      "listedChoiceCount": 7,
+      "choiceCount": 7,
+      "minSelections": 1,
+      "maxSelections": 1,
+      "features": [
+        "context_note",
+        "implementation_note"
+      ],
+      "specialChoices": [],
+      "hasContextNote": true,
+      "hasImplementationNote": true,
+      "hasEligibility": false,
+      "isConditionalScenario": false
+    },
+    {
+      "categoryNumber": 10,
+      "categoryTitle": "Integrity, Honesty & Trust",
+      "questionNumber": 12,
+      "formatLabel": "Scenario-based choice",
+      "responseBehavior": "scenario_choice",
+      "listedChoiceCount": 8,
+      "choiceCount": 8,
+      "minSelections": 1,
+      "maxSelections": 1,
+      "features": [
+        "context_note"
+      ],
+      "specialChoices": [],
+      "hasContextNote": true,
+      "hasImplementationNote": false,
+      "hasEligibility": false,
+      "isConditionalScenario": false
+    },
+    {
+      "categoryNumber": 10,
+      "categoryTitle": "Integrity, Honesty & Trust",
+      "questionNumber": 13,
+      "formatLabel": "Conditional scenario-based choice",
+      "responseBehavior": "scenario_choice",
+      "listedChoiceCount": 8,
+      "choiceCount": 8,
+      "minSelections": 1,
+      "maxSelections": 1,
+      "features": [
+        "conditional_scenario",
+        "context_note"
+      ],
+      "specialChoices": [],
+      "hasContextNote": true,
+      "hasImplementationNote": false,
+      "hasEligibility": false,
+      "isConditionalScenario": true
+    },
+    {
+      "categoryNumber": 10,
+      "categoryTitle": "Integrity, Honesty & Trust",
+      "questionNumber": 14,
+      "formatLabel": "Select all that apply",
+      "responseBehavior": "multi_select",
+      "listedChoiceCount": 14,
+      "choiceCount": 16,
+      "minSelections": 0,
+      "maxSelections": null,
+      "features": [
+        "evaluation_preference_state",
+        "implementation_note",
+        "limited_openness_qualifier",
+        "qualifier_may_coexist",
+        "select_all"
+      ],
+      "specialChoices": [
+        {
+          "index": 15,
+          "qualifier": "limited_openness",
+          "qualifierCoexistsWithSelections": true,
+          "architectureOnly": true
+        },
+        {
+          "index": 16,
+          "qualifier": "evaluation_preference",
+          "qualifierCoexistsWithSelections": true,
+          "architectureOnly": true
+        }
+      ],
+      "allowedQualifiers": [
+        "limited_openness",
+        "evaluation_preference"
+      ],
+      "hasContextNote": false,
+      "hasImplementationNote": true,
+      "hasEligibility": false,
+      "isConditionalScenario": false
+    },
+    {
+      "categoryNumber": 10,
+      "categoryTitle": "Integrity, Honesty & Trust",
+      "questionNumber": 15,
+      "formatLabel": "Select up to five",
+      "responseBehavior": "multi_select",
+      "listedChoiceCount": 15,
+      "choiceCount": 15,
+      "minSelections": 1,
+      "maxSelections": 5,
+      "features": [
+        "priority_follow_up"
+      ],
+      "specialChoices": [],
+      "priorityFollowUp": {
+        "selectionCount": 2,
+        "unordered": true,
+        "minEligibleSelectionsBeforeDisplay": 2
+      },
+      "hasContextNote": false,
+      "hasImplementationNote": false,
+      "hasEligibility": false,
+      "isConditionalScenario": false
+    }
+  ]
+}
