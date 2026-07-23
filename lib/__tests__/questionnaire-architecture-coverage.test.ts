@@ -173,9 +173,11 @@ describe('questionnaire architecture coverage (self-contained)', () => {
   it('represents optional unscored choice context', () => {
     const question = ARCHITECTURE_COVERAGE_QUESTIONS.serviceOptionalContext;
     const contextChoice = question.choices.find((c) => c.opensOptionalContext);
-    assert.ok(contextChoice);
-    assert.equal(contextChoice?.optionalContext?.scored, false);
-    assert.equal(contextChoice?.optionalContext?.required, false);
+    if (!contextChoice) {
+      assert.fail('expected a choice that opens optional context');
+    }
+    assert.equal(contextChoice.optionalContext?.scored, false);
+    assert.equal(contextChoice.optionalContext?.required, false);
 
     const manifest = getManifestQuestion(9, 2);
     assert.ok(manifest?.features.includes('optional_choice_context'));
@@ -187,12 +189,13 @@ describe('questionnaire architecture coverage (self-contained)', () => {
       activeQualifiers: [],
       selectedChoices: [
         {
-          choiceId: contextChoice!.id,
+          choiceId: contextChoice.id,
           contextText: 'optional unscored contribution context',
         },
       ],
     };
-    assert.equal(privateResponse.selectedChoices[0]?.contextText?.length! > 0, true);
+    const storedContext = privateResponse.selectedChoices[0]?.contextText ?? '';
+    assert.ok(storedContext.length > 0);
 
     const synthetic = getSyntheticCatalogFromManifest();
     const synthQ = synthetic.categories
