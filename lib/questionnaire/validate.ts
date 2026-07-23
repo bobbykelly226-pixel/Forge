@@ -1,5 +1,7 @@
 import {
   RESPONSE_BEHAVIORS,
+  RESPONSE_QUALIFIERS,
+  RESPONSE_STATES,
   type CatalogValidationIssue,
   type CatalogValidationResult,
   type CategoryDefinition,
@@ -130,6 +132,48 @@ function validateQuestion(
     );
   }
 
+  if (
+    question.responseBehavior === 'structured_identity' &&
+    !question.structuredIdentity
+  ) {
+    issues.push(
+      issue(
+        'missing_structured_identity_config',
+        'structured_identity behavior requires structuredIdentity configuration',
+        path
+      )
+    );
+  }
+  if (question.structuredIdentity) {
+    if (question.responseBehavior !== 'structured_identity') {
+      issues.push(
+        issue(
+          'structured_identity_incompatible',
+          'structuredIdentity config requires structured_identity behavior',
+          path
+        )
+      );
+    }
+    if (!question.structuredIdentity.privacy) {
+      issues.push(
+        issue('missing_identity_privacy', 'structuredIdentity.privacy is required', path)
+      );
+    }
+  }
+
+  const allowedStates = new Set(question.allowedSpecialResponseStates ?? []);
+  const allowedQualifiers = new Set(question.allowedQualifiers ?? []);
+  for (const state of allowedStates) {
+    if (!RESPONSE_STATES.includes(state)) {
+      issues.push(issue('invalid_allowed_special_state', `Unknown special state: ${state}`, path));
+    }
+  }
+  for (const qualifier of allowedQualifiers) {
+    if (!RESPONSE_QUALIFIERS.includes(qualifier)) {
+      issues.push(issue('invalid_allowed_qualifier', `Unknown qualifier: ${qualifier}`, path));
+    }
+  }
+
   const choiceIds = new Set<string>();
   const orders = new Set<number>();
   let exclusiveCount = 0;
@@ -165,6 +209,73 @@ function validateQuestion(
     }
 
     if (choice.mutuallyExclusive) exclusiveCount += 1;
+
+    if (choice.specialResponseState) {
+      if (!RESPONSE_STATES.includes(choice.specialResponseState)) {
+        issues.push(
+          issue(
+            'invalid_choice_special_state',
+            `Unknown choice specialResponseState: ${choice.specialResponseState}`,
+            choicePath
+          )
+        );
+      } else if (!allowedStates.has(choice.specialResponseState)) {
+        issues.push(
+          issue(
+            'choice_special_state_not_permitted',
+            `Choice specialResponseState ${choice.specialResponseState} is not permitted by question.allowedSpecialResponseStates`,
+            choicePath
+          )
+        );
+      }
+    }
+
+    if (choice.qualifier) {
+      if (!RESPONSE_QUALIFIERS.includes(choice.qualifier)) {
+        issues.push(
+          issue('invalid_choice_qualifier', `Unknown choice qualifier: ${choice.qualifier}`, choicePath)
+        );
+      } else if (!allowedQualifiers.has(choice.qualifier)) {
+        issues.push(
+          issue(
+            'choice_qualifier_not_permitted',
+            `Choice qualifier ${choice.qualifier} is not permitted by question.allowedQualifiers`,
+            choicePath
+          )
+        );
+      }
+    }
+
+    if (choice.opensOptionalContext || choice.optionalContext) {
+      if (!choice.optionalContext) {
+        issues.push(
+          issue(
+            'missing_optional_context_config',
+            'opensOptionalContext requires optionalContext configuration',
+            choicePath
+          )
+        );
+      } else {
+        if (choice.optionalContext.scored !== false) {
+          issues.push(
+            issue(
+              'optional_context_must_be_unscored',
+              'optionalContext.scored must be false',
+              choicePath
+            )
+          );
+        }
+        if (choice.optionalContext.required !== false) {
+          issues.push(
+            issue(
+              'optional_context_must_be_optional',
+              'optionalContext.required must be false in this foundation',
+              choicePath
+            )
+          );
+        }
+      }
+    }
   }
 
   const expectedOrders = Array.from({ length: question.choices.length }, (_, i) => i + 1);
@@ -281,6 +392,21 @@ function validateQuestion(
       }
     }
     const excluded = new Set(pf.excludedChoiceIds ?? []);
+    const eligibleSet = new Set(eligible);
+    const overlap = [...excluded].filter((id) => eligibleSet.has(id));
+    if (
+      pf.eligibleChoiceIds &&
+      pf.excludedChoiceIds &&
+      overlap.length > 0
+    ) {
+      issues.push(
+        issue(
+          'priority_eligible_excluded_conflict',
+          'Priority eligibleChoiceIds and excludedChoiceIds overlap; resolve explicitly by omitting the id from eligibleChoiceIds',
+          path
+        )
+      );
+    }
     const eligibleNet = eligible.filter((id) => !excluded.has(id));
     if (pf.selectionCount > eligibleNet.length) {
       issues.push(
@@ -297,6 +423,22 @@ function validateQuestion(
         issue(
           'invalid_priority_min_eligible',
           'minEligibleSelectionsBeforeDisplay must be a positive integer',
+          path
+        )
+      );
+    } else if (minDisplay < pf.selectionCount) {
+      issues.push(
+        issue(
+          'priority_min_eligible_below_selection_count',
+          'minEligibleSelectionsBeforeDisplay cannot be less than selectionCount',
+          path
+        )
+      );
+    } else if (minDisplay > eligibleNet.length) {
+      issues.push(
+        issue(
+          'priority_min_eligible_exceeds_available',
+          'minEligibleSelectionsBeforeDisplay exceeds available eligible non-excluded choices',
           path
         )
       );

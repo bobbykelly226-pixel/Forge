@@ -6,14 +6,21 @@ export type {
   CategoryStatus,
   ConditionalQuestionDefinition,
   EligibilityRuleDefinition,
+  OptionalChoiceContextDefinition,
   PriorityFollowUpDefinition,
   QuestionDefinition,
   QuestionnaireCatalog,
   ResponseBehavior,
+  ResponseQualifier,
   ResponseState,
+  StructuredIdentityDefinition,
 } from '@/lib/questionnaire/types';
 
-export { RESPONSE_BEHAVIORS, RESPONSE_STATES } from '@/lib/questionnaire/types';
+export {
+  RESPONSE_BEHAVIORS,
+  RESPONSE_QUALIFIERS,
+  RESPONSE_STATES,
+} from '@/lib/questionnaire/types';
 
 export {
   assertValidQuestionnaireCatalog,
@@ -31,11 +38,13 @@ export {
 } from '@/lib/questionnaire/catalog';
 
 export {
-  ARCHITECTURE_COVERAGE_EXAMPLES,
+  ARCHITECTURE_COVERAGE_QUESTIONS,
   FORMAT_LABEL_TO_BEHAVIOR,
   FOUNDATION_CAPABILITY_MANIFEST,
   MASTER_ELIGIBILITY_DESCRIPTION,
   MASTER_FORMAT_LABELS,
   MASTER_STRUCTURE_COUNTS,
+  MASTER_STRUCTURE_MANIFEST,
+  getArchitectureCoverageCatalog,
   resolveResponseBehavior,
 } from '@/lib/questionnaire/architecture-coverage';

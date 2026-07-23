@@ -32,7 +32,18 @@ do $$ begin
     'context_dependent',
     'limited_capacity',
     'not_currently_relevant',
-    'current_priority'
+    'current_priority',
+    'no_specific_requirement'
+  );
+exception when duplicate_object then null;
+end $$;
+
+do $$ begin
+  create type public.questionnaire_response_qualifier as enum (
+    'no_specific_requirement',
+    'limited_openness',
+    'evaluation_preference',
+    'limited_capacity_contribution'
   );
 exception when duplicate_object then null;
 end $$;
@@ -119,6 +130,7 @@ create table if not exists public.questionnaire_questions (
   eligibility_rule_id uuid null references public.questionnaire_eligibility_rules (id) on delete set null,
   is_conditional boolean not null default false,
   select_all_that_apply boolean not null default false,
+  structured_identity_config jsonb null,
   alignment_purpose text not null,
   min_selections integer not null default 1,
   max_selections integer null,
@@ -129,6 +141,7 @@ create table if not exists public.questionnaire_questions (
   priority_excluded_choice_keys jsonb null,
   priority_min_eligible_selections integer null,
   allowed_special_response_states public.questionnaire_response_state[] null,
+  allowed_qualifiers public.questionnaire_response_qualifier[] null,
   display_order integer not null,
   created_at timestamptz not null default now(),
   constraint questionnaire_questions_number_positive check (question_number >= 1),
@@ -167,15 +180,26 @@ create table if not exists public.questionnaire_answer_choices (
   display_order integer not null,
   mutually_exclusive boolean not null default false,
   special_response_state public.questionnaire_response_state null,
+  qualifier public.questionnaire_response_qualifier null,
+  qualifier_coexists_with_selections boolean not null default false,
+  opens_optional_context boolean not null default false,
+  optional_context_config jsonb null,
   created_at timestamptz not null default now(),
   constraint questionnaire_answer_choices_display_positive check (display_order >= 1),
   constraint questionnaire_answer_choices_label_nonempty check (char_length(trim(label)) > 0),
   constraint questionnaire_answer_choices_question_key_unique unique (question_id, choice_key),
-  constraint questionnaire_answer_choices_question_order_unique unique (question_id, display_order)
+  constraint questionnaire_answer_choices_question_order_unique unique (question_id, display_order),
+  constraint questionnaire_answer_choices_optional_context check (
+    opens_optional_context = false
+    or (
+      optional_context_config is not null
+      and (optional_context_config->>'scored') = 'false'
+    )
+  )
 );
 
 comment on table public.questionnaire_answer_choices is
-  'Ordered answer choices. special_response_state marks distinct non-ordinary states.';
+  'Ordered answer choices. Supports special states, typed qualifiers, and optional unscored context.';
 
 create index if not exists questionnaire_categories_version_display_idx
   on public.questionnaire_categories (version_id, display_order);
@@ -219,6 +243,11 @@ create table if not exists public.user_questionnaire_responses (
   version_id uuid not null references public.questionnaire_versions (id) on delete restrict,
   question_id uuid not null references public.questionnaire_questions (id) on delete restrict,
   response_state public.questionnaire_response_state not null default 'unanswered',
+  active_qualifiers public.questionnaire_response_qualifier[] not null default '{}',
+  identity_refinement text null,
+  identity_user_supplied text null,
+  identity_public_display_allowed boolean null,
+  identity_private_matching_allowed boolean null,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now(),
   constraint user_questionnaire_responses_user_version_question_unique
@@ -230,7 +259,7 @@ create table if not exists public.user_questionnaire_responses (
 );
 
 comment on table public.user_questionnaire_responses is
-  'Private questionnaire responses. Not public profile data. Owner-only RLS.';
+  'Private questionnaire responses. Not public profile data. Owner-only RLS. Identity fields are private configuration storage only.';
 
 drop trigger if exists user_questionnaire_responses_updated_at on public.user_questionnaire_responses;
 create trigger user_questionnaire_responses_updated_at
@@ -244,12 +273,16 @@ create index if not exists user_questionnaire_responses_user_version_idx
 create table if not exists public.user_questionnaire_selected_choices (
   response_id uuid not null references public.user_questionnaire_responses (id) on delete cascade,
   choice_id uuid not null references public.questionnaire_answer_choices (id) on delete restrict,
+  context_text text null,
   created_at timestamptz not null default now(),
-  primary key (response_id, choice_id)
+  primary key (response_id, choice_id),
+  constraint user_questionnaire_selected_choices_context_length check (
+    context_text is null or char_length(context_text) <= 2000
+  )
 );
 
 comment on table public.user_questionnaire_selected_choices is
-  'Selected answer choices for a response. Enforces question match, max count, mutual exclusion.';
+  'Selected answer choices for a response. Optional context_text is private and unscored. Enforces question match, max count, mutual exclusion under response-row locks.';
 
 create table if not exists public.user_questionnaire_priority_selections (
   response_id uuid not null references public.user_questionnaire_responses (id) on delete cascade,
@@ -339,15 +372,18 @@ declare
   v_max_selections integer;
   v_selected_count integer;
   v_new_exclusive boolean;
+  v_opens_context boolean;
   v_has_exclusive boolean;
   v_has_other boolean;
 begin
+  -- Serialize selection mutations per response to close count/exclusion races.
   select question_id into v_response_question_id
   from public.user_questionnaire_responses
-  where id = new.response_id;
+  where id = new.response_id
+  for update;
 
-  select question_id, mutually_exclusive
-    into v_choice_question_id, v_new_exclusive
+  select question_id, mutually_exclusive, opens_optional_context
+    into v_choice_question_id, v_new_exclusive, v_opens_context
   from public.questionnaire_answer_choices
   where id = new.choice_id;
 
@@ -359,6 +395,10 @@ begin
   end if;
   if v_response_question_id <> v_choice_question_id then
     raise exception 'questionnaire selected choice must belong to the response question';
+  end if;
+
+  if new.context_text is not null and not v_opens_context then
+    raise exception 'questionnaire context_text is not enabled for this choice';
   end if;
 
   select max_selections into v_max_selections
@@ -421,6 +461,12 @@ declare
   v_excluded jsonb;
   v_eligible jsonb;
 begin
+  -- Serialize priority mutations per response to close count races.
+  perform 1
+  from public.user_questionnaire_responses
+  where id = new.response_id
+  for update;
+
   select r.question_id, q.priority_selection_count, q.priority_excluded_choice_keys, q.priority_eligible_choice_keys
     into v_response_question_id, v_priority_limit, v_excluded, v_eligible
   from public.user_questionnaire_responses r

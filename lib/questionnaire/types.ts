@@ -17,6 +17,10 @@ export const RESPONSE_BEHAVIORS = [
 
 export type ResponseBehavior = (typeof RESPONSE_BEHAVIORS)[number];
 
+/**
+ * Response-level states for a question answer.
+ * Distinct concepts stay distinct — do not collapse qualifiers into these.
+ */
 export const RESPONSE_STATES = [
   'answered',
   'unanswered',
@@ -28,12 +32,34 @@ export const RESPONSE_STATES = [
   'limited_capacity',
   'not_currently_relevant',
   'current_priority',
+  'no_specific_requirement',
 ] as const;
 
 export type ResponseState = (typeof RESPONSE_STATES)[number];
 
-/** Category lifecycle. Category 1 must be locked. */
+/**
+ * Typed response qualifiers that are not approximate aliases of RESPONSE_STATES.
+ * Some may coexist with concrete selected choices.
+ */
+export const RESPONSE_QUALIFIERS = [
+  'no_specific_requirement',
+  'limited_openness',
+  'evaluation_preference',
+  'limited_capacity_contribution',
+] as const;
+
+export type ResponseQualifier = (typeof RESPONSE_QUALIFIERS)[number];
+
+/** Category lifecycle. Category 1 must be locked in the live catalog. */
 export type CategoryStatus = 'locked' | 'draft' | 'preview';
+
+export type OptionalChoiceContextDefinition = {
+  kind: 'free_text';
+  /** Optional context is never required in V1 coverage examples. */
+  required: false;
+  /** Context text must remain unscored. */
+  scored: false;
+};
 
 export type AnswerChoiceDefinition = {
   id: string;
@@ -42,8 +68,22 @@ export type AnswerChoiceDefinition = {
   displayOrder: number;
   /** When true, selecting this choice is incompatible with other selections. */
   mutuallyExclusive?: boolean;
-  /** When set, selecting this choice represents a special/qualifying response state. */
+  /** When set, selecting this choice represents a special response state. */
   specialResponseState?: ResponseState;
+  /**
+   * Distinct qualifier activated by this choice.
+   * Must be listed in the question's allowedQualifiers.
+   */
+  qualifier?: ResponseQualifier;
+  /**
+   * When true, the qualifier may coexist with ordinary selected choices.
+   * When false/omitted with mutuallyExclusive, it replaces other selections.
+   */
+  qualifierCoexistsWithSelections?: boolean;
+  /** Machine-readable flag: selecting this choice may open optional context input. */
+  opensOptionalContext?: boolean;
+  /** Optional unscored context input associated with this choice. */
+  optionalContext?: OptionalChoiceContextDefinition;
 };
 
 /**
@@ -66,7 +106,7 @@ export type PriorityFollowUpDefinition = {
   excludedChoiceIds?: readonly string[];
   /**
    * Minimum number of eligible selected choices required before the follow-up displays.
-   * When omitted, defaults to selectionCount.
+   * When omitted, defaults to selectionCount. Must be >= selectionCount.
    */
   minEligibleSelectionsBeforeDisplay?: number;
 };
@@ -93,6 +133,24 @@ export type ConditionalQuestionDefinition = {
   requiresEligibilityRuleId?: string;
 };
 
+/**
+ * Structured identity configuration (configuration-driven; not inferred from labels).
+ * Establishes architecture only — does not expose identity publicly.
+ */
+export type StructuredIdentityDefinition = {
+  allowsRefinement: boolean;
+  allowsUserSuppliedIdentity: boolean;
+  privacy: {
+    /** User controls whether the identity appears on a public profile. */
+    userControlsPublicDisplay: boolean;
+    /**
+     * When true, the user independently controls whether the identity may be
+     * used privately for matching.
+     */
+    userControlsPrivateMatchingUse: boolean;
+  };
+};
+
 export type QuestionDefinition = {
   id: string;
   number: number;
@@ -114,6 +172,8 @@ export type QuestionDefinition = {
   eligibilityRuleId?: string;
   /** Conditional scenario / gated display metadata. */
   conditional?: ConditionalQuestionDefinition;
+  /** Structured identity behavior when responseBehavior is structured_identity. */
+  structuredIdentity?: StructuredIdentityDefinition;
   /**
    * True for unrestricted “Select all that apply” style questions.
    * maxSelections should be null when select-all.
@@ -127,10 +187,12 @@ export type QuestionDefinition = {
   choices: AnswerChoiceDefinition[];
   priorityFollowUp?: PriorityFollowUpDefinition;
   /**
-   * Special/qualifying response states this question may record
+   * Special response states this question may record
    * (in addition to ordinary answered/unanswered/skipped/withheld).
    */
   allowedSpecialResponseStates?: readonly ResponseState[];
+  /** Qualifiers this question may activate via choices. */
+  allowedQualifiers?: readonly ResponseQualifier[];
 };
 
 export type CategoryDefinition = {
