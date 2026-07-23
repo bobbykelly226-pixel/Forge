@@ -44,7 +44,7 @@ export default function CategoryPreviewComplete({
             {totalQuestions} of {totalQuestions} questions answered
           </li>
           <li>
-            {priorityFollowUpsCompleted} priority follow-up
+            {priorityFollowUpsCompleted} priority follow up
             {priorityFollowUpsCompleted === 1 ? '' : 's'} completed
           </li>
           <li>Preview answers were not saved</li>

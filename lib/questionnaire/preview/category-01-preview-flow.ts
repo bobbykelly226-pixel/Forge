@@ -1,5 +1,5 @@
 /**
- * In-memory preview flow for Category 1 — Relationship Vision & Intentions.
+ * In-memory preview flow for Category 1 Relationship Vision & Intentions.
  * Answers stay in React memory only; no database writes.
  */
 
@@ -22,21 +22,21 @@ export type SelectionResult =
   | { ok: false; reason: 'at_max'; answer: QuestionAnswerState };
 
 export const PREVIEW_NOTICE =
-  'Preview mode — your answers are not being saved yet.' as const;
+  'Preview mode. Your answers are not being saved yet.' as const;
 
 export const INTRO_COPY = {
   eyebrow: 'Compatibility Profile',
-  body: 'The future you want—and the way you build toward it—shapes whether a relationship can grow with clarity. These questions help Forge understand your intentions, expectations, and room for flexibility.',
+  body: 'The future you want and the way you build toward it shapes whether a relationship can grow with clarity. These questions help Forge understand your intentions, expectations, and room for flexibility.',
   supporting:
-    'There are no right answers. Choose what most honestly reflects the relationship you want and how you approach building it.',
-  metadata: '15 questions',
+    'There are no wrong answers. Choose what most honestly reflects the relationship you want and how you approach building it.',
+  metadata: '10 questions',
   primary: 'Begin Category',
   secondary: 'Back to Forge',
 } as const;
 
 export const COMPLETE_COPY = {
   eyebrow: 'Category Preview Complete',
-  body: 'This is the first part of the larger Forge Compatibility Profile. Your responses will eventually help Forge explain meaningful alignment while leaving the decision—and the conversation—to you.',
+  body: 'This is the first part of the larger Forge Compatibility Profile. Your responses will eventually help Forge explain meaningful alignment while leaving the decision and the conversation to you.',
 } as const;
 
 export function emptyAnswer(): QuestionAnswerState {

@@ -31,9 +31,11 @@ function readRepo(path: string): string {
 }
 
 describe('questionnaire architecture coverage (self-contained)', () => {
-  it('loads a committed 150-question structural manifest without Cursor upload paths', () => {
-    assert.equal(MASTER_STRUCTURE_MANIFEST.questionCount, 150);
-    assert.equal(MASTER_STRUCTURE_MANIFEST.questions.length, 150);
+  it('loads a committed structural manifest without Cursor upload paths', () => {
+    assert.equal(MASTER_STRUCTURE_MANIFEST.questionCount, 145);
+    assert.equal(MASTER_STRUCTURE_MANIFEST.questions.length, 145);
+    const c1 = MASTER_STRUCTURE_MANIFEST.questions.filter((q) => q.categoryNumber === 1);
+    assert.equal(c1.length, 10);
     const sourcePath = 'lib/__tests__/questionnaire-architecture-coverage.test.ts';
     const testSource = readRepo(sourcePath);
     assert.doesNotMatch(testSource, /\/home\/ubuntu\/\.cursor\/projects\/workspace\/uploads/);
@@ -85,12 +87,12 @@ describe('questionnaire architecture coverage (self-contained)', () => {
     assert.equal(synthetic.categories.length, 10);
     assert.equal(
       synthetic.categories.reduce((sum, c) => sum + c.questions.length, 0),
-      150
+      145
     );
     for (let n = 1; n <= 10; n += 1) {
       const category = synthetic.categories.find((c) => c.number === n);
       assert.ok(category, `missing category ${n}`);
-      assert.equal(category?.questions.length, 15);
+      assert.equal(category?.questions.length, n === 1 ? 10 : 15);
       assert.equal(category?.status, 'locked');
     }
 
@@ -446,14 +448,14 @@ describe('questionnaire architecture coverage (self-contained)', () => {
     assert.deepEqual(manifestPriority?.priorityFollowUp?.excludedChoiceIndexes, [15]);
   });
 
-  it('keeps Category 1 priority behavior unchanged', () => {
+  it('keeps Category 1 priority follow-ups on Q5, Q8, and Q10 only', () => {
     const live = getQuestionnaireCatalog();
+    assert.equal(live.categories[0].questions.length, 10);
     const byNumber = Object.fromEntries(live.categories[0].questions.map((q) => [q.number, q]));
     assert.equal(byNumber[5].priorityFollowUp?.selectionCount, 2);
-    assert.equal(byNumber[12].priorityFollowUp?.selectionCount, 2);
-    assert.equal(byNumber[15].priorityFollowUp?.selectionCount, 2);
-    assert.equal(byNumber[9].priorityFollowUp, undefined);
-    for (const n of [1, 2, 3, 4, 6, 7, 8, 9, 10, 11, 13, 14]) {
+    assert.equal(byNumber[8].priorityFollowUp?.selectionCount, 2);
+    assert.equal(byNumber[10].priorityFollowUp?.selectionCount, 2);
+    for (const n of [1, 2, 3, 4, 6, 7, 9]) {
       assert.equal(byNumber[n].priorityFollowUp, undefined);
     }
   });
@@ -514,7 +516,7 @@ describe('questionnaire architecture coverage (self-contained)', () => {
       FOUNDATION_CAPABILITY_MANIFEST.databaseIntegrity.responseRowLockForSelectionMutations,
       true
     );
-    assert.equal(MASTER_STRUCTURE_COUNTS.questions, 150);
+    assert.equal(MASTER_STRUCTURE_COUNTS.questions, 145);
     assert.equal(MASTER_STRUCTURE_COUNTS.eligibilityRuleAttachments, 3);
     assert.equal(MASTER_STRUCTURE_COUNTS.conditionalScenarioQuestions, 4);
     assert.equal(MASTER_STRUCTURE_COUNTS.structuredIdentitySelections, 2);

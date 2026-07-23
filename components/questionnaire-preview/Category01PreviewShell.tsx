@@ -128,7 +128,7 @@ export default function Category01PreviewShell({ category }: Category01PreviewSh
   const eligibleIds = eligibleSelectedChoiceIds(question, answer.selectedChoiceIds);
   const eligibleChoices = question.choices.filter((c) => eligibleIds.includes(c.id));
   const progress = progressFraction(category, step);
-  const phaseLabel = step.phase === 'priority' ? 'Priority follow-up' : undefined;
+  const phaseLabel = step.phase === 'priority' ? 'Priority follow up' : undefined;
   const limitMessage =
     step.phase === 'base'
       ? selectionLimitGuidance(question, answer.selectedChoiceIds.length)

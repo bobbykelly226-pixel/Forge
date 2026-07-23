@@ -1,9 +1,10 @@
 /**
  * Builds a complete, strongly typed synthetic catalog from the committed
- * structural manifest so all 150 question structures can be validator-proven.
+ * structural manifest so all documented question structures can be validator-proven.
  *
- * Categories 2–10 wording is intentionally not imported — prompts/options are
- * synthetic placeholders. This catalog is NOT returned by getQuestionnaireCatalog().
+ * Category 1 is the live 10 question catalog. Categories 2–10 wording is
+ * intentionally not imported — prompts/options are synthetic placeholders.
+ * This catalog is NOT returned by getQuestionnaireCatalog().
  */
 
 import masterStructureManifest from '@/lib/questionnaire/fixtures/master-structure-manifest.json';
@@ -188,8 +189,8 @@ function buildQuestion(
  */
 export function getSyntheticCatalogFromManifest(): QuestionnaireCatalog {
   const entries = masterStructureManifest.questions as ManifestQuestion[];
-  if (entries.length !== 150) {
-    throw new Error(`Expected 150 manifest questions, found ${entries.length}`);
+  if (entries.length !== 145) {
+    throw new Error(`Expected 145 manifest questions, found ${entries.length}`);
   }
 
   // Assign stable eligibility rule slots for the three HQ eligibility attachments.
@@ -239,7 +240,7 @@ export function getSyntheticCatalogFromManifest(): QuestionnaireCatalog {
 
   return assertValidQuestionnaireCatalog({
     questionnaireVersion: 'architecture_synthetic_manifest_v1',
-    specificationVersion: 'forge_hq_final_locked_150_2026_07',
+    specificationVersion: 'compatibility_profile_category_1_v10',
     eligibilityRules,
     categories,
   });

@@ -26,7 +26,7 @@ export default function PriorityFollowUp({
     <div className="space-y-5">
       <div>
         <p className="mb-2 text-xs font-semibold uppercase tracking-[0.12em] text-[var(--forge-graphite)]">
-          Priority follow-up
+          Priority follow up
         </p>
         <h2
           id="preview-question-heading"
@@ -37,8 +37,8 @@ export default function PriorityFollowUp({
           {prompt}
         </h2>
         <p className="mt-3 text-sm leading-relaxed text-[var(--forge-graphite)]">
-          Choose exactly {required}. This is not a ranking between first and second —
-          both priorities carry the same weight.
+          Choose exactly {required}. This is not a ranking between first and second.
+          Both priorities carry the same weight.
         </p>
         <p className="mt-2 text-sm font-medium text-[var(--forge-navy)]" aria-live="polite">
           {selectedCount} of {required} selected

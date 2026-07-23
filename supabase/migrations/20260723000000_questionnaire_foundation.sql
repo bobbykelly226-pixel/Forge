@@ -659,7 +659,7 @@ insert into public.questionnaire_versions (id, version_key, specification_versio
 values (
   '11111111-1111-4111-8111-111111111111',
   'compatibility_profile_v1',
-  'forge_hq_final_locked_150_2026_07',
+  'compatibility_profile_category_1_v10',
   'Compatibility Profile',
   true
 )
@@ -678,7 +678,7 @@ insert into public.questionnaire_categories (
   'Relationship Vision & Intentions',
   'locked',
   1,
-  '["Children and faith remain primarily within their Essential Profile questions and dedicated alignment categories.", "Q12 may identify whether those subjects require shared direction, but it does not duplicate their deeper questions.", "Multi-select questions are not fully ranked. Only Q5, Q12, and Q15 receive a lightweight “choose the two most important” follow-up.", "Genuine uncertainty remains available in Q1, but vague escape answers have otherwise been removed.", "Related answers must be grouped into shared scoring dimensions so repeated questions increase confidence rather than artificially multiplying their weight.", "Written responses are excluded because this category has no defined use for them at launch.", "Structured answers power alignment; follow-up priorities determine added weight."]'::jsonb
+  '["Children and faith remain primarily within their Essential Profile questions and dedicated alignment categories.","Q8 may identify whether those subjects require shared direction, but it does not duplicate their deeper questions.","Multiselect questions are not fully ranked. Only Q5, Q8, and Q10 receive a lightweight “choose the two most important” follow up.","Genuine uncertainty remains available in Q1, but vague escape answers have otherwise been removed.","Related answers must be grouped into shared scoring dimensions so repeated questions increase confidence rather than artificially multiplying their weight.","Written responses are excluded because this category has no defined use for them at launch.","Structured answers power alignment; follow up priorities determine added weight."]'::jsonb
 )
 on conflict (version_id, category_key) do update set
   title = excluded.title,
@@ -738,10 +738,10 @@ on conflict (category_id, question_key) do update set
 insert into public.questionnaire_answer_choices (
   id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
 ) values (
-  '44444444-4444-4444-8401-000000000001',
+  '44444444-4444-4444-8001-000000000001',
   '33333333-3333-4333-8333-000000000001',
   'relationship_vision_intentions_q01_c01',
-  'A committed long-term partnership where marriage is not expected',
+  'A committed long term partnership where marriage is not expected',
   1,
   false,
   null
@@ -755,7 +755,7 @@ on conflict (question_id, choice_key) do update set
 insert into public.questionnaire_answer_choices (
   id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
 ) values (
-  '44444444-4444-4444-8401-000000000002',
+  '44444444-4444-4444-8001-000000000002',
   '33333333-3333-4333-8333-000000000001',
   'relationship_vision_intentions_q01_c02',
   'A committed partnership where marriage is possible',
@@ -772,7 +772,7 @@ on conflict (question_id, choice_key) do update set
 insert into public.questionnaire_answer_choices (
   id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
 ) values (
-  '44444444-4444-4444-8401-000000000003',
+  '44444444-4444-4444-8001-000000000003',
   '33333333-3333-4333-8333-000000000001',
   'relationship_vision_intentions_q01_c03',
   'A partnership intentionally moving toward marriage',
@@ -789,7 +789,7 @@ on conflict (question_id, choice_key) do update set
 insert into public.questionnaire_answer_choices (
   id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
 ) values (
-  '44444444-4444-4444-8401-000000000004',
+  '44444444-4444-4444-8001-000000000004',
   '33333333-3333-4333-8333-000000000001',
   'relationship_vision_intentions_q01_c04',
   'Marriage and building a shared life together',
@@ -806,7 +806,7 @@ on conflict (question_id, choice_key) do update set
 insert into public.questionnaire_answer_choices (
   id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
 ) values (
-  '44444444-4444-4444-8401-000000000005',
+  '44444444-4444-4444-8001-000000000005',
   '33333333-3333-4333-8333-000000000001',
   'relationship_vision_intentions_q01_c05',
   'I am still genuinely discovering what I want',
@@ -872,7 +872,7 @@ on conflict (category_id, question_key) do update set
 insert into public.questionnaire_answer_choices (
   id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
 ) values (
-  '44444444-4444-4444-8402-000000000001',
+  '44444444-4444-4444-8002-000000000001',
   '33333333-3333-4333-8333-000000000002',
   'relationship_vision_intentions_q02_c01',
   'Not part of the future I want',
@@ -889,7 +889,7 @@ on conflict (question_id, choice_key) do update set
 insert into public.questionnaire_answer_choices (
   id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
 ) values (
-  '44444444-4444-4444-8402-000000000002',
+  '44444444-4444-4444-8002-000000000002',
   '33333333-3333-4333-8333-000000000002',
   'relationship_vision_intentions_q02_c02',
   'I could be open to it, but I do not need it',
@@ -906,7 +906,7 @@ on conflict (question_id, choice_key) do update set
 insert into public.questionnaire_answer_choices (
   id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
 ) values (
-  '44444444-4444-4444-8402-000000000003',
+  '44444444-4444-4444-8002-000000000003',
   '33333333-3333-4333-8333-000000000002',
   'relationship_vision_intentions_q02_c03',
   'I would prefer to marry',
@@ -923,7 +923,7 @@ on conflict (question_id, choice_key) do update set
 insert into public.questionnaire_answer_choices (
   id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
 ) values (
-  '44444444-4444-4444-8402-000000000004',
+  '44444444-4444-4444-8002-000000000004',
   '33333333-3333-4333-8333-000000000002',
   'relationship_vision_intentions_q02_c04',
   'Marriage is very important to me',
@@ -940,7 +940,7 @@ on conflict (question_id, choice_key) do update set
 insert into public.questionnaire_answer_choices (
   id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
 ) values (
-  '44444444-4444-4444-8402-000000000005',
+  '44444444-4444-4444-8002-000000000005',
   '33333333-3333-4333-8333-000000000002',
   'relationship_vision_intentions_q02_c05',
   'Marriage is essential to the future I want',
@@ -975,7 +975,7 @@ insert into public.questionnaire_questions (
   null,
   false,
   false,
-  'Identifies meaningful differences between cautious, gradual, steady, and fast-moving dating styles.',
+  'Identifies meaningful differences between cautious, gradual, steady, and fast moving dating styles.',
   1,
   1,
   null,
@@ -1006,7 +1006,7 @@ on conflict (category_id, question_key) do update set
 insert into public.questionnaire_answer_choices (
   id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
 ) values (
-  '44444444-4444-4444-8403-000000000001',
+  '44444444-4444-4444-8003-000000000001',
   '33333333-3333-4333-8333-000000000003',
   'relationship_vision_intentions_q03_c01',
   'I prefer significant time before becoming emotionally invested or committed',
@@ -1023,7 +1023,7 @@ on conflict (question_id, choice_key) do update set
 insert into public.questionnaire_answer_choices (
   id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
 ) values (
-  '44444444-4444-4444-8403-000000000002',
+  '44444444-4444-4444-8003-000000000002',
   '33333333-3333-4333-8333-000000000003',
   'relationship_vision_intentions_q03_c02',
   'I prefer a slow, intentional progression toward commitment',
@@ -1040,7 +1040,7 @@ on conflict (question_id, choice_key) do update set
 insert into public.questionnaire_answer_choices (
   id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
 ) values (
-  '44444444-4444-4444-8403-000000000003',
+  '44444444-4444-4444-8003-000000000003',
   '33333333-3333-4333-8333-000000000003',
   'relationship_vision_intentions_q03_c03',
   'I prefer steady progress when mutual interest is clear',
@@ -1057,7 +1057,7 @@ on conflict (question_id, choice_key) do update set
 insert into public.questionnaire_answer_choices (
   id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
 ) values (
-  '44444444-4444-4444-8403-000000000004',
+  '44444444-4444-4444-8003-000000000004',
   '33333333-3333-4333-8333-000000000003',
   'relationship_vision_intentions_q03_c04',
   'I am comfortable progressing quickly when intentions and connection align',
@@ -1074,7 +1074,7 @@ on conflict (question_id, choice_key) do update set
 insert into public.questionnaire_answer_choices (
   id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
 ) values (
-  '44444444-4444-4444-8403-000000000005',
+  '44444444-4444-4444-8003-000000000005',
   '33333333-3333-4333-8333-000000000003',
   'relationship_vision_intentions_q03_c05',
   'I prefer to adapt the pace to the connection rather than follow a general progression',
@@ -1140,7 +1140,7 @@ on conflict (category_id, question_key) do update set
 insert into public.questionnaire_answer_choices (
   id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
 ) values (
-  '44444444-4444-4444-8404-000000000001',
+  '44444444-4444-4444-8004-000000000001',
   '33333333-3333-4333-8333-000000000004',
   'relationship_vision_intentions_q04_c01',
   'I prefer exclusivity once we decide to date intentionally',
@@ -1157,7 +1157,7 @@ on conflict (question_id, choice_key) do update set
 insert into public.questionnaire_answer_choices (
   id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
 ) values (
-  '44444444-4444-4444-8404-000000000002',
+  '44444444-4444-4444-8004-000000000002',
   '33333333-3333-4333-8333-000000000004',
   'relationship_vision_intentions_q04_c02',
   'I prefer discussing exclusivity relatively early, once mutual interest is established',
@@ -1174,7 +1174,7 @@ on conflict (question_id, choice_key) do update set
 insert into public.questionnaire_answer_choices (
   id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
 ) values (
-  '44444444-4444-4444-8404-000000000003',
+  '44444444-4444-4444-8004-000000000003',
   '33333333-3333-4333-8333-000000000004',
   'relationship_vision_intentions_q04_c03',
   'I prefer several dates and deeper conversation before discussing exclusivity',
@@ -1191,7 +1191,7 @@ on conflict (question_id, choice_key) do update set
 insert into public.questionnaire_answer_choices (
   id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
 ) values (
-  '44444444-4444-4444-8404-000000000004',
+  '44444444-4444-4444-8004-000000000004',
   '33333333-3333-4333-8333-000000000004',
   'relationship_vision_intentions_q04_c04',
   'I prefer an extended period of nonexclusive dating before deciding',
@@ -1208,7 +1208,7 @@ on conflict (question_id, choice_key) do update set
 insert into public.questionnaire_answer_choices (
   id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
 ) values (
-  '44444444-4444-4444-8404-000000000005',
+  '44444444-4444-4444-8004-000000000005',
   '33333333-3333-4333-8333-000000000004',
   'relationship_vision_intentions_q04_c05',
   'I do not expect exclusivity unless both people explicitly agree to it',
@@ -1274,7 +1274,7 @@ on conflict (category_id, question_key) do update set
 insert into public.questionnaire_answer_choices (
   id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
 ) values (
-  '44444444-4444-4444-8405-000000000001',
+  '44444444-4444-4444-8005-000000000001',
   '33333333-3333-4333-8333-000000000005',
   'relationship_vision_intentions_q05_c01',
   'Exclusivity',
@@ -1291,7 +1291,7 @@ on conflict (question_id, choice_key) do update set
 insert into public.questionnaire_answer_choices (
   id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
 ) values (
-  '44444444-4444-4444-8405-000000000002',
+  '44444444-4444-4444-8005-000000000002',
   '33333333-3333-4333-8333-000000000005',
   'relationship_vision_intentions_q05_c02',
   'Emotional availability',
@@ -1308,7 +1308,7 @@ on conflict (question_id, choice_key) do update set
 insert into public.questionnaire_answer_choices (
   id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
 ) values (
-  '44444444-4444-4444-8405-000000000003',
+  '44444444-4444-4444-8005-000000000003',
   '33333333-3333-4333-8333-000000000005',
   'relationship_vision_intentions_q05_c03',
   'Consistent communication',
@@ -1325,10 +1325,10 @@ on conflict (question_id, choice_key) do update set
 insert into public.questionnaire_answer_choices (
   id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
 ) values (
-  '44444444-4444-4444-8405-000000000004',
+  '44444444-4444-4444-8005-000000000004',
   '33333333-3333-4333-8333-000000000005',
   'relationship_vision_intentions_q05_c04',
-  'Reliability and follow-through',
+  'Reliability and follow through',
   4,
   false,
   null
@@ -1342,7 +1342,7 @@ on conflict (question_id, choice_key) do update set
 insert into public.questionnaire_answer_choices (
   id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
 ) values (
-  '44444444-4444-4444-8405-000000000005',
+  '44444444-4444-4444-8005-000000000005',
   '33333333-3333-4333-8333-000000000005',
   'relationship_vision_intentions_q05_c05',
   'Shared effort',
@@ -1359,7 +1359,7 @@ on conflict (question_id, choice_key) do update set
 insert into public.questionnaire_answer_choices (
   id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
 ) values (
-  '44444444-4444-4444-8405-000000000006',
+  '44444444-4444-4444-8005-000000000006',
   '33333333-3333-4333-8333-000000000005',
   'relationship_vision_intentions_q05_c06',
   'Working through difficulties together',
@@ -1376,7 +1376,7 @@ on conflict (question_id, choice_key) do update set
 insert into public.questionnaire_answer_choices (
   id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
 ) values (
-  '44444444-4444-4444-8405-000000000007',
+  '44444444-4444-4444-8005-000000000007',
   '33333333-3333-4333-8333-000000000005',
   'relationship_vision_intentions_q05_c07',
   'Making decisions with each other in mind',
@@ -1393,7 +1393,7 @@ on conflict (question_id, choice_key) do update set
 insert into public.questionnaire_answer_choices (
   id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
 ) values (
-  '44444444-4444-4444-8405-000000000008',
+  '44444444-4444-4444-8005-000000000008',
   '33333333-3333-4333-8333-000000000005',
   'relationship_vision_intentions_q05_c08',
   'Planning for a shared future',
@@ -1410,7 +1410,7 @@ on conflict (question_id, choice_key) do update set
 insert into public.questionnaire_answer_choices (
   id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
 ) values (
-  '44444444-4444-4444-8405-000000000009',
+  '44444444-4444-4444-8005-000000000009',
   '33333333-3333-4333-8333-000000000005',
   'relationship_vision_intentions_q05_c09',
   'Supporting one another’s individual growth',
@@ -1436,18 +1436,18 @@ insert into public.questionnaire_questions (
   '22222222-2222-4222-8222-222222222221',
   'relationship_vision_intentions_q06',
   6,
-  'How much do you agree with this statement?',
-  'People should be honest early in dating about whether they are open to building a long-term future together.',
-  'Agreement scale',
-  'scale_range'::public.questionnaire_response_behavior,
+  'Which statements best describe what being ready for a committed relationship means to you personally?',
+  null,
+  'Select up to four',
+  'multi_select'::public.questionnaire_response_behavior,
   null,
   null,
   null,
   false,
   false,
-  'Measures expectations around clarity and intentionality without requiring premature commitment.',
+  'Grounds readiness in observable capacity and behavior instead of idealized traits.',
   1,
-  1,
+  4,
   null,
   null,
   true,
@@ -1476,10 +1476,10 @@ on conflict (category_id, question_key) do update set
 insert into public.questionnaire_answer_choices (
   id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
 ) values (
-  '44444444-4444-4444-8406-000000000001',
+  '44444444-4444-4444-8006-000000000001',
   '33333333-3333-4333-8333-000000000006',
   'relationship_vision_intentions_q06_c01',
-  'Strongly disagree',
+  'I have made consistent time and space in my life for a relationship',
   1,
   false,
   null
@@ -1493,10 +1493,10 @@ on conflict (question_id, choice_key) do update set
 insert into public.questionnaire_answer_choices (
   id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
 ) values (
-  '44444444-4444-4444-8406-000000000002',
+  '44444444-4444-4444-8006-000000000002',
   '33333333-3333-4333-8333-000000000006',
   'relationship_vision_intentions_q06_c02',
-  'Disagree',
+  'I am no longer emotionally attached to a previous relationship',
   2,
   false,
   null
@@ -1510,10 +1510,10 @@ on conflict (question_id, choice_key) do update set
 insert into public.questionnaire_answer_choices (
   id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
 ) values (
-  '44444444-4444-4444-8406-000000000003',
+  '44444444-4444-4444-8006-000000000003',
   '33333333-3333-4333-8333-000000000006',
   'relationship_vision_intentions_q06_c03',
-  'Neither agree nor disagree',
+  'I can clearly communicate what I want and need',
   3,
   false,
   null
@@ -1527,10 +1527,10 @@ on conflict (question_id, choice_key) do update set
 insert into public.questionnaire_answer_choices (
   id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
 ) values (
-  '44444444-4444-4444-8406-000000000004',
+  '44444444-4444-4444-8006-000000000004',
   '33333333-3333-4333-8333-000000000006',
   'relationship_vision_intentions_q06_c04',
-  'Agree',
+  'I am prepared to make decisions with another person in mind',
   4,
   false,
   null
@@ -1544,11 +1544,79 @@ on conflict (question_id, choice_key) do update set
 insert into public.questionnaire_answer_choices (
   id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
 ) values (
-  '44444444-4444-4444-8406-000000000005',
+  '44444444-4444-4444-8006-000000000005',
   '33333333-3333-4333-8333-000000000006',
   'relationship_vision_intentions_q06_c05',
-  'Strongly agree',
+  'I can remain engaged when a relationship becomes difficult',
   5,
+  false,
+  null
+)
+on conflict (question_id, choice_key) do update set
+  label = excluded.label,
+  display_order = excluded.display_order,
+  mutually_exclusive = excluded.mutually_exclusive,
+  special_response_state = excluded.special_response_state;
+
+insert into public.questionnaire_answer_choices (
+  id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
+) values (
+  '44444444-4444-4444-8006-000000000006',
+  '33333333-3333-4333-8333-000000000006',
+  'relationship_vision_intentions_q06_c06',
+  'I have enough emotional and practical stability to invest consistently',
+  6,
+  false,
+  null
+)
+on conflict (question_id, choice_key) do update set
+  label = excluded.label,
+  display_order = excluded.display_order,
+  mutually_exclusive = excluded.mutually_exclusive,
+  special_response_state = excluded.special_response_state;
+
+insert into public.questionnaire_answer_choices (
+  id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
+) values (
+  '44444444-4444-4444-8006-000000000007',
+  '33333333-3333-4333-8333-000000000006',
+  'relationship_vision_intentions_q06_c07',
+  'I am willing to adjust established routines and priorities',
+  7,
+  false,
+  null
+)
+on conflict (question_id, choice_key) do update set
+  label = excluded.label,
+  display_order = excluded.display_order,
+  mutually_exclusive = excluded.mutually_exclusive,
+  special_response_state = excluded.special_response_state;
+
+insert into public.questionnaire_answer_choices (
+  id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
+) values (
+  '44444444-4444-4444-8006-000000000008',
+  '33333333-3333-4333-8333-000000000006',
+  'relationship_vision_intentions_q06_c08',
+  'I am ready to be known honestly, including my imperfections',
+  8,
+  false,
+  null
+)
+on conflict (question_id, choice_key) do update set
+  label = excluded.label,
+  display_order = excluded.display_order,
+  mutually_exclusive = excluded.mutually_exclusive,
+  special_response_state = excluded.special_response_state;
+
+insert into public.questionnaire_answer_choices (
+  id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
+) values (
+  '44444444-4444-4444-8006-000000000009',
+  '33333333-3333-4333-8333-000000000006',
+  'relationship_vision_intentions_q06_c09',
+  'I believe some readiness can develop within the right relationship',
+  9,
   false,
   null
 )
@@ -1570,7 +1638,7 @@ insert into public.questionnaire_questions (
   '22222222-2222-4222-8222-222222222221',
   'relationship_vision_intentions_q07',
   7,
-  'When dating someone new, how do you approach long-term compatibility?',
+  'Which approach to personal growth best reflects the partnership you want?',
   null,
   'Single choice',
   'single_choice'::public.questionnaire_response_behavior,
@@ -1579,7 +1647,7 @@ insert into public.questionnaire_questions (
   null,
   false,
   false,
-  'Distinguishes present-focused dating from increasingly future-conscious approaches.',
+  'Differentiates independent, supportive, challenging, shared, and highly integrated approaches to growth.',
   1,
   1,
   null,
@@ -1610,10 +1678,10 @@ on conflict (category_id, question_key) do update set
 insert into public.questionnaire_answer_choices (
   id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
 ) values (
-  '44444444-4444-4444-8407-000000000001',
+  '44444444-4444-4444-8007-000000000001',
   '33333333-3333-4333-8333-000000000007',
   'relationship_vision_intentions_q07_c01',
-  'I focus on the present and consider the future only after a strong connection develops',
+  'Each partner should pursue growth independently while respecting the other’s path',
   1,
   false,
   null
@@ -1627,10 +1695,10 @@ on conflict (question_id, choice_key) do update set
 insert into public.questionnaire_answer_choices (
   id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
 ) values (
-  '44444444-4444-4444-8407-000000000002',
+  '44444444-4444-4444-8007-000000000002',
   '33333333-3333-4333-8333-000000000007',
   'relationship_vision_intentions_q07_c02',
-  'I gradually consider long-term compatibility as the relationship develops',
+  'Partners should maintain separate goals while actively supporting one another',
   2,
   false,
   null
@@ -1644,10 +1712,10 @@ on conflict (question_id, choice_key) do update set
 insert into public.questionnaire_answer_choices (
   id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
 ) values (
-  '44444444-4444-4444-8407-000000000003',
+  '44444444-4444-4444-8007-000000000003',
   '33333333-3333-4333-8333-000000000007',
   'relationship_vision_intentions_q07_c03',
-  'I balance enjoying the connection with evaluating long-term compatibility',
+  'Partners should encourage and respectfully challenge one another to grow',
   3,
   false,
   null
@@ -1661,10 +1729,10 @@ on conflict (question_id, choice_key) do update set
 insert into public.questionnaire_answer_choices (
   id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
 ) values (
-  '44444444-4444-4444-8407-000000000004',
+  '44444444-4444-4444-8007-000000000004',
   '33333333-3333-4333-8333-000000000007',
   'relationship_vision_intentions_q07_c04',
-  'I intentionally evaluate long-term compatibility from the beginning',
+  'Partners should build shared goals while continuing to grow individually',
   4,
   false,
   null
@@ -1678,10 +1746,10 @@ on conflict (question_id, choice_key) do update set
 insert into public.questionnaire_answer_choices (
   id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
 ) values (
-  '44444444-4444-4444-8407-000000000005',
+  '44444444-4444-4444-8007-000000000005',
   '33333333-3333-4333-8333-000000000007',
   'relationship_vision_intentions_q07_c05',
-  'I need clarity about major long-term goals before becoming emotionally invested',
+  'Growth should be a central purpose of the relationship, pursued intentionally together',
   5,
   false,
   null
@@ -1704,24 +1772,24 @@ insert into public.questionnaire_questions (
   '22222222-2222-4222-8222-222222222221',
   'relationship_vision_intentions_q08',
   8,
-  'How frequently should partners intentionally discuss the health and direction of their relationship?',
+  'In which areas would partners need reasonably compatible long term direction?',
   null,
-  'Frequency scale',
-  'scale_range'::public.questionnaire_response_behavior,
+  'Select up to five',
+  'multi_select'::public.questionnaire_response_behavior,
   null,
   null,
   null,
   false,
   false,
-  'Compares expectations for relationship communication and reassurance.',
+  'Identifies concrete future directions requiring alignment while leaving detailed children, faith, money, and lifestyle matching to their respective categories.',
   1,
-  1,
-  null,
-  null,
+  5,
+  'Of the areas you selected, which two allow the least room for difference?',
+  2,
   true,
   null,
   null,
-  null,
+  2,
   null,
   8
 )
@@ -1744,10 +1812,10 @@ on conflict (category_id, question_key) do update set
 insert into public.questionnaire_answer_choices (
   id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
 ) values (
-  '44444444-4444-4444-8408-000000000001',
+  '44444444-4444-4444-8008-000000000001',
   '33333333-3333-4333-8333-000000000008',
   'relationship_vision_intentions_q08_c01',
-  'Only when there is a concern or major decision',
+  'Whether to marry',
   1,
   false,
   null
@@ -1761,10 +1829,10 @@ on conflict (question_id, choice_key) do update set
 insert into public.questionnaire_answer_choices (
   id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
 ) values (
-  '44444444-4444-4444-8408-000000000002',
+  '44444444-4444-4444-8008-000000000002',
   '33333333-3333-4333-8333-000000000008',
   'relationship_vision_intentions_q08_c02',
-  'Occasionally, when the conversation arises naturally',
+  'Whether or how to build a family',
   2,
   false,
   null
@@ -1778,10 +1846,10 @@ on conflict (question_id, choice_key) do update set
 insert into public.questionnaire_answer_choices (
   id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
 ) values (
-  '44444444-4444-4444-8408-000000000003',
+  '44444444-4444-4444-8008-000000000003',
   '33333333-3333-4333-8333-000000000008',
   'relationship_vision_intentions_q08_c03',
-  'At important relationship milestones',
+  'Where and how to live',
   3,
   false,
   null
@@ -1795,10 +1863,10 @@ on conflict (question_id, choice_key) do update set
 insert into public.questionnaire_answer_choices (
   id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
 ) values (
-  '44444444-4444-4444-8408-000000000004',
+  '44444444-4444-4444-8008-000000000004',
   '33333333-3333-4333-8333-000000000008',
   'relationship_vision_intentions_q08_c04',
-  'Regularly, as part of maintaining the relationship',
+  'Career priorities',
   4,
   false,
   null
@@ -1812,11 +1880,130 @@ on conflict (question_id, choice_key) do update set
 insert into public.questionnaire_answer_choices (
   id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
 ) values (
-  '44444444-4444-4444-8408-000000000005',
+  '44444444-4444-4444-8008-000000000005',
   '33333333-3333-4333-8333-000000000008',
   'relationship_vision_intentions_q08_c05',
-  'Very regularly through intentional relationship check-ins',
+  'Financial goals',
   5,
+  false,
+  null
+)
+on conflict (question_id, choice_key) do update set
+  label = excluded.label,
+  display_order = excluded.display_order,
+  mutually_exclusive = excluded.mutually_exclusive,
+  special_response_state = excluded.special_response_state;
+
+insert into public.questionnaire_answer_choices (
+  id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
+) values (
+  '44444444-4444-4444-8008-000000000006',
+  '33333333-3333-4333-8333-000000000008',
+  'relationship_vision_intentions_q08_c06',
+  'Lifestyle and standard of living',
+  6,
+  false,
+  null
+)
+on conflict (question_id, choice_key) do update set
+  label = excluded.label,
+  display_order = excluded.display_order,
+  mutually_exclusive = excluded.mutually_exclusive,
+  special_response_state = excluded.special_response_state;
+
+insert into public.questionnaire_answer_choices (
+  id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
+) values (
+  '44444444-4444-4444-8008-000000000007',
+  '33333333-3333-4333-8333-000000000008',
+  'relationship_vision_intentions_q08_c07',
+  'The role of faith or spiritual life',
+  7,
+  false,
+  null
+)
+on conflict (question_id, choice_key) do update set
+  label = excluded.label,
+  display_order = excluded.display_order,
+  mutually_exclusive = excluded.mutually_exclusive,
+  special_response_state = excluded.special_response_state;
+
+insert into public.questionnaire_answer_choices (
+  id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
+) values (
+  '44444444-4444-4444-8008-000000000008',
+  '33333333-3333-4333-8333-000000000008',
+  'relationship_vision_intentions_q08_c08',
+  'Extended family involvement',
+  8,
+  false,
+  null
+)
+on conflict (question_id, choice_key) do update set
+  label = excluded.label,
+  display_order = excluded.display_order,
+  mutually_exclusive = excluded.mutually_exclusive,
+  special_response_state = excluded.special_response_state;
+
+insert into public.questionnaire_answer_choices (
+  id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
+) values (
+  '44444444-4444-4444-8008-000000000009',
+  '33333333-3333-4333-8333-000000000008',
+  'relationship_vision_intentions_q08_c09',
+  'Travel and major life experiences',
+  9,
+  false,
+  null
+)
+on conflict (question_id, choice_key) do update set
+  label = excluded.label,
+  display_order = excluded.display_order,
+  mutually_exclusive = excluded.mutually_exclusive,
+  special_response_state = excluded.special_response_state;
+
+insert into public.questionnaire_answer_choices (
+  id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
+) values (
+  '44444444-4444-4444-8008-000000000010',
+  '33333333-3333-4333-8333-000000000008',
+  'relationship_vision_intentions_q08_c10',
+  'Community involvement',
+  10,
+  false,
+  null
+)
+on conflict (question_id, choice_key) do update set
+  label = excluded.label,
+  display_order = excluded.display_order,
+  mutually_exclusive = excluded.mutually_exclusive,
+  special_response_state = excluded.special_response_state;
+
+insert into public.questionnaire_answer_choices (
+  id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
+) values (
+  '44444444-4444-4444-8008-000000000011',
+  '33333333-3333-4333-8333-000000000008',
+  'relationship_vision_intentions_q08_c11',
+  'Retirement and long term planning',
+  11,
+  false,
+  null
+)
+on conflict (question_id, choice_key) do update set
+  label = excluded.label,
+  display_order = excluded.display_order,
+  mutually_exclusive = excluded.mutually_exclusive,
+  special_response_state = excluded.special_response_state;
+
+insert into public.questionnaire_answer_choices (
+  id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
+) values (
+  '44444444-4444-4444-8008-000000000012',
+  '33333333-3333-4333-8333-000000000008',
+  'relationship_vision_intentions_q08_c12',
+  'I am comfortable with partners having substantially different long term goals',
+  12,
   false,
   null
 )
@@ -1838,25 +2025,25 @@ insert into public.questionnaire_questions (
   '22222222-2222-4222-8222-222222222221',
   'relationship_vision_intentions_q09',
   9,
-  'Which statements best describe what being ready for a committed relationship means to you personally?',
+  'If a loving relationship revealed a major difference involving a core long term goal, what would you most likely do first?',
   null,
-  'Select up to four',
-  'multi_select'::public.questionnaire_response_behavior,
+  'Scenario-based choice',
+  'scenario_choice'::public.questionnaire_response_behavior,
   null,
   null,
   null,
   false,
   false,
-  'Grounds readiness in observable capacity and behavior instead of idealized traits.',
+  'Reveals someone’s initial approach to major incompatibility rather than asking whether they generally believe in compromise.',
   1,
-  4,
+  1,
   null,
   null,
   true,
   null,
   null,
   null,
-  null,
+  array['context_dependent']::public.questionnaire_response_state[],
   9
 )
 on conflict (category_id, question_key) do update set
@@ -1878,10 +2065,10 @@ on conflict (category_id, question_key) do update set
 insert into public.questionnaire_answer_choices (
   id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
 ) values (
-  '44444444-4444-4444-8409-000000000001',
+  '44444444-4444-4444-8009-000000000001',
   '33333333-3333-4333-8333-000000000009',
   'relationship_vision_intentions_q09_c01',
-  'I have made consistent time and space in my life for a relationship',
+  'Determine whether either of us could genuinely change without resentment',
   1,
   false,
   null
@@ -1895,10 +2082,10 @@ on conflict (question_id, choice_key) do update set
 insert into public.questionnaire_answer_choices (
   id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
 ) values (
-  '44444444-4444-4444-8409-000000000002',
+  '44444444-4444-4444-8009-000000000002',
   '33333333-3333-4333-8333-000000000009',
   'relationship_vision_intentions_q09_c02',
-  'I am no longer emotionally attached to a previous relationship',
+  'Look for a compromise that preserves what matters most to both people',
   2,
   false,
   null
@@ -1912,10 +2099,10 @@ on conflict (question_id, choice_key) do update set
 insert into public.questionnaire_answer_choices (
   id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
 ) values (
-  '44444444-4444-4444-8409-000000000003',
+  '44444444-4444-4444-8009-000000000003',
   '33333333-3333-4333-8333-000000000009',
   'relationship_vision_intentions_q09_c03',
-  'I can clearly communicate what I want and need',
+  'Give the relationship more time before making a decision',
   3,
   false,
   null
@@ -1929,10 +2116,10 @@ on conflict (question_id, choice_key) do update set
 insert into public.questionnaire_answer_choices (
   id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
 ) values (
-  '44444444-4444-4444-8409-000000000004',
+  '44444444-4444-4444-8009-000000000004',
   '33333333-3333-4333-8333-000000000009',
   'relationship_vision_intentions_q09_c04',
-  'I am prepared to make decisions with another person in mind',
+  'Seek counseling or trusted outside guidance',
   4,
   false,
   null
@@ -1946,10 +2133,10 @@ on conflict (question_id, choice_key) do update set
 insert into public.questionnaire_answer_choices (
   id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
 ) values (
-  '44444444-4444-4444-8409-000000000005',
+  '44444444-4444-4444-8009-000000000005',
   '33333333-3333-4333-8333-000000000009',
   'relationship_vision_intentions_q09_c05',
-  'I can remain engaged when a relationship becomes difficult',
+  'End the relationship if the goal is truly nonnegotiable',
   5,
   false,
   null
@@ -1963,64 +2150,13 @@ on conflict (question_id, choice_key) do update set
 insert into public.questionnaire_answer_choices (
   id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
 ) values (
-  '44444444-4444-4444-8409-000000000006',
+  '44444444-4444-4444-8009-000000000006',
   '33333333-3333-4333-8333-000000000009',
   'relationship_vision_intentions_q09_c06',
-  'I have enough emotional and practical stability to invest consistently',
+  'My response would depend on whether the difference affects the life I fundamentally want',
   6,
   false,
-  null
-)
-on conflict (question_id, choice_key) do update set
-  label = excluded.label,
-  display_order = excluded.display_order,
-  mutually_exclusive = excluded.mutually_exclusive,
-  special_response_state = excluded.special_response_state;
-
-insert into public.questionnaire_answer_choices (
-  id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
-) values (
-  '44444444-4444-4444-8409-000000000007',
-  '33333333-3333-4333-8333-000000000009',
-  'relationship_vision_intentions_q09_c07',
-  'I am willing to adjust established routines and priorities',
-  7,
-  false,
-  null
-)
-on conflict (question_id, choice_key) do update set
-  label = excluded.label,
-  display_order = excluded.display_order,
-  mutually_exclusive = excluded.mutually_exclusive,
-  special_response_state = excluded.special_response_state;
-
-insert into public.questionnaire_answer_choices (
-  id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
-) values (
-  '44444444-4444-4444-8409-000000000008',
-  '33333333-3333-4333-8333-000000000009',
-  'relationship_vision_intentions_q09_c08',
-  'I am ready to be known honestly, including my imperfections',
-  8,
-  false,
-  null
-)
-on conflict (question_id, choice_key) do update set
-  label = excluded.label,
-  display_order = excluded.display_order,
-  mutually_exclusive = excluded.mutually_exclusive,
-  special_response_state = excluded.special_response_state;
-
-insert into public.questionnaire_answer_choices (
-  id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
-) values (
-  '44444444-4444-4444-8409-000000000009',
-  '33333333-3333-4333-8333-000000000009',
-  'relationship_vision_intentions_q09_c09',
-  'I believe some readiness can develop within the right relationship',
-  9,
-  false,
-  null
+  'context_dependent'::public.questionnaire_response_state
 )
 on conflict (question_id, choice_key) do update set
   label = excluded.label,
@@ -2040,24 +2176,24 @@ insert into public.questionnaire_questions (
   '22222222-2222-4222-8222-222222222221',
   'relationship_vision_intentions_q10',
   10,
-  'Which approach to personal growth best reflects the partnership you want?',
+  'Which relational foundations must be present before you would confidently choose a lasting partnership?',
   null,
-  'Single choice',
-  'single_choice'::public.questionnaire_response_behavior,
+  'Select up to five',
+  'multi_select'::public.questionnaire_response_behavior,
   null,
   null,
   null,
   false,
   false,
-  'Differentiates independent, supportive, challenging, shared, and highly integrated approaches to growth.',
+  'Identifies what someone needs within the relationship itself, without repeating marriage or future goal alignment.',
   1,
-  1,
-  null,
-  null,
+  5,
+  'Of the foundations you selected, which two are most essential?',
+  2,
   true,
   null,
   null,
-  null,
+  2,
   null,
   10
 )
@@ -2080,815 +2216,9 @@ on conflict (category_id, question_key) do update set
 insert into public.questionnaire_answer_choices (
   id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
 ) values (
-  '44444444-4444-4444-8410-000000000001',
+  '44444444-4444-4444-8010-000000000001',
   '33333333-3333-4333-8333-000000000010',
   'relationship_vision_intentions_q10_c01',
-  'Each partner should pursue growth independently while respecting the other’s path',
-  1,
-  false,
-  null
-)
-on conflict (question_id, choice_key) do update set
-  label = excluded.label,
-  display_order = excluded.display_order,
-  mutually_exclusive = excluded.mutually_exclusive,
-  special_response_state = excluded.special_response_state;
-
-insert into public.questionnaire_answer_choices (
-  id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
-) values (
-  '44444444-4444-4444-8410-000000000002',
-  '33333333-3333-4333-8333-000000000010',
-  'relationship_vision_intentions_q10_c02',
-  'Partners should maintain separate goals while actively supporting one another',
-  2,
-  false,
-  null
-)
-on conflict (question_id, choice_key) do update set
-  label = excluded.label,
-  display_order = excluded.display_order,
-  mutually_exclusive = excluded.mutually_exclusive,
-  special_response_state = excluded.special_response_state;
-
-insert into public.questionnaire_answer_choices (
-  id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
-) values (
-  '44444444-4444-4444-8410-000000000003',
-  '33333333-3333-4333-8333-000000000010',
-  'relationship_vision_intentions_q10_c03',
-  'Partners should encourage and respectfully challenge one another to grow',
-  3,
-  false,
-  null
-)
-on conflict (question_id, choice_key) do update set
-  label = excluded.label,
-  display_order = excluded.display_order,
-  mutually_exclusive = excluded.mutually_exclusive,
-  special_response_state = excluded.special_response_state;
-
-insert into public.questionnaire_answer_choices (
-  id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
-) values (
-  '44444444-4444-4444-8410-000000000004',
-  '33333333-3333-4333-8333-000000000010',
-  'relationship_vision_intentions_q10_c04',
-  'Partners should build shared goals while continuing to grow individually',
-  4,
-  false,
-  null
-)
-on conflict (question_id, choice_key) do update set
-  label = excluded.label,
-  display_order = excluded.display_order,
-  mutually_exclusive = excluded.mutually_exclusive,
-  special_response_state = excluded.special_response_state;
-
-insert into public.questionnaire_answer_choices (
-  id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
-) values (
-  '44444444-4444-4444-8410-000000000005',
-  '33333333-3333-4333-8333-000000000010',
-  'relationship_vision_intentions_q10_c05',
-  'Growth should be a central purpose of the relationship, pursued intentionally together',
-  5,
-  false,
-  null
-)
-on conflict (question_id, choice_key) do update set
-  label = excluded.label,
-  display_order = excluded.display_order,
-  mutually_exclusive = excluded.mutually_exclusive,
-  special_response_state = excluded.special_response_state;
-
-insert into public.questionnaire_questions (
-  id, category_id, question_key, question_number, prompt, statement,
-  format_label, response_behavior, context_note, implementation_note, eligibility_rule_id,
-  is_conditional, select_all_that_apply, alignment_purpose, min_selections, max_selections,
-  priority_follow_up_prompt, priority_selection_count, priority_unordered,
-  priority_eligible_choice_keys, priority_excluded_choice_keys, priority_min_eligible_selections,
-  allowed_special_response_states, display_order
-) values (
-  '33333333-3333-4333-8333-000000000011',
-  '22222222-2222-4222-8222-222222222221',
-  'relationship_vision_intentions_q11',
-  11,
-  'How important is it that partners share a similar overall vision for the next five to ten years?',
-  null,
-  'Importance scale',
-  'scale_range'::public.questionnaire_response_behavior,
-  null,
-  null,
-  null,
-  false,
-  false,
-  'Measures the overall importance of shared future direction without duplicating any particular life goal.',
-  1,
-  1,
-  null,
-  null,
-  true,
-  null,
-  null,
-  null,
-  null,
-  11
-)
-on conflict (category_id, question_key) do update set
-  question_number = excluded.question_number,
-  prompt = excluded.prompt,
-  statement = excluded.statement,
-  format_label = excluded.format_label,
-  response_behavior = excluded.response_behavior,
-  alignment_purpose = excluded.alignment_purpose,
-  min_selections = excluded.min_selections,
-  max_selections = excluded.max_selections,
-  priority_follow_up_prompt = excluded.priority_follow_up_prompt,
-  priority_selection_count = excluded.priority_selection_count,
-  priority_unordered = excluded.priority_unordered,
-  priority_min_eligible_selections = excluded.priority_min_eligible_selections,
-  allowed_special_response_states = excluded.allowed_special_response_states,
-  display_order = excluded.display_order;
-
-insert into public.questionnaire_answer_choices (
-  id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
-) values (
-  '44444444-4444-4444-8411-000000000001',
-  '33333333-3333-4333-8333-000000000011',
-  'relationship_vision_intentions_q11_c01',
-  'Not important',
-  1,
-  false,
-  null
-)
-on conflict (question_id, choice_key) do update set
-  label = excluded.label,
-  display_order = excluded.display_order,
-  mutually_exclusive = excluded.mutually_exclusive,
-  special_response_state = excluded.special_response_state;
-
-insert into public.questionnaire_answer_choices (
-  id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
-) values (
-  '44444444-4444-4444-8411-000000000002',
-  '33333333-3333-4333-8333-000000000011',
-  'relationship_vision_intentions_q11_c02',
-  'Slightly important',
-  2,
-  false,
-  null
-)
-on conflict (question_id, choice_key) do update set
-  label = excluded.label,
-  display_order = excluded.display_order,
-  mutually_exclusive = excluded.mutually_exclusive,
-  special_response_state = excluded.special_response_state;
-
-insert into public.questionnaire_answer_choices (
-  id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
-) values (
-  '44444444-4444-4444-8411-000000000003',
-  '33333333-3333-4333-8333-000000000011',
-  'relationship_vision_intentions_q11_c03',
-  'Moderately important',
-  3,
-  false,
-  null
-)
-on conflict (question_id, choice_key) do update set
-  label = excluded.label,
-  display_order = excluded.display_order,
-  mutually_exclusive = excluded.mutually_exclusive,
-  special_response_state = excluded.special_response_state;
-
-insert into public.questionnaire_answer_choices (
-  id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
-) values (
-  '44444444-4444-4444-8411-000000000004',
-  '33333333-3333-4333-8333-000000000011',
-  'relationship_vision_intentions_q11_c04',
-  'Very important',
-  4,
-  false,
-  null
-)
-on conflict (question_id, choice_key) do update set
-  label = excluded.label,
-  display_order = excluded.display_order,
-  mutually_exclusive = excluded.mutually_exclusive,
-  special_response_state = excluded.special_response_state;
-
-insert into public.questionnaire_answer_choices (
-  id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
-) values (
-  '44444444-4444-4444-8411-000000000005',
-  '33333333-3333-4333-8333-000000000011',
-  'relationship_vision_intentions_q11_c05',
-  'Essential',
-  5,
-  false,
-  null
-)
-on conflict (question_id, choice_key) do update set
-  label = excluded.label,
-  display_order = excluded.display_order,
-  mutually_exclusive = excluded.mutually_exclusive,
-  special_response_state = excluded.special_response_state;
-
-insert into public.questionnaire_questions (
-  id, category_id, question_key, question_number, prompt, statement,
-  format_label, response_behavior, context_note, implementation_note, eligibility_rule_id,
-  is_conditional, select_all_that_apply, alignment_purpose, min_selections, max_selections,
-  priority_follow_up_prompt, priority_selection_count, priority_unordered,
-  priority_eligible_choice_keys, priority_excluded_choice_keys, priority_min_eligible_selections,
-  allowed_special_response_states, display_order
-) values (
-  '33333333-3333-4333-8333-000000000012',
-  '22222222-2222-4222-8222-222222222221',
-  'relationship_vision_intentions_q12',
-  12,
-  'In which areas would partners need reasonably compatible long-term direction?',
-  null,
-  'Select up to five',
-  'multi_select'::public.questionnaire_response_behavior,
-  null,
-  null,
-  null,
-  false,
-  false,
-  'Identifies concrete future directions requiring alignment while leaving detailed children, faith, money, and lifestyle matching to their respective categories.',
-  1,
-  5,
-  'Of the areas you selected, which two allow the least room for difference?',
-  2,
-  true,
-  null,
-  null,
-  2,
-  null,
-  12
-)
-on conflict (category_id, question_key) do update set
-  question_number = excluded.question_number,
-  prompt = excluded.prompt,
-  statement = excluded.statement,
-  format_label = excluded.format_label,
-  response_behavior = excluded.response_behavior,
-  alignment_purpose = excluded.alignment_purpose,
-  min_selections = excluded.min_selections,
-  max_selections = excluded.max_selections,
-  priority_follow_up_prompt = excluded.priority_follow_up_prompt,
-  priority_selection_count = excluded.priority_selection_count,
-  priority_unordered = excluded.priority_unordered,
-  priority_min_eligible_selections = excluded.priority_min_eligible_selections,
-  allowed_special_response_states = excluded.allowed_special_response_states,
-  display_order = excluded.display_order;
-
-insert into public.questionnaire_answer_choices (
-  id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
-) values (
-  '44444444-4444-4444-8412-000000000001',
-  '33333333-3333-4333-8333-000000000012',
-  'relationship_vision_intentions_q12_c01',
-  'Whether to marry',
-  1,
-  false,
-  null
-)
-on conflict (question_id, choice_key) do update set
-  label = excluded.label,
-  display_order = excluded.display_order,
-  mutually_exclusive = excluded.mutually_exclusive,
-  special_response_state = excluded.special_response_state;
-
-insert into public.questionnaire_answer_choices (
-  id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
-) values (
-  '44444444-4444-4444-8412-000000000002',
-  '33333333-3333-4333-8333-000000000012',
-  'relationship_vision_intentions_q12_c02',
-  'Whether or how to build a family',
-  2,
-  false,
-  null
-)
-on conflict (question_id, choice_key) do update set
-  label = excluded.label,
-  display_order = excluded.display_order,
-  mutually_exclusive = excluded.mutually_exclusive,
-  special_response_state = excluded.special_response_state;
-
-insert into public.questionnaire_answer_choices (
-  id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
-) values (
-  '44444444-4444-4444-8412-000000000003',
-  '33333333-3333-4333-8333-000000000012',
-  'relationship_vision_intentions_q12_c03',
-  'Where and how to live',
-  3,
-  false,
-  null
-)
-on conflict (question_id, choice_key) do update set
-  label = excluded.label,
-  display_order = excluded.display_order,
-  mutually_exclusive = excluded.mutually_exclusive,
-  special_response_state = excluded.special_response_state;
-
-insert into public.questionnaire_answer_choices (
-  id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
-) values (
-  '44444444-4444-4444-8412-000000000004',
-  '33333333-3333-4333-8333-000000000012',
-  'relationship_vision_intentions_q12_c04',
-  'Career priorities',
-  4,
-  false,
-  null
-)
-on conflict (question_id, choice_key) do update set
-  label = excluded.label,
-  display_order = excluded.display_order,
-  mutually_exclusive = excluded.mutually_exclusive,
-  special_response_state = excluded.special_response_state;
-
-insert into public.questionnaire_answer_choices (
-  id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
-) values (
-  '44444444-4444-4444-8412-000000000005',
-  '33333333-3333-4333-8333-000000000012',
-  'relationship_vision_intentions_q12_c05',
-  'Financial goals',
-  5,
-  false,
-  null
-)
-on conflict (question_id, choice_key) do update set
-  label = excluded.label,
-  display_order = excluded.display_order,
-  mutually_exclusive = excluded.mutually_exclusive,
-  special_response_state = excluded.special_response_state;
-
-insert into public.questionnaire_answer_choices (
-  id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
-) values (
-  '44444444-4444-4444-8412-000000000006',
-  '33333333-3333-4333-8333-000000000012',
-  'relationship_vision_intentions_q12_c06',
-  'Lifestyle and standard of living',
-  6,
-  false,
-  null
-)
-on conflict (question_id, choice_key) do update set
-  label = excluded.label,
-  display_order = excluded.display_order,
-  mutually_exclusive = excluded.mutually_exclusive,
-  special_response_state = excluded.special_response_state;
-
-insert into public.questionnaire_answer_choices (
-  id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
-) values (
-  '44444444-4444-4444-8412-000000000007',
-  '33333333-3333-4333-8333-000000000012',
-  'relationship_vision_intentions_q12_c07',
-  'The role of faith or spiritual life',
-  7,
-  false,
-  null
-)
-on conflict (question_id, choice_key) do update set
-  label = excluded.label,
-  display_order = excluded.display_order,
-  mutually_exclusive = excluded.mutually_exclusive,
-  special_response_state = excluded.special_response_state;
-
-insert into public.questionnaire_answer_choices (
-  id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
-) values (
-  '44444444-4444-4444-8412-000000000008',
-  '33333333-3333-4333-8333-000000000012',
-  'relationship_vision_intentions_q12_c08',
-  'Extended-family involvement',
-  8,
-  false,
-  null
-)
-on conflict (question_id, choice_key) do update set
-  label = excluded.label,
-  display_order = excluded.display_order,
-  mutually_exclusive = excluded.mutually_exclusive,
-  special_response_state = excluded.special_response_state;
-
-insert into public.questionnaire_answer_choices (
-  id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
-) values (
-  '44444444-4444-4444-8412-000000000009',
-  '33333333-3333-4333-8333-000000000012',
-  'relationship_vision_intentions_q12_c09',
-  'Travel and major life experiences',
-  9,
-  false,
-  null
-)
-on conflict (question_id, choice_key) do update set
-  label = excluded.label,
-  display_order = excluded.display_order,
-  mutually_exclusive = excluded.mutually_exclusive,
-  special_response_state = excluded.special_response_state;
-
-insert into public.questionnaire_answer_choices (
-  id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
-) values (
-  '44444444-4444-4444-8412-000000000010',
-  '33333333-3333-4333-8333-000000000012',
-  'relationship_vision_intentions_q12_c10',
-  'Community involvement',
-  10,
-  false,
-  null
-)
-on conflict (question_id, choice_key) do update set
-  label = excluded.label,
-  display_order = excluded.display_order,
-  mutually_exclusive = excluded.mutually_exclusive,
-  special_response_state = excluded.special_response_state;
-
-insert into public.questionnaire_answer_choices (
-  id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
-) values (
-  '44444444-4444-4444-8412-000000000011',
-  '33333333-3333-4333-8333-000000000012',
-  'relationship_vision_intentions_q12_c11',
-  'Retirement and long-term planning',
-  11,
-  false,
-  null
-)
-on conflict (question_id, choice_key) do update set
-  label = excluded.label,
-  display_order = excluded.display_order,
-  mutually_exclusive = excluded.mutually_exclusive,
-  special_response_state = excluded.special_response_state;
-
-insert into public.questionnaire_answer_choices (
-  id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
-) values (
-  '44444444-4444-4444-8412-000000000012',
-  '33333333-3333-4333-8333-000000000012',
-  'relationship_vision_intentions_q12_c12',
-  'I am comfortable with partners having substantially different long-term goals',
-  12,
-  false,
-  null
-)
-on conflict (question_id, choice_key) do update set
-  label = excluded.label,
-  display_order = excluded.display_order,
-  mutually_exclusive = excluded.mutually_exclusive,
-  special_response_state = excluded.special_response_state;
-
-insert into public.questionnaire_questions (
-  id, category_id, question_key, question_number, prompt, statement,
-  format_label, response_behavior, context_note, implementation_note, eligibility_rule_id,
-  is_conditional, select_all_that_apply, alignment_purpose, min_selections, max_selections,
-  priority_follow_up_prompt, priority_selection_count, priority_unordered,
-  priority_eligible_choice_keys, priority_excluded_choice_keys, priority_min_eligible_selections,
-  allowed_special_response_states, display_order
-) values (
-  '33333333-3333-4333-8333-000000000013',
-  '22222222-2222-4222-8222-222222222221',
-  'relationship_vision_intentions_q13',
-  13,
-  'How comfortable would you be continuing to date someone whose preferred timeline for commitment is meaningfully different from yours?',
-  null,
-  'Comfort range',
-  'scale_range'::public.questionnaire_response_behavior,
-  null,
-  null,
-  null,
-  false,
-  false,
-  'Measures how much flexibility someone genuinely has around commitment timing.',
-  1,
-  1,
-  null,
-  null,
-  true,
-  null,
-  null,
-  null,
-  null,
-  13
-)
-on conflict (category_id, question_key) do update set
-  question_number = excluded.question_number,
-  prompt = excluded.prompt,
-  statement = excluded.statement,
-  format_label = excluded.format_label,
-  response_behavior = excluded.response_behavior,
-  alignment_purpose = excluded.alignment_purpose,
-  min_selections = excluded.min_selections,
-  max_selections = excluded.max_selections,
-  priority_follow_up_prompt = excluded.priority_follow_up_prompt,
-  priority_selection_count = excluded.priority_selection_count,
-  priority_unordered = excluded.priority_unordered,
-  priority_min_eligible_selections = excluded.priority_min_eligible_selections,
-  allowed_special_response_states = excluded.allowed_special_response_states,
-  display_order = excluded.display_order;
-
-insert into public.questionnaire_answer_choices (
-  id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
-) values (
-  '44444444-4444-4444-8413-000000000001',
-  '33333333-3333-4333-8333-000000000013',
-  'relationship_vision_intentions_q13_c01',
-  'Comfortable—I am highly flexible about timing',
-  1,
-  false,
-  null
-)
-on conflict (question_id, choice_key) do update set
-  label = excluded.label,
-  display_order = excluded.display_order,
-  mutually_exclusive = excluded.mutually_exclusive,
-  special_response_state = excluded.special_response_state;
-
-insert into public.questionnaire_answer_choices (
-  id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
-) values (
-  '44444444-4444-4444-8413-000000000002',
-  '33333333-3333-4333-8333-000000000013',
-  'relationship_vision_intentions_q13_c02',
-  'Mostly comfortable if our ultimate intentions align',
-  2,
-  false,
-  null
-)
-on conflict (question_id, choice_key) do update set
-  label = excluded.label,
-  display_order = excluded.display_order,
-  mutually_exclusive = excluded.mutually_exclusive,
-  special_response_state = excluded.special_response_state;
-
-insert into public.questionnaire_answer_choices (
-  id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
-) values (
-  '44444444-4444-4444-8413-000000000003',
-  '33333333-3333-4333-8333-000000000013',
-  'relationship_vision_intentions_q13_c03',
-  'Possibly comfortable if the difference is temporary or relatively small',
-  3,
-  false,
-  null
-)
-on conflict (question_id, choice_key) do update set
-  label = excluded.label,
-  display_order = excluded.display_order,
-  mutually_exclusive = excluded.mutually_exclusive,
-  special_response_state = excluded.special_response_state;
-
-insert into public.questionnaire_answer_choices (
-  id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
-) values (
-  '44444444-4444-4444-8413-000000000004',
-  '33333333-3333-4333-8333-000000000013',
-  'relationship_vision_intentions_q13_c04',
-  'Uncomfortable—I need similar expectations for progression',
-  4,
-  false,
-  null
-)
-on conflict (question_id, choice_key) do update set
-  label = excluded.label,
-  display_order = excluded.display_order,
-  mutually_exclusive = excluded.mutually_exclusive,
-  special_response_state = excluded.special_response_state;
-
-insert into public.questionnaire_answer_choices (
-  id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
-) values (
-  '44444444-4444-4444-8413-000000000005',
-  '33333333-3333-4333-8333-000000000013',
-  'relationship_vision_intentions_q13_c05',
-  'Not comfortable—I would consider this a fundamental incompatibility',
-  5,
-  false,
-  null
-)
-on conflict (question_id, choice_key) do update set
-  label = excluded.label,
-  display_order = excluded.display_order,
-  mutually_exclusive = excluded.mutually_exclusive,
-  special_response_state = excluded.special_response_state;
-
-insert into public.questionnaire_questions (
-  id, category_id, question_key, question_number, prompt, statement,
-  format_label, response_behavior, context_note, implementation_note, eligibility_rule_id,
-  is_conditional, select_all_that_apply, alignment_purpose, min_selections, max_selections,
-  priority_follow_up_prompt, priority_selection_count, priority_unordered,
-  priority_eligible_choice_keys, priority_excluded_choice_keys, priority_min_eligible_selections,
-  allowed_special_response_states, display_order
-) values (
-  '33333333-3333-4333-8333-000000000014',
-  '22222222-2222-4222-8222-222222222221',
-  'relationship_vision_intentions_q14',
-  14,
-  'If a loving relationship revealed a major difference involving a core long-term goal, what would you most likely do first?',
-  null,
-  'Scenario-based choice',
-  'scenario_choice'::public.questionnaire_response_behavior,
-  null,
-  null,
-  null,
-  false,
-  false,
-  'Reveals someone’s initial approach to major incompatibility rather than asking whether they generally “believe in compromise.”',
-  1,
-  1,
-  null,
-  null,
-  true,
-  null,
-  null,
-  null,
-  '{context_dependent}'::public.questionnaire_response_state[],
-  14
-)
-on conflict (category_id, question_key) do update set
-  question_number = excluded.question_number,
-  prompt = excluded.prompt,
-  statement = excluded.statement,
-  format_label = excluded.format_label,
-  response_behavior = excluded.response_behavior,
-  alignment_purpose = excluded.alignment_purpose,
-  min_selections = excluded.min_selections,
-  max_selections = excluded.max_selections,
-  priority_follow_up_prompt = excluded.priority_follow_up_prompt,
-  priority_selection_count = excluded.priority_selection_count,
-  priority_unordered = excluded.priority_unordered,
-  priority_min_eligible_selections = excluded.priority_min_eligible_selections,
-  allowed_special_response_states = excluded.allowed_special_response_states,
-  display_order = excluded.display_order;
-
-insert into public.questionnaire_answer_choices (
-  id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
-) values (
-  '44444444-4444-4444-8414-000000000001',
-  '33333333-3333-4333-8333-000000000014',
-  'relationship_vision_intentions_q14_c01',
-  'Determine whether either of us could genuinely change without resentment',
-  1,
-  false,
-  null
-)
-on conflict (question_id, choice_key) do update set
-  label = excluded.label,
-  display_order = excluded.display_order,
-  mutually_exclusive = excluded.mutually_exclusive,
-  special_response_state = excluded.special_response_state;
-
-insert into public.questionnaire_answer_choices (
-  id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
-) values (
-  '44444444-4444-4444-8414-000000000002',
-  '33333333-3333-4333-8333-000000000014',
-  'relationship_vision_intentions_q14_c02',
-  'Look for a compromise that preserves what matters most to both people',
-  2,
-  false,
-  null
-)
-on conflict (question_id, choice_key) do update set
-  label = excluded.label,
-  display_order = excluded.display_order,
-  mutually_exclusive = excluded.mutually_exclusive,
-  special_response_state = excluded.special_response_state;
-
-insert into public.questionnaire_answer_choices (
-  id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
-) values (
-  '44444444-4444-4444-8414-000000000003',
-  '33333333-3333-4333-8333-000000000014',
-  'relationship_vision_intentions_q14_c03',
-  'Give the relationship more time before making a decision',
-  3,
-  false,
-  null
-)
-on conflict (question_id, choice_key) do update set
-  label = excluded.label,
-  display_order = excluded.display_order,
-  mutually_exclusive = excluded.mutually_exclusive,
-  special_response_state = excluded.special_response_state;
-
-insert into public.questionnaire_answer_choices (
-  id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
-) values (
-  '44444444-4444-4444-8414-000000000004',
-  '33333333-3333-4333-8333-000000000014',
-  'relationship_vision_intentions_q14_c04',
-  'Seek counseling or trusted outside guidance',
-  4,
-  false,
-  null
-)
-on conflict (question_id, choice_key) do update set
-  label = excluded.label,
-  display_order = excluded.display_order,
-  mutually_exclusive = excluded.mutually_exclusive,
-  special_response_state = excluded.special_response_state;
-
-insert into public.questionnaire_answer_choices (
-  id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
-) values (
-  '44444444-4444-4444-8414-000000000005',
-  '33333333-3333-4333-8333-000000000014',
-  'relationship_vision_intentions_q14_c05',
-  'End the relationship if the goal is truly non-negotiable',
-  5,
-  false,
-  null
-)
-on conflict (question_id, choice_key) do update set
-  label = excluded.label,
-  display_order = excluded.display_order,
-  mutually_exclusive = excluded.mutually_exclusive,
-  special_response_state = excluded.special_response_state;
-
-insert into public.questionnaire_answer_choices (
-  id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
-) values (
-  '44444444-4444-4444-8414-000000000006',
-  '33333333-3333-4333-8333-000000000014',
-  'relationship_vision_intentions_q14_c06',
-  'My response would depend on whether the difference affects the life I fundamentally want',
-  6,
-  false,
-  'context_dependent'::public.questionnaire_response_state
-)
-on conflict (question_id, choice_key) do update set
-  label = excluded.label,
-  display_order = excluded.display_order,
-  mutually_exclusive = excluded.mutually_exclusive,
-  special_response_state = excluded.special_response_state;
-
-insert into public.questionnaire_questions (
-  id, category_id, question_key, question_number, prompt, statement,
-  format_label, response_behavior, context_note, implementation_note, eligibility_rule_id,
-  is_conditional, select_all_that_apply, alignment_purpose, min_selections, max_selections,
-  priority_follow_up_prompt, priority_selection_count, priority_unordered,
-  priority_eligible_choice_keys, priority_excluded_choice_keys, priority_min_eligible_selections,
-  allowed_special_response_states, display_order
-) values (
-  '33333333-3333-4333-8333-000000000015',
-  '22222222-2222-4222-8222-222222222221',
-  'relationship_vision_intentions_q15',
-  15,
-  'Which relational foundations must be present before you would confidently choose a lasting partnership?',
-  null,
-  'Select up to five',
-  'multi_select'::public.questionnaire_response_behavior,
-  null,
-  null,
-  null,
-  false,
-  false,
-  'Identifies what someone needs within the relationship itself, without repeating marriage or future-goal alignment.',
-  1,
-  5,
-  'Of the foundations you selected, which two are most essential?',
-  2,
-  true,
-  null,
-  null,
-  2,
-  null,
-  15
-)
-on conflict (category_id, question_key) do update set
-  question_number = excluded.question_number,
-  prompt = excluded.prompt,
-  statement = excluded.statement,
-  format_label = excluded.format_label,
-  response_behavior = excluded.response_behavior,
-  alignment_purpose = excluded.alignment_purpose,
-  min_selections = excluded.min_selections,
-  max_selections = excluded.max_selections,
-  priority_follow_up_prompt = excluded.priority_follow_up_prompt,
-  priority_selection_count = excluded.priority_selection_count,
-  priority_unordered = excluded.priority_unordered,
-  priority_min_eligible_selections = excluded.priority_min_eligible_selections,
-  allowed_special_response_states = excluded.allowed_special_response_states,
-  display_order = excluded.display_order;
-
-insert into public.questionnaire_answer_choices (
-  id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
-) values (
-  '44444444-4444-4444-8415-000000000001',
-  '33333333-3333-4333-8333-000000000015',
-  'relationship_vision_intentions_q15_c01',
   'Mutual trust',
   1,
   false,
@@ -2903,9 +2233,9 @@ on conflict (question_id, choice_key) do update set
 insert into public.questionnaire_answer_choices (
   id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
 ) values (
-  '44444444-4444-4444-8415-000000000002',
-  '33333333-3333-4333-8333-000000000015',
-  'relationship_vision_intentions_q15_c02',
+  '44444444-4444-4444-8010-000000000002',
+  '33333333-3333-4333-8333-000000000010',
+  'relationship_vision_intentions_q10_c02',
   'Emotional safety',
   2,
   false,
@@ -2920,9 +2250,9 @@ on conflict (question_id, choice_key) do update set
 insert into public.questionnaire_answer_choices (
   id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
 ) values (
-  '44444444-4444-4444-8415-000000000003',
-  '33333333-3333-4333-8333-000000000015',
-  'relationship_vision_intentions_q15_c03',
+  '44444444-4444-4444-8010-000000000003',
+  '33333333-3333-4333-8333-000000000010',
+  'relationship_vision_intentions_q10_c03',
   'Mutual respect',
   3,
   false,
@@ -2937,9 +2267,9 @@ on conflict (question_id, choice_key) do update set
 insert into public.questionnaire_answer_choices (
   id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
 ) values (
-  '44444444-4444-4444-8415-000000000004',
-  '33333333-3333-4333-8333-000000000015',
-  'relationship_vision_intentions_q15_c04',
+  '44444444-4444-4444-8010-000000000004',
+  '33333333-3333-4333-8333-000000000010',
+  'relationship_vision_intentions_q10_c04',
   'Honest communication',
   4,
   false,
@@ -2954,9 +2284,9 @@ on conflict (question_id, choice_key) do update set
 insert into public.questionnaire_answer_choices (
   id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
 ) values (
-  '44444444-4444-4444-8415-000000000005',
-  '33333333-3333-4333-8333-000000000015',
-  'relationship_vision_intentions_q15_c05',
+  '44444444-4444-4444-8010-000000000005',
+  '33333333-3333-4333-8333-000000000010',
+  'relationship_vision_intentions_q10_c05',
   'Healthy conflict repair',
   5,
   false,
@@ -2971,9 +2301,9 @@ on conflict (question_id, choice_key) do update set
 insert into public.questionnaire_answer_choices (
   id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
 ) values (
-  '44444444-4444-4444-8415-000000000006',
-  '33333333-3333-4333-8333-000000000015',
-  'relationship_vision_intentions_q15_c06',
+  '44444444-4444-4444-8010-000000000006',
+  '33333333-3333-4333-8333-000000000010',
+  'relationship_vision_intentions_q10_c06',
   'Consistency and reliability',
   6,
   false,
@@ -2988,9 +2318,9 @@ on conflict (question_id, choice_key) do update set
 insert into public.questionnaire_answer_choices (
   id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
 ) values (
-  '44444444-4444-4444-8415-000000000007',
-  '33333333-3333-4333-8333-000000000015',
-  'relationship_vision_intentions_q15_c07',
+  '44444444-4444-4444-8010-000000000007',
+  '33333333-3333-4333-8333-000000000010',
+  'relationship_vision_intentions_q10_c07',
   'Shared effort',
   7,
   false,
@@ -3005,9 +2335,9 @@ on conflict (question_id, choice_key) do update set
 insert into public.questionnaire_answer_choices (
   id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
 ) values (
-  '44444444-4444-4444-8415-000000000008',
-  '33333333-3333-4333-8333-000000000015',
-  'relationship_vision_intentions_q15_c08',
+  '44444444-4444-4444-8010-000000000008',
+  '33333333-3333-4333-8333-000000000010',
+  'relationship_vision_intentions_q10_c08',
   'Affection and physical connection',
   8,
   false,
@@ -3022,9 +2352,9 @@ on conflict (question_id, choice_key) do update set
 insert into public.questionnaire_answer_choices (
   id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
 ) values (
-  '44444444-4444-4444-8415-000000000009',
-  '33333333-3333-4333-8333-000000000015',
-  'relationship_vision_intentions_q15_c09',
+  '44444444-4444-4444-8010-000000000009',
+  '33333333-3333-4333-8333-000000000010',
+  'relationship_vision_intentions_q10_c09',
   'Acceptance of one another',
   9,
   false,
@@ -3039,9 +2369,9 @@ on conflict (question_id, choice_key) do update set
 insert into public.questionnaire_answer_choices (
   id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
 ) values (
-  '44444444-4444-4444-8415-000000000010',
-  '33333333-3333-4333-8333-000000000015',
-  'relationship_vision_intentions_q15_c10',
+  '44444444-4444-4444-8010-000000000010',
+  '33333333-3333-4333-8333-000000000010',
+  'relationship_vision_intentions_q10_c10',
   'Support for individual growth',
   10,
   false,
@@ -3056,9 +2386,9 @@ on conflict (question_id, choice_key) do update set
 insert into public.questionnaire_answer_choices (
   id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
 ) values (
-  '44444444-4444-4444-8415-000000000011',
-  '33333333-3333-4333-8333-000000000015',
-  'relationship_vision_intentions_q15_c11',
+  '44444444-4444-4444-8010-000000000011',
+  '33333333-3333-4333-8333-000000000010',
+  'relationship_vision_intentions_q10_c11',
   'Confidence in functioning as a team',
   11,
   false,
@@ -3073,9 +2403,9 @@ on conflict (question_id, choice_key) do update set
 insert into public.questionnaire_answer_choices (
   id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
 ) values (
-  '44444444-4444-4444-8415-000000000012',
-  '33333333-3333-4333-8333-000000000015',
-  'relationship_vision_intentions_q15_c12',
+  '44444444-4444-4444-8010-000000000012',
+  '33333333-3333-4333-8333-000000000010',
+  'relationship_vision_intentions_q10_c12',
   'The ability to be fully authentic together',
   12,
   false,

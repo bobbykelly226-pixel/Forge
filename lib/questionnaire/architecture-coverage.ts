@@ -2,7 +2,7 @@
  * Compact architecture-coverage manifest for the full ten-category master.
  *
  * Does NOT import Categories 2–10 into the live catalog. Structural metadata for
- * all 150 questions lives in fixtures/master-structure-manifest.json.
+ * the full Compatibility Profile structure lives in fixtures/master-structure-manifest.json.
  */
 
 import type { ResponseBehavior, ResponseState } from '@/lib/questionnaire/types';

@@ -10,7 +10,7 @@ export default function PreviewNotice({ className = '' }: PreviewNoticeProps) {
       role="status"
       className={`rounded-xl border border-[color-mix(in_srgb,var(--forge-silver)_55%,transparent)] bg-[var(--forge-surface-soft)] px-4 py-3 text-sm leading-relaxed text-[var(--forge-graphite)] ${className}`}
     >
-      Preview mode — your answers are not being saved yet.
+      Preview mode. Your answers are not being saved yet.
     </p>
   );
 }

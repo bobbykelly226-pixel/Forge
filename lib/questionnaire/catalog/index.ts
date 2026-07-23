@@ -9,8 +9,8 @@ import { assertValidQuestionnaireCatalog } from '@/lib/questionnaire/validate';
 /** Questionnaire catalog version for this foundation slice. */
 export const QUESTIONNAIRE_VERSION = 'compatibility_profile_v1';
 
-/** Specification version matching the final-locked Forge HQ export used for Category 1. */
-export const SPECIFICATION_VERSION = 'forge_hq_final_locked_150_2026_07';
+/** Specification version for the Compatibility Profile foundation after Category 1 reduction to 10. */
+export const SPECIFICATION_VERSION = 'compatibility_profile_category_1_v10';
 
 const CATEGORIES: CategoryDefinition[] = [CATEGORY_01];
 
