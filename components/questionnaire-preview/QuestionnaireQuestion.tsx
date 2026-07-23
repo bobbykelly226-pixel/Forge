@@ -5,6 +5,7 @@ import type { QuestionDefinition } from '@/lib/questionnaire/types';
 import {
   formatGuidanceForQuestion,
   multiSelectStatusText,
+  SELECTION_LIMIT_MESSAGE,
   type QuestionAnswerState,
 } from '@/lib/questionnaire/preview/category-01-preview-flow';
 
@@ -51,6 +52,16 @@ export default function QuestionnaireQuestion({
             {multiSelectStatusText(question, selectedCount)}
           </p>
         ) : null}
+        {atMax ? (
+          <p
+            role="status"
+            aria-live="polite"
+            data-selection-limit-guidance="true"
+            className="mt-3 text-sm font-medium text-[var(--forge-navy)]"
+          >
+            {atMaxMessage ?? SELECTION_LIMIT_MESSAGE}
+          </p>
+        ) : null}
       </div>
 
       <fieldset className="space-y-2.5 border-0 p-0">
@@ -78,12 +89,6 @@ export default function QuestionnaireQuestion({
           })}
         </div>
       </fieldset>
-
-      {atMaxMessage ? (
-        <p role="status" aria-live="polite" className="text-sm text-[var(--forge-navy)]">
-          {atMaxMessage}
-        </p>
-      ) : null}
     </div>
   );
 }

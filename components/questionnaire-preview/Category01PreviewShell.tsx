@@ -1,13 +1,11 @@
 'use client';
 
-import Link from 'next/link';
 import { useEffect, useRef, useState } from 'react';
 
 import CategoryPreviewComplete from '@/components/questionnaire-preview/CategoryPreviewComplete';
 import CategoryPreviewIntro from '@/components/questionnaire-preview/CategoryPreviewIntro';
-import PreviewNotice from '@/components/questionnaire-preview/PreviewNotice';
+import PreviewContextPanel from '@/components/questionnaire-preview/PreviewContextPanel';
 import PriorityFollowUp from '@/components/questionnaire-preview/PriorityFollowUp';
-import QuestionnaireProgress from '@/components/questionnaire-preview/QuestionnaireProgress';
 import QuestionnaireQuestion from '@/components/questionnaire-preview/QuestionnaireQuestion';
 import type { CategoryDefinition } from '@/lib/questionnaire/types';
 import {
@@ -18,6 +16,7 @@ import {
   getAnswer,
   progressFraction,
   retreatStep,
+  selectionLimitGuidance,
   toggleBaseSelection,
   togglePrioritySelection,
   type PreviewAnswers,
@@ -43,7 +42,6 @@ function focusQuestionHeading() {
 export default function Category01PreviewShell({ category }: Category01PreviewShellProps) {
   const [step, setStep] = useState<PreviewStep>({ kind: 'intro' });
   const [answers, setAnswers] = useState<PreviewAnswers>({});
-  const [atMaxMessage, setAtMaxMessage] = useState<string | null>(null);
   const stepKeyRef = useRef('intro');
 
   useEffect(() => {
@@ -53,7 +51,6 @@ export default function Category01PreviewShell({ category }: Category01PreviewSh
         : step.kind;
     if (stepKeyRef.current === key) return;
     stepKeyRef.current = key;
-    // Defer focus until after paint so the new heading exists.
     const frame = window.requestAnimationFrame(() => {
       focusQuestionHeading();
     });
@@ -64,18 +61,15 @@ export default function Category01PreviewShell({ category }: Category01PreviewSh
 
   function handleBegin() {
     setStep({ kind: 'question', questionIndex: 0, phase: 'base' });
-    setAtMaxMessage(null);
   }
 
   function handleRestart() {
     setAnswers({});
     setStep({ kind: 'intro' });
-    setAtMaxMessage(null);
   }
 
   function handleReview() {
     setStep({ kind: 'question', questionIndex: 0, phase: 'base' });
-    setAtMaxMessage(null);
   }
 
   function handleToggleBase(questionId: string, choiceId: string) {
@@ -84,12 +78,9 @@ export default function Category01PreviewShell({ category }: Category01PreviewSh
     const current = getAnswer(answers, questionId);
     const result = toggleBaseSelection(question, current, choiceId);
     if (!result.ok) {
-      setAtMaxMessage(
-        `You can select up to ${question.maxSelections}. Deselect one before selecting another.`
-      );
+      // Limit guidance is shown from derived state; do not replace selections.
       return;
     }
-    setAtMaxMessage(null);
     setAnswers((prev) => ({ ...prev, [questionId]: result.answer }));
   }
 
@@ -103,12 +94,10 @@ export default function Category01PreviewShell({ category }: Category01PreviewSh
 
   function handleContinue() {
     if (!canContinue) return;
-    setAtMaxMessage(null);
     setStep((current) => advanceStep(category, current, answers));
   }
 
   function handleBack() {
-    setAtMaxMessage(null);
     setStep((current) => retreatStep(category, current, answers));
   }
 
@@ -139,46 +128,34 @@ export default function Category01PreviewShell({ category }: Category01PreviewSh
   const eligibleIds = eligibleSelectedChoiceIds(question, answer.selectedChoiceIds);
   const eligibleChoices = question.choices.filter((c) => eligibleIds.includes(c.id));
   const progress = progressFraction(category, step);
+  const phaseLabel = step.phase === 'priority' ? 'Priority follow-up' : undefined;
+  const limitMessage =
+    step.phase === 'base'
+      ? selectionLimitGuidance(question, answer.selectedChoiceIds.length)
+      : null;
+
+  const contextProps = {
+    categoryNumber: category.number,
+    totalCategories: 10,
+    categoryTitle: category.title,
+    questionNumber: question.number,
+    totalQuestions: category.questions.length,
+    progress,
+    phaseLabel,
+  };
 
   return (
     <div className="mx-auto grid w-full max-w-6xl gap-6 lg:grid-cols-[minmax(0,17rem)_minmax(0,1fr)] lg:items-start">
-      <aside className="rounded-3xl border border-[color-mix(in_srgb,var(--forge-silver)_50%,transparent)] bg-[var(--forge-surface)] p-5 shadow-sm lg:sticky lg:top-6">
-        <QuestionnaireProgress
-          categoryNumber={category.number}
-          totalCategories={10}
-          categoryTitle={category.title}
-          questionNumber={question.number}
-          totalQuestions={category.questions.length}
-          progress={progress}
-          phaseLabel={step.phase === 'priority' ? 'Priority follow-up' : undefined}
-        />
-        <PreviewNotice className="mt-5" />
-        <Link
-          href="/app"
-          className="mt-5 inline-flex text-sm font-semibold text-[var(--forge-navy)] underline-offset-4 hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--forge-navy)]"
-        >
-          Exit preview
-        </Link>
-      </aside>
+      <PreviewContextPanel variant="desktop" {...contextProps} />
 
       <section className="rounded-3xl border border-[color-mix(in_srgb,var(--forge-silver)_50%,transparent)] bg-[var(--forge-surface)] p-5 shadow-sm sm:p-8">
-        <div className="mb-6 lg:hidden">
-          <QuestionnaireProgress
-            categoryNumber={category.number}
-            totalCategories={10}
-            categoryTitle={category.title}
-            questionNumber={question.number}
-            totalQuestions={category.questions.length}
-            progress={progress}
-            phaseLabel={step.phase === 'priority' ? 'Priority follow-up' : undefined}
-          />
-        </div>
+        <PreviewContextPanel variant="mobile" {...contextProps} />
 
         {step.phase === 'base' ? (
           <QuestionnaireQuestion
             question={question}
             answer={answer}
-            atMaxMessage={atMaxMessage}
+            atMaxMessage={limitMessage}
             onToggleChoice={(choiceId) => handleToggleBase(question.id, choiceId)}
           />
         ) : (

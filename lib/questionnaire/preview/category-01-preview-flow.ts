@@ -318,6 +318,28 @@ export function multiSelectStatusText(question: QuestionDefinition, selectedCoun
   return `${selectedCount} of ${question.maxSelections} selected`;
 }
 
+/** Shown immediately when a multi-select question reaches maxSelections. */
+export const SELECTION_LIMIT_MESSAGE =
+  "You've reached the selection limit. Deselect one before selecting another." as const;
+
+export function isMultiSelectAtMax(
+  question: QuestionDefinition,
+  selectedCount: number
+): boolean {
+  return (
+    question.responseBehavior === 'multi_select' &&
+    question.maxSelections !== null &&
+    selectedCount >= question.maxSelections
+  );
+}
+
+export function selectionLimitGuidance(
+  question: QuestionDefinition,
+  selectedCount: number
+): string | null {
+  return isMultiSelectAtMax(question, selectedCount) ? SELECTION_LIMIT_MESSAGE : null;
+}
+
 export function questionsWithPriorityFollowUp(
   category: CategoryDefinition
 ): number[] {

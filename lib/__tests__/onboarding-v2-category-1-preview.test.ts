@@ -10,8 +10,11 @@ import {
   emptyAnswer,
   getAnswer,
   isCategoryPreviewComplete,
+  isMultiSelectAtMax,
   questionsWithPriorityFollowUp,
   retreatStep,
+  SELECTION_LIMIT_MESSAGE,
+  selectionLimitGuidance,
   shouldShowPriorityFollowUp,
   syncAnswerAfterBaseChange,
   toggleBaseSelection,
@@ -147,6 +150,42 @@ describe('Category 1 onboarding preview flow', () => {
     assert.equal(blocked.ok, false);
     if (!blocked.ok) assert.equal(blocked.reason, 'at_max');
     assert.deepEqual(blocked.answer.selectedChoiceIds, answer.selectedChoiceIds);
+  });
+
+  it('produces visible selection-limit guidance immediately at max without requiring another click', () => {
+    const question = CATEGORY_01.questions.find((q) => q.number === 5)!;
+    assert.equal(selectionLimitGuidance(question, 3), null);
+    assert.equal(isMultiSelectAtMax(question, 3), false);
+
+    assert.equal(selectionLimitGuidance(question, 4), SELECTION_LIMIT_MESSAGE);
+    assert.equal(isMultiSelectAtMax(question, 4), true);
+    assert.match(
+      SELECTION_LIMIT_MESSAGE,
+      /reached the selection limit\. Deselect one before selecting another/i
+    );
+
+    const questionSource = read('components/questionnaire-preview/QuestionnaireQuestion.tsx');
+    assert.match(questionSource, /data-selection-limit-guidance/);
+    assert.match(questionSource, /role="status"/);
+    assert.match(questionSource, /SELECTION_LIMIT_MESSAGE|atMaxMessage/);
+    assert.match(questionSource, /atMax \? \(/);
+    assert.match(questionSource, /disabled=\{Boolean\(atMax && !selected\)\}/);
+  });
+
+  it('keeps selected answers removable while at the selection limit', () => {
+    const question = CATEGORY_01.questions.find((q) => q.number === 5)!;
+    let answer = emptyAnswer();
+    for (let i = 0; i < 4; i += 1) {
+      answer = toggleBaseSelection(question, answer, question.choices[i].id).answer;
+    }
+    assert.equal(isMultiSelectAtMax(question, answer.selectedChoiceIds.length), true);
+    assert.equal(selectionLimitGuidance(question, answer.selectedChoiceIds.length), SELECTION_LIMIT_MESSAGE);
+
+    const removed = toggleBaseSelection(question, answer, question.choices[0].id);
+    assert.equal(removed.ok, true);
+    assert.equal(removed.answer.selectedChoiceIds.includes(question.choices[0].id), false);
+    assert.equal(removed.answer.selectedChoiceIds.length, 3);
+    assert.equal(selectionLimitGuidance(question, removed.answer.selectedChoiceIds.length), null);
   });
 
   it('allows selected multi-select answers to be removed', () => {
@@ -303,5 +342,30 @@ describe('Category 1 onboarding preview flow', () => {
     assert.match(page, /CATEGORY_01/);
     assert.match(page, /ForgeAppCanvas/);
     assert.doesNotMatch(page, /loadOnboardingBootstrap|finishOnboarding/);
+  });
+
+  it('keeps mobile and desktop context panels mutually exclusive (no duplicate progress)', () => {
+    const shell = read('components/questionnaire-preview/Category01PreviewShell.tsx');
+    const panel = read('components/questionnaire-preview/PreviewContextPanel.tsx');
+
+    assert.match(shell, /variant="desktop"/);
+    assert.match(shell, /variant="mobile"/);
+    assert.equal((shell.match(/PreviewContextPanel/g) || []).length >= 2, true);
+
+    // Desktop sidebar hidden below lg; mobile strip hidden at lg+.
+    assert.match(panel, /variant === 'desktop'/);
+    assert.match(panel, /hidden[\s\S]*lg:block/);
+    assert.match(panel, /lg:hidden/);
+    assert.match(panel, /data-preview-context=\{variant\}/);
+
+    // Each variant includes progress, notice, and exit exactly once in the shared panel.
+    assert.equal((panel.match(/<QuestionnaireProgress\b/g) || []).length, 1);
+    assert.equal((panel.match(/<PreviewNotice\b/g) || []).length, 1);
+    assert.match(panel, />\s*Exit preview\s*</);
+    assert.equal((panel.match(/Exit preview/g) || []).length, 1);
+
+    // Shell no longer embeds a second inline QuestionnaireProgress.
+    assert.doesNotMatch(shell, /<QuestionnaireProgress/);
+    assert.doesNotMatch(shell, /lg:hidden>\s*<QuestionnaireProgress/);
   });
 });
