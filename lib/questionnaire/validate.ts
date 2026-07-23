@@ -474,11 +474,11 @@ function validateCategory(
   }
 
   if (category.number === 1) {
-    if (category.questions.length !== 15) {
+    if (category.questions.length !== 10) {
       issues.push(
         issue(
           'category_1_question_count',
-          `Category 1 must contain exactly 15 questions (found ${category.questions.length})`,
+          `Category 1 must contain exactly 10 questions (found ${category.questions.length})`,
           path
         )
       );

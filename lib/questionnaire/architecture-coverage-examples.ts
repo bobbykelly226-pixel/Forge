@@ -380,7 +380,7 @@ function coverageCategory(
 export function getArchitectureCoverageCatalog(): QuestionnaireCatalog {
   return assertValidQuestionnaireCatalog({
     questionnaireVersion: 'architecture_coverage_v1',
-    specificationVersion: 'forge_hq_final_locked_150_2026_07',
+    specificationVersion: 'compatibility_profile_category_1_v10',
     eligibilityRules: COVERAGE_ELIGIBILITY_RULES,
     categories: [
       coverageCategory(90, 'coverage_structured_identity_faith', 'Coverage — Structured Identity Faith', [

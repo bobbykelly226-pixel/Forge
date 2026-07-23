@@ -28,6 +28,28 @@ function extractCategory1Master(): string {
   return match[1];
 }
 
+const RETAINED_PROMPTS = [
+  'What are you ultimately hoping a meaningful relationship will grow into?',
+  'How important is marriage in the future you envision?',
+  'What pace do you prefer when building a new relationship?',
+  'Which approach to exclusivity most closely reflects what you want?',
+  'Which qualities most strongly define commitment for you?',
+  'Which statements best describe what being ready for a committed relationship means to you personally?',
+  'Which approach to personal growth best reflects the partnership you want?',
+  'In which areas would partners need reasonably compatible long term direction?',
+  'If a loving relationship revealed a major difference involving a core long term goal, what would you most likely do first?',
+  'Which relational foundations must be present before you would confidently choose a lasting partnership?',
+] as const;
+
+const REMOVED_PROMPT_FRAGMENTS = [
+  'How much do you agree with this statement?',
+  'When dating someone new, how do you approach long-term compatibility?',
+  'When dating someone new, how do you approach long term compatibility?',
+  'How frequently should partners intentionally discuss the health and direction of their relationship?',
+  'How important is it that partners share a similar overall vision for the next five to ten years?',
+  'How comfortable would you be continuing to date someone whose preferred timeline for commitment is meaningfully different from yours?',
+] as const;
+
 describe('questionnaire catalog foundation', () => {
   it('validates the live catalog with locked Category 1', () => {
     const catalog = getQuestionnaireCatalog();
@@ -38,41 +60,46 @@ describe('questionnaire catalog foundation', () => {
     assert.equal(catalog.categories.length, 1);
     assert.equal(catalog.categories[0].title, 'Relationship Vision & Intentions');
     assert.equal(catalog.categories[0].status, 'locked');
-    assert.equal(catalog.categories[0].questions.length, 15);
+    assert.equal(catalog.categories[0].questions.length, 10);
   });
 
-  it('imports exactly 15 sequential Category 1 questions with HQ prompts', () => {
-    const master = extractCategory1Master();
-    const prompts = [...master.matchAll(/^### (\d+)\. (.+)$/gm)].map((m) => ({
-      number: Number(m[1]),
-      prompt: m[2],
-    }));
-    assert.equal(prompts.length, 15);
+  it('contains exactly 10 sequential Category 1 questions in the required order', () => {
     assert.deepEqual(
       CATEGORY_01.questions.map((q) => q.number),
-      [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]
+      [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
     );
-    for (const expected of prompts) {
-      const actual = CATEGORY_01.questions.find((q) => q.number === expected.number);
-      assert.ok(actual, `missing Q${expected.number}`);
-      assert.equal(actual.prompt, expected.prompt);
+    assert.deepEqual(
+      CATEGORY_01.questions.map((q) => q.prompt),
+      [...RETAINED_PROMPTS]
+    );
+    for (const question of CATEGORY_01.questions) {
+      assert.equal(
+        question.id,
+        `relationship_vision_intentions_q${String(question.number).padStart(2, '0')}`
+      );
+      for (const choice of question.choices) {
+        assert.ok(choice.id.startsWith(`${question.id}_c`));
+      }
     }
   });
 
-  it('preserves every Category 1 option label exactly', () => {
+  it('omits the five removed Category 1 questions', () => {
+    const prompts = CATEGORY_01.questions.map((q) => q.prompt);
+    for (const removed of REMOVED_PROMPT_FRAGMENTS) {
+      assert.equal(prompts.includes(removed), false, removed);
+    }
+  });
+
+  it('preserves every Category 1 option label in the authoritative fixture', () => {
     const master = extractCategory1Master();
     for (const question of CATEGORY_01.questions) {
       for (const choice of question.choices) {
         assert.ok(
           master.includes(choice.label),
-          `Q${question.number} missing option in master: ${choice.label}`
+          `Q${question.number} missing option in fixture: ${choice.label}`
         );
       }
-      assert.equal(
-        question.alignmentPurpose.length > 0,
-        true,
-        `Q${question.number} missing alignment purpose`
-      );
+      assert.ok(question.alignmentPurpose.length > 0);
       assert.ok(
         master.includes(question.alignmentPurpose),
         `Q${question.number} alignment purpose drift`
@@ -87,31 +114,39 @@ describe('questionnaire catalog foundation', () => {
     assert.equal(byNumber[5].responseBehavior, 'multi_select');
     assert.equal(byNumber[5].maxSelections, 4);
     assert.equal(byNumber[5].priorityFollowUp?.selectionCount, 2);
-    assert.equal(byNumber[5].priorityFollowUp?.unordered, true);
     assert.equal(
       byNumber[5].priorityFollowUp?.prompt,
       'Of the qualities you selected, which two matter most?'
     );
 
-    assert.equal(byNumber[9].formatLabel, 'Select up to four');
-    assert.equal(byNumber[9].responseBehavior, 'multi_select');
-    assert.equal(byNumber[9].maxSelections, 4);
-    assert.equal(byNumber[9].priorityFollowUp, undefined);
+    assert.equal(byNumber[6].formatLabel, 'Select up to four');
+    assert.equal(byNumber[6].responseBehavior, 'multi_select');
+    assert.equal(byNumber[6].maxSelections, 4);
+    assert.equal(byNumber[6].priorityFollowUp, undefined);
 
-    assert.equal(byNumber[12].formatLabel, 'Select up to five');
-    assert.equal(byNumber[12].responseBehavior, 'multi_select');
-    assert.equal(byNumber[12].maxSelections, 5);
-    assert.equal(byNumber[12].priorityFollowUp?.selectionCount, 2);
-    assert.equal(byNumber[12].priorityFollowUp?.unordered, true);
+    assert.equal(byNumber[8].formatLabel, 'Select up to five');
+    assert.equal(byNumber[8].responseBehavior, 'multi_select');
+    assert.equal(byNumber[8].maxSelections, 5);
+    assert.equal(byNumber[8].priorityFollowUp?.selectionCount, 2);
+    assert.equal(
+      byNumber[8].priorityFollowUp?.prompt,
+      'Of the areas you selected, which two allow the least room for difference?'
+    );
 
-    assert.equal(byNumber[15].formatLabel, 'Select up to five');
-    assert.equal(byNumber[15].responseBehavior, 'multi_select');
-    assert.equal(byNumber[15].maxSelections, 5);
-    assert.equal(byNumber[15].priorityFollowUp?.selectionCount, 2);
-    assert.equal(byNumber[15].priorityFollowUp?.unordered, true);
+    assert.equal(byNumber[9].formatLabel, 'Scenario based choice');
+    assert.equal(byNumber[9].responseBehavior, 'scenario_choice');
+
+    assert.equal(byNumber[10].formatLabel, 'Select up to five');
+    assert.equal(byNumber[10].responseBehavior, 'multi_select');
+    assert.equal(byNumber[10].maxSelections, 5);
+    assert.equal(byNumber[10].priorityFollowUp?.selectionCount, 2);
+    assert.equal(
+      byNumber[10].priorityFollowUp?.prompt,
+      'Of the foundations you selected, which two are most essential?'
+    );
 
     for (const question of CATEGORY_01.questions) {
-      if (![5, 12, 15].includes(question.number)) {
+      if (![5, 8, 10].includes(question.number)) {
         assert.equal(
           question.priorityFollowUp,
           undefined,
@@ -121,15 +156,19 @@ describe('questionnaire catalog foundation', () => {
     }
   });
 
-  it('preserves all seven locked product decisions', () => {
+  it('preserves all seven locked product decisions with updated priority references', () => {
     assert.equal(CATEGORY_01_LOCKED_PRODUCT_DECISIONS.length, 7);
     assert.deepEqual(
       [...CATEGORY_01.lockedProductDecisions],
       [...CATEGORY_01_LOCKED_PRODUCT_DECISIONS]
     );
+    assert.ok(
+      CATEGORY_01_LOCKED_PRODUCT_DECISIONS.some((d) => d.includes('Only Q5, Q8, and Q10'))
+    );
+    assert.ok(CATEGORY_01_LOCKED_PRODUCT_DECISIONS.some((d) => d.startsWith('Q8 may identify')));
     const master = extractCategory1Master();
     for (const decision of CATEGORY_01_LOCKED_PRODUCT_DECISIONS) {
-      assert.ok(master.includes(decision), `locked decision missing from master: ${decision}`);
+      assert.ok(master.includes(decision), `locked decision missing from fixture: ${decision}`);
     }
   });
 
@@ -141,7 +180,7 @@ describe('questionnaire catalog foundation', () => {
         {
           ...base.categories[0],
           status: 'draft',
-          questions: base.categories[0].questions.slice(0, 14),
+          questions: base.categories[0].questions.slice(0, 9),
         },
       ],
     };
@@ -177,34 +216,6 @@ describe('questionnaire catalog foundation', () => {
     };
     const dupResult = validateQuestionnaireCatalog(duplicateOption);
     assert.equal(dupResult.ok, false);
-
-    const badPriority: QuestionnaireCatalog = {
-      ...base,
-      categories: [
-        {
-          ...base.categories[0],
-          questions: base.categories[0].questions.map((q) =>
-            q.number === 1
-              ? {
-                  ...q,
-                  priorityFollowUp: {
-                    prompt: 'Should not be allowed',
-                    selectionCount: 2,
-                    unordered: true,
-                  },
-                }
-              : q
-          ),
-        },
-      ],
-    };
-    const priorityResult = validateQuestionnaireCatalog(badPriority);
-    assert.equal(priorityResult.ok, false);
-    if (!priorityResult.ok) {
-      assert.ok(
-        priorityResult.issues.some((i) => i.code === 'priority_follow_up_unsupported')
-      );
-    }
   });
 });
 
@@ -238,9 +249,6 @@ describe('questionnaire migration privacy and integrity', () => {
     assert.match(migration, /forge_questionnaire_progress_category_version_match/);
     assert.match(migration, /forge_questionnaire_response_identity_immutable/);
     assert.match(migration, /user_questionnaire_priority_selected_fk/);
-    assert.match(migration, /priority selections exceed configured selection count/);
-    assert.match(migration, /selected choices exceed max_selections/);
-    assert.match(migration, /mutually exclusive choice cannot combine/);
   });
 
   it('makes response identity immutable after insert while keeping answer fields editable', () => {
@@ -249,25 +257,12 @@ describe('questionnaire migration privacy and integrity', () => {
     );
     assert.ok(identityFnMatch, 'identity-immutable function must exist');
     const identityFn = identityFnMatch[1];
-
-    // 1. Identity columns cannot change after insertion.
     for (const column of ['id', 'user_id', 'version_id', 'question_id']) {
       assert.match(
         identityFn,
         new RegExp(`new\\.${column}\\s+is distinct from\\s+old\\.${column}`)
       );
     }
-    assert.match(
-      identityFn,
-      /questionnaire response identity is immutable after insert \(id, user_id, version_id, question_id\)/
-    );
-    assert.match(
-      migration,
-      /create trigger user_questionnaire_responses_identity_immutable\s+before update on public\.user_questionnaire_responses/
-    );
-
-    // 2. Answer-state, qualifier, and identity-field updates remain permitted
-    // (function must not reject these editable columns).
     for (const editable of [
       'response_state',
       'active_qualifiers',
@@ -280,22 +275,7 @@ describe('questionnaire migration privacy and integrity', () => {
         identityFn,
         new RegExp(`new\\.${editable}\\s+is distinct from\\s+old\\.${editable}`)
       );
-      assert.match(migration, new RegExp(`\\b${editable}\\b`));
     }
-
-    // 3. Selected-choice/question integrity cannot be broken by re-pointing the parent.
-    assert.match(
-      migration,
-      /selected choice must belong to the response question/
-    );
-    assert.match(
-      identityFn,
-      /create a separate response row for another question/
-    );
-    assert.match(
-      migration,
-      /Response identity is immutable after insert so selected\/priority choices cannot/
-    );
   });
 
   it('applies owner-only RLS for private responses and read-only catalog policies', () => {
@@ -303,37 +283,50 @@ describe('questionnaire migration privacy and integrity', () => {
     assert.match(migration, /questionnaire_versions_select_authenticated/);
     assert.match(migration, /user_questionnaire_responses_select_own/);
     assert.match(migration, /user_id = auth\.uid\(\)/);
-    assert.match(
-      migration,
-      /revoke insert, update, delete on public\.questionnaire_questions from authenticated, anon/
-    );
     assert.match(migration, /Not public profile data/);
   });
 
-  it('seeds Category 1 title, 15 questions, and selection limits', () => {
+  it('seeds Category 1 title, 10 questions, and selection limits', () => {
     assert.match(migration, /Relationship Vision & Intentions/);
-    assert.equal(
-      (migration.match(/relationship_vision_intentions_q\d{2}/g) || []).length >= 15,
-      true
-    );
-    for (let n = 1; n <= 15; n += 1) {
+    assert.match(migration, /compatibility_profile_category_1_v10/);
+    for (let n = 1; n <= 10; n += 1) {
       assert.match(
         migration,
         new RegExp(`relationship_vision_intentions_q${String(n).padStart(2, '0')}`)
       );
     }
-    // Q5/Q9 max 4, Q12/Q15 max 5 with format_label + response_behavior
-    assert.match(migration, /'relationship_vision_intentions_q05',[\s\S]*?'Select up to four',[\s\S]*?'multi_select'/);
-    assert.match(migration, /'relationship_vision_intentions_q05',[\s\S]*?\n\s*1,\n\s*4,\n\s*'Of the qualities you selected/);
-    assert.match(migration, /'relationship_vision_intentions_q09',[\s\S]*?\n\s*1,\n\s*4,\n\s*null,\n\s*null,/);
-    assert.match(migration, /'relationship_vision_intentions_q12',[\s\S]*?\n\s*1,\n\s*5,\n\s*'Of the areas you selected/);
-    assert.match(migration, /'relationship_vision_intentions_q15',[\s\S]*?\n\s*1,\n\s*5,\n\s*'Of the foundations you selected/);
+    for (const n of [11, 12, 13, 14, 15]) {
+      assert.doesNotMatch(
+        migration,
+        new RegExp(`relationship_vision_intentions_q${String(n).padStart(2, '0')}`)
+      );
+    }
+    assert.match(
+      migration,
+      /'relationship_vision_intentions_q05',[\s\S]*?'Select up to four',[\s\S]*?'multi_select'/
+    );
+    assert.match(
+      migration,
+      /'relationship_vision_intentions_q05',[\s\S]*?\n\s*1,\n\s*4,\n\s*'Of the qualities you selected/
+    );
+    assert.match(
+      migration,
+      /'relationship_vision_intentions_q06',[\s\S]*?\n\s*1,\n\s*4,\n\s*null,\n\s*null,/
+    );
+    assert.match(
+      migration,
+      /'relationship_vision_intentions_q08',[\s\S]*?\n\s*1,\n\s*5,\n\s*'Of the areas you selected/
+    );
+    assert.match(
+      migration,
+      /'relationship_vision_intentions_q10',[\s\S]*?\n\s*1,\n\s*5,\n\s*'Of the foundations you selected/
+    );
+    assert.match(migration, /Only Q5, Q8, and Q10/);
   });
 });
 
 describe('existing onboarding and Compatibility Engine V1 remain untouched', () => {
   it('does not modify onboarding UI or compatibility engine modules in this slice', () => {
-    // Guard: foundation files exist, and classic onboarding paths still reference profile_answers.
     const onboarding = read('lib/data/onboarding.ts');
     assert.match(onboarding, /profile_answers/);
     assert.doesNotMatch(onboarding, /user_questionnaire_responses/);

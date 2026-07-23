@@ -2,7 +2,7 @@
  * Compact architecture-coverage manifest for the full ten-category master.
  *
  * Does NOT import Categories 2–10 into the live catalog. Structural metadata for
- * all 150 questions lives in fixtures/master-structure-manifest.json.
+ * the full Compatibility Profile structure lives in fixtures/master-structure-manifest.json.
  */
 
 import type { ResponseBehavior, ResponseState } from '@/lib/questionnaire/types';
@@ -41,6 +41,7 @@ export const MASTER_FORMAT_LABELS = [
   'Privacy-boundary range',
   'Reassurance-and-access range',
   'Role range',
+  'Scenario based choice',
   'Scenario-based choice',
   'Select all that apply',
   'Select up to five',
@@ -90,6 +91,7 @@ export const FORMAT_LABEL_TO_BEHAVIOR: Readonly<Record<MasterFormatLabel, Respon
   'Trust-repair posture with a separate context-dependent state': 'scale_range',
   'Reassurance-and-access range': 'scale_range',
   'Directness scale': 'scale_range',
+  'Scenario based choice': 'scenario_choice',
   'Scenario-based choice': 'scenario_choice',
   'Conditional scenario-based choice': 'scenario_choice',
   'Structured identity selection': 'structured_identity',
