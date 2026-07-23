@@ -83,25 +83,32 @@ describe('questionnaire catalog foundation', () => {
   it('maps formats and selection limits for multi-select and priority follow-ups', () => {
     const byNumber = Object.fromEntries(CATEGORY_01.questions.map((q) => [q.number, q]));
 
-    assert.equal(byNumber[5].format, 'limited_multi_select');
+    assert.equal(byNumber[5].formatLabel, 'Select up to four');
+    assert.equal(byNumber[5].responseBehavior, 'multi_select');
     assert.equal(byNumber[5].maxSelections, 4);
     assert.equal(byNumber[5].priorityFollowUp?.selectionCount, 2);
+    assert.equal(byNumber[5].priorityFollowUp?.unordered, true);
     assert.equal(
       byNumber[5].priorityFollowUp?.prompt,
       'Of the qualities you selected, which two matter most?'
     );
 
-    assert.equal(byNumber[9].format, 'limited_multi_select');
+    assert.equal(byNumber[9].formatLabel, 'Select up to four');
+    assert.equal(byNumber[9].responseBehavior, 'multi_select');
     assert.equal(byNumber[9].maxSelections, 4);
     assert.equal(byNumber[9].priorityFollowUp, undefined);
 
-    assert.equal(byNumber[12].format, 'limited_multi_select');
+    assert.equal(byNumber[12].formatLabel, 'Select up to five');
+    assert.equal(byNumber[12].responseBehavior, 'multi_select');
     assert.equal(byNumber[12].maxSelections, 5);
     assert.equal(byNumber[12].priorityFollowUp?.selectionCount, 2);
+    assert.equal(byNumber[12].priorityFollowUp?.unordered, true);
 
-    assert.equal(byNumber[15].format, 'limited_multi_select');
+    assert.equal(byNumber[15].formatLabel, 'Select up to five');
+    assert.equal(byNumber[15].responseBehavior, 'multi_select');
     assert.equal(byNumber[15].maxSelections, 5);
     assert.equal(byNumber[15].priorityFollowUp?.selectionCount, 2);
+    assert.equal(byNumber[15].priorityFollowUp?.unordered, true);
 
     for (const question of CATEGORY_01.questions) {
       if (![5, 12, 15].includes(question.number)) {
@@ -183,6 +190,7 @@ describe('questionnaire catalog foundation', () => {
                   priorityFollowUp: {
                     prompt: 'Should not be allowed',
                     selectionCount: 2,
+                    unordered: true,
                   },
                 }
               : q
@@ -224,11 +232,14 @@ describe('questionnaire migration privacy and integrity', () => {
 
   it('enforces response/version/choice/priority integrity', () => {
     assert.match(migration, /user_questionnaire_responses_progress_fk/);
-    assert.match(migration, /forge_questionnaire_selected_choice_matches_question/);
+    assert.match(migration, /forge_questionnaire_selected_choice_integrity/);
     assert.match(migration, /forge_questionnaire_priority_choice_valid/);
     assert.match(migration, /forge_questionnaire_response_version_matches_question/);
+    assert.match(migration, /forge_questionnaire_progress_category_version_match/);
     assert.match(migration, /user_questionnaire_priority_selected_fk/);
     assert.match(migration, /priority selections exceed configured selection count/);
+    assert.match(migration, /selected choices exceed max_selections/);
+    assert.match(migration, /mutually exclusive choice cannot combine/);
   });
 
   it('applies owner-only RLS for private responses and read-only catalog policies', () => {
@@ -255,23 +266,12 @@ describe('questionnaire migration privacy and integrity', () => {
         new RegExp(`relationship_vision_intentions_q${String(n).padStart(2, '0')}`)
       );
     }
-    // Q5/Q9 max 4, Q12/Q15 max 5 — values order: min_selections then max_selections
-    assert.match(
-      migration,
-      /'relationship_vision_intentions_q05',[\s\S]*?\n\s*1,\n\s*4,\n\s*'Of the qualities you selected/
-    );
-    assert.match(
-      migration,
-      /'relationship_vision_intentions_q09',[\s\S]*?\n\s*1,\n\s*4,\n\s*null,\n\s*null,/
-    );
-    assert.match(
-      migration,
-      /'relationship_vision_intentions_q12',[\s\S]*?\n\s*1,\n\s*5,\n\s*'Of the areas you selected/
-    );
-    assert.match(
-      migration,
-      /'relationship_vision_intentions_q15',[\s\S]*?\n\s*1,\n\s*5,\n\s*'Of the foundations you selected/
-    );
+    // Q5/Q9 max 4, Q12/Q15 max 5 with format_label + response_behavior
+    assert.match(migration, /'relationship_vision_intentions_q05',[\s\S]*?'Select up to four',[\s\S]*?'multi_select'/);
+    assert.match(migration, /'relationship_vision_intentions_q05',[\s\S]*?\n\s*1,\n\s*4,\n\s*'Of the qualities you selected/);
+    assert.match(migration, /'relationship_vision_intentions_q09',[\s\S]*?\n\s*1,\n\s*4,\n\s*null,\n\s*null,/);
+    assert.match(migration, /'relationship_vision_intentions_q12',[\s\S]*?\n\s*1,\n\s*5,\n\s*'Of the areas you selected/);
+    assert.match(migration, /'relationship_vision_intentions_q15',[\s\S]*?\n\s*1,\n\s*5,\n\s*'Of the foundations you selected/);
   });
 });
 

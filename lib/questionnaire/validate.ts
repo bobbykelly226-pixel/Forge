@@ -1,19 +1,19 @@
 import {
-  QUESTION_FORMATS,
+  RESPONSE_BEHAVIORS,
   type CatalogValidationIssue,
   type CatalogValidationResult,
   type CategoryDefinition,
+  type EligibilityRuleDefinition,
   type QuestionDefinition,
-  type QuestionFormat,
   type QuestionnaireCatalog,
+  type ResponseBehavior,
 } from '@/lib/questionnaire/types';
 
-const MULTI_SELECT_FORMATS: ReadonlySet<QuestionFormat> = new Set([
-  'limited_multi_select',
-]);
-
-const PRIORITY_SUPPORTED_FORMATS: ReadonlySet<QuestionFormat> = new Set([
-  'limited_multi_select',
+const SINGLE_BEHAVIORS: ReadonlySet<ResponseBehavior> = new Set([
+  'single_choice',
+  'scenario_choice',
+  'structured_identity',
+  'scale_range',
 ]);
 
 function issue(
@@ -27,12 +27,19 @@ function issue(
 function validateQuestion(
   category: CategoryDefinition,
   question: QuestionDefinition,
+  eligibilityById: Map<string, EligibilityRuleDefinition>,
   issues: CatalogValidationIssue[]
 ): void {
   const path = `categories[${category.number}].questions[${question.number}]`;
 
-  if (!QUESTION_FORMATS.includes(question.format)) {
-    issues.push(issue('invalid_format', `Unsupported format: ${question.format}`, path));
+  if (!RESPONSE_BEHAVIORS.includes(question.responseBehavior)) {
+    issues.push(
+      issue('invalid_response_behavior', `Unsupported behavior: ${question.responseBehavior}`, path)
+    );
+  }
+
+  if (!question.formatLabel?.trim()) {
+    issues.push(issue('empty_format_label', 'Exact formatLabel is required', path));
   }
 
   if (!Number.isInteger(question.number) || question.number < 1) {
@@ -51,44 +58,57 @@ function validateQuestion(
     issues.push(issue('invalid_selection_limits', 'minSelections must be a non-negative integer', path));
   }
 
-  if (!Number.isInteger(question.maxSelections) || question.maxSelections < 1) {
-    issues.push(issue('invalid_selection_limits', 'maxSelections must be a positive integer', path));
+  if (question.maxSelections !== null) {
+    if (!Number.isInteger(question.maxSelections) || question.maxSelections < 1) {
+      issues.push(
+        issue('invalid_selection_limits', 'maxSelections must be a positive integer or null', path)
+      );
+    } else if (question.minSelections > question.maxSelections) {
+      issues.push(
+        issue('invalid_selection_limits', 'minSelections cannot exceed maxSelections', path)
+      );
+    }
   }
 
-  if (question.minSelections > question.maxSelections) {
-    issues.push(
-      issue('invalid_selection_limits', 'minSelections cannot exceed maxSelections', path)
-    );
-  }
-
-  if (question.format === 'single_choice' || question.format === 'scenario_choice') {
-    if (question.minSelections !== 1 || question.maxSelections !== 1) {
+  if (question.selectAllThatApply) {
+    if (question.responseBehavior !== 'multi_select') {
       issues.push(
         issue(
-          'invalid_selection_limits',
-          `${question.format} must require exactly one selection`,
+          'select_all_incompatible',
+          'selectAllThatApply requires multi_select responseBehavior',
+          path
+        )
+      );
+    }
+    if (question.maxSelections !== null) {
+      issues.push(
+        issue(
+          'select_all_incompatible',
+          'selectAllThatApply requires maxSelections null (unrestricted)',
           path
         )
       );
     }
   }
 
-  if (
-    question.format === 'agreement_scale' ||
-    question.format === 'importance_scale' ||
-    question.format === 'frequency_scale' ||
-    question.format === 'comfort_range'
-  ) {
+  if (SINGLE_BEHAVIORS.has(question.responseBehavior)) {
     if (question.minSelections !== 1 || question.maxSelections !== 1) {
       issues.push(
-        issue('invalid_selection_limits', `${question.format} must require exactly one selection`, path)
+        issue(
+          'invalid_selection_limits',
+          `${question.responseBehavior} must require exactly one selection`,
+          path
+        )
       );
     }
   }
 
   if (!Array.isArray(question.choices) || question.choices.length === 0) {
     issues.push(issue('insufficient_options', 'Question must define answer choices', path));
-  } else if (question.choices.length < question.maxSelections) {
+  } else if (
+    question.maxSelections !== null &&
+    question.choices.length < question.maxSelections
+  ) {
     issues.push(
       issue(
         'insufficient_options',
@@ -99,9 +119,10 @@ function validateQuestion(
   }
 
   if (
-    (question.format === 'single_choice' ||
-      question.format === 'scenario_choice' ||
-      MULTI_SELECT_FORMATS.has(question.format)) &&
+    (question.responseBehavior === 'single_choice' ||
+      question.responseBehavior === 'scenario_choice' ||
+      question.responseBehavior === 'multi_select' ||
+      question.responseBehavior === 'structured_identity') &&
     question.choices.length < 2
   ) {
     issues.push(
@@ -162,11 +183,11 @@ function validateQuestion(
   }
 
   if (exclusiveCount > 0) {
-    if (question.format === 'single_choice' || question.format === 'scenario_choice') {
+    if (question.responseBehavior !== 'multi_select') {
       issues.push(
         issue(
           'exclusive_choice_incompatible',
-          'mutuallyExclusive is incompatible with single-selection formats',
+          'mutuallyExclusive is only valid with multi_select behavior',
           path
         )
       );
@@ -182,26 +203,56 @@ function validateQuestion(
     }
   }
 
+  if (question.eligibilityRuleId) {
+    if (!eligibilityById.has(question.eligibilityRuleId)) {
+      issues.push(
+        issue(
+          'unknown_eligibility_rule',
+          `Unknown eligibilityRuleId: ${question.eligibilityRuleId}`,
+          path
+        )
+      );
+    }
+  }
+
+  if (question.conditional?.requiresEligibilityRuleId) {
+    if (!eligibilityById.has(question.conditional.requiresEligibilityRuleId)) {
+      issues.push(
+        issue(
+          'unknown_eligibility_rule',
+          `Unknown conditional eligibility rule: ${question.conditional.requiresEligibilityRuleId}`,
+          path
+        )
+      );
+    }
+  }
+
   if (question.priorityFollowUp) {
-    if (!PRIORITY_SUPPORTED_FORMATS.has(question.format)) {
+    if (question.responseBehavior !== 'multi_select') {
       issues.push(
         issue(
           'priority_follow_up_unsupported',
-          `Priority follow-ups are not supported on format ${question.format}`,
+          `Priority follow-ups require multi_select (found ${question.responseBehavior})`,
           path
         )
       );
     }
-    if (question.priorityFollowUp.selectionCount !== 2) {
+    const pf = question.priorityFollowUp;
+    if (!Number.isInteger(pf.selectionCount) || pf.selectionCount < 1) {
       issues.push(
         issue(
           'invalid_priority_selection_count',
-          'Priority follow-ups must request exactly two selections',
+          'Priority selectionCount must be a positive integer',
           path
         )
       );
     }
-    if (question.priorityFollowUp.selectionCount > question.maxSelections) {
+    if (pf.unordered !== true) {
+      issues.push(
+        issue('priority_must_be_unordered', 'Priority follow-ups must be unordered', path)
+      );
+    }
+    if (question.maxSelections !== null && pf.selectionCount > question.maxSelections) {
       issues.push(
         issue(
           'priority_selection_exceeds_limits',
@@ -210,22 +261,54 @@ function validateQuestion(
         )
       );
     }
-    if (question.priorityFollowUp.selectionCount > question.choices.length) {
+    if (!pf.prompt?.trim()) {
+      issues.push(issue('empty_priority_prompt', 'Priority follow-up prompt is required', path));
+    }
+
+    const eligible = pf.eligibleChoiceIds ?? [...choiceIds];
+    for (const id of eligible) {
+      if (!choiceIds.has(id)) {
+        issues.push(
+          issue('priority_eligible_unknown_choice', `Unknown eligibleChoiceId: ${id}`, path)
+        );
+      }
+    }
+    for (const id of pf.excludedChoiceIds ?? []) {
+      if (!choiceIds.has(id)) {
+        issues.push(
+          issue('priority_excluded_unknown_choice', `Unknown excludedChoiceId: ${id}`, path)
+        );
+      }
+    }
+    const excluded = new Set(pf.excludedChoiceIds ?? []);
+    const eligibleNet = eligible.filter((id) => !excluded.has(id));
+    if (pf.selectionCount > eligibleNet.length) {
       issues.push(
         issue(
           'priority_selection_exceeds_limits',
-          'Priority selection count cannot exceed available choices',
+          'Priority selection count exceeds eligible non-excluded choices',
           path
         )
       );
     }
-    if (!question.priorityFollowUp.prompt?.trim()) {
-      issues.push(issue('empty_priority_prompt', 'Priority follow-up prompt is required', path));
+    const minDisplay = pf.minEligibleSelectionsBeforeDisplay ?? pf.selectionCount;
+    if (!Number.isInteger(minDisplay) || minDisplay < 1) {
+      issues.push(
+        issue(
+          'invalid_priority_min_eligible',
+          'minEligibleSelectionsBeforeDisplay must be a positive integer',
+          path
+        )
+      );
     }
   }
 }
 
-function validateCategory(category: CategoryDefinition, issues: CatalogValidationIssue[]): void {
+function validateCategory(
+  category: CategoryDefinition,
+  eligibilityById: Map<string, EligibilityRuleDefinition>,
+  issues: CatalogValidationIssue[]
+): void {
   const path = `categories[${category.number}]`;
 
   if (!category.id?.trim()) {
@@ -280,7 +363,7 @@ function validateCategory(category: CategoryDefinition, issues: CatalogValidatio
     } else if (question.id?.trim()) {
       questionIds.add(question.id);
     }
-    validateQuestion(category, question, issues);
+    validateQuestion(category, question, eligibilityById, issues);
   }
 
   const numberSet = new Set<number>();
@@ -319,6 +402,32 @@ export function validateQuestionnaireCatalog(
   if (!Array.isArray(catalog.categories) || catalog.categories.length === 0) {
     issues.push(issue('empty_categories', 'Catalog must include at least one category'));
   }
+  if (!Array.isArray(catalog.eligibilityRules)) {
+    issues.push(issue('missing_eligibility_rules', 'eligibilityRules array is required'));
+  }
+
+  const eligibilityById = new Map<string, EligibilityRuleDefinition>();
+  const eligibilityKeys = new Set<string>();
+  for (const rule of catalog.eligibilityRules ?? []) {
+    if (!rule.id?.trim()) {
+      issues.push(issue('empty_eligibility_rule_id', 'Eligibility rule id is required'));
+      continue;
+    }
+    if (eligibilityById.has(rule.id)) {
+      issues.push(issue('duplicate_eligibility_rule_id', `Duplicate eligibility rule id: ${rule.id}`));
+    }
+    eligibilityById.set(rule.id, rule);
+    if (!rule.ruleKey?.trim()) {
+      issues.push(issue('empty_eligibility_rule_key', `Eligibility rule key required for ${rule.id}`));
+    } else if (eligibilityKeys.has(rule.ruleKey)) {
+      issues.push(issue('duplicate_eligibility_rule_key', `Duplicate eligibility rule key: ${rule.ruleKey}`));
+    } else {
+      eligibilityKeys.add(rule.ruleKey);
+    }
+    if (!rule.description?.trim()) {
+      issues.push(issue('empty_eligibility_description', `Eligibility description required for ${rule.id}`));
+    }
+  }
 
   const categoryIds = new Set<string>();
   const categoryNumbers = new Set<number>();
@@ -340,7 +449,7 @@ export function validateQuestionnaireCatalog(
       categoryNumbers.add(category.number);
     }
 
-    validateCategory(category, issues);
+    validateCategory(category, eligibilityById, issues);
 
     for (const question of category.questions ?? []) {
       if (question.id && allQuestionIds.has(question.id)) {

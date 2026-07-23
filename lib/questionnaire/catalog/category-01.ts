@@ -5,7 +5,7 @@ const CATEGORY_KEY = 'relationship_vision_intentions';
 function buildChoices(
   questionNumber: number,
   labels: readonly string[],
-  specials: Readonly<Record<number, QuestionDefinition['choices'][number]['specialResponseState']>> = {}
+  specials: Readonly<Record<number, NonNullable<QuestionDefinition['choices'][number]['specialResponseState']>>> = {}
 ) {
   const qid = `${CATEGORY_KEY}_q${String(questionNumber).padStart(2, '0')}`;
   return labels.map((label, index) => {
@@ -52,7 +52,8 @@ const QUESTIONS: QuestionDefinition[] = [
   q({
     number: 1,
     prompt: "What are you ultimately hoping a meaningful relationship will grow into?",
-    format: 'single_choice',
+    formatLabel: "Single choice",
+    responseBehavior: 'single_choice',
     minSelections: 1,
     maxSelections: 1,
     alignmentPurpose: "Establishes the relationship destination someone is pursuing.",
@@ -67,7 +68,8 @@ const QUESTIONS: QuestionDefinition[] = [
   q({
     number: 2,
     prompt: "How important is marriage in the future you envision?",
-    format: 'importance_scale',
+    formatLabel: "Importance scale",
+    responseBehavior: 'scale_range',
     minSelections: 1,
     maxSelections: 1,
     alignmentPurpose: "Separates someone’s preferred relationship structure from how necessary marriage is to them.",
@@ -82,7 +84,8 @@ const QUESTIONS: QuestionDefinition[] = [
   q({
     number: 3,
     prompt: "What pace do you prefer when building a new relationship?",
-    format: 'single_choice',
+    formatLabel: "Single choice",
+    responseBehavior: 'single_choice',
     minSelections: 1,
     maxSelections: 1,
     alignmentPurpose: "Identifies meaningful differences between cautious, gradual, steady, and fast-moving dating styles.",
@@ -97,7 +100,8 @@ const QUESTIONS: QuestionDefinition[] = [
   q({
     number: 4,
     prompt: "Which approach to exclusivity most closely reflects what you want?",
-    format: 'single_choice',
+    formatLabel: "Single choice",
+    responseBehavior: 'single_choice',
     minSelections: 1,
     maxSelections: 1,
     alignmentPurpose: "Captures expectations that can otherwise create early confusion or hurt.",
@@ -112,7 +116,8 @@ const QUESTIONS: QuestionDefinition[] = [
   q({
     number: 5,
     prompt: "Which qualities most strongly define commitment for you?",
-    format: 'limited_multi_select',
+    formatLabel: "Select up to four",
+    responseBehavior: 'multi_select',
     minSelections: 1,
     maxSelections: 4,
     alignmentPurpose: "Identifies both someone’s broader definition of commitment and its most important components.",
@@ -130,13 +135,15 @@ const QUESTIONS: QuestionDefinition[] = [
     priorityFollowUp: {
       prompt: "Of the qualities you selected, which two matter most?",
       selectionCount: 2,
+      unordered: true,
     },
   }),
   q({
     number: 6,
     prompt: "How much do you agree with this statement?",
     statement: "People should be honest early in dating about whether they are open to building a long-term future together.",
-    format: 'agreement_scale',
+    formatLabel: "Agreement scale",
+    responseBehavior: 'scale_range',
     minSelections: 1,
     maxSelections: 1,
     alignmentPurpose: "Measures expectations around clarity and intentionality without requiring premature commitment.",
@@ -151,7 +158,8 @@ const QUESTIONS: QuestionDefinition[] = [
   q({
     number: 7,
     prompt: "When dating someone new, how do you approach long-term compatibility?",
-    format: 'single_choice',
+    formatLabel: "Single choice",
+    responseBehavior: 'single_choice',
     minSelections: 1,
     maxSelections: 1,
     alignmentPurpose: "Distinguishes present-focused dating from increasingly future-conscious approaches.",
@@ -166,7 +174,8 @@ const QUESTIONS: QuestionDefinition[] = [
   q({
     number: 8,
     prompt: "How frequently should partners intentionally discuss the health and direction of their relationship?",
-    format: 'frequency_scale',
+    formatLabel: "Frequency scale",
+    responseBehavior: 'scale_range',
     minSelections: 1,
     maxSelections: 1,
     alignmentPurpose: "Compares expectations for relationship communication and reassurance.",
@@ -181,7 +190,8 @@ const QUESTIONS: QuestionDefinition[] = [
   q({
     number: 9,
     prompt: "Which statements best describe what being ready for a committed relationship means to you personally?",
-    format: 'limited_multi_select',
+    formatLabel: "Select up to four",
+    responseBehavior: 'multi_select',
     minSelections: 1,
     maxSelections: 4,
     alignmentPurpose: "Grounds readiness in observable capacity and behavior instead of idealized traits.",
@@ -200,7 +210,8 @@ const QUESTIONS: QuestionDefinition[] = [
   q({
     number: 10,
     prompt: "Which approach to personal growth best reflects the partnership you want?",
-    format: 'single_choice',
+    formatLabel: "Single choice",
+    responseBehavior: 'single_choice',
     minSelections: 1,
     maxSelections: 1,
     alignmentPurpose: "Differentiates independent, supportive, challenging, shared, and highly integrated approaches to growth.",
@@ -215,7 +226,8 @@ const QUESTIONS: QuestionDefinition[] = [
   q({
     number: 11,
     prompt: "How important is it that partners share a similar overall vision for the next five to ten years?",
-    format: 'importance_scale',
+    formatLabel: "Importance scale",
+    responseBehavior: 'scale_range',
     minSelections: 1,
     maxSelections: 1,
     alignmentPurpose: "Measures the overall importance of shared future direction without duplicating any particular life goal.",
@@ -230,7 +242,8 @@ const QUESTIONS: QuestionDefinition[] = [
   q({
     number: 12,
     prompt: "In which areas would partners need reasonably compatible long-term direction?",
-    format: 'limited_multi_select',
+    formatLabel: "Select up to five",
+    responseBehavior: 'multi_select',
     minSelections: 1,
     maxSelections: 5,
     alignmentPurpose: "Identifies concrete future directions requiring alignment while leaving detailed children, faith, money, and lifestyle matching to their respective categories.",
@@ -251,12 +264,14 @@ const QUESTIONS: QuestionDefinition[] = [
     priorityFollowUp: {
       prompt: "Of the areas you selected, which two allow the least room for difference?",
       selectionCount: 2,
+      unordered: true,
     },
   }),
   q({
     number: 13,
     prompt: "How comfortable would you be continuing to date someone whose preferred timeline for commitment is meaningfully different from yours?",
-    format: 'comfort_range',
+    formatLabel: "Comfort range",
+    responseBehavior: 'scale_range',
     minSelections: 1,
     maxSelections: 1,
     alignmentPurpose: "Measures how much flexibility someone genuinely has around commitment timing.",
@@ -271,10 +286,12 @@ const QUESTIONS: QuestionDefinition[] = [
   q({
     number: 14,
     prompt: "If a loving relationship revealed a major difference involving a core long-term goal, what would you most likely do first?",
-    format: 'scenario_choice',
+    formatLabel: "Scenario-based choice",
+    responseBehavior: 'scenario_choice',
     minSelections: 1,
     maxSelections: 1,
     alignmentPurpose: "Reveals someone’s initial approach to major incompatibility rather than asking whether they generally “believe in compromise.”",
+    allowedSpecialResponseStates: ['context_dependent'],
     choices: buildChoices(
       14,
       [
@@ -291,7 +308,8 @@ const QUESTIONS: QuestionDefinition[] = [
   q({
     number: 15,
     prompt: "Which relational foundations must be present before you would confidently choose a lasting partnership?",
-    format: 'limited_multi_select',
+    formatLabel: "Select up to five",
+    responseBehavior: 'multi_select',
     minSelections: 1,
     maxSelections: 5,
     alignmentPurpose: "Identifies what someone needs within the relationship itself, without repeating marriage or future-goal alignment.",
@@ -312,6 +330,7 @@ const QUESTIONS: QuestionDefinition[] = [
     priorityFollowUp: {
       prompt: "Of the foundations you selected, which two are most essential?",
       selectionCount: 2,
+      unordered: true,
     },
   }),
 ];

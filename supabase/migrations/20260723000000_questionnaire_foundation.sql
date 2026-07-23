@@ -2,31 +2,21 @@
 -- Forge Compatibility Profile — Questionnaire Foundation
 -- Versioned, configuration-driven questionnaire schema + Category 1 seed.
 --
--- Forward-only. Does NOT alter:
---   - profiles
---   - profile_answers
---   - compatibility_answers
---   - Compatibility Engine V1 application paths
---   - existing onboarding UI behavior
---
--- Product rules preserved in schema comments / catalog metadata:
---   Forge explains; Forge does not decide.
---   No numeric compatibility percentage / public confidence score.
---   Missing answers are not mismatches; response states remain distinct.
+-- Architecture: reusable response_behavior + exact format_label (HQ wording).
+-- Forward-only. Does NOT alter profiles / profile_answers / compatibility_answers
+-- or existing onboarding / Compatibility Engine V1 paths.
 -- =============================================================================
 
 -- ---------------------------------------------------------------------------
 -- 1. Enums
 -- ---------------------------------------------------------------------------
 do $$ begin
-  create type public.questionnaire_question_format as enum (
+  create type public.questionnaire_response_behavior as enum (
     'single_choice',
-    'limited_multi_select',
-    'agreement_scale',
-    'importance_scale',
-    'frequency_scale',
-    'comfort_range',
-    'scenario_choice'
+    'multi_select',
+    'scale_range',
+    'scenario_choice',
+    'structured_identity'
   );
 exception when duplicate_object then null;
 end $$;
@@ -41,7 +31,8 @@ do $$ begin
     'no_preference',
     'context_dependent',
     'limited_capacity',
-    'not_currently_relevant'
+    'not_currently_relevant',
+    'current_priority'
   );
 exception when duplicate_object then null;
 end $$;
@@ -65,7 +56,7 @@ exception when duplicate_object then null;
 end $$;
 
 -- ---------------------------------------------------------------------------
--- 2. Catalog: versions / categories / questions / choices / eligibility rules
+-- 2. Catalog tables
 -- ---------------------------------------------------------------------------
 create table if not exists public.questionnaire_versions (
   id uuid primary key default gen_random_uuid(),
@@ -100,6 +91,20 @@ create table if not exists public.questionnaire_categories (
 comment on table public.questionnaire_categories is
   'Ordered questionnaire categories for a questionnaire version.';
 
+create table if not exists public.questionnaire_eligibility_rules (
+  id uuid primary key default gen_random_uuid(),
+  version_id uuid not null references public.questionnaire_versions (id) on delete cascade,
+  rule_key text not null,
+  description text not null,
+  condition jsonb not null default '{}'::jsonb,
+  created_at timestamptz not null default now(),
+  constraint questionnaire_eligibility_rules_version_key_unique unique (version_id, rule_key),
+  constraint questionnaire_eligibility_rules_description_nonempty check (char_length(trim(description)) > 0)
+);
+
+comment on table public.questionnaire_eligibility_rules is
+  'Eligibility/display rules referenced by questions. Catalog readable; not user-editable.';
+
 create table if not exists public.questionnaire_questions (
   id uuid primary key default gen_random_uuid(),
   category_id uuid not null references public.questionnaire_categories (id) on delete cascade,
@@ -107,20 +112,35 @@ create table if not exists public.questionnaire_questions (
   question_number integer not null,
   prompt text not null,
   statement text null,
-  format public.questionnaire_question_format not null,
+  format_label text not null,
+  response_behavior public.questionnaire_response_behavior not null,
+  context_note text null,
+  implementation_note text null,
+  eligibility_rule_id uuid null references public.questionnaire_eligibility_rules (id) on delete set null,
+  is_conditional boolean not null default false,
+  select_all_that_apply boolean not null default false,
   alignment_purpose text not null,
   min_selections integer not null default 1,
-  max_selections integer not null default 1,
+  max_selections integer null,
   priority_follow_up_prompt text null,
   priority_selection_count integer null,
+  priority_unordered boolean not null default true,
+  priority_eligible_choice_keys jsonb null,
+  priority_excluded_choice_keys jsonb null,
+  priority_min_eligible_selections integer null,
+  allowed_special_response_states public.questionnaire_response_state[] null,
   display_order integer not null,
   created_at timestamptz not null default now(),
   constraint questionnaire_questions_number_positive check (question_number >= 1),
   constraint questionnaire_questions_display_positive check (display_order >= 1),
+  constraint questionnaire_questions_format_label_nonempty check (char_length(trim(format_label)) > 0),
   constraint questionnaire_questions_selection_limits check (
     min_selections >= 0
-    and max_selections >= 1
-    and min_selections <= max_selections
+    and (max_selections is null or (max_selections >= 1 and min_selections <= max_selections))
+  ),
+  constraint questionnaire_questions_select_all check (
+    select_all_that_apply = false
+    or (response_behavior = 'multi_select' and max_selections is null)
   ),
   constraint questionnaire_questions_priority_count check (
     (priority_follow_up_prompt is null and priority_selection_count is null)
@@ -128,7 +148,8 @@ create table if not exists public.questionnaire_questions (
       priority_follow_up_prompt is not null
       and priority_selection_count is not null
       and priority_selection_count >= 1
-      and priority_selection_count <= max_selections
+      and priority_unordered = true
+      and (max_selections is null or priority_selection_count <= max_selections)
     )
   ),
   constraint questionnaire_questions_category_key_unique unique (category_id, question_key),
@@ -136,7 +157,7 @@ create table if not exists public.questionnaire_questions (
 );
 
 comment on table public.questionnaire_questions is
-  'Ordered questions within a category. Alignment purpose is explanatory metadata, not a score.';
+  'Ordered questions. format_label preserves HQ wording; response_behavior is reusable semantics.';
 
 create table if not exists public.questionnaire_answer_choices (
   id uuid primary key default gen_random_uuid(),
@@ -154,20 +175,7 @@ create table if not exists public.questionnaire_answer_choices (
 );
 
 comment on table public.questionnaire_answer_choices is
-  'Ordered answer choices for a question. special_response_state marks distinct non-ordinary states.';
-
-create table if not exists public.questionnaire_eligibility_rules (
-  id uuid primary key default gen_random_uuid(),
-  version_id uuid not null references public.questionnaire_versions (id) on delete cascade,
-  question_id uuid null references public.questionnaire_questions (id) on delete cascade,
-  rule_key text not null,
-  rule_definition jsonb not null default '{}'::jsonb,
-  created_at timestamptz not null default now(),
-  constraint questionnaire_eligibility_rules_version_key_unique unique (version_id, rule_key)
-);
-
-comment on table public.questionnaire_eligibility_rules is
-  'Future display/eligibility rules. Unused by Category 1 seed; reserved for later categories.';
+  'Ordered answer choices. special_response_state marks distinct non-ordinary states.';
 
 create index if not exists questionnaire_categories_version_display_idx
   on public.questionnaire_categories (version_id, display_order);
@@ -177,6 +185,9 @@ create index if not exists questionnaire_questions_category_display_idx
 
 create index if not exists questionnaire_answer_choices_question_display_idx
   on public.questionnaire_answer_choices (question_id, display_order);
+
+create index if not exists questionnaire_questions_eligibility_rule_idx
+  on public.questionnaire_questions (eligibility_rule_id);
 
 -- ---------------------------------------------------------------------------
 -- 3. User progress + private responses
@@ -238,7 +249,7 @@ create table if not exists public.user_questionnaire_selected_choices (
 );
 
 comment on table public.user_questionnaire_selected_choices is
-  'Selected answer choices for a response. Choice must belong to the response question (trigger).';
+  'Selected answer choices for a response. Enforces question match, max count, mutual exclusion.';
 
 create table if not exists public.user_questionnaire_priority_selections (
   response_id uuid not null references public.user_questionnaire_responses (id) on delete cascade,
@@ -252,99 +263,43 @@ create table if not exists public.user_questionnaire_priority_selections (
 );
 
 comment on table public.user_questionnaire_priority_selections is
-  'Unordered priority selections subset of selected choices. Count limited by question config (trigger).';
+  'Unordered priority selections subset of selected choices. Count limited by question config.';
 
 -- ---------------------------------------------------------------------------
 -- 4. Integrity triggers
 -- ---------------------------------------------------------------------------
-create or replace function public.forge_questionnaire_selected_choice_matches_question()
+create or replace function public.forge_questionnaire_progress_category_version_match()
 returns trigger
 language plpgsql
 as $$
 declare
-  v_response_question_id uuid;
-  v_choice_question_id uuid;
+  v_category_version_id uuid;
 begin
-  select question_id into v_response_question_id
-  from public.user_questionnaire_responses
-  where id = new.response_id;
-
-  select question_id into v_choice_question_id
-  from public.questionnaire_answer_choices
-  where id = new.choice_id;
-
-  if v_response_question_id is null then
-    raise exception 'questionnaire selected choice: response not found';
+  if new.current_category_id is null then
+    return new;
   end if;
-  if v_choice_question_id is null then
-    raise exception 'questionnaire selected choice: choice not found';
+
+  select version_id into v_category_version_id
+  from public.questionnaire_categories
+  where id = new.current_category_id;
+
+  if v_category_version_id is null then
+    raise exception 'questionnaire progress: current_category_id not found';
   end if;
-  if v_response_question_id <> v_choice_question_id then
-    raise exception 'questionnaire selected choice must belong to the response question';
+  if v_category_version_id <> new.version_id then
+    raise exception 'questionnaire progress current_category must belong to the same questionnaire version';
   end if;
   return new;
 end;
 $$;
 
-drop trigger if exists user_questionnaire_selected_choices_question_match
-  on public.user_questionnaire_selected_choices;
-create trigger user_questionnaire_selected_choices_question_match
-before insert or update on public.user_questionnaire_selected_choices
+drop trigger if exists user_questionnaire_progress_category_version_match
+  on public.user_questionnaire_progress;
+create trigger user_questionnaire_progress_category_version_match
+before insert or update on public.user_questionnaire_progress
 for each row
-execute function public.forge_questionnaire_selected_choice_matches_question();
+execute function public.forge_questionnaire_progress_category_version_match();
 
-create or replace function public.forge_questionnaire_priority_choice_valid()
-returns trigger
-language plpgsql
-as $$
-declare
-  v_response_question_id uuid;
-  v_choice_question_id uuid;
-  v_priority_limit integer;
-  v_priority_count integer;
-begin
-  select r.question_id, q.priority_selection_count
-    into v_response_question_id, v_priority_limit
-  from public.user_questionnaire_responses r
-  join public.questionnaire_questions q on q.id = r.question_id
-  where r.id = new.response_id;
-
-  select question_id into v_choice_question_id
-  from public.questionnaire_answer_choices
-  where id = new.choice_id;
-
-  if v_response_question_id is null then
-    raise exception 'questionnaire priority: response not found';
-  end if;
-  if v_choice_question_id is null or v_choice_question_id <> v_response_question_id then
-    raise exception 'questionnaire priority choice must belong to the response question';
-  end if;
-  if v_priority_limit is null then
-    raise exception 'questionnaire priority selections are not configured for this question';
-  end if;
-
-  -- FK already requires the choice to be selected; enforce count limit.
-  select count(*) into v_priority_count
-  from public.user_questionnaire_priority_selections
-  where response_id = new.response_id
-    and choice_id <> new.choice_id;
-
-  if v_priority_count + 1 > v_priority_limit then
-    raise exception 'questionnaire priority selections exceed configured selection count';
-  end if;
-
-  return new;
-end;
-$$;
-
-drop trigger if exists user_questionnaire_priority_selections_valid
-  on public.user_questionnaire_priority_selections;
-create trigger user_questionnaire_priority_selections_valid
-before insert or update on public.user_questionnaire_priority_selections
-for each row
-execute function public.forge_questionnaire_priority_choice_valid();
-
--- Ensure response question belongs to the same questionnaire version.
 create or replace function public.forge_questionnaire_response_version_matches_question()
 returns trigger
 language plpgsql
@@ -374,154 +329,240 @@ before insert or update on public.user_questionnaire_responses
 for each row
 execute function public.forge_questionnaire_response_version_matches_question();
 
+create or replace function public.forge_questionnaire_selected_choice_integrity()
+returns trigger
+language plpgsql
+as $$
+declare
+  v_response_question_id uuid;
+  v_choice_question_id uuid;
+  v_max_selections integer;
+  v_selected_count integer;
+  v_new_exclusive boolean;
+  v_has_exclusive boolean;
+  v_has_other boolean;
+begin
+  select question_id into v_response_question_id
+  from public.user_questionnaire_responses
+  where id = new.response_id;
+
+  select question_id, mutually_exclusive
+    into v_choice_question_id, v_new_exclusive
+  from public.questionnaire_answer_choices
+  where id = new.choice_id;
+
+  if v_response_question_id is null then
+    raise exception 'questionnaire selected choice: response not found';
+  end if;
+  if v_choice_question_id is null then
+    raise exception 'questionnaire selected choice: choice not found';
+  end if;
+  if v_response_question_id <> v_choice_question_id then
+    raise exception 'questionnaire selected choice must belong to the response question';
+  end if;
+
+  select max_selections into v_max_selections
+  from public.questionnaire_questions
+  where id = v_response_question_id;
+
+  select count(*) into v_selected_count
+  from public.user_questionnaire_selected_choices
+  where response_id = new.response_id
+    and choice_id <> new.choice_id;
+
+  if v_max_selections is not null and v_selected_count + 1 > v_max_selections then
+    raise exception 'questionnaire selected choices exceed max_selections';
+  end if;
+
+  select exists (
+    select 1
+    from public.user_questionnaire_selected_choices sc
+    join public.questionnaire_answer_choices ac on ac.id = sc.choice_id
+    where sc.response_id = new.response_id
+      and sc.choice_id <> new.choice_id
+      and ac.mutually_exclusive = true
+  ) into v_has_exclusive;
+
+  select exists (
+    select 1
+    from public.user_questionnaire_selected_choices sc
+    where sc.response_id = new.response_id
+      and sc.choice_id <> new.choice_id
+  ) into v_has_other;
+
+  if v_new_exclusive and v_has_other then
+    raise exception 'questionnaire mutually exclusive choice cannot combine with other selections';
+  end if;
+  if (not v_new_exclusive) and v_has_exclusive then
+    raise exception 'questionnaire selection incompatible with an existing mutually exclusive choice';
+  end if;
+
+  return new;
+end;
+$$;
+
+drop trigger if exists user_questionnaire_selected_choices_integrity
+  on public.user_questionnaire_selected_choices;
+create trigger user_questionnaire_selected_choices_integrity
+before insert or update on public.user_questionnaire_selected_choices
+for each row
+execute function public.forge_questionnaire_selected_choice_integrity();
+
+create or replace function public.forge_questionnaire_priority_choice_valid()
+returns trigger
+language plpgsql
+as $$
+declare
+  v_response_question_id uuid;
+  v_choice_question_id uuid;
+  v_choice_key text;
+  v_priority_limit integer;
+  v_priority_count integer;
+  v_excluded jsonb;
+  v_eligible jsonb;
+begin
+  select r.question_id, q.priority_selection_count, q.priority_excluded_choice_keys, q.priority_eligible_choice_keys
+    into v_response_question_id, v_priority_limit, v_excluded, v_eligible
+  from public.user_questionnaire_responses r
+  join public.questionnaire_questions q on q.id = r.question_id
+  where r.id = new.response_id;
+
+  select question_id, choice_key
+    into v_choice_question_id, v_choice_key
+  from public.questionnaire_answer_choices
+  where id = new.choice_id;
+
+  if v_response_question_id is null then
+    raise exception 'questionnaire priority: response not found';
+  end if;
+  if v_choice_question_id is null or v_choice_question_id <> v_response_question_id then
+    raise exception 'questionnaire priority choice must belong to the response question';
+  end if;
+  if v_priority_limit is null then
+    raise exception 'questionnaire priority selections are not configured for this question';
+  end if;
+
+  if v_excluded is not null and v_excluded ? v_choice_key then
+    raise exception 'questionnaire priority choice is excluded for this question';
+  end if;
+  if v_eligible is not null and not (v_eligible ? v_choice_key) then
+    raise exception 'questionnaire priority choice is not in the eligible subset';
+  end if;
+
+  select count(*) into v_priority_count
+  from public.user_questionnaire_priority_selections
+  where response_id = new.response_id
+    and choice_id <> new.choice_id;
+
+  if v_priority_count + 1 > v_priority_limit then
+    raise exception 'questionnaire priority selections exceed configured selection count';
+  end if;
+
+  return new;
+end;
+$$;
+
+drop trigger if exists user_questionnaire_priority_selections_valid
+  on public.user_questionnaire_priority_selections;
+create trigger user_questionnaire_priority_selections_valid
+before insert or update on public.user_questionnaire_priority_selections
+for each row
+execute function public.forge_questionnaire_priority_choice_valid();
+
 -- ---------------------------------------------------------------------------
--- 5. RLS — catalog readable; user data owner-only; no public profile exposure
+-- 5. RLS
 -- ---------------------------------------------------------------------------
 alter table public.questionnaire_versions enable row level security;
 alter table public.questionnaire_categories enable row level security;
+alter table public.questionnaire_eligibility_rules enable row level security;
 alter table public.questionnaire_questions enable row level security;
 alter table public.questionnaire_answer_choices enable row level security;
-alter table public.questionnaire_eligibility_rules enable row level security;
 alter table public.user_questionnaire_progress enable row level security;
 alter table public.user_questionnaire_responses enable row level security;
 alter table public.user_questionnaire_selected_choices enable row level security;
 alter table public.user_questionnaire_priority_selections enable row level security;
 
--- Catalog: authenticated read; no client writes
 drop policy if exists questionnaire_versions_select_authenticated on public.questionnaire_versions;
 create policy questionnaire_versions_select_authenticated
-  on public.questionnaire_versions for select to authenticated
-  using (true);
+  on public.questionnaire_versions for select to authenticated using (true);
 
 drop policy if exists questionnaire_categories_select_authenticated on public.questionnaire_categories;
 create policy questionnaire_categories_select_authenticated
-  on public.questionnaire_categories for select to authenticated
-  using (true);
-
-drop policy if exists questionnaire_questions_select_authenticated on public.questionnaire_questions;
-create policy questionnaire_questions_select_authenticated
-  on public.questionnaire_questions for select to authenticated
-  using (true);
-
-drop policy if exists questionnaire_answer_choices_select_authenticated on public.questionnaire_answer_choices;
-create policy questionnaire_answer_choices_select_authenticated
-  on public.questionnaire_answer_choices for select to authenticated
-  using (true);
+  on public.questionnaire_categories for select to authenticated using (true);
 
 drop policy if exists questionnaire_eligibility_rules_select_authenticated on public.questionnaire_eligibility_rules;
 create policy questionnaire_eligibility_rules_select_authenticated
-  on public.questionnaire_eligibility_rules for select to authenticated
-  using (true);
+  on public.questionnaire_eligibility_rules for select to authenticated using (true);
+
+drop policy if exists questionnaire_questions_select_authenticated on public.questionnaire_questions;
+create policy questionnaire_questions_select_authenticated
+  on public.questionnaire_questions for select to authenticated using (true);
+
+drop policy if exists questionnaire_answer_choices_select_authenticated on public.questionnaire_answer_choices;
+create policy questionnaire_answer_choices_select_authenticated
+  on public.questionnaire_answer_choices for select to authenticated using (true);
 
 revoke insert, update, delete on public.questionnaire_versions from authenticated, anon;
 revoke insert, update, delete on public.questionnaire_categories from authenticated, anon;
+revoke insert, update, delete on public.questionnaire_eligibility_rules from authenticated, anon;
 revoke insert, update, delete on public.questionnaire_questions from authenticated, anon;
 revoke insert, update, delete on public.questionnaire_answer_choices from authenticated, anon;
-revoke insert, update, delete on public.questionnaire_eligibility_rules from authenticated, anon;
 
--- User private data: owner-only
 drop policy if exists user_questionnaire_progress_select_own on public.user_questionnaire_progress;
 create policy user_questionnaire_progress_select_own
   on public.user_questionnaire_progress for select to authenticated
   using (user_id = auth.uid());
-
 drop policy if exists user_questionnaire_progress_insert_own on public.user_questionnaire_progress;
 create policy user_questionnaire_progress_insert_own
   on public.user_questionnaire_progress for insert to authenticated
   with check (user_id = auth.uid());
-
 drop policy if exists user_questionnaire_progress_update_own on public.user_questionnaire_progress;
 create policy user_questionnaire_progress_update_own
   on public.user_questionnaire_progress for update to authenticated
-  using (user_id = auth.uid())
-  with check (user_id = auth.uid());
+  using (user_id = auth.uid()) with check (user_id = auth.uid());
 
 drop policy if exists user_questionnaire_responses_select_own on public.user_questionnaire_responses;
 create policy user_questionnaire_responses_select_own
   on public.user_questionnaire_responses for select to authenticated
   using (user_id = auth.uid());
-
 drop policy if exists user_questionnaire_responses_insert_own on public.user_questionnaire_responses;
 create policy user_questionnaire_responses_insert_own
   on public.user_questionnaire_responses for insert to authenticated
   with check (user_id = auth.uid());
-
 drop policy if exists user_questionnaire_responses_update_own on public.user_questionnaire_responses;
 create policy user_questionnaire_responses_update_own
   on public.user_questionnaire_responses for update to authenticated
-  using (user_id = auth.uid())
-  with check (user_id = auth.uid());
-
+  using (user_id = auth.uid()) with check (user_id = auth.uid());
 drop policy if exists user_questionnaire_responses_delete_own on public.user_questionnaire_responses;
 create policy user_questionnaire_responses_delete_own
   on public.user_questionnaire_responses for delete to authenticated
   using (user_id = auth.uid());
 
-drop policy if exists user_questionnaire_selected_choices_select_own
-  on public.user_questionnaire_selected_choices;
+drop policy if exists user_questionnaire_selected_choices_select_own on public.user_questionnaire_selected_choices;
 create policy user_questionnaire_selected_choices_select_own
   on public.user_questionnaire_selected_choices for select to authenticated
-  using (
-    exists (
-      select 1 from public.user_questionnaire_responses r
-      where r.id = response_id and r.user_id = auth.uid()
-    )
-  );
-
-drop policy if exists user_questionnaire_selected_choices_insert_own
-  on public.user_questionnaire_selected_choices;
+  using (exists (select 1 from public.user_questionnaire_responses r where r.id = response_id and r.user_id = auth.uid()));
+drop policy if exists user_questionnaire_selected_choices_insert_own on public.user_questionnaire_selected_choices;
 create policy user_questionnaire_selected_choices_insert_own
   on public.user_questionnaire_selected_choices for insert to authenticated
-  with check (
-    exists (
-      select 1 from public.user_questionnaire_responses r
-      where r.id = response_id and r.user_id = auth.uid()
-    )
-  );
-
-drop policy if exists user_questionnaire_selected_choices_delete_own
-  on public.user_questionnaire_selected_choices;
+  with check (exists (select 1 from public.user_questionnaire_responses r where r.id = response_id and r.user_id = auth.uid()));
+drop policy if exists user_questionnaire_selected_choices_delete_own on public.user_questionnaire_selected_choices;
 create policy user_questionnaire_selected_choices_delete_own
   on public.user_questionnaire_selected_choices for delete to authenticated
-  using (
-    exists (
-      select 1 from public.user_questionnaire_responses r
-      where r.id = response_id and r.user_id = auth.uid()
-    )
-  );
+  using (exists (select 1 from public.user_questionnaire_responses r where r.id = response_id and r.user_id = auth.uid()));
 
-drop policy if exists user_questionnaire_priority_selections_select_own
-  on public.user_questionnaire_priority_selections;
+drop policy if exists user_questionnaire_priority_selections_select_own on public.user_questionnaire_priority_selections;
 create policy user_questionnaire_priority_selections_select_own
   on public.user_questionnaire_priority_selections for select to authenticated
-  using (
-    exists (
-      select 1 from public.user_questionnaire_responses r
-      where r.id = response_id and r.user_id = auth.uid()
-    )
-  );
-
-drop policy if exists user_questionnaire_priority_selections_insert_own
-  on public.user_questionnaire_priority_selections;
+  using (exists (select 1 from public.user_questionnaire_responses r where r.id = response_id and r.user_id = auth.uid()));
+drop policy if exists user_questionnaire_priority_selections_insert_own on public.user_questionnaire_priority_selections;
 create policy user_questionnaire_priority_selections_insert_own
   on public.user_questionnaire_priority_selections for insert to authenticated
-  with check (
-    exists (
-      select 1 from public.user_questionnaire_responses r
-      where r.id = response_id and r.user_id = auth.uid()
-    )
-  );
-
-drop policy if exists user_questionnaire_priority_selections_delete_own
-  on public.user_questionnaire_priority_selections;
+  with check (exists (select 1 from public.user_questionnaire_responses r where r.id = response_id and r.user_id = auth.uid()));
+drop policy if exists user_questionnaire_priority_selections_delete_own on public.user_questionnaire_priority_selections;
 create policy user_questionnaire_priority_selections_delete_own
   on public.user_questionnaire_priority_selections for delete to authenticated
-  using (
-    exists (
-      select 1 from public.user_questionnaire_responses r
-      where r.id = response_id and r.user_id = auth.uid()
-    )
-  );
+  using (exists (select 1 from public.user_questionnaire_responses r where r.id = response_id and r.user_id = auth.uid()));
 
 revoke all on public.user_questionnaire_progress from anon;
 revoke all on public.user_questionnaire_responses from anon;
@@ -530,20 +571,17 @@ revoke all on public.user_questionnaire_priority_selections from anon;
 
 grant select on public.questionnaire_versions to authenticated;
 grant select on public.questionnaire_categories to authenticated;
+grant select on public.questionnaire_eligibility_rules to authenticated;
 grant select on public.questionnaire_questions to authenticated;
 grant select on public.questionnaire_answer_choices to authenticated;
-grant select on public.questionnaire_eligibility_rules to authenticated;
-
 grant select, insert, update on public.user_questionnaire_progress to authenticated;
 grant select, insert, update, delete on public.user_questionnaire_responses to authenticated;
 grant select, insert, delete on public.user_questionnaire_selected_choices to authenticated;
 grant select, insert, delete on public.user_questionnaire_priority_selections to authenticated;
 
 -- ---------------------------------------------------------------------------
--- 6. Category 1 seed (appended below)
+-- 6. Category 1 seed
 -- ---------------------------------------------------------------------------
--- Seed: Category 1 — Relationship Vision & Intentions
--- Exact wording from Forge HQ final-locked master.
 
 insert into public.questionnaire_versions (id, version_key, specification_version, title, is_active)
 values (
@@ -577,9 +615,12 @@ on conflict (version_id, category_key) do update set
   locked_product_decisions = excluded.locked_product_decisions;
 
 insert into public.questionnaire_questions (
-  id, category_id, question_key, question_number, prompt, statement, format,
-  alignment_purpose, min_selections, max_selections,
-  priority_follow_up_prompt, priority_selection_count, display_order
+  id, category_id, question_key, question_number, prompt, statement,
+  format_label, response_behavior, context_note, implementation_note, eligibility_rule_id,
+  is_conditional, select_all_that_apply, alignment_purpose, min_selections, max_selections,
+  priority_follow_up_prompt, priority_selection_count, priority_unordered,
+  priority_eligible_choice_keys, priority_excluded_choice_keys, priority_min_eligible_selections,
+  allowed_special_response_states, display_order
 ) values (
   '33333333-3333-4333-8333-000000000001',
   '22222222-2222-4222-8222-222222222221',
@@ -587,10 +628,21 @@ insert into public.questionnaire_questions (
   1,
   'What are you ultimately hoping a meaningful relationship will grow into?',
   null,
-  'single_choice'::public.questionnaire_question_format,
+  'Single choice',
+  'single_choice'::public.questionnaire_response_behavior,
+  null,
+  null,
+  null,
+  false,
+  false,
   'Establishes the relationship destination someone is pursuing.',
   1,
   1,
+  null,
+  null,
+  true,
+  null,
+  null,
   null,
   null,
   1
@@ -599,12 +651,16 @@ on conflict (category_id, question_key) do update set
   question_number = excluded.question_number,
   prompt = excluded.prompt,
   statement = excluded.statement,
-  format = excluded.format,
+  format_label = excluded.format_label,
+  response_behavior = excluded.response_behavior,
   alignment_purpose = excluded.alignment_purpose,
   min_selections = excluded.min_selections,
   max_selections = excluded.max_selections,
   priority_follow_up_prompt = excluded.priority_follow_up_prompt,
   priority_selection_count = excluded.priority_selection_count,
+  priority_unordered = excluded.priority_unordered,
+  priority_min_eligible_selections = excluded.priority_min_eligible_selections,
+  allowed_special_response_states = excluded.allowed_special_response_states,
   display_order = excluded.display_order;
 
 insert into public.questionnaire_answer_choices (
@@ -693,9 +749,12 @@ on conflict (question_id, choice_key) do update set
   special_response_state = excluded.special_response_state;
 
 insert into public.questionnaire_questions (
-  id, category_id, question_key, question_number, prompt, statement, format,
-  alignment_purpose, min_selections, max_selections,
-  priority_follow_up_prompt, priority_selection_count, display_order
+  id, category_id, question_key, question_number, prompt, statement,
+  format_label, response_behavior, context_note, implementation_note, eligibility_rule_id,
+  is_conditional, select_all_that_apply, alignment_purpose, min_selections, max_selections,
+  priority_follow_up_prompt, priority_selection_count, priority_unordered,
+  priority_eligible_choice_keys, priority_excluded_choice_keys, priority_min_eligible_selections,
+  allowed_special_response_states, display_order
 ) values (
   '33333333-3333-4333-8333-000000000002',
   '22222222-2222-4222-8222-222222222221',
@@ -703,10 +762,21 @@ insert into public.questionnaire_questions (
   2,
   'How important is marriage in the future you envision?',
   null,
-  'importance_scale'::public.questionnaire_question_format,
+  'Importance scale',
+  'scale_range'::public.questionnaire_response_behavior,
+  null,
+  null,
+  null,
+  false,
+  false,
   'Separates someone’s preferred relationship structure from how necessary marriage is to them.',
   1,
   1,
+  null,
+  null,
+  true,
+  null,
+  null,
   null,
   null,
   2
@@ -715,12 +785,16 @@ on conflict (category_id, question_key) do update set
   question_number = excluded.question_number,
   prompt = excluded.prompt,
   statement = excluded.statement,
-  format = excluded.format,
+  format_label = excluded.format_label,
+  response_behavior = excluded.response_behavior,
   alignment_purpose = excluded.alignment_purpose,
   min_selections = excluded.min_selections,
   max_selections = excluded.max_selections,
   priority_follow_up_prompt = excluded.priority_follow_up_prompt,
   priority_selection_count = excluded.priority_selection_count,
+  priority_unordered = excluded.priority_unordered,
+  priority_min_eligible_selections = excluded.priority_min_eligible_selections,
+  allowed_special_response_states = excluded.allowed_special_response_states,
   display_order = excluded.display_order;
 
 insert into public.questionnaire_answer_choices (
@@ -809,9 +883,12 @@ on conflict (question_id, choice_key) do update set
   special_response_state = excluded.special_response_state;
 
 insert into public.questionnaire_questions (
-  id, category_id, question_key, question_number, prompt, statement, format,
-  alignment_purpose, min_selections, max_selections,
-  priority_follow_up_prompt, priority_selection_count, display_order
+  id, category_id, question_key, question_number, prompt, statement,
+  format_label, response_behavior, context_note, implementation_note, eligibility_rule_id,
+  is_conditional, select_all_that_apply, alignment_purpose, min_selections, max_selections,
+  priority_follow_up_prompt, priority_selection_count, priority_unordered,
+  priority_eligible_choice_keys, priority_excluded_choice_keys, priority_min_eligible_selections,
+  allowed_special_response_states, display_order
 ) values (
   '33333333-3333-4333-8333-000000000003',
   '22222222-2222-4222-8222-222222222221',
@@ -819,10 +896,21 @@ insert into public.questionnaire_questions (
   3,
   'What pace do you prefer when building a new relationship?',
   null,
-  'single_choice'::public.questionnaire_question_format,
+  'Single choice',
+  'single_choice'::public.questionnaire_response_behavior,
+  null,
+  null,
+  null,
+  false,
+  false,
   'Identifies meaningful differences between cautious, gradual, steady, and fast-moving dating styles.',
   1,
   1,
+  null,
+  null,
+  true,
+  null,
+  null,
   null,
   null,
   3
@@ -831,12 +919,16 @@ on conflict (category_id, question_key) do update set
   question_number = excluded.question_number,
   prompt = excluded.prompt,
   statement = excluded.statement,
-  format = excluded.format,
+  format_label = excluded.format_label,
+  response_behavior = excluded.response_behavior,
   alignment_purpose = excluded.alignment_purpose,
   min_selections = excluded.min_selections,
   max_selections = excluded.max_selections,
   priority_follow_up_prompt = excluded.priority_follow_up_prompt,
   priority_selection_count = excluded.priority_selection_count,
+  priority_unordered = excluded.priority_unordered,
+  priority_min_eligible_selections = excluded.priority_min_eligible_selections,
+  allowed_special_response_states = excluded.allowed_special_response_states,
   display_order = excluded.display_order;
 
 insert into public.questionnaire_answer_choices (
@@ -925,9 +1017,12 @@ on conflict (question_id, choice_key) do update set
   special_response_state = excluded.special_response_state;
 
 insert into public.questionnaire_questions (
-  id, category_id, question_key, question_number, prompt, statement, format,
-  alignment_purpose, min_selections, max_selections,
-  priority_follow_up_prompt, priority_selection_count, display_order
+  id, category_id, question_key, question_number, prompt, statement,
+  format_label, response_behavior, context_note, implementation_note, eligibility_rule_id,
+  is_conditional, select_all_that_apply, alignment_purpose, min_selections, max_selections,
+  priority_follow_up_prompt, priority_selection_count, priority_unordered,
+  priority_eligible_choice_keys, priority_excluded_choice_keys, priority_min_eligible_selections,
+  allowed_special_response_states, display_order
 ) values (
   '33333333-3333-4333-8333-000000000004',
   '22222222-2222-4222-8222-222222222221',
@@ -935,10 +1030,21 @@ insert into public.questionnaire_questions (
   4,
   'Which approach to exclusivity most closely reflects what you want?',
   null,
-  'single_choice'::public.questionnaire_question_format,
+  'Single choice',
+  'single_choice'::public.questionnaire_response_behavior,
+  null,
+  null,
+  null,
+  false,
+  false,
   'Captures expectations that can otherwise create early confusion or hurt.',
   1,
   1,
+  null,
+  null,
+  true,
+  null,
+  null,
   null,
   null,
   4
@@ -947,12 +1053,16 @@ on conflict (category_id, question_key) do update set
   question_number = excluded.question_number,
   prompt = excluded.prompt,
   statement = excluded.statement,
-  format = excluded.format,
+  format_label = excluded.format_label,
+  response_behavior = excluded.response_behavior,
   alignment_purpose = excluded.alignment_purpose,
   min_selections = excluded.min_selections,
   max_selections = excluded.max_selections,
   priority_follow_up_prompt = excluded.priority_follow_up_prompt,
   priority_selection_count = excluded.priority_selection_count,
+  priority_unordered = excluded.priority_unordered,
+  priority_min_eligible_selections = excluded.priority_min_eligible_selections,
+  allowed_special_response_states = excluded.allowed_special_response_states,
   display_order = excluded.display_order;
 
 insert into public.questionnaire_answer_choices (
@@ -1041,9 +1151,12 @@ on conflict (question_id, choice_key) do update set
   special_response_state = excluded.special_response_state;
 
 insert into public.questionnaire_questions (
-  id, category_id, question_key, question_number, prompt, statement, format,
-  alignment_purpose, min_selections, max_selections,
-  priority_follow_up_prompt, priority_selection_count, display_order
+  id, category_id, question_key, question_number, prompt, statement,
+  format_label, response_behavior, context_note, implementation_note, eligibility_rule_id,
+  is_conditional, select_all_that_apply, alignment_purpose, min_selections, max_selections,
+  priority_follow_up_prompt, priority_selection_count, priority_unordered,
+  priority_eligible_choice_keys, priority_excluded_choice_keys, priority_min_eligible_selections,
+  allowed_special_response_states, display_order
 ) values (
   '33333333-3333-4333-8333-000000000005',
   '22222222-2222-4222-8222-222222222221',
@@ -1051,24 +1164,39 @@ insert into public.questionnaire_questions (
   5,
   'Which qualities most strongly define commitment for you?',
   null,
-  'limited_multi_select'::public.questionnaire_question_format,
+  'Select up to four',
+  'multi_select'::public.questionnaire_response_behavior,
+  null,
+  null,
+  null,
+  false,
+  false,
   'Identifies both someone’s broader definition of commitment and its most important components.',
   1,
   4,
   'Of the qualities you selected, which two matter most?',
   2,
+  true,
+  null,
+  null,
+  2,
+  null,
   5
 )
 on conflict (category_id, question_key) do update set
   question_number = excluded.question_number,
   prompt = excluded.prompt,
   statement = excluded.statement,
-  format = excluded.format,
+  format_label = excluded.format_label,
+  response_behavior = excluded.response_behavior,
   alignment_purpose = excluded.alignment_purpose,
   min_selections = excluded.min_selections,
   max_selections = excluded.max_selections,
   priority_follow_up_prompt = excluded.priority_follow_up_prompt,
   priority_selection_count = excluded.priority_selection_count,
+  priority_unordered = excluded.priority_unordered,
+  priority_min_eligible_selections = excluded.priority_min_eligible_selections,
+  allowed_special_response_states = excluded.allowed_special_response_states,
   display_order = excluded.display_order;
 
 insert into public.questionnaire_answer_choices (
@@ -1225,9 +1353,12 @@ on conflict (question_id, choice_key) do update set
   special_response_state = excluded.special_response_state;
 
 insert into public.questionnaire_questions (
-  id, category_id, question_key, question_number, prompt, statement, format,
-  alignment_purpose, min_selections, max_selections,
-  priority_follow_up_prompt, priority_selection_count, display_order
+  id, category_id, question_key, question_number, prompt, statement,
+  format_label, response_behavior, context_note, implementation_note, eligibility_rule_id,
+  is_conditional, select_all_that_apply, alignment_purpose, min_selections, max_selections,
+  priority_follow_up_prompt, priority_selection_count, priority_unordered,
+  priority_eligible_choice_keys, priority_excluded_choice_keys, priority_min_eligible_selections,
+  allowed_special_response_states, display_order
 ) values (
   '33333333-3333-4333-8333-000000000006',
   '22222222-2222-4222-8222-222222222221',
@@ -1235,10 +1366,21 @@ insert into public.questionnaire_questions (
   6,
   'How much do you agree with this statement?',
   'People should be honest early in dating about whether they are open to building a long-term future together.',
-  'agreement_scale'::public.questionnaire_question_format,
+  'Agreement scale',
+  'scale_range'::public.questionnaire_response_behavior,
+  null,
+  null,
+  null,
+  false,
+  false,
   'Measures expectations around clarity and intentionality without requiring premature commitment.',
   1,
   1,
+  null,
+  null,
+  true,
+  null,
+  null,
   null,
   null,
   6
@@ -1247,12 +1389,16 @@ on conflict (category_id, question_key) do update set
   question_number = excluded.question_number,
   prompt = excluded.prompt,
   statement = excluded.statement,
-  format = excluded.format,
+  format_label = excluded.format_label,
+  response_behavior = excluded.response_behavior,
   alignment_purpose = excluded.alignment_purpose,
   min_selections = excluded.min_selections,
   max_selections = excluded.max_selections,
   priority_follow_up_prompt = excluded.priority_follow_up_prompt,
   priority_selection_count = excluded.priority_selection_count,
+  priority_unordered = excluded.priority_unordered,
+  priority_min_eligible_selections = excluded.priority_min_eligible_selections,
+  allowed_special_response_states = excluded.allowed_special_response_states,
   display_order = excluded.display_order;
 
 insert into public.questionnaire_answer_choices (
@@ -1341,9 +1487,12 @@ on conflict (question_id, choice_key) do update set
   special_response_state = excluded.special_response_state;
 
 insert into public.questionnaire_questions (
-  id, category_id, question_key, question_number, prompt, statement, format,
-  alignment_purpose, min_selections, max_selections,
-  priority_follow_up_prompt, priority_selection_count, display_order
+  id, category_id, question_key, question_number, prompt, statement,
+  format_label, response_behavior, context_note, implementation_note, eligibility_rule_id,
+  is_conditional, select_all_that_apply, alignment_purpose, min_selections, max_selections,
+  priority_follow_up_prompt, priority_selection_count, priority_unordered,
+  priority_eligible_choice_keys, priority_excluded_choice_keys, priority_min_eligible_selections,
+  allowed_special_response_states, display_order
 ) values (
   '33333333-3333-4333-8333-000000000007',
   '22222222-2222-4222-8222-222222222221',
@@ -1351,10 +1500,21 @@ insert into public.questionnaire_questions (
   7,
   'When dating someone new, how do you approach long-term compatibility?',
   null,
-  'single_choice'::public.questionnaire_question_format,
+  'Single choice',
+  'single_choice'::public.questionnaire_response_behavior,
+  null,
+  null,
+  null,
+  false,
+  false,
   'Distinguishes present-focused dating from increasingly future-conscious approaches.',
   1,
   1,
+  null,
+  null,
+  true,
+  null,
+  null,
   null,
   null,
   7
@@ -1363,12 +1523,16 @@ on conflict (category_id, question_key) do update set
   question_number = excluded.question_number,
   prompt = excluded.prompt,
   statement = excluded.statement,
-  format = excluded.format,
+  format_label = excluded.format_label,
+  response_behavior = excluded.response_behavior,
   alignment_purpose = excluded.alignment_purpose,
   min_selections = excluded.min_selections,
   max_selections = excluded.max_selections,
   priority_follow_up_prompt = excluded.priority_follow_up_prompt,
   priority_selection_count = excluded.priority_selection_count,
+  priority_unordered = excluded.priority_unordered,
+  priority_min_eligible_selections = excluded.priority_min_eligible_selections,
+  allowed_special_response_states = excluded.allowed_special_response_states,
   display_order = excluded.display_order;
 
 insert into public.questionnaire_answer_choices (
@@ -1457,9 +1621,12 @@ on conflict (question_id, choice_key) do update set
   special_response_state = excluded.special_response_state;
 
 insert into public.questionnaire_questions (
-  id, category_id, question_key, question_number, prompt, statement, format,
-  alignment_purpose, min_selections, max_selections,
-  priority_follow_up_prompt, priority_selection_count, display_order
+  id, category_id, question_key, question_number, prompt, statement,
+  format_label, response_behavior, context_note, implementation_note, eligibility_rule_id,
+  is_conditional, select_all_that_apply, alignment_purpose, min_selections, max_selections,
+  priority_follow_up_prompt, priority_selection_count, priority_unordered,
+  priority_eligible_choice_keys, priority_excluded_choice_keys, priority_min_eligible_selections,
+  allowed_special_response_states, display_order
 ) values (
   '33333333-3333-4333-8333-000000000008',
   '22222222-2222-4222-8222-222222222221',
@@ -1467,10 +1634,21 @@ insert into public.questionnaire_questions (
   8,
   'How frequently should partners intentionally discuss the health and direction of their relationship?',
   null,
-  'frequency_scale'::public.questionnaire_question_format,
+  'Frequency scale',
+  'scale_range'::public.questionnaire_response_behavior,
+  null,
+  null,
+  null,
+  false,
+  false,
   'Compares expectations for relationship communication and reassurance.',
   1,
   1,
+  null,
+  null,
+  true,
+  null,
+  null,
   null,
   null,
   8
@@ -1479,12 +1657,16 @@ on conflict (category_id, question_key) do update set
   question_number = excluded.question_number,
   prompt = excluded.prompt,
   statement = excluded.statement,
-  format = excluded.format,
+  format_label = excluded.format_label,
+  response_behavior = excluded.response_behavior,
   alignment_purpose = excluded.alignment_purpose,
   min_selections = excluded.min_selections,
   max_selections = excluded.max_selections,
   priority_follow_up_prompt = excluded.priority_follow_up_prompt,
   priority_selection_count = excluded.priority_selection_count,
+  priority_unordered = excluded.priority_unordered,
+  priority_min_eligible_selections = excluded.priority_min_eligible_selections,
+  allowed_special_response_states = excluded.allowed_special_response_states,
   display_order = excluded.display_order;
 
 insert into public.questionnaire_answer_choices (
@@ -1573,9 +1755,12 @@ on conflict (question_id, choice_key) do update set
   special_response_state = excluded.special_response_state;
 
 insert into public.questionnaire_questions (
-  id, category_id, question_key, question_number, prompt, statement, format,
-  alignment_purpose, min_selections, max_selections,
-  priority_follow_up_prompt, priority_selection_count, display_order
+  id, category_id, question_key, question_number, prompt, statement,
+  format_label, response_behavior, context_note, implementation_note, eligibility_rule_id,
+  is_conditional, select_all_that_apply, alignment_purpose, min_selections, max_selections,
+  priority_follow_up_prompt, priority_selection_count, priority_unordered,
+  priority_eligible_choice_keys, priority_excluded_choice_keys, priority_min_eligible_selections,
+  allowed_special_response_states, display_order
 ) values (
   '33333333-3333-4333-8333-000000000009',
   '22222222-2222-4222-8222-222222222221',
@@ -1583,10 +1768,21 @@ insert into public.questionnaire_questions (
   9,
   'Which statements best describe what being ready for a committed relationship means to you personally?',
   null,
-  'limited_multi_select'::public.questionnaire_question_format,
+  'Select up to four',
+  'multi_select'::public.questionnaire_response_behavior,
+  null,
+  null,
+  null,
+  false,
+  false,
   'Grounds readiness in observable capacity and behavior instead of idealized traits.',
   1,
   4,
+  null,
+  null,
+  true,
+  null,
+  null,
   null,
   null,
   9
@@ -1595,12 +1791,16 @@ on conflict (category_id, question_key) do update set
   question_number = excluded.question_number,
   prompt = excluded.prompt,
   statement = excluded.statement,
-  format = excluded.format,
+  format_label = excluded.format_label,
+  response_behavior = excluded.response_behavior,
   alignment_purpose = excluded.alignment_purpose,
   min_selections = excluded.min_selections,
   max_selections = excluded.max_selections,
   priority_follow_up_prompt = excluded.priority_follow_up_prompt,
   priority_selection_count = excluded.priority_selection_count,
+  priority_unordered = excluded.priority_unordered,
+  priority_min_eligible_selections = excluded.priority_min_eligible_selections,
+  allowed_special_response_states = excluded.allowed_special_response_states,
   display_order = excluded.display_order;
 
 insert into public.questionnaire_answer_choices (
@@ -1757,9 +1957,12 @@ on conflict (question_id, choice_key) do update set
   special_response_state = excluded.special_response_state;
 
 insert into public.questionnaire_questions (
-  id, category_id, question_key, question_number, prompt, statement, format,
-  alignment_purpose, min_selections, max_selections,
-  priority_follow_up_prompt, priority_selection_count, display_order
+  id, category_id, question_key, question_number, prompt, statement,
+  format_label, response_behavior, context_note, implementation_note, eligibility_rule_id,
+  is_conditional, select_all_that_apply, alignment_purpose, min_selections, max_selections,
+  priority_follow_up_prompt, priority_selection_count, priority_unordered,
+  priority_eligible_choice_keys, priority_excluded_choice_keys, priority_min_eligible_selections,
+  allowed_special_response_states, display_order
 ) values (
   '33333333-3333-4333-8333-000000000010',
   '22222222-2222-4222-8222-222222222221',
@@ -1767,10 +1970,21 @@ insert into public.questionnaire_questions (
   10,
   'Which approach to personal growth best reflects the partnership you want?',
   null,
-  'single_choice'::public.questionnaire_question_format,
+  'Single choice',
+  'single_choice'::public.questionnaire_response_behavior,
+  null,
+  null,
+  null,
+  false,
+  false,
   'Differentiates independent, supportive, challenging, shared, and highly integrated approaches to growth.',
   1,
   1,
+  null,
+  null,
+  true,
+  null,
+  null,
   null,
   null,
   10
@@ -1779,12 +1993,16 @@ on conflict (category_id, question_key) do update set
   question_number = excluded.question_number,
   prompt = excluded.prompt,
   statement = excluded.statement,
-  format = excluded.format,
+  format_label = excluded.format_label,
+  response_behavior = excluded.response_behavior,
   alignment_purpose = excluded.alignment_purpose,
   min_selections = excluded.min_selections,
   max_selections = excluded.max_selections,
   priority_follow_up_prompt = excluded.priority_follow_up_prompt,
   priority_selection_count = excluded.priority_selection_count,
+  priority_unordered = excluded.priority_unordered,
+  priority_min_eligible_selections = excluded.priority_min_eligible_selections,
+  allowed_special_response_states = excluded.allowed_special_response_states,
   display_order = excluded.display_order;
 
 insert into public.questionnaire_answer_choices (
@@ -1873,9 +2091,12 @@ on conflict (question_id, choice_key) do update set
   special_response_state = excluded.special_response_state;
 
 insert into public.questionnaire_questions (
-  id, category_id, question_key, question_number, prompt, statement, format,
-  alignment_purpose, min_selections, max_selections,
-  priority_follow_up_prompt, priority_selection_count, display_order
+  id, category_id, question_key, question_number, prompt, statement,
+  format_label, response_behavior, context_note, implementation_note, eligibility_rule_id,
+  is_conditional, select_all_that_apply, alignment_purpose, min_selections, max_selections,
+  priority_follow_up_prompt, priority_selection_count, priority_unordered,
+  priority_eligible_choice_keys, priority_excluded_choice_keys, priority_min_eligible_selections,
+  allowed_special_response_states, display_order
 ) values (
   '33333333-3333-4333-8333-000000000011',
   '22222222-2222-4222-8222-222222222221',
@@ -1883,10 +2104,21 @@ insert into public.questionnaire_questions (
   11,
   'How important is it that partners share a similar overall vision for the next five to ten years?',
   null,
-  'importance_scale'::public.questionnaire_question_format,
+  'Importance scale',
+  'scale_range'::public.questionnaire_response_behavior,
+  null,
+  null,
+  null,
+  false,
+  false,
   'Measures the overall importance of shared future direction without duplicating any particular life goal.',
   1,
   1,
+  null,
+  null,
+  true,
+  null,
+  null,
   null,
   null,
   11
@@ -1895,12 +2127,16 @@ on conflict (category_id, question_key) do update set
   question_number = excluded.question_number,
   prompt = excluded.prompt,
   statement = excluded.statement,
-  format = excluded.format,
+  format_label = excluded.format_label,
+  response_behavior = excluded.response_behavior,
   alignment_purpose = excluded.alignment_purpose,
   min_selections = excluded.min_selections,
   max_selections = excluded.max_selections,
   priority_follow_up_prompt = excluded.priority_follow_up_prompt,
   priority_selection_count = excluded.priority_selection_count,
+  priority_unordered = excluded.priority_unordered,
+  priority_min_eligible_selections = excluded.priority_min_eligible_selections,
+  allowed_special_response_states = excluded.allowed_special_response_states,
   display_order = excluded.display_order;
 
 insert into public.questionnaire_answer_choices (
@@ -1989,9 +2225,12 @@ on conflict (question_id, choice_key) do update set
   special_response_state = excluded.special_response_state;
 
 insert into public.questionnaire_questions (
-  id, category_id, question_key, question_number, prompt, statement, format,
-  alignment_purpose, min_selections, max_selections,
-  priority_follow_up_prompt, priority_selection_count, display_order
+  id, category_id, question_key, question_number, prompt, statement,
+  format_label, response_behavior, context_note, implementation_note, eligibility_rule_id,
+  is_conditional, select_all_that_apply, alignment_purpose, min_selections, max_selections,
+  priority_follow_up_prompt, priority_selection_count, priority_unordered,
+  priority_eligible_choice_keys, priority_excluded_choice_keys, priority_min_eligible_selections,
+  allowed_special_response_states, display_order
 ) values (
   '33333333-3333-4333-8333-000000000012',
   '22222222-2222-4222-8222-222222222221',
@@ -1999,24 +2238,39 @@ insert into public.questionnaire_questions (
   12,
   'In which areas would partners need reasonably compatible long-term direction?',
   null,
-  'limited_multi_select'::public.questionnaire_question_format,
+  'Select up to five',
+  'multi_select'::public.questionnaire_response_behavior,
+  null,
+  null,
+  null,
+  false,
+  false,
   'Identifies concrete future directions requiring alignment while leaving detailed children, faith, money, and lifestyle matching to their respective categories.',
   1,
   5,
   'Of the areas you selected, which two allow the least room for difference?',
   2,
+  true,
+  null,
+  null,
+  2,
+  null,
   12
 )
 on conflict (category_id, question_key) do update set
   question_number = excluded.question_number,
   prompt = excluded.prompt,
   statement = excluded.statement,
-  format = excluded.format,
+  format_label = excluded.format_label,
+  response_behavior = excluded.response_behavior,
   alignment_purpose = excluded.alignment_purpose,
   min_selections = excluded.min_selections,
   max_selections = excluded.max_selections,
   priority_follow_up_prompt = excluded.priority_follow_up_prompt,
   priority_selection_count = excluded.priority_selection_count,
+  priority_unordered = excluded.priority_unordered,
+  priority_min_eligible_selections = excluded.priority_min_eligible_selections,
+  allowed_special_response_states = excluded.allowed_special_response_states,
   display_order = excluded.display_order;
 
 insert into public.questionnaire_answer_choices (
@@ -2224,9 +2478,12 @@ on conflict (question_id, choice_key) do update set
   special_response_state = excluded.special_response_state;
 
 insert into public.questionnaire_questions (
-  id, category_id, question_key, question_number, prompt, statement, format,
-  alignment_purpose, min_selections, max_selections,
-  priority_follow_up_prompt, priority_selection_count, display_order
+  id, category_id, question_key, question_number, prompt, statement,
+  format_label, response_behavior, context_note, implementation_note, eligibility_rule_id,
+  is_conditional, select_all_that_apply, alignment_purpose, min_selections, max_selections,
+  priority_follow_up_prompt, priority_selection_count, priority_unordered,
+  priority_eligible_choice_keys, priority_excluded_choice_keys, priority_min_eligible_selections,
+  allowed_special_response_states, display_order
 ) values (
   '33333333-3333-4333-8333-000000000013',
   '22222222-2222-4222-8222-222222222221',
@@ -2234,10 +2491,21 @@ insert into public.questionnaire_questions (
   13,
   'How comfortable would you be continuing to date someone whose preferred timeline for commitment is meaningfully different from yours?',
   null,
-  'comfort_range'::public.questionnaire_question_format,
+  'Comfort range',
+  'scale_range'::public.questionnaire_response_behavior,
+  null,
+  null,
+  null,
+  false,
+  false,
   'Measures how much flexibility someone genuinely has around commitment timing.',
   1,
   1,
+  null,
+  null,
+  true,
+  null,
+  null,
   null,
   null,
   13
@@ -2246,12 +2514,16 @@ on conflict (category_id, question_key) do update set
   question_number = excluded.question_number,
   prompt = excluded.prompt,
   statement = excluded.statement,
-  format = excluded.format,
+  format_label = excluded.format_label,
+  response_behavior = excluded.response_behavior,
   alignment_purpose = excluded.alignment_purpose,
   min_selections = excluded.min_selections,
   max_selections = excluded.max_selections,
   priority_follow_up_prompt = excluded.priority_follow_up_prompt,
   priority_selection_count = excluded.priority_selection_count,
+  priority_unordered = excluded.priority_unordered,
+  priority_min_eligible_selections = excluded.priority_min_eligible_selections,
+  allowed_special_response_states = excluded.allowed_special_response_states,
   display_order = excluded.display_order;
 
 insert into public.questionnaire_answer_choices (
@@ -2340,9 +2612,12 @@ on conflict (question_id, choice_key) do update set
   special_response_state = excluded.special_response_state;
 
 insert into public.questionnaire_questions (
-  id, category_id, question_key, question_number, prompt, statement, format,
-  alignment_purpose, min_selections, max_selections,
-  priority_follow_up_prompt, priority_selection_count, display_order
+  id, category_id, question_key, question_number, prompt, statement,
+  format_label, response_behavior, context_note, implementation_note, eligibility_rule_id,
+  is_conditional, select_all_that_apply, alignment_purpose, min_selections, max_selections,
+  priority_follow_up_prompt, priority_selection_count, priority_unordered,
+  priority_eligible_choice_keys, priority_excluded_choice_keys, priority_min_eligible_selections,
+  allowed_special_response_states, display_order
 ) values (
   '33333333-3333-4333-8333-000000000014',
   '22222222-2222-4222-8222-222222222221',
@@ -2350,24 +2625,39 @@ insert into public.questionnaire_questions (
   14,
   'If a loving relationship revealed a major difference involving a core long-term goal, what would you most likely do first?',
   null,
-  'scenario_choice'::public.questionnaire_question_format,
+  'Scenario-based choice',
+  'scenario_choice'::public.questionnaire_response_behavior,
+  null,
+  null,
+  null,
+  false,
+  false,
   'Reveals someone’s initial approach to major incompatibility rather than asking whether they generally “believe in compromise.”',
   1,
   1,
   null,
   null,
+  true,
+  null,
+  null,
+  null,
+  '{context_dependent}'::public.questionnaire_response_state[],
   14
 )
 on conflict (category_id, question_key) do update set
   question_number = excluded.question_number,
   prompt = excluded.prompt,
   statement = excluded.statement,
-  format = excluded.format,
+  format_label = excluded.format_label,
+  response_behavior = excluded.response_behavior,
   alignment_purpose = excluded.alignment_purpose,
   min_selections = excluded.min_selections,
   max_selections = excluded.max_selections,
   priority_follow_up_prompt = excluded.priority_follow_up_prompt,
   priority_selection_count = excluded.priority_selection_count,
+  priority_unordered = excluded.priority_unordered,
+  priority_min_eligible_selections = excluded.priority_min_eligible_selections,
+  allowed_special_response_states = excluded.allowed_special_response_states,
   display_order = excluded.display_order;
 
 insert into public.questionnaire_answer_choices (
@@ -2473,9 +2763,12 @@ on conflict (question_id, choice_key) do update set
   special_response_state = excluded.special_response_state;
 
 insert into public.questionnaire_questions (
-  id, category_id, question_key, question_number, prompt, statement, format,
-  alignment_purpose, min_selections, max_selections,
-  priority_follow_up_prompt, priority_selection_count, display_order
+  id, category_id, question_key, question_number, prompt, statement,
+  format_label, response_behavior, context_note, implementation_note, eligibility_rule_id,
+  is_conditional, select_all_that_apply, alignment_purpose, min_selections, max_selections,
+  priority_follow_up_prompt, priority_selection_count, priority_unordered,
+  priority_eligible_choice_keys, priority_excluded_choice_keys, priority_min_eligible_selections,
+  allowed_special_response_states, display_order
 ) values (
   '33333333-3333-4333-8333-000000000015',
   '22222222-2222-4222-8222-222222222221',
@@ -2483,24 +2776,39 @@ insert into public.questionnaire_questions (
   15,
   'Which relational foundations must be present before you would confidently choose a lasting partnership?',
   null,
-  'limited_multi_select'::public.questionnaire_question_format,
+  'Select up to five',
+  'multi_select'::public.questionnaire_response_behavior,
+  null,
+  null,
+  null,
+  false,
+  false,
   'Identifies what someone needs within the relationship itself, without repeating marriage or future-goal alignment.',
   1,
   5,
   'Of the foundations you selected, which two are most essential?',
   2,
+  true,
+  null,
+  null,
+  2,
+  null,
   15
 )
 on conflict (category_id, question_key) do update set
   question_number = excluded.question_number,
   prompt = excluded.prompt,
   statement = excluded.statement,
-  format = excluded.format,
+  format_label = excluded.format_label,
+  response_behavior = excluded.response_behavior,
   alignment_purpose = excluded.alignment_purpose,
   min_selections = excluded.min_selections,
   max_selections = excluded.max_selections,
   priority_follow_up_prompt = excluded.priority_follow_up_prompt,
   priority_selection_count = excluded.priority_selection_count,
+  priority_unordered = excluded.priority_unordered,
+  priority_min_eligible_selections = excluded.priority_min_eligible_selections,
+  allowed_special_response_states = excluded.allowed_special_response_states,
   display_order = excluded.display_order;
 
 insert into public.questionnaire_answer_choices (

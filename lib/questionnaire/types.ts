@@ -1,19 +1,21 @@
 /**
  * Compatibility Profile questionnaire contracts (Onboarding 2.0 foundation).
  * Catalog-driven; not wired to the live onboarding UI in this slice.
+ *
+ * Separates reusable response behavior from the exact Forge HQ format label
+ * so named scales/ranges do not require a new enum per written label.
  */
 
-export const QUESTION_FORMATS = [
+/** Reusable response behaviors (UI/storage semantics). */
+export const RESPONSE_BEHAVIORS = [
   'single_choice',
-  'limited_multi_select',
-  'agreement_scale',
-  'importance_scale',
-  'frequency_scale',
-  'comfort_range',
+  'multi_select',
+  'scale_range',
   'scenario_choice',
+  'structured_identity',
 ] as const;
 
-export type QuestionFormat = (typeof QUESTION_FORMATS)[number];
+export type ResponseBehavior = (typeof RESPONSE_BEHAVIORS)[number];
 
 export const RESPONSE_STATES = [
   'answered',
@@ -25,6 +27,7 @@ export const RESPONSE_STATES = [
   'context_dependent',
   'limited_capacity',
   'not_currently_relevant',
+  'current_priority',
 ] as const;
 
 export type ResponseState = (typeof RESPONSE_STATES)[number];
@@ -37,21 +40,57 @@ export type AnswerChoiceDefinition = {
   /** Exact user-facing label from Forge HQ. */
   label: string;
   displayOrder: number;
-  /** When true, selecting this choice clears/incompatibly combines with others. */
+  /** When true, selecting this choice is incompatible with other selections. */
   mutuallyExclusive?: boolean;
-  /** When set, selecting this choice represents a special response state. */
+  /** When set, selecting this choice represents a special/qualifying response state. */
   specialResponseState?: ResponseState;
 };
 
 /**
- * Two-item unordered priority follow-up.
- * Priorities must be chosen from the user's selected answers for the same question.
+ * Unordered priority follow-up metadata.
+ * Priorities must be chosen from selected answers (subject to eligibility/exclusions).
  */
 export type PriorityFollowUpDefinition = {
   /** Exact follow-up prompt from Forge HQ. */
   prompt: string;
-  /** Always 2 for Category 1 lightweight priority follow-ups. */
-  selectionCount: 2;
+  /** Required number of priority selections (Category 1 uses 2). */
+  selectionCount: number;
+  /** Priority selections are unordered (not a full ranking). */
+  unordered: true;
+  /**
+   * Choice ids eligible for the priority follow-up.
+   * When omitted, all non-excluded choices for the question are eligible.
+   */
+  eligibleChoiceIds?: readonly string[];
+  /** Choice ids excluded from the priority follow-up even if selected. */
+  excludedChoiceIds?: readonly string[];
+  /**
+   * Minimum number of eligible selected choices required before the follow-up displays.
+   * When omitted, defaults to selectionCount.
+   */
+  minEligibleSelectionsBeforeDisplay?: number;
+};
+
+export type EligibilityRuleDefinition = {
+  id: string;
+  ruleKey: string;
+  /** Exact HQ eligibility wording. */
+  description: string;
+  /**
+   * Machine-readable condition reserved for future evaluators.
+   * Not executed in this foundation slice.
+   */
+  condition: {
+    type: 'profile_predicate' | 'answer_predicate' | 'always';
+    predicateKey?: string;
+    params?: Record<string, unknown>;
+  };
+};
+
+export type ConditionalQuestionDefinition = {
+  kind: 'conditional_scenario';
+  /** Optional eligibility rule that gates display. */
+  requiresEligibilityRuleId?: string;
 };
 
 export type QuestionDefinition = {
@@ -61,16 +100,37 @@ export type QuestionDefinition = {
   prompt: string;
   /**
    * Optional statement shown with agreement-scale prompts (exact HQ wording).
-   * Used when the prompt introduces a statement that follows on its own line.
    */
   statement?: string;
-  format: QuestionFormat;
+  /** Exact HQ **Format:** label (preserved verbatim). */
+  formatLabel: string;
+  /** Reusable response behavior derived from the format label. */
+  responseBehavior: ResponseBehavior;
+  /** Exact HQ context note, when present. */
+  contextNote?: string;
+  /** Exact HQ implementation note, when present. */
+  implementationNote?: string;
+  /** Reference into catalog.eligibilityRules. */
+  eligibilityRuleId?: string;
+  /** Conditional scenario / gated display metadata. */
+  conditional?: ConditionalQuestionDefinition;
+  /**
+   * True for unrestricted “Select all that apply” style questions.
+   * maxSelections should be null when select-all.
+   */
+  selectAllThatApply?: boolean;
   /** Exact alignment-purpose text from Forge HQ. */
   alignmentPurpose: string;
   minSelections: number;
-  maxSelections: number;
+  /** Null means unrestricted upper bound (select-all). */
+  maxSelections: number | null;
   choices: AnswerChoiceDefinition[];
   priorityFollowUp?: PriorityFollowUpDefinition;
+  /**
+   * Special/qualifying response states this question may record
+   * (in addition to ordinary answered/unanswered/skipped/withheld).
+   */
+  allowedSpecialResponseStates?: readonly ResponseState[];
 };
 
 export type CategoryDefinition = {
@@ -90,6 +150,8 @@ export type QuestionnaireCatalog = {
   questionnaireVersion: string;
   specificationVersion: string;
   categories: CategoryDefinition[];
+  /** Version-scoped eligibility/display rules referenced by questions. */
+  eligibilityRules: EligibilityRuleDefinition[];
 };
 
 export type CatalogValidationIssue = {
