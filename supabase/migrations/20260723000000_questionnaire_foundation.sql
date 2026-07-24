@@ -652,14 +652,14 @@ grant select, insert, delete on public.user_questionnaire_selected_choices to au
 grant select, insert, delete on public.user_questionnaire_priority_selections to authenticated;
 
 -- ---------------------------------------------------------------------------
--- 6. Categories 1 through 4 seed
+-- 6. Categories 1 through 7 seed
 -- ---------------------------------------------------------------------------
 
 insert into public.questionnaire_versions (id, version_key, specification_version, title, is_active)
 values (
   '11111111-1111-4111-8111-111111111111',
   'compatibility_profile_v1',
-  'compatibility_profile_categories_1_4_v10',
+  'compatibility_profile_categories_1_7_v10',
   'Compatibility Profile',
   true
 )
@@ -667,6 +667,19 @@ on conflict (version_key) do update set
   specification_version = excluded.specification_version,
   title = excluded.title,
   is_active = excluded.is_active;
+
+insert into public.questionnaire_eligibility_rules (
+  id, version_id, rule_key, description, condition
+) values (
+  '55555555-5555-4555-8555-000000000007',
+  '11111111-1111-4111-8111-111111111111',
+  'parenting_role_display_c07',
+  'Display only when the user has children, wants or may want children, or is open to a future parenting or stepparenting role.',
+  '{"type":"profile_predicate","predicateKey":"open_to_parenting_or_stepparenting_role"}'::jsonb
+)
+on conflict (version_id, rule_key) do update set
+  description = excluded.description,
+  condition = excluded.condition;
 
 insert into public.questionnaire_categories (
   id, version_id, category_key, category_number, title, status, display_order, locked_product_decisions
@@ -689,7 +702,8 @@ on conflict (version_id, category_key) do update set
 insert into public.questionnaire_questions (
   id, category_id, question_key, question_number, prompt, statement,
   format_label, response_behavior, context_note, implementation_note, eligibility_rule_id,
-  is_conditional, select_all_that_apply, alignment_purpose, min_selections, max_selections,
+  is_conditional, select_all_that_apply, structured_identity_config, alignment_purpose,
+  min_selections, max_selections,
   priority_follow_up_prompt, priority_selection_count, priority_unordered,
   priority_eligible_choice_keys, priority_excluded_choice_keys, priority_min_eligible_selections,
   allowed_special_response_states, display_order
@@ -707,6 +721,7 @@ insert into public.questionnaire_questions (
   null,
   false,
   false,
+  null,
   'Establishes the relationship destination someone is pursuing.',
   1,
   1,
@@ -725,6 +740,12 @@ on conflict (category_id, question_key) do update set
   statement = excluded.statement,
   format_label = excluded.format_label,
   response_behavior = excluded.response_behavior,
+  context_note = excluded.context_note,
+  implementation_note = excluded.implementation_note,
+  eligibility_rule_id = excluded.eligibility_rule_id,
+  is_conditional = excluded.is_conditional,
+  select_all_that_apply = excluded.select_all_that_apply,
+  structured_identity_config = excluded.structured_identity_config,
   alignment_purpose = excluded.alignment_purpose,
   min_selections = excluded.min_selections,
   max_selections = excluded.max_selections,
@@ -823,7 +844,8 @@ on conflict (question_id, choice_key) do update set
 insert into public.questionnaire_questions (
   id, category_id, question_key, question_number, prompt, statement,
   format_label, response_behavior, context_note, implementation_note, eligibility_rule_id,
-  is_conditional, select_all_that_apply, alignment_purpose, min_selections, max_selections,
+  is_conditional, select_all_that_apply, structured_identity_config, alignment_purpose,
+  min_selections, max_selections,
   priority_follow_up_prompt, priority_selection_count, priority_unordered,
   priority_eligible_choice_keys, priority_excluded_choice_keys, priority_min_eligible_selections,
   allowed_special_response_states, display_order
@@ -841,6 +863,7 @@ insert into public.questionnaire_questions (
   null,
   false,
   false,
+  null,
   'Separates someone’s preferred relationship structure from how necessary marriage is to them.',
   1,
   1,
@@ -859,6 +882,12 @@ on conflict (category_id, question_key) do update set
   statement = excluded.statement,
   format_label = excluded.format_label,
   response_behavior = excluded.response_behavior,
+  context_note = excluded.context_note,
+  implementation_note = excluded.implementation_note,
+  eligibility_rule_id = excluded.eligibility_rule_id,
+  is_conditional = excluded.is_conditional,
+  select_all_that_apply = excluded.select_all_that_apply,
+  structured_identity_config = excluded.structured_identity_config,
   alignment_purpose = excluded.alignment_purpose,
   min_selections = excluded.min_selections,
   max_selections = excluded.max_selections,
@@ -957,7 +986,8 @@ on conflict (question_id, choice_key) do update set
 insert into public.questionnaire_questions (
   id, category_id, question_key, question_number, prompt, statement,
   format_label, response_behavior, context_note, implementation_note, eligibility_rule_id,
-  is_conditional, select_all_that_apply, alignment_purpose, min_selections, max_selections,
+  is_conditional, select_all_that_apply, structured_identity_config, alignment_purpose,
+  min_selections, max_selections,
   priority_follow_up_prompt, priority_selection_count, priority_unordered,
   priority_eligible_choice_keys, priority_excluded_choice_keys, priority_min_eligible_selections,
   allowed_special_response_states, display_order
@@ -975,6 +1005,7 @@ insert into public.questionnaire_questions (
   null,
   false,
   false,
+  null,
   'Identifies meaningful differences between cautious, gradual, steady, and fast moving dating styles.',
   1,
   1,
@@ -993,6 +1024,12 @@ on conflict (category_id, question_key) do update set
   statement = excluded.statement,
   format_label = excluded.format_label,
   response_behavior = excluded.response_behavior,
+  context_note = excluded.context_note,
+  implementation_note = excluded.implementation_note,
+  eligibility_rule_id = excluded.eligibility_rule_id,
+  is_conditional = excluded.is_conditional,
+  select_all_that_apply = excluded.select_all_that_apply,
+  structured_identity_config = excluded.structured_identity_config,
   alignment_purpose = excluded.alignment_purpose,
   min_selections = excluded.min_selections,
   max_selections = excluded.max_selections,
@@ -1091,7 +1128,8 @@ on conflict (question_id, choice_key) do update set
 insert into public.questionnaire_questions (
   id, category_id, question_key, question_number, prompt, statement,
   format_label, response_behavior, context_note, implementation_note, eligibility_rule_id,
-  is_conditional, select_all_that_apply, alignment_purpose, min_selections, max_selections,
+  is_conditional, select_all_that_apply, structured_identity_config, alignment_purpose,
+  min_selections, max_selections,
   priority_follow_up_prompt, priority_selection_count, priority_unordered,
   priority_eligible_choice_keys, priority_excluded_choice_keys, priority_min_eligible_selections,
   allowed_special_response_states, display_order
@@ -1109,6 +1147,7 @@ insert into public.questionnaire_questions (
   null,
   false,
   false,
+  null,
   'Captures expectations that can otherwise create early confusion or hurt.',
   1,
   1,
@@ -1127,6 +1166,12 @@ on conflict (category_id, question_key) do update set
   statement = excluded.statement,
   format_label = excluded.format_label,
   response_behavior = excluded.response_behavior,
+  context_note = excluded.context_note,
+  implementation_note = excluded.implementation_note,
+  eligibility_rule_id = excluded.eligibility_rule_id,
+  is_conditional = excluded.is_conditional,
+  select_all_that_apply = excluded.select_all_that_apply,
+  structured_identity_config = excluded.structured_identity_config,
   alignment_purpose = excluded.alignment_purpose,
   min_selections = excluded.min_selections,
   max_selections = excluded.max_selections,
@@ -1225,7 +1270,8 @@ on conflict (question_id, choice_key) do update set
 insert into public.questionnaire_questions (
   id, category_id, question_key, question_number, prompt, statement,
   format_label, response_behavior, context_note, implementation_note, eligibility_rule_id,
-  is_conditional, select_all_that_apply, alignment_purpose, min_selections, max_selections,
+  is_conditional, select_all_that_apply, structured_identity_config, alignment_purpose,
+  min_selections, max_selections,
   priority_follow_up_prompt, priority_selection_count, priority_unordered,
   priority_eligible_choice_keys, priority_excluded_choice_keys, priority_min_eligible_selections,
   allowed_special_response_states, display_order
@@ -1243,6 +1289,7 @@ insert into public.questionnaire_questions (
   null,
   false,
   false,
+  null,
   'Identifies both someone’s broader definition of commitment and its most important components.',
   1,
   4,
@@ -1261,6 +1308,12 @@ on conflict (category_id, question_key) do update set
   statement = excluded.statement,
   format_label = excluded.format_label,
   response_behavior = excluded.response_behavior,
+  context_note = excluded.context_note,
+  implementation_note = excluded.implementation_note,
+  eligibility_rule_id = excluded.eligibility_rule_id,
+  is_conditional = excluded.is_conditional,
+  select_all_that_apply = excluded.select_all_that_apply,
+  structured_identity_config = excluded.structured_identity_config,
   alignment_purpose = excluded.alignment_purpose,
   min_selections = excluded.min_selections,
   max_selections = excluded.max_selections,
@@ -1427,7 +1480,8 @@ on conflict (question_id, choice_key) do update set
 insert into public.questionnaire_questions (
   id, category_id, question_key, question_number, prompt, statement,
   format_label, response_behavior, context_note, implementation_note, eligibility_rule_id,
-  is_conditional, select_all_that_apply, alignment_purpose, min_selections, max_selections,
+  is_conditional, select_all_that_apply, structured_identity_config, alignment_purpose,
+  min_selections, max_selections,
   priority_follow_up_prompt, priority_selection_count, priority_unordered,
   priority_eligible_choice_keys, priority_excluded_choice_keys, priority_min_eligible_selections,
   allowed_special_response_states, display_order
@@ -1445,6 +1499,7 @@ insert into public.questionnaire_questions (
   null,
   false,
   false,
+  null,
   'Grounds readiness in observable capacity and behavior instead of idealized traits.',
   1,
   4,
@@ -1463,6 +1518,12 @@ on conflict (category_id, question_key) do update set
   statement = excluded.statement,
   format_label = excluded.format_label,
   response_behavior = excluded.response_behavior,
+  context_note = excluded.context_note,
+  implementation_note = excluded.implementation_note,
+  eligibility_rule_id = excluded.eligibility_rule_id,
+  is_conditional = excluded.is_conditional,
+  select_all_that_apply = excluded.select_all_that_apply,
+  structured_identity_config = excluded.structured_identity_config,
   alignment_purpose = excluded.alignment_purpose,
   min_selections = excluded.min_selections,
   max_selections = excluded.max_selections,
@@ -1629,7 +1690,8 @@ on conflict (question_id, choice_key) do update set
 insert into public.questionnaire_questions (
   id, category_id, question_key, question_number, prompt, statement,
   format_label, response_behavior, context_note, implementation_note, eligibility_rule_id,
-  is_conditional, select_all_that_apply, alignment_purpose, min_selections, max_selections,
+  is_conditional, select_all_that_apply, structured_identity_config, alignment_purpose,
+  min_selections, max_selections,
   priority_follow_up_prompt, priority_selection_count, priority_unordered,
   priority_eligible_choice_keys, priority_excluded_choice_keys, priority_min_eligible_selections,
   allowed_special_response_states, display_order
@@ -1647,6 +1709,7 @@ insert into public.questionnaire_questions (
   null,
   false,
   false,
+  null,
   'Differentiates independent, supportive, challenging, shared, and highly integrated approaches to growth.',
   1,
   1,
@@ -1665,6 +1728,12 @@ on conflict (category_id, question_key) do update set
   statement = excluded.statement,
   format_label = excluded.format_label,
   response_behavior = excluded.response_behavior,
+  context_note = excluded.context_note,
+  implementation_note = excluded.implementation_note,
+  eligibility_rule_id = excluded.eligibility_rule_id,
+  is_conditional = excluded.is_conditional,
+  select_all_that_apply = excluded.select_all_that_apply,
+  structured_identity_config = excluded.structured_identity_config,
   alignment_purpose = excluded.alignment_purpose,
   min_selections = excluded.min_selections,
   max_selections = excluded.max_selections,
@@ -1763,7 +1832,8 @@ on conflict (question_id, choice_key) do update set
 insert into public.questionnaire_questions (
   id, category_id, question_key, question_number, prompt, statement,
   format_label, response_behavior, context_note, implementation_note, eligibility_rule_id,
-  is_conditional, select_all_that_apply, alignment_purpose, min_selections, max_selections,
+  is_conditional, select_all_that_apply, structured_identity_config, alignment_purpose,
+  min_selections, max_selections,
   priority_follow_up_prompt, priority_selection_count, priority_unordered,
   priority_eligible_choice_keys, priority_excluded_choice_keys, priority_min_eligible_selections,
   allowed_special_response_states, display_order
@@ -1781,6 +1851,7 @@ insert into public.questionnaire_questions (
   null,
   false,
   false,
+  null,
   'Identifies concrete future directions requiring alignment while leaving detailed children, faith, money, and lifestyle matching to their respective categories.',
   1,
   5,
@@ -1799,6 +1870,12 @@ on conflict (category_id, question_key) do update set
   statement = excluded.statement,
   format_label = excluded.format_label,
   response_behavior = excluded.response_behavior,
+  context_note = excluded.context_note,
+  implementation_note = excluded.implementation_note,
+  eligibility_rule_id = excluded.eligibility_rule_id,
+  is_conditional = excluded.is_conditional,
+  select_all_that_apply = excluded.select_all_that_apply,
+  structured_identity_config = excluded.structured_identity_config,
   alignment_purpose = excluded.alignment_purpose,
   min_selections = excluded.min_selections,
   max_selections = excluded.max_selections,
@@ -2016,7 +2093,8 @@ on conflict (question_id, choice_key) do update set
 insert into public.questionnaire_questions (
   id, category_id, question_key, question_number, prompt, statement,
   format_label, response_behavior, context_note, implementation_note, eligibility_rule_id,
-  is_conditional, select_all_that_apply, alignment_purpose, min_selections, max_selections,
+  is_conditional, select_all_that_apply, structured_identity_config, alignment_purpose,
+  min_selections, max_selections,
   priority_follow_up_prompt, priority_selection_count, priority_unordered,
   priority_eligible_choice_keys, priority_excluded_choice_keys, priority_min_eligible_selections,
   allowed_special_response_states, display_order
@@ -2034,6 +2112,7 @@ insert into public.questionnaire_questions (
   null,
   false,
   false,
+  null,
   'Reveals someone’s initial approach to major incompatibility rather than asking whether they generally believe in compromise.',
   1,
   1,
@@ -2052,6 +2131,12 @@ on conflict (category_id, question_key) do update set
   statement = excluded.statement,
   format_label = excluded.format_label,
   response_behavior = excluded.response_behavior,
+  context_note = excluded.context_note,
+  implementation_note = excluded.implementation_note,
+  eligibility_rule_id = excluded.eligibility_rule_id,
+  is_conditional = excluded.is_conditional,
+  select_all_that_apply = excluded.select_all_that_apply,
+  structured_identity_config = excluded.structured_identity_config,
   alignment_purpose = excluded.alignment_purpose,
   min_selections = excluded.min_selections,
   max_selections = excluded.max_selections,
@@ -2167,7 +2252,8 @@ on conflict (question_id, choice_key) do update set
 insert into public.questionnaire_questions (
   id, category_id, question_key, question_number, prompt, statement,
   format_label, response_behavior, context_note, implementation_note, eligibility_rule_id,
-  is_conditional, select_all_that_apply, alignment_purpose, min_selections, max_selections,
+  is_conditional, select_all_that_apply, structured_identity_config, alignment_purpose,
+  min_selections, max_selections,
   priority_follow_up_prompt, priority_selection_count, priority_unordered,
   priority_eligible_choice_keys, priority_excluded_choice_keys, priority_min_eligible_selections,
   allowed_special_response_states, display_order
@@ -2185,6 +2271,7 @@ insert into public.questionnaire_questions (
   null,
   false,
   false,
+  null,
   'Identifies what someone needs within the relationship itself, without repeating marriage or future goal alignment.',
   1,
   5,
@@ -2203,6 +2290,12 @@ on conflict (category_id, question_key) do update set
   statement = excluded.statement,
   format_label = excluded.format_label,
   response_behavior = excluded.response_behavior,
+  context_note = excluded.context_note,
+  implementation_note = excluded.implementation_note,
+  eligibility_rule_id = excluded.eligibility_rule_id,
+  is_conditional = excluded.is_conditional,
+  select_all_that_apply = excluded.select_all_that_apply,
+  structured_identity_config = excluded.structured_identity_config,
   alignment_purpose = excluded.alignment_purpose,
   min_selections = excluded.min_selections,
   max_selections = excluded.max_selections,
@@ -2438,7 +2531,8 @@ on conflict (version_id, category_key) do update set
 insert into public.questionnaire_questions (
   id, category_id, question_key, question_number, prompt, statement,
   format_label, response_behavior, context_note, implementation_note, eligibility_rule_id,
-  is_conditional, select_all_that_apply, alignment_purpose, min_selections, max_selections,
+  is_conditional, select_all_that_apply, structured_identity_config, alignment_purpose,
+  min_selections, max_selections,
   priority_follow_up_prompt, priority_selection_count, priority_unordered,
   priority_eligible_choice_keys, priority_excluded_choice_keys, priority_min_eligible_selections,
   allowed_special_response_states, display_order
@@ -2456,6 +2550,7 @@ insert into public.questionnaire_questions (
   null,
   false,
   false,
+  null,
   'Establishes the user''s core value priorities without asking them to rank every positive quality.',
   1,
   5,
@@ -2474,6 +2569,12 @@ on conflict (category_id, question_key) do update set
   statement = excluded.statement,
   format_label = excluded.format_label,
   response_behavior = excluded.response_behavior,
+  context_note = excluded.context_note,
+  implementation_note = excluded.implementation_note,
+  eligibility_rule_id = excluded.eligibility_rule_id,
+  is_conditional = excluded.is_conditional,
+  select_all_that_apply = excluded.select_all_that_apply,
+  structured_identity_config = excluded.structured_identity_config,
   alignment_purpose = excluded.alignment_purpose,
   min_selections = excluded.min_selections,
   max_selections = excluded.max_selections,
@@ -2742,7 +2843,8 @@ on conflict (question_id, choice_key) do update set
 insert into public.questionnaire_questions (
   id, category_id, question_key, question_number, prompt, statement,
   format_label, response_behavior, context_note, implementation_note, eligibility_rule_id,
-  is_conditional, select_all_that_apply, alignment_purpose, min_selections, max_selections,
+  is_conditional, select_all_that_apply, structured_identity_config, alignment_purpose,
+  min_selections, max_selections,
   priority_follow_up_prompt, priority_selection_count, priority_unordered,
   priority_eligible_choice_keys, priority_excluded_choice_keys, priority_min_eligible_selections,
   allowed_special_response_states, display_order
@@ -2760,6 +2862,7 @@ insert into public.questionnaire_questions (
   null,
   false,
   false,
+  null,
   'Identifies the user''s first instinct when confronting a personal failure: ownership, reflection, repair, correction, prevention, or guidance.',
   1,
   1,
@@ -2778,6 +2881,12 @@ on conflict (category_id, question_key) do update set
   statement = excluded.statement,
   format_label = excluded.format_label,
   response_behavior = excluded.response_behavior,
+  context_note = excluded.context_note,
+  implementation_note = excluded.implementation_note,
+  eligibility_rule_id = excluded.eligibility_rule_id,
+  is_conditional = excluded.is_conditional,
+  select_all_that_apply = excluded.select_all_that_apply,
+  structured_identity_config = excluded.structured_identity_config,
   alignment_purpose = excluded.alignment_purpose,
   min_selections = excluded.min_selections,
   max_selections = excluded.max_selections,
@@ -2893,7 +3002,8 @@ on conflict (question_id, choice_key) do update set
 insert into public.questionnaire_questions (
   id, category_id, question_key, question_number, prompt, statement,
   format_label, response_behavior, context_note, implementation_note, eligibility_rule_id,
-  is_conditional, select_all_that_apply, alignment_purpose, min_selections, max_selections,
+  is_conditional, select_all_that_apply, structured_identity_config, alignment_purpose,
+  min_selections, max_selections,
   priority_follow_up_prompt, priority_selection_count, priority_unordered,
   priority_eligible_choice_keys, priority_excluded_choice_keys, priority_min_eligible_selections,
   allowed_special_response_states, display_order
@@ -2911,6 +3021,7 @@ insert into public.questionnaire_questions (
   null,
   false,
   false,
+  null,
   'Distinguishes firm, contextual, relational, and flexible approaches to obligation.',
   1,
   1,
@@ -2929,6 +3040,12 @@ on conflict (category_id, question_key) do update set
   statement = excluded.statement,
   format_label = excluded.format_label,
   response_behavior = excluded.response_behavior,
+  context_note = excluded.context_note,
+  implementation_note = excluded.implementation_note,
+  eligibility_rule_id = excluded.eligibility_rule_id,
+  is_conditional = excluded.is_conditional,
+  select_all_that_apply = excluded.select_all_that_apply,
+  structured_identity_config = excluded.structured_identity_config,
   alignment_purpose = excluded.alignment_purpose,
   min_selections = excluded.min_selections,
   max_selections = excluded.max_selections,
@@ -3044,7 +3161,8 @@ on conflict (question_id, choice_key) do update set
 insert into public.questionnaire_questions (
   id, category_id, question_key, question_number, prompt, statement,
   format_label, response_behavior, context_note, implementation_note, eligibility_rule_id,
-  is_conditional, select_all_that_apply, alignment_purpose, min_selections, max_selections,
+  is_conditional, select_all_that_apply, structured_identity_config, alignment_purpose,
+  min_selections, max_selections,
   priority_follow_up_prompt, priority_selection_count, priority_unordered,
   priority_eligible_choice_keys, priority_excluded_choice_keys, priority_min_eligible_selections,
   allowed_special_response_states, display_order
@@ -3062,6 +3180,7 @@ insert into public.questionnaire_questions (
   null,
   false,
   false,
+  null,
   'Reveals how someone balances intent, impact, responsibility, and mutual understanding.',
   1,
   1,
@@ -3080,6 +3199,12 @@ on conflict (category_id, question_key) do update set
   statement = excluded.statement,
   format_label = excluded.format_label,
   response_behavior = excluded.response_behavior,
+  context_note = excluded.context_note,
+  implementation_note = excluded.implementation_note,
+  eligibility_rule_id = excluded.eligibility_rule_id,
+  is_conditional = excluded.is_conditional,
+  select_all_that_apply = excluded.select_all_that_apply,
+  structured_identity_config = excluded.structured_identity_config,
   alignment_purpose = excluded.alignment_purpose,
   min_selections = excluded.min_selections,
   max_selections = excluded.max_selections,
@@ -3178,7 +3303,8 @@ on conflict (question_id, choice_key) do update set
 insert into public.questionnaire_questions (
   id, category_id, question_key, question_number, prompt, statement,
   format_label, response_behavior, context_note, implementation_note, eligibility_rule_id,
-  is_conditional, select_all_that_apply, alignment_purpose, min_selections, max_selections,
+  is_conditional, select_all_that_apply, structured_identity_config, alignment_purpose,
+  min_selections, max_selections,
   priority_follow_up_prompt, priority_selection_count, priority_unordered,
   priority_eligible_choice_keys, priority_excluded_choice_keys, priority_min_eligible_selections,
   allowed_special_response_states, display_order
@@ -3196,6 +3322,7 @@ insert into public.questionnaire_questions (
   null,
   false,
   false,
+  null,
   'Compares support, understanding, autonomy, boundaries, distance, and principled care.',
   1,
   1,
@@ -3214,6 +3341,12 @@ on conflict (category_id, question_key) do update set
   statement = excluded.statement,
   format_label = excluded.format_label,
   response_behavior = excluded.response_behavior,
+  context_note = excluded.context_note,
+  implementation_note = excluded.implementation_note,
+  eligibility_rule_id = excluded.eligibility_rule_id,
+  is_conditional = excluded.is_conditional,
+  select_all_that_apply = excluded.select_all_that_apply,
+  structured_identity_config = excluded.structured_identity_config,
   alignment_purpose = excluded.alignment_purpose,
   min_selections = excluded.min_selections,
   max_selections = excluded.max_selections,
@@ -3329,7 +3462,8 @@ on conflict (question_id, choice_key) do update set
 insert into public.questionnaire_questions (
   id, category_id, question_key, question_number, prompt, statement,
   format_label, response_behavior, context_note, implementation_note, eligibility_rule_id,
-  is_conditional, select_all_that_apply, alignment_purpose, min_selections, max_selections,
+  is_conditional, select_all_that_apply, structured_identity_config, alignment_purpose,
+  min_selections, max_selections,
   priority_follow_up_prompt, priority_selection_count, priority_unordered,
   priority_eligible_choice_keys, priority_excluded_choice_keys, priority_min_eligible_selections,
   allowed_special_response_states, display_order
@@ -3347,6 +3481,7 @@ insert into public.questionnaire_questions (
   null,
   false,
   false,
+  null,
   'Reveals how someone understands agency, circumstance, support, and shared social responsibility without reducing the issue to a political label.',
   1,
   1,
@@ -3365,6 +3500,12 @@ on conflict (category_id, question_key) do update set
   statement = excluded.statement,
   format_label = excluded.format_label,
   response_behavior = excluded.response_behavior,
+  context_note = excluded.context_note,
+  implementation_note = excluded.implementation_note,
+  eligibility_rule_id = excluded.eligibility_rule_id,
+  is_conditional = excluded.is_conditional,
+  select_all_that_apply = excluded.select_all_that_apply,
+  structured_identity_config = excluded.structured_identity_config,
   alignment_purpose = excluded.alignment_purpose,
   min_selections = excluded.min_selections,
   max_selections = excluded.max_selections,
@@ -3463,7 +3604,8 @@ on conflict (question_id, choice_key) do update set
 insert into public.questionnaire_questions (
   id, category_id, question_key, question_number, prompt, statement,
   format_label, response_behavior, context_note, implementation_note, eligibility_rule_id,
-  is_conditional, select_all_that_apply, alignment_purpose, min_selections, max_selections,
+  is_conditional, select_all_that_apply, structured_identity_config, alignment_purpose,
+  min_selections, max_selections,
   priority_follow_up_prompt, priority_selection_count, priority_unordered,
   priority_eligible_choice_keys, priority_excluded_choice_keys, priority_min_eligible_selections,
   allowed_special_response_states, display_order
@@ -3481,6 +3623,7 @@ insert into public.questionnaire_questions (
   null,
   false,
   false,
+  null,
   'Measures intellectual humility, openness to correction, and the emotional difficulty of changing a meaningful position.',
   1,
   1,
@@ -3499,6 +3642,12 @@ on conflict (category_id, question_key) do update set
   statement = excluded.statement,
   format_label = excluded.format_label,
   response_behavior = excluded.response_behavior,
+  context_note = excluded.context_note,
+  implementation_note = excluded.implementation_note,
+  eligibility_rule_id = excluded.eligibility_rule_id,
+  is_conditional = excluded.is_conditional,
+  select_all_that_apply = excluded.select_all_that_apply,
+  structured_identity_config = excluded.structured_identity_config,
   alignment_purpose = excluded.alignment_purpose,
   min_selections = excluded.min_selections,
   max_selections = excluded.max_selections,
@@ -3597,7 +3746,8 @@ on conflict (question_id, choice_key) do update set
 insert into public.questionnaire_questions (
   id, category_id, question_key, question_number, prompt, statement,
   format_label, response_behavior, context_note, implementation_note, eligibility_rule_id,
-  is_conditional, select_all_that_apply, alignment_purpose, min_selections, max_selections,
+  is_conditional, select_all_that_apply, structured_identity_config, alignment_purpose,
+  min_selections, max_selections,
   priority_follow_up_prompt, priority_selection_count, priority_unordered,
   priority_eligible_choice_keys, priority_excluded_choice_keys, priority_min_eligible_selections,
   allowed_special_response_states, display_order
@@ -3615,6 +3765,7 @@ insert into public.questionnaire_questions (
   null,
   false,
   false,
+  null,
   'Exposes meaningful differences in how someone balances loyalty, integrity, protection, confrontation, and context.',
   1,
   1,
@@ -3633,6 +3784,12 @@ on conflict (category_id, question_key) do update set
   statement = excluded.statement,
   format_label = excluded.format_label,
   response_behavior = excluded.response_behavior,
+  context_note = excluded.context_note,
+  implementation_note = excluded.implementation_note,
+  eligibility_rule_id = excluded.eligibility_rule_id,
+  is_conditional = excluded.is_conditional,
+  select_all_that_apply = excluded.select_all_that_apply,
+  structured_identity_config = excluded.structured_identity_config,
   alignment_purpose = excluded.alignment_purpose,
   min_selections = excluded.min_selections,
   max_selections = excluded.max_selections,
@@ -3748,7 +3905,8 @@ on conflict (question_id, choice_key) do update set
 insert into public.questionnaire_questions (
   id, category_id, question_key, question_number, prompt, statement,
   format_label, response_behavior, context_note, implementation_note, eligibility_rule_id,
-  is_conditional, select_all_that_apply, alignment_purpose, min_selections, max_selections,
+  is_conditional, select_all_that_apply, structured_identity_config, alignment_purpose,
+  min_selections, max_selections,
   priority_follow_up_prompt, priority_selection_count, priority_unordered,
   priority_eligible_choice_keys, priority_excluded_choice_keys, priority_min_eligible_selections,
   allowed_special_response_states, display_order
@@ -3766,6 +3924,7 @@ insert into public.questionnaire_questions (
   null,
   false,
   false,
+  null,
   'Captures the character traits the user prioritizes in a partner and identifies those with the greatest compatibility weight.',
   1,
   5,
@@ -3784,6 +3943,12 @@ on conflict (category_id, question_key) do update set
   statement = excluded.statement,
   format_label = excluded.format_label,
   response_behavior = excluded.response_behavior,
+  context_note = excluded.context_note,
+  implementation_note = excluded.implementation_note,
+  eligibility_rule_id = excluded.eligibility_rule_id,
+  is_conditional = excluded.is_conditional,
+  select_all_that_apply = excluded.select_all_that_apply,
+  structured_identity_config = excluded.structured_identity_config,
   alignment_purpose = excluded.alignment_purpose,
   min_selections = excluded.min_selections,
   max_selections = excluded.max_selections,
@@ -4052,7 +4217,8 @@ on conflict (question_id, choice_key) do update set
 insert into public.questionnaire_questions (
   id, category_id, question_key, question_number, prompt, statement,
   format_label, response_behavior, context_note, implementation_note, eligibility_rule_id,
-  is_conditional, select_all_that_apply, alignment_purpose, min_selections, max_selections,
+  is_conditional, select_all_that_apply, structured_identity_config, alignment_purpose,
+  min_selections, max_selections,
   priority_follow_up_prompt, priority_selection_count, priority_unordered,
   priority_eligible_choice_keys, priority_excluded_choice_keys, priority_min_eligible_selections,
   allowed_special_response_states, display_order
@@ -4070,6 +4236,7 @@ insert into public.questionnaire_questions (
   null,
   false,
   false,
+  null,
   'Identifies how the user evaluates inconsistency between stated values and demonstrated character.',
   1,
   3,
@@ -4088,6 +4255,12 @@ on conflict (category_id, question_key) do update set
   statement = excluded.statement,
   format_label = excluded.format_label,
   response_behavior = excluded.response_behavior,
+  context_note = excluded.context_note,
+  implementation_note = excluded.implementation_note,
+  eligibility_rule_id = excluded.eligibility_rule_id,
+  is_conditional = excluded.is_conditional,
+  select_all_that_apply = excluded.select_all_that_apply,
+  structured_identity_config = excluded.structured_identity_config,
   alignment_purpose = excluded.alignment_purpose,
   min_selections = excluded.min_selections,
   max_selections = excluded.max_selections,
@@ -4255,7 +4428,8 @@ on conflict (version_id, category_key) do update set
 insert into public.questionnaire_questions (
   id, category_id, question_key, question_number, prompt, statement,
   format_label, response_behavior, context_note, implementation_note, eligibility_rule_id,
-  is_conditional, select_all_that_apply, alignment_purpose, min_selections, max_selections,
+  is_conditional, select_all_that_apply, structured_identity_config, alignment_purpose,
+  min_selections, max_selections,
   priority_follow_up_prompt, priority_selection_count, priority_unordered,
   priority_eligible_choice_keys, priority_excluded_choice_keys, priority_min_eligible_selections,
   allowed_special_response_states, display_order
@@ -4273,6 +4447,7 @@ insert into public.questionnaire_questions (
   null,
   false,
   false,
+  null,
   'Identifies whether someone initiates concerns immediately, after reflection, under the right conditions, through invitation, or only when necessary.',
   1,
   1,
@@ -4291,6 +4466,12 @@ on conflict (category_id, question_key) do update set
   statement = excluded.statement,
   format_label = excluded.format_label,
   response_behavior = excluded.response_behavior,
+  context_note = excluded.context_note,
+  implementation_note = excluded.implementation_note,
+  eligibility_rule_id = excluded.eligibility_rule_id,
+  is_conditional = excluded.is_conditional,
+  select_all_that_apply = excluded.select_all_that_apply,
+  structured_identity_config = excluded.structured_identity_config,
   alignment_purpose = excluded.alignment_purpose,
   min_selections = excluded.min_selections,
   max_selections = excluded.max_selections,
@@ -4389,7 +4570,8 @@ on conflict (question_id, choice_key) do update set
 insert into public.questionnaire_questions (
   id, category_id, question_key, question_number, prompt, statement,
   format_label, response_behavior, context_note, implementation_note, eligibility_rule_id,
-  is_conditional, select_all_that_apply, alignment_purpose, min_selections, max_selections,
+  is_conditional, select_all_that_apply, structured_identity_config, alignment_purpose,
+  min_selections, max_selections,
   priority_follow_up_prompt, priority_selection_count, priority_unordered,
   priority_eligible_choice_keys, priority_excluded_choice_keys, priority_min_eligible_selections,
   allowed_special_response_states, display_order
@@ -4407,6 +4589,7 @@ insert into public.questionnaire_questions (
   null,
   false,
   false,
+  null,
   'Measures compatibility around candor, emotional sensitivity, and communication intensity.',
   1,
   1,
@@ -4425,6 +4608,12 @@ on conflict (category_id, question_key) do update set
   statement = excluded.statement,
   format_label = excluded.format_label,
   response_behavior = excluded.response_behavior,
+  context_note = excluded.context_note,
+  implementation_note = excluded.implementation_note,
+  eligibility_rule_id = excluded.eligibility_rule_id,
+  is_conditional = excluded.is_conditional,
+  select_all_that_apply = excluded.select_all_that_apply,
+  structured_identity_config = excluded.structured_identity_config,
   alignment_purpose = excluded.alignment_purpose,
   min_selections = excluded.min_selections,
   max_selections = excluded.max_selections,
@@ -4523,7 +4712,8 @@ on conflict (question_id, choice_key) do update set
 insert into public.questionnaire_questions (
   id, category_id, question_key, question_number, prompt, statement,
   format_label, response_behavior, context_note, implementation_note, eligibility_rule_id,
-  is_conditional, select_all_that_apply, alignment_purpose, min_selections, max_selections,
+  is_conditional, select_all_that_apply, structured_identity_config, alignment_purpose,
+  min_selections, max_selections,
   priority_follow_up_prompt, priority_selection_count, priority_unordered,
   priority_eligible_choice_keys, priority_excluded_choice_keys, priority_min_eligible_selections,
   allowed_special_response_states, display_order
@@ -4541,6 +4731,7 @@ insert into public.questionnaire_questions (
   null,
   false,
   false,
+  null,
   'Identifies the specific behaviors through which someone experiences listening, care, and understanding.',
   1,
   4,
@@ -4559,6 +4750,12 @@ on conflict (category_id, question_key) do update set
   statement = excluded.statement,
   format_label = excluded.format_label,
   response_behavior = excluded.response_behavior,
+  context_note = excluded.context_note,
+  implementation_note = excluded.implementation_note,
+  eligibility_rule_id = excluded.eligibility_rule_id,
+  is_conditional = excluded.is_conditional,
+  select_all_that_apply = excluded.select_all_that_apply,
+  structured_identity_config = excluded.structured_identity_config,
   alignment_purpose = excluded.alignment_purpose,
   min_selections = excluded.min_selections,
   max_selections = excluded.max_selections,
@@ -4742,7 +4939,8 @@ on conflict (question_id, choice_key) do update set
 insert into public.questionnaire_questions (
   id, category_id, question_key, question_number, prompt, statement,
   format_label, response_behavior, context_note, implementation_note, eligibility_rule_id,
-  is_conditional, select_all_that_apply, alignment_purpose, min_selections, max_selections,
+  is_conditional, select_all_that_apply, structured_identity_config, alignment_purpose,
+  min_selections, max_selections,
   priority_follow_up_prompt, priority_selection_count, priority_unordered,
   priority_eligible_choice_keys, priority_excluded_choice_keys, priority_min_eligible_selections,
   allowed_special_response_states, display_order
@@ -4760,6 +4958,7 @@ insert into public.questionnaire_questions (
   null,
   false,
   false,
+  null,
   'Differentiates emotional listening, curiosity, problem solving, action, and preference checking.',
   1,
   1,
@@ -4778,6 +4977,12 @@ on conflict (category_id, question_key) do update set
   statement = excluded.statement,
   format_label = excluded.format_label,
   response_behavior = excluded.response_behavior,
+  context_note = excluded.context_note,
+  implementation_note = excluded.implementation_note,
+  eligibility_rule_id = excluded.eligibility_rule_id,
+  is_conditional = excluded.is_conditional,
+  select_all_that_apply = excluded.select_all_that_apply,
+  structured_identity_config = excluded.structured_identity_config,
   alignment_purpose = excluded.alignment_purpose,
   min_selections = excluded.min_selections,
   max_selections = excluded.max_selections,
@@ -4893,7 +5098,8 @@ on conflict (question_id, choice_key) do update set
 insert into public.questionnaire_questions (
   id, category_id, question_key, question_number, prompt, statement,
   format_label, response_behavior, context_note, implementation_note, eligibility_rule_id,
-  is_conditional, select_all_that_apply, alignment_purpose, min_selections, max_selections,
+  is_conditional, select_all_that_apply, structured_identity_config, alignment_purpose,
+  min_selections, max_selections,
   priority_follow_up_prompt, priority_selection_count, priority_unordered,
   priority_eligible_choice_keys, priority_excluded_choice_keys, priority_min_eligible_selections,
   allowed_special_response_states, display_order
@@ -4911,6 +5117,7 @@ insert into public.questionnaire_questions (
   null,
   false,
   false,
+  null,
   'Captures differences in desired contact without treating either independence or frequent communication as healthier.',
   1,
   1,
@@ -4929,6 +5136,12 @@ on conflict (category_id, question_key) do update set
   statement = excluded.statement,
   format_label = excluded.format_label,
   response_behavior = excluded.response_behavior,
+  context_note = excluded.context_note,
+  implementation_note = excluded.implementation_note,
+  eligibility_rule_id = excluded.eligibility_rule_id,
+  is_conditional = excluded.is_conditional,
+  select_all_that_apply = excluded.select_all_that_apply,
+  structured_identity_config = excluded.structured_identity_config,
   alignment_purpose = excluded.alignment_purpose,
   min_selections = excluded.min_selections,
   max_selections = excluded.max_selections,
@@ -5027,7 +5240,8 @@ on conflict (question_id, choice_key) do update set
 insert into public.questionnaire_questions (
   id, category_id, question_key, question_number, prompt, statement,
   format_label, response_behavior, context_note, implementation_note, eligibility_rule_id,
-  is_conditional, select_all_that_apply, alignment_purpose, min_selections, max_selections,
+  is_conditional, select_all_that_apply, structured_identity_config, alignment_purpose,
+  min_selections, max_selections,
   priority_follow_up_prompt, priority_selection_count, priority_unordered,
   priority_eligible_choice_keys, priority_excluded_choice_keys, priority_min_eligible_selections,
   allowed_special_response_states, display_order
@@ -5045,6 +5259,7 @@ insert into public.questionnaire_questions (
   null,
   false,
   false,
+  null,
   'Measures emotional openness without assuming immediate vulnerability is appropriate for everyone.',
   1,
   1,
@@ -5063,6 +5278,12 @@ on conflict (category_id, question_key) do update set
   statement = excluded.statement,
   format_label = excluded.format_label,
   response_behavior = excluded.response_behavior,
+  context_note = excluded.context_note,
+  implementation_note = excluded.implementation_note,
+  eligibility_rule_id = excluded.eligibility_rule_id,
+  is_conditional = excluded.is_conditional,
+  select_all_that_apply = excluded.select_all_that_apply,
+  structured_identity_config = excluded.structured_identity_config,
   alignment_purpose = excluded.alignment_purpose,
   min_selections = excluded.min_selections,
   max_selections = excluded.max_selections,
@@ -5161,7 +5382,8 @@ on conflict (question_id, choice_key) do update set
 insert into public.questionnaire_questions (
   id, category_id, question_key, question_number, prompt, statement,
   format_label, response_behavior, context_note, implementation_note, eligibility_rule_id,
-  is_conditional, select_all_that_apply, alignment_purpose, min_selections, max_selections,
+  is_conditional, select_all_that_apply, structured_identity_config, alignment_purpose,
+  min_selections, max_selections,
   priority_follow_up_prompt, priority_selection_count, priority_unordered,
   priority_eligible_choice_keys, priority_excluded_choice_keys, priority_min_eligible_selections,
   allowed_special_response_states, display_order
@@ -5179,6 +5401,7 @@ insert into public.questionnaire_questions (
   null,
   false,
   false,
+  null,
   'Identifies the scope of emotional intimacy someone wants within a partnership.',
   1,
   5,
@@ -5197,6 +5420,12 @@ on conflict (category_id, question_key) do update set
   statement = excluded.statement,
   format_label = excluded.format_label,
   response_behavior = excluded.response_behavior,
+  context_note = excluded.context_note,
+  implementation_note = excluded.implementation_note,
+  eligibility_rule_id = excluded.eligibility_rule_id,
+  is_conditional = excluded.is_conditional,
+  select_all_that_apply = excluded.select_all_that_apply,
+  structured_identity_config = excluded.structured_identity_config,
   alignment_purpose = excluded.alignment_purpose,
   min_selections = excluded.min_selections,
   max_selections = excluded.max_selections,
@@ -5397,7 +5626,8 @@ on conflict (question_id, choice_key) do update set
 insert into public.questionnaire_questions (
   id, category_id, question_key, question_number, prompt, statement,
   format_label, response_behavior, context_note, implementation_note, eligibility_rule_id,
-  is_conditional, select_all_that_apply, alignment_purpose, min_selections, max_selections,
+  is_conditional, select_all_that_apply, structured_identity_config, alignment_purpose,
+  min_selections, max_selections,
   priority_follow_up_prompt, priority_selection_count, priority_unordered,
   priority_eligible_choice_keys, priority_excluded_choice_keys, priority_min_eligible_selections,
   allowed_special_response_states, display_order
@@ -5415,6 +5645,7 @@ insert into public.questionnaire_questions (
   null,
   false,
   false,
+  null,
   'Reveals differences in emotional support needs during moments of distress.',
   1,
   1,
@@ -5433,6 +5664,12 @@ on conflict (category_id, question_key) do update set
   statement = excluded.statement,
   format_label = excluded.format_label,
   response_behavior = excluded.response_behavior,
+  context_note = excluded.context_note,
+  implementation_note = excluded.implementation_note,
+  eligibility_rule_id = excluded.eligibility_rule_id,
+  is_conditional = excluded.is_conditional,
+  select_all_that_apply = excluded.select_all_that_apply,
+  structured_identity_config = excluded.structured_identity_config,
   alignment_purpose = excluded.alignment_purpose,
   min_selections = excluded.min_selections,
   max_selections = excluded.max_selections,
@@ -5548,7 +5785,8 @@ on conflict (question_id, choice_key) do update set
 insert into public.questionnaire_questions (
   id, category_id, question_key, question_number, prompt, statement,
   format_label, response_behavior, context_note, implementation_note, eligibility_rule_id,
-  is_conditional, select_all_that_apply, alignment_purpose, min_selections, max_selections,
+  is_conditional, select_all_that_apply, structured_identity_config, alignment_purpose,
+  min_selections, max_selections,
   priority_follow_up_prompt, priority_selection_count, priority_unordered,
   priority_eligible_choice_keys, priority_excluded_choice_keys, priority_min_eligible_selections,
   allowed_special_response_states, display_order
@@ -5566,6 +5804,7 @@ insert into public.questionnaire_questions (
   null,
   false,
   false,
+  null,
   'Identifies whether someone first seeks factual clarity, mutual understanding, emotional repair, underlying causes, reassurance, or reflection.',
   1,
   1,
@@ -5584,6 +5823,12 @@ on conflict (category_id, question_key) do update set
   statement = excluded.statement,
   format_label = excluded.format_label,
   response_behavior = excluded.response_behavior,
+  context_note = excluded.context_note,
+  implementation_note = excluded.implementation_note,
+  eligibility_rule_id = excluded.eligibility_rule_id,
+  is_conditional = excluded.is_conditional,
+  select_all_that_apply = excluded.select_all_that_apply,
+  structured_identity_config = excluded.structured_identity_config,
   alignment_purpose = excluded.alignment_purpose,
   min_selections = excluded.min_selections,
   max_selections = excluded.max_selections,
@@ -5699,7 +5944,8 @@ on conflict (question_id, choice_key) do update set
 insert into public.questionnaire_questions (
   id, category_id, question_key, question_number, prompt, statement,
   format_label, response_behavior, context_note, implementation_note, eligibility_rule_id,
-  is_conditional, select_all_that_apply, alignment_purpose, min_selections, max_selections,
+  is_conditional, select_all_that_apply, structured_identity_config, alignment_purpose,
+  min_selections, max_selections,
   priority_follow_up_prompt, priority_selection_count, priority_unordered,
   priority_eligible_choice_keys, priority_excluded_choice_keys, priority_min_eligible_selections,
   allowed_special_response_states, display_order
@@ -5717,6 +5963,7 @@ insert into public.questionnaire_questions (
   null,
   false,
   false,
+  null,
   'Identifies the communication qualities someone most needs from a partner.',
   1,
   5,
@@ -5735,6 +5982,12 @@ on conflict (category_id, question_key) do update set
   statement = excluded.statement,
   format_label = excluded.format_label,
   response_behavior = excluded.response_behavior,
+  context_note = excluded.context_note,
+  implementation_note = excluded.implementation_note,
+  eligibility_rule_id = excluded.eligibility_rule_id,
+  is_conditional = excluded.is_conditional,
+  select_all_that_apply = excluded.select_all_that_apply,
+  structured_identity_config = excluded.structured_identity_config,
   alignment_purpose = excluded.alignment_purpose,
   min_selections = excluded.min_selections,
   max_selections = excluded.max_selections,
@@ -5970,7 +6223,8 @@ on conflict (version_id, category_key) do update set
 insert into public.questionnaire_questions (
   id, category_id, question_key, question_number, prompt, statement,
   format_label, response_behavior, context_note, implementation_note, eligibility_rule_id,
-  is_conditional, select_all_that_apply, alignment_purpose, min_selections, max_selections,
+  is_conditional, select_all_that_apply, structured_identity_config, alignment_purpose,
+  min_selections, max_selections,
   priority_follow_up_prompt, priority_selection_count, priority_unordered,
   priority_eligible_choice_keys, priority_excluded_choice_keys, priority_min_eligible_selections,
   allowed_special_response_states, display_order
@@ -5988,6 +6242,7 @@ insert into public.questionnaire_questions (
   null,
   false,
   false,
+  null,
   'Identifies someone''s initial response to relational tension: direct engagement, inquiry, reflection, de escalation, observation, or avoidance.',
   1,
   1,
@@ -6006,6 +6261,12 @@ on conflict (category_id, question_key) do update set
   statement = excluded.statement,
   format_label = excluded.format_label,
   response_behavior = excluded.response_behavior,
+  context_note = excluded.context_note,
+  implementation_note = excluded.implementation_note,
+  eligibility_rule_id = excluded.eligibility_rule_id,
+  is_conditional = excluded.is_conditional,
+  select_all_that_apply = excluded.select_all_that_apply,
+  structured_identity_config = excluded.structured_identity_config,
   alignment_purpose = excluded.alignment_purpose,
   min_selections = excluded.min_selections,
   max_selections = excluded.max_selections,
@@ -6121,7 +6382,8 @@ on conflict (question_id, choice_key) do update set
 insert into public.questionnaire_questions (
   id, category_id, question_key, question_number, prompt, statement,
   format_label, response_behavior, context_note, implementation_note, eligibility_rule_id,
-  is_conditional, select_all_that_apply, alignment_purpose, min_selections, max_selections,
+  is_conditional, select_all_that_apply, structured_identity_config, alignment_purpose,
+  min_selections, max_selections,
   priority_follow_up_prompt, priority_selection_count, priority_unordered,
   priority_eligible_choice_keys, priority_excluded_choice_keys, priority_min_eligible_selections,
   allowed_special_response_states, display_order
@@ -6139,6 +6401,7 @@ insert into public.questionnaire_questions (
   null,
   false,
   false,
+  null,
   'Measures preferred de escalation and re engagement practices during active conflict.',
   1,
   1,
@@ -6157,6 +6420,12 @@ on conflict (category_id, question_key) do update set
   statement = excluded.statement,
   format_label = excluded.format_label,
   response_behavior = excluded.response_behavior,
+  context_note = excluded.context_note,
+  implementation_note = excluded.implementation_note,
+  eligibility_rule_id = excluded.eligibility_rule_id,
+  is_conditional = excluded.is_conditional,
+  select_all_that_apply = excluded.select_all_that_apply,
+  structured_identity_config = excluded.structured_identity_config,
   alignment_purpose = excluded.alignment_purpose,
   min_selections = excluded.min_selections,
   max_selections = excluded.max_selections,
@@ -6272,7 +6541,8 @@ on conflict (question_id, choice_key) do update set
 insert into public.questionnaire_questions (
   id, category_id, question_key, question_number, prompt, statement,
   format_label, response_behavior, context_note, implementation_note, eligibility_rule_id,
-  is_conditional, select_all_that_apply, alignment_purpose, min_selections, max_selections,
+  is_conditional, select_all_that_apply, structured_identity_config, alignment_purpose,
+  min_selections, max_selections,
   priority_follow_up_prompt, priority_selection_count, priority_unordered,
   priority_eligible_choice_keys, priority_excluded_choice_keys, priority_min_eligible_selections,
   allowed_special_response_states, display_order
@@ -6290,6 +6560,7 @@ insert into public.questionnaire_questions (
   null,
   false,
   false,
+  null,
   'Compares expectations for equity, mutual sacrifice, boundaries, influence, and adaptability in compromise.',
   1,
   4,
@@ -6308,6 +6579,12 @@ on conflict (category_id, question_key) do update set
   statement = excluded.statement,
   format_label = excluded.format_label,
   response_behavior = excluded.response_behavior,
+  context_note = excluded.context_note,
+  implementation_note = excluded.implementation_note,
+  eligibility_rule_id = excluded.eligibility_rule_id,
+  is_conditional = excluded.is_conditional,
+  select_all_that_apply = excluded.select_all_that_apply,
+  structured_identity_config = excluded.structured_identity_config,
   alignment_purpose = excluded.alignment_purpose,
   min_selections = excluded.min_selections,
   max_selections = excluded.max_selections,
@@ -6474,7 +6751,8 @@ on conflict (question_id, choice_key) do update set
 insert into public.questionnaire_questions (
   id, category_id, question_key, question_number, prompt, statement,
   format_label, response_behavior, context_note, implementation_note, eligibility_rule_id,
-  is_conditional, select_all_that_apply, alignment_purpose, min_selections, max_selections,
+  is_conditional, select_all_that_apply, structured_identity_config, alignment_purpose,
+  min_selections, max_selections,
   priority_follow_up_prompt, priority_selection_count, priority_unordered,
   priority_eligible_choice_keys, priority_excluded_choice_keys, priority_min_eligible_selections,
   allowed_special_response_states, display_order
@@ -6492,6 +6770,7 @@ insert into public.questionnaire_questions (
   null,
   false,
   false,
+  null,
   'Reveals tolerance for unresolved differences and expectations for reaching closure.',
   1,
   1,
@@ -6510,6 +6789,12 @@ on conflict (category_id, question_key) do update set
   statement = excluded.statement,
   format_label = excluded.format_label,
   response_behavior = excluded.response_behavior,
+  context_note = excluded.context_note,
+  implementation_note = excluded.implementation_note,
+  eligibility_rule_id = excluded.eligibility_rule_id,
+  is_conditional = excluded.is_conditional,
+  select_all_that_apply = excluded.select_all_that_apply,
+  structured_identity_config = excluded.structured_identity_config,
   alignment_purpose = excluded.alignment_purpose,
   min_selections = excluded.min_selections,
   max_selections = excluded.max_selections,
@@ -6625,7 +6910,8 @@ on conflict (question_id, choice_key) do update set
 insert into public.questionnaire_questions (
   id, category_id, question_key, question_number, prompt, statement,
   format_label, response_behavior, context_note, implementation_note, eligibility_rule_id,
-  is_conditional, select_all_that_apply, alignment_purpose, min_selections, max_selections,
+  is_conditional, select_all_that_apply, structured_identity_config, alignment_purpose,
+  min_selections, max_selections,
   priority_follow_up_prompt, priority_selection_count, priority_unordered,
   priority_eligible_choice_keys, priority_excluded_choice_keys, priority_min_eligible_selections,
   allowed_special_response_states, display_order
@@ -6643,6 +6929,7 @@ insert into public.questionnaire_questions (
   null,
   false,
   false,
+  null,
   'Captures conflict vulnerabilities without asking users to portray themselves as defensive or emotionally reactive.',
   1,
   1,
@@ -6661,6 +6948,12 @@ on conflict (category_id, question_key) do update set
   statement = excluded.statement,
   format_label = excluded.format_label,
   response_behavior = excluded.response_behavior,
+  context_note = excluded.context_note,
+  implementation_note = excluded.implementation_note,
+  eligibility_rule_id = excluded.eligibility_rule_id,
+  is_conditional = excluded.is_conditional,
+  select_all_that_apply = excluded.select_all_that_apply,
+  structured_identity_config = excluded.structured_identity_config,
   alignment_purpose = excluded.alignment_purpose,
   min_selections = excluded.min_selections,
   max_selections = excluded.max_selections,
@@ -6776,7 +7069,8 @@ on conflict (question_id, choice_key) do update set
 insert into public.questionnaire_questions (
   id, category_id, question_key, question_number, prompt, statement,
   format_label, response_behavior, context_note, implementation_note, eligibility_rule_id,
-  is_conditional, select_all_that_apply, alignment_purpose, min_selections, max_selections,
+  is_conditional, select_all_that_apply, structured_identity_config, alignment_purpose,
+  min_selections, max_selections,
   priority_follow_up_prompt, priority_selection_count, priority_unordered,
   priority_eligible_choice_keys, priority_excluded_choice_keys, priority_min_eligible_selections,
   allowed_special_response_states, display_order
@@ -6794,6 +7088,7 @@ insert into public.questionnaire_questions (
   null,
   false,
   false,
+  null,
   'Identifies the user''s expectations for remorse, accountability, repair, changed behavior, and forgiveness.',
   1,
   4,
@@ -6812,6 +7107,12 @@ on conflict (category_id, question_key) do update set
   statement = excluded.statement,
   format_label = excluded.format_label,
   response_behavior = excluded.response_behavior,
+  context_note = excluded.context_note,
+  implementation_note = excluded.implementation_note,
+  eligibility_rule_id = excluded.eligibility_rule_id,
+  is_conditional = excluded.is_conditional,
+  select_all_that_apply = excluded.select_all_that_apply,
+  structured_identity_config = excluded.structured_identity_config,
   alignment_purpose = excluded.alignment_purpose,
   min_selections = excluded.min_selections,
   max_selections = excluded.max_selections,
@@ -6978,7 +7279,8 @@ on conflict (question_id, choice_key) do update set
 insert into public.questionnaire_questions (
   id, category_id, question_key, question_number, prompt, statement,
   format_label, response_behavior, context_note, implementation_note, eligibility_rule_id,
-  is_conditional, select_all_that_apply, alignment_purpose, min_selections, max_selections,
+  is_conditional, select_all_that_apply, structured_identity_config, alignment_purpose,
+  min_selections, max_selections,
   priority_follow_up_prompt, priority_selection_count, priority_unordered,
   priority_eligible_choice_keys, priority_excluded_choice_keys, priority_min_eligible_selections,
   allowed_special_response_states, display_order
@@ -6996,6 +7298,7 @@ insert into public.questionnaire_questions (
   null,
   false,
   false,
+  null,
   'Differentiates forgiveness, emotional recovery, restored access, boundaries, and reconciliation.',
   1,
   1,
@@ -7014,6 +7317,12 @@ on conflict (category_id, question_key) do update set
   statement = excluded.statement,
   format_label = excluded.format_label,
   response_behavior = excluded.response_behavior,
+  context_note = excluded.context_note,
+  implementation_note = excluded.implementation_note,
+  eligibility_rule_id = excluded.eligibility_rule_id,
+  is_conditional = excluded.is_conditional,
+  select_all_that_apply = excluded.select_all_that_apply,
+  structured_identity_config = excluded.structured_identity_config,
   alignment_purpose = excluded.alignment_purpose,
   min_selections = excluded.min_selections,
   max_selections = excluded.max_selections,
@@ -7129,7 +7438,8 @@ on conflict (question_id, choice_key) do update set
 insert into public.questionnaire_questions (
   id, category_id, question_key, question_number, prompt, statement,
   format_label, response_behavior, context_note, implementation_note, eligibility_rule_id,
-  is_conditional, select_all_that_apply, alignment_purpose, min_selections, max_selections,
+  is_conditional, select_all_that_apply, structured_identity_config, alignment_purpose,
+  min_selections, max_selections,
   priority_follow_up_prompt, priority_selection_count, priority_unordered,
   priority_eligible_choice_keys, priority_excluded_choice_keys, priority_min_eligible_selections,
   allowed_special_response_states, display_order
@@ -7147,6 +7457,7 @@ insert into public.questionnaire_questions (
   null,
   false,
   false,
+  null,
   'Reveals how someone interprets recurring conflict and when they shift from discussion to accountability, outside help, or compatibility evaluation.',
   1,
   1,
@@ -7165,6 +7476,12 @@ on conflict (category_id, question_key) do update set
   statement = excluded.statement,
   format_label = excluded.format_label,
   response_behavior = excluded.response_behavior,
+  context_note = excluded.context_note,
+  implementation_note = excluded.implementation_note,
+  eligibility_rule_id = excluded.eligibility_rule_id,
+  is_conditional = excluded.is_conditional,
+  select_all_that_apply = excluded.select_all_that_apply,
+  structured_identity_config = excluded.structured_identity_config,
   alignment_purpose = excluded.alignment_purpose,
   min_selections = excluded.min_selections,
   max_selections = excluded.max_selections,
@@ -7280,7 +7597,8 @@ on conflict (question_id, choice_key) do update set
 insert into public.questionnaire_questions (
   id, category_id, question_key, question_number, prompt, statement,
   format_label, response_behavior, context_note, implementation_note, eligibility_rule_id,
-  is_conditional, select_all_that_apply, alignment_purpose, min_selections, max_selections,
+  is_conditional, select_all_that_apply, structured_identity_config, alignment_purpose,
+  min_selections, max_selections,
   priority_follow_up_prompt, priority_selection_count, priority_unordered,
   priority_eligible_choice_keys, priority_excluded_choice_keys, priority_min_eligible_selections,
   allowed_special_response_states, display_order
@@ -7298,6 +7616,7 @@ insert into public.questionnaire_questions (
   null,
   false,
   false,
+  null,
   'Identifies the conflict behaviors someone most needs from a long term partner.',
   1,
   5,
@@ -7316,6 +7635,12 @@ on conflict (category_id, question_key) do update set
   statement = excluded.statement,
   format_label = excluded.format_label,
   response_behavior = excluded.response_behavior,
+  context_note = excluded.context_note,
+  implementation_note = excluded.implementation_note,
+  eligibility_rule_id = excluded.eligibility_rule_id,
+  is_conditional = excluded.is_conditional,
+  select_all_that_apply = excluded.select_all_that_apply,
+  structured_identity_config = excluded.structured_identity_config,
   alignment_purpose = excluded.alignment_purpose,
   min_selections = excluded.min_selections,
   max_selections = excluded.max_selections,
@@ -7533,7 +7858,8 @@ on conflict (question_id, choice_key) do update set
 insert into public.questionnaire_questions (
   id, category_id, question_key, question_number, prompt, statement,
   format_label, response_behavior, context_note, implementation_note, eligibility_rule_id,
-  is_conditional, select_all_that_apply, alignment_purpose, min_selections, max_selections,
+  is_conditional, select_all_that_apply, structured_identity_config, alignment_purpose,
+  min_selections, max_selections,
   priority_follow_up_prompt, priority_selection_count, priority_unordered,
   priority_eligible_choice_keys, priority_excluded_choice_keys, priority_min_eligible_selections,
   allowed_special_response_states, display_order
@@ -7551,6 +7877,7 @@ insert into public.questionnaire_questions (
   null,
   false,
   false,
+  null,
   'Identifies high impact conflict incompatibilities and behaviors that may affect safety or trust without diagnosing either user.',
   1,
   5,
@@ -7569,6 +7896,12 @@ on conflict (category_id, question_key) do update set
   statement = excluded.statement,
   format_label = excluded.format_label,
   response_behavior = excluded.response_behavior,
+  context_note = excluded.context_note,
+  implementation_note = excluded.implementation_note,
+  eligibility_rule_id = excluded.eligibility_rule_id,
+  is_conditional = excluded.is_conditional,
+  select_all_that_apply = excluded.select_all_that_apply,
+  structured_identity_config = excluded.structured_identity_config,
   alignment_purpose = excluded.alignment_purpose,
   min_selections = excluded.min_selections,
   max_selections = excluded.max_selections,
@@ -7774,6 +8107,6037 @@ insert into public.questionnaire_answer_choices (
   'conflict_repair_q10_c12',
   'Treating every disagreement as something that must be won',
   12,
+  false,
+  null
+)
+on conflict (question_id, choice_key) do update set
+  label = excluded.label,
+  display_order = excluded.display_order,
+  mutually_exclusive = excluded.mutually_exclusive,
+  special_response_state = excluded.special_response_state;
+
+insert into public.questionnaire_categories (
+  id, version_id, category_key, category_number, title, status, display_order, locked_product_decisions
+) values (
+  '22222222-2222-4222-8222-000000000005',
+  '11111111-1111-4111-8111-111111111111',
+  'commitment_partnership',
+  5,
+  'Commitment & Partnership',
+  'locked',
+  5,
+  '["Category 1 already defines commitment. This category focuses on concrete partnership behavior.","Multiselect questions are not fully ranked. Only Q1 and Q8 receive a lightweight “choose the two most important” follow up.","Written responses are excluded because this category has no defined use for them at launch.","Structured answers power alignment; follow up priorities determine added weight."]'::jsonb
+)
+on conflict (version_id, category_key) do update set
+  title = excluded.title,
+  status = excluded.status,
+  display_order = excluded.display_order,
+  locked_product_decisions = excluded.locked_product_decisions;
+
+insert into public.questionnaire_questions (
+  id, category_id, question_key, question_number, prompt, statement,
+  format_label, response_behavior, context_note, implementation_note, eligibility_rule_id,
+  is_conditional, select_all_that_apply, structured_identity_config, alignment_purpose,
+  min_selections, max_selections,
+  priority_follow_up_prompt, priority_selection_count, priority_unordered,
+  priority_eligible_choice_keys, priority_excluded_choice_keys, priority_min_eligible_selections,
+  allowed_special_response_states, display_order
+) values (
+  '33333333-3333-4333-8005-000000000001',
+  '22222222-2222-4222-8222-000000000005',
+  'commitment_partnership_q01',
+  1,
+  'Once two people have agreed to an exclusive relationship, what does exclusivity generally require?',
+  null,
+  'Select up to four',
+  'multi_select'::public.questionnaire_response_behavior,
+  null,
+  null,
+  null,
+  false,
+  false,
+  null,
+  'Measures expectations surrounding exclusivity without assuming every couple defines relational boundaries identically.',
+  1,
+  4,
+  'Of the expectations you selected, which two allow the least room for compromise?',
+  2,
+  true,
+  null,
+  null,
+  2,
+  null,
+  1
+)
+on conflict (category_id, question_key) do update set
+  question_number = excluded.question_number,
+  prompt = excluded.prompt,
+  statement = excluded.statement,
+  format_label = excluded.format_label,
+  response_behavior = excluded.response_behavior,
+  context_note = excluded.context_note,
+  implementation_note = excluded.implementation_note,
+  eligibility_rule_id = excluded.eligibility_rule_id,
+  is_conditional = excluded.is_conditional,
+  select_all_that_apply = excluded.select_all_that_apply,
+  structured_identity_config = excluded.structured_identity_config,
+  alignment_purpose = excluded.alignment_purpose,
+  min_selections = excluded.min_selections,
+  max_selections = excluded.max_selections,
+  priority_follow_up_prompt = excluded.priority_follow_up_prompt,
+  priority_selection_count = excluded.priority_selection_count,
+  priority_unordered = excluded.priority_unordered,
+  priority_min_eligible_selections = excluded.priority_min_eligible_selections,
+  allowed_special_response_states = excluded.allowed_special_response_states,
+  display_order = excluded.display_order;
+
+insert into public.questionnaire_answer_choices (
+  id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
+) values (
+  '44444444-4444-4444-8501-000000000001',
+  '33333333-3333-4333-8005-000000000001',
+  'commitment_partnership_q01_c01',
+  'No romantic or sexual involvement with anyone else',
+  1,
+  false,
+  null
+)
+on conflict (question_id, choice_key) do update set
+  label = excluded.label,
+  display_order = excluded.display_order,
+  mutually_exclusive = excluded.mutually_exclusive,
+  special_response_state = excluded.special_response_state;
+
+insert into public.questionnaire_answer_choices (
+  id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
+) values (
+  '44444444-4444-4444-8501-000000000002',
+  '33333333-3333-4333-8005-000000000001',
+  'commitment_partnership_q01_c02',
+  'No dating app activity or maintaining backup romantic options',
+  2,
+  false,
+  null
+)
+on conflict (question_id, choice_key) do update set
+  label = excluded.label,
+  display_order = excluded.display_order,
+  mutually_exclusive = excluded.mutually_exclusive,
+  special_response_state = excluded.special_response_state;
+
+insert into public.questionnaire_answer_choices (
+  id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
+) values (
+  '44444444-4444-4444-8501-000000000003',
+  '33333333-3333-4333-8005-000000000001',
+  'commitment_partnership_q01_c03',
+  'Clear boundaries with former partners',
+  3,
+  false,
+  null
+)
+on conflict (question_id, choice_key) do update set
+  label = excluded.label,
+  display_order = excluded.display_order,
+  mutually_exclusive = excluded.mutually_exclusive,
+  special_response_state = excluded.special_response_state;
+
+insert into public.questionnaire_answer_choices (
+  id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
+) values (
+  '44444444-4444-4444-8501-000000000004',
+  '33333333-3333-4333-8005-000000000001',
+  'commitment_partnership_q01_c04',
+  'Clear boundaries with people who express romantic interest',
+  4,
+  false,
+  null
+)
+on conflict (question_id, choice_key) do update set
+  label = excluded.label,
+  display_order = excluded.display_order,
+  mutually_exclusive = excluded.mutually_exclusive,
+  special_response_state = excluded.special_response_state;
+
+insert into public.questionnaire_answer_choices (
+  id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
+) values (
+  '44444444-4444-4444-8501-000000000005',
+  '33333333-3333-4333-8005-000000000001',
+  'commitment_partnership_q01_c05',
+  'Transparency about interactions that could reasonably affect trust',
+  5,
+  false,
+  null
+)
+on conflict (question_id, choice_key) do update set
+  label = excluded.label,
+  display_order = excluded.display_order,
+  mutually_exclusive = excluded.mutually_exclusive,
+  special_response_state = excluded.special_response_state;
+
+insert into public.questionnaire_answer_choices (
+  id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
+) values (
+  '44444444-4444-4444-8501-000000000006',
+  '33333333-3333-4333-8005-000000000001',
+  'commitment_partnership_q01_c06',
+  'Avoiding emotionally intimate relationships that compete with the partnership',
+  6,
+  false,
+  null
+)
+on conflict (question_id, choice_key) do update set
+  label = excluded.label,
+  display_order = excluded.display_order,
+  mutually_exclusive = excluded.mutually_exclusive,
+  special_response_state = excluded.special_response_state;
+
+insert into public.questionnaire_answer_choices (
+  id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
+) values (
+  '44444444-4444-4444-8501-000000000007',
+  '33333333-3333-4333-8005-000000000001',
+  'commitment_partnership_q01_c07',
+  'Discussing boundaries together rather than relying on assumptions',
+  7,
+  false,
+  null
+)
+on conflict (question_id, choice_key) do update set
+  label = excluded.label,
+  display_order = excluded.display_order,
+  mutually_exclusive = excluded.mutually_exclusive,
+  special_response_state = excluded.special_response_state;
+
+insert into public.questionnaire_answer_choices (
+  id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
+) values (
+  '44444444-4444-4444-8501-000000000008',
+  '33333333-3333-4333-8005-000000000001',
+  'commitment_partnership_q01_c08',
+  'Respecting the relationship in both private and public settings',
+  8,
+  false,
+  null
+)
+on conflict (question_id, choice_key) do update set
+  label = excluded.label,
+  display_order = excluded.display_order,
+  mutually_exclusive = excluded.mutually_exclusive,
+  special_response_state = excluded.special_response_state;
+
+insert into public.questionnaire_answer_choices (
+  id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
+) values (
+  '44444444-4444-4444-8501-000000000009',
+  '33333333-3333-4333-8005-000000000001',
+  'commitment_partnership_q01_c09',
+  'Exclusivity should be defined by the couple rather than assumed',
+  9,
+  false,
+  null
+)
+on conflict (question_id, choice_key) do update set
+  label = excluded.label,
+  display_order = excluded.display_order,
+  mutually_exclusive = excluded.mutually_exclusive,
+  special_response_state = excluded.special_response_state;
+
+insert into public.questionnaire_questions (
+  id, category_id, question_key, question_number, prompt, statement,
+  format_label, response_behavior, context_note, implementation_note, eligibility_rule_id,
+  is_conditional, select_all_that_apply, structured_identity_config, alignment_purpose,
+  min_selections, max_selections,
+  priority_follow_up_prompt, priority_selection_count, priority_unordered,
+  priority_eligible_choice_keys, priority_excluded_choice_keys, priority_min_eligible_selections,
+  allowed_special_response_states, display_order
+) values (
+  '33333333-3333-4333-8005-000000000002',
+  '22222222-2222-4222-8222-000000000005',
+  'commitment_partnership_q02',
+  2,
+  'How should responsibilities generally be divided within a long term relationship?',
+  null,
+  'Single choice',
+  'single_choice'::public.questionnaire_response_behavior,
+  null,
+  null,
+  null,
+  false,
+  false,
+  null,
+  'Identifies how someone understands fairness, roles, flexibility, and shared contribution.',
+  1,
+  1,
+  null,
+  null,
+  true,
+  null,
+  null,
+  null,
+  null,
+  2
+)
+on conflict (category_id, question_key) do update set
+  question_number = excluded.question_number,
+  prompt = excluded.prompt,
+  statement = excluded.statement,
+  format_label = excluded.format_label,
+  response_behavior = excluded.response_behavior,
+  context_note = excluded.context_note,
+  implementation_note = excluded.implementation_note,
+  eligibility_rule_id = excluded.eligibility_rule_id,
+  is_conditional = excluded.is_conditional,
+  select_all_that_apply = excluded.select_all_that_apply,
+  structured_identity_config = excluded.structured_identity_config,
+  alignment_purpose = excluded.alignment_purpose,
+  min_selections = excluded.min_selections,
+  max_selections = excluded.max_selections,
+  priority_follow_up_prompt = excluded.priority_follow_up_prompt,
+  priority_selection_count = excluded.priority_selection_count,
+  priority_unordered = excluded.priority_unordered,
+  priority_min_eligible_selections = excluded.priority_min_eligible_selections,
+  allowed_special_response_states = excluded.allowed_special_response_states,
+  display_order = excluded.display_order;
+
+insert into public.questionnaire_answer_choices (
+  id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
+) values (
+  '44444444-4444-4444-8502-000000000001',
+  '33333333-3333-4333-8005-000000000002',
+  'commitment_partnership_q02_c01',
+  'As equally as possible across most areas',
+  1,
+  false,
+  null
+)
+on conflict (question_id, choice_key) do update set
+  label = excluded.label,
+  display_order = excluded.display_order,
+  mutually_exclusive = excluded.mutually_exclusive,
+  special_response_state = excluded.special_response_state;
+
+insert into public.questionnaire_answer_choices (
+  id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
+) values (
+  '44444444-4444-4444-8502-000000000002',
+  '33333333-3333-4333-8005-000000000002',
+  'commitment_partnership_q02_c02',
+  'According to each person''s strengths and abilities',
+  2,
+  false,
+  null
+)
+on conflict (question_id, choice_key) do update set
+  label = excluded.label,
+  display_order = excluded.display_order,
+  mutually_exclusive = excluded.mutually_exclusive,
+  special_response_state = excluded.special_response_state;
+
+insert into public.questionnaire_answer_choices (
+  id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
+) values (
+  '44444444-4444-4444-8502-000000000003',
+  '33333333-3333-4333-8005-000000000002',
+  'commitment_partnership_q02_c03',
+  'According to available time, energy, and current circumstances',
+  3,
+  false,
+  null
+)
+on conflict (question_id, choice_key) do update set
+  label = excluded.label,
+  display_order = excluded.display_order,
+  mutually_exclusive = excluded.mutually_exclusive,
+  special_response_state = excluded.special_response_state;
+
+insert into public.questionnaire_answer_choices (
+  id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
+) values (
+  '44444444-4444-4444-8502-000000000004',
+  '33333333-3333-4333-8005-000000000002',
+  'commitment_partnership_q02_c04',
+  'Through clearly defined roles that both people accept',
+  4,
+  false,
+  null
+)
+on conflict (question_id, choice_key) do update set
+  label = excluded.label,
+  display_order = excluded.display_order,
+  mutually_exclusive = excluded.mutually_exclusive,
+  special_response_state = excluded.special_response_state;
+
+insert into public.questionnaire_answer_choices (
+  id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
+) values (
+  '44444444-4444-4444-8502-000000000005',
+  '33333333-3333-4333-8005-000000000002',
+  'commitment_partnership_q02_c05',
+  'Flexibly, with each person stepping in wherever needed',
+  5,
+  false,
+  null
+)
+on conflict (question_id, choice_key) do update set
+  label = excluded.label,
+  display_order = excluded.display_order,
+  mutually_exclusive = excluded.mutually_exclusive,
+  special_response_state = excluded.special_response_state;
+
+insert into public.questionnaire_answer_choices (
+  id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
+) values (
+  '44444444-4444-4444-8502-000000000006',
+  '33333333-3333-4333-8005-000000000002',
+  'commitment_partnership_q02_c06',
+  'The division matters less than both people believing it is fair',
+  6,
+  false,
+  null
+)
+on conflict (question_id, choice_key) do update set
+  label = excluded.label,
+  display_order = excluded.display_order,
+  mutually_exclusive = excluded.mutually_exclusive,
+  special_response_state = excluded.special_response_state;
+
+insert into public.questionnaire_questions (
+  id, category_id, question_key, question_number, prompt, statement,
+  format_label, response_behavior, context_note, implementation_note, eligibility_rule_id,
+  is_conditional, select_all_that_apply, structured_identity_config, alignment_purpose,
+  min_selections, max_selections,
+  priority_follow_up_prompt, priority_selection_count, priority_unordered,
+  priority_eligible_choice_keys, priority_excluded_choice_keys, priority_min_eligible_selections,
+  allowed_special_response_states, display_order
+) values (
+  '33333333-3333-4333-8005-000000000003',
+  '22222222-2222-4222-8222-000000000005',
+  'commitment_partnership_q03',
+  3,
+  'When one partner is carrying significantly more responsibility for a period of time, what should happen?',
+  null,
+  'Scenario based choice',
+  'scenario_choice'::public.questionnaire_response_behavior,
+  null,
+  null,
+  null,
+  false,
+  false,
+  null,
+  'Reveals expectations for initiative, communication, flexibility, and accountability during unequal seasons.',
+  1,
+  1,
+  null,
+  null,
+  true,
+  null,
+  null,
+  null,
+  null,
+  3
+)
+on conflict (category_id, question_key) do update set
+  question_number = excluded.question_number,
+  prompt = excluded.prompt,
+  statement = excluded.statement,
+  format_label = excluded.format_label,
+  response_behavior = excluded.response_behavior,
+  context_note = excluded.context_note,
+  implementation_note = excluded.implementation_note,
+  eligibility_rule_id = excluded.eligibility_rule_id,
+  is_conditional = excluded.is_conditional,
+  select_all_that_apply = excluded.select_all_that_apply,
+  structured_identity_config = excluded.structured_identity_config,
+  alignment_purpose = excluded.alignment_purpose,
+  min_selections = excluded.min_selections,
+  max_selections = excluded.max_selections,
+  priority_follow_up_prompt = excluded.priority_follow_up_prompt,
+  priority_selection_count = excluded.priority_selection_count,
+  priority_unordered = excluded.priority_unordered,
+  priority_min_eligible_selections = excluded.priority_min_eligible_selections,
+  allowed_special_response_states = excluded.allowed_special_response_states,
+  display_order = excluded.display_order;
+
+insert into public.questionnaire_answer_choices (
+  id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
+) values (
+  '44444444-4444-4444-8503-000000000001',
+  '33333333-3333-4333-8005-000000000003',
+  'commitment_partnership_q03_c01',
+  'The other partner should take on as much as possible without needing to be asked',
+  1,
+  false,
+  null
+)
+on conflict (question_id, choice_key) do update set
+  label = excluded.label,
+  display_order = excluded.display_order,
+  mutually_exclusive = excluded.mutually_exclusive,
+  special_response_state = excluded.special_response_state;
+
+insert into public.questionnaire_answer_choices (
+  id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
+) values (
+  '44444444-4444-4444-8503-000000000002',
+  '33333333-3333-4333-8005-000000000003',
+  'commitment_partnership_q03_c02',
+  'The couple should openly redistribute responsibilities until circumstances improve',
+  2,
+  false,
+  null
+)
+on conflict (question_id, choice_key) do update set
+  label = excluded.label,
+  display_order = excluded.display_order,
+  mutually_exclusive = excluded.mutually_exclusive,
+  special_response_state = excluded.special_response_state;
+
+insert into public.questionnaire_answer_choices (
+  id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
+) values (
+  '44444444-4444-4444-8503-000000000003',
+  '33333333-3333-4333-8005-000000000003',
+  'commitment_partnership_q03_c03',
+  'The partner carrying more should clearly explain what support they need',
+  3,
+  false,
+  null
+)
+on conflict (question_id, choice_key) do update set
+  label = excluded.label,
+  display_order = excluded.display_order,
+  mutually_exclusive = excluded.mutually_exclusive,
+  special_response_state = excluded.special_response_state;
+
+insert into public.questionnaire_answer_choices (
+  id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
+) values (
+  '44444444-4444-4444-8503-000000000004',
+  '33333333-3333-4333-8005-000000000003',
+  'commitment_partnership_q03_c04',
+  'Temporary imbalance is acceptable when both people understand why it is happening',
+  4,
+  false,
+  null
+)
+on conflict (question_id, choice_key) do update set
+  label = excluded.label,
+  display_order = excluded.display_order,
+  mutually_exclusive = excluded.mutually_exclusive,
+  special_response_state = excluded.special_response_state;
+
+insert into public.questionnaire_answer_choices (
+  id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
+) values (
+  '44444444-4444-4444-8503-000000000005',
+  '33333333-3333-4333-8005-000000000003',
+  'commitment_partnership_q03_c05',
+  'The couple should protect each person''s essential responsibilities and reduce less important demands',
+  5,
+  false,
+  null
+)
+on conflict (question_id, choice_key) do update set
+  label = excluded.label,
+  display_order = excluded.display_order,
+  mutually_exclusive = excluded.mutually_exclusive,
+  special_response_state = excluded.special_response_state;
+
+insert into public.questionnaire_answer_choices (
+  id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
+) values (
+  '44444444-4444-4444-8503-000000000006',
+  '33333333-3333-4333-8005-000000000003',
+  'commitment_partnership_q03_c06',
+  'The arrangement should be reviewed regularly so temporary imbalance does not become permanent',
+  6,
+  false,
+  null
+)
+on conflict (question_id, choice_key) do update set
+  label = excluded.label,
+  display_order = excluded.display_order,
+  mutually_exclusive = excluded.mutually_exclusive,
+  special_response_state = excluded.special_response_state;
+
+insert into public.questionnaire_questions (
+  id, category_id, question_key, question_number, prompt, statement,
+  format_label, response_behavior, context_note, implementation_note, eligibility_rule_id,
+  is_conditional, select_all_that_apply, structured_identity_config, alignment_purpose,
+  min_selections, max_selections,
+  priority_follow_up_prompt, priority_selection_count, priority_unordered,
+  priority_eligible_choice_keys, priority_excluded_choice_keys, priority_min_eligible_selections,
+  allowed_special_response_states, display_order
+) values (
+  '33333333-3333-4333-8005-000000000004',
+  '22222222-2222-4222-8222-000000000005',
+  'commitment_partnership_q04',
+  4,
+  'How much independence should each person maintain within a committed relationship?',
+  null,
+  'Independence range',
+  'scale_range'::public.questionnaire_response_behavior,
+  null,
+  null,
+  null,
+  false,
+  false,
+  null,
+  'Measures compatibility around togetherness, autonomy, and the degree to which two lives become integrated.',
+  1,
+  1,
+  null,
+  null,
+  true,
+  null,
+  null,
+  null,
+  null,
+  4
+)
+on conflict (category_id, question_key) do update set
+  question_number = excluded.question_number,
+  prompt = excluded.prompt,
+  statement = excluded.statement,
+  format_label = excluded.format_label,
+  response_behavior = excluded.response_behavior,
+  context_note = excluded.context_note,
+  implementation_note = excluded.implementation_note,
+  eligibility_rule_id = excluded.eligibility_rule_id,
+  is_conditional = excluded.is_conditional,
+  select_all_that_apply = excluded.select_all_that_apply,
+  structured_identity_config = excluded.structured_identity_config,
+  alignment_purpose = excluded.alignment_purpose,
+  min_selections = excluded.min_selections,
+  max_selections = excluded.max_selections,
+  priority_follow_up_prompt = excluded.priority_follow_up_prompt,
+  priority_selection_count = excluded.priority_selection_count,
+  priority_unordered = excluded.priority_unordered,
+  priority_min_eligible_selections = excluded.priority_min_eligible_selections,
+  allowed_special_response_states = excluded.allowed_special_response_states,
+  display_order = excluded.display_order;
+
+insert into public.questionnaire_answer_choices (
+  id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
+) values (
+  '44444444-4444-4444-8504-000000000001',
+  '33333333-3333-4333-8005-000000000004',
+  'commitment_partnership_q04_c01',
+  'Very little. Most free time, plans, and major interests should be shared',
+  1,
+  false,
+  null
+)
+on conflict (question_id, choice_key) do update set
+  label = excluded.label,
+  display_order = excluded.display_order,
+  mutually_exclusive = excluded.mutually_exclusive,
+  special_response_state = excluded.special_response_state;
+
+insert into public.questionnaire_answer_choices (
+  id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
+) values (
+  '44444444-4444-4444-8504-000000000002',
+  '33333333-3333-4333-8005-000000000004',
+  'commitment_partnership_q04_c02',
+  'Some independence, while the relationship remains the clear center of everyday life',
+  2,
+  false,
+  null
+)
+on conflict (question_id, choice_key) do update set
+  label = excluded.label,
+  display_order = excluded.display_order,
+  mutually_exclusive = excluded.mutually_exclusive,
+  special_response_state = excluded.special_response_state;
+
+insert into public.questionnaire_answer_choices (
+  id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
+) values (
+  '44444444-4444-4444-8504-000000000003',
+  '33333333-3333-4333-8005-000000000004',
+  'commitment_partnership_q04_c03',
+  'A balance of shared life and separate friendships, interests, and time',
+  3,
+  false,
+  null
+)
+on conflict (question_id, choice_key) do update set
+  label = excluded.label,
+  display_order = excluded.display_order,
+  mutually_exclusive = excluded.mutually_exclusive,
+  special_response_state = excluded.special_response_state;
+
+insert into public.questionnaire_answer_choices (
+  id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
+) values (
+  '44444444-4444-4444-8504-000000000004',
+  '33333333-3333-4333-8005-000000000004',
+  'commitment_partnership_q04_c04',
+  'Substantial independence, provided commitment and communication remain strong',
+  4,
+  false,
+  null
+)
+on conflict (question_id, choice_key) do update set
+  label = excluded.label,
+  display_order = excluded.display_order,
+  mutually_exclusive = excluded.mutually_exclusive,
+  special_response_state = excluded.special_response_state;
+
+insert into public.questionnaire_answer_choices (
+  id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
+) values (
+  '44444444-4444-4444-8504-000000000005',
+  '33333333-3333-4333-8005-000000000004',
+  'commitment_partnership_q04_c05',
+  'A high degree of independence. Each person should retain a largely self directed life',
+  5,
+  false,
+  null
+)
+on conflict (question_id, choice_key) do update set
+  label = excluded.label,
+  display_order = excluded.display_order,
+  mutually_exclusive = excluded.mutually_exclusive,
+  special_response_state = excluded.special_response_state;
+
+insert into public.questionnaire_questions (
+  id, category_id, question_key, question_number, prompt, statement,
+  format_label, response_behavior, context_note, implementation_note, eligibility_rule_id,
+  is_conditional, select_all_that_apply, structured_identity_config, alignment_purpose,
+  min_selections, max_selections,
+  priority_follow_up_prompt, priority_selection_count, priority_unordered,
+  priority_eligible_choice_keys, priority_excluded_choice_keys, priority_min_eligible_selections,
+  allowed_special_response_states, display_order
+) values (
+  '33333333-3333-4333-8005-000000000005',
+  '22222222-2222-4222-8222-000000000005',
+  'commitment_partnership_q05',
+  5,
+  'Which areas should partners generally discuss before making a decision?',
+  null,
+  'Select up to five',
+  'multi_select'::public.questionnaire_response_behavior,
+  null,
+  null,
+  null,
+  false,
+  false,
+  null,
+  'Identifies where someone draws the line between personal autonomy and shared decision making.',
+  1,
+  5,
+  null,
+  null,
+  true,
+  null,
+  null,
+  null,
+  null,
+  5
+)
+on conflict (category_id, question_key) do update set
+  question_number = excluded.question_number,
+  prompt = excluded.prompt,
+  statement = excluded.statement,
+  format_label = excluded.format_label,
+  response_behavior = excluded.response_behavior,
+  context_note = excluded.context_note,
+  implementation_note = excluded.implementation_note,
+  eligibility_rule_id = excluded.eligibility_rule_id,
+  is_conditional = excluded.is_conditional,
+  select_all_that_apply = excluded.select_all_that_apply,
+  structured_identity_config = excluded.structured_identity_config,
+  alignment_purpose = excluded.alignment_purpose,
+  min_selections = excluded.min_selections,
+  max_selections = excluded.max_selections,
+  priority_follow_up_prompt = excluded.priority_follow_up_prompt,
+  priority_selection_count = excluded.priority_selection_count,
+  priority_unordered = excluded.priority_unordered,
+  priority_min_eligible_selections = excluded.priority_min_eligible_selections,
+  allowed_special_response_states = excluded.allowed_special_response_states,
+  display_order = excluded.display_order;
+
+insert into public.questionnaire_answer_choices (
+  id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
+) values (
+  '44444444-4444-4444-8505-000000000001',
+  '33333333-3333-4333-8005-000000000005',
+  'commitment_partnership_q05_c01',
+  'Major purchases or financial commitments',
+  1,
+  false,
+  null
+)
+on conflict (question_id, choice_key) do update set
+  label = excluded.label,
+  display_order = excluded.display_order,
+  mutually_exclusive = excluded.mutually_exclusive,
+  special_response_state = excluded.special_response_state;
+
+insert into public.questionnaire_answer_choices (
+  id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
+) values (
+  '44444444-4444-4444-8505-000000000002',
+  '33333333-3333-4333-8005-000000000005',
+  'commitment_partnership_q05_c02',
+  'Career changes',
+  2,
+  false,
+  null
+)
+on conflict (question_id, choice_key) do update set
+  label = excluded.label,
+  display_order = excluded.display_order,
+  mutually_exclusive = excluded.mutually_exclusive,
+  special_response_state = excluded.special_response_state;
+
+insert into public.questionnaire_answer_choices (
+  id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
+) values (
+  '44444444-4444-4444-8505-000000000003',
+  '33333333-3333-4333-8005-000000000005',
+  'commitment_partnership_q05_c03',
+  'Relocation or major housing decisions',
+  3,
+  false,
+  null
+)
+on conflict (question_id, choice_key) do update set
+  label = excluded.label,
+  display_order = excluded.display_order,
+  mutually_exclusive = excluded.mutually_exclusive,
+  special_response_state = excluded.special_response_state;
+
+insert into public.questionnaire_answer_choices (
+  id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
+) values (
+  '44444444-4444-4444-8505-000000000004',
+  '33333333-3333-4333-8005-000000000005',
+  'commitment_partnership_q05_c04',
+  'Plans that significantly affect shared time',
+  4,
+  false,
+  null
+)
+on conflict (question_id, choice_key) do update set
+  label = excluded.label,
+  display_order = excluded.display_order,
+  mutually_exclusive = excluded.mutually_exclusive,
+  special_response_state = excluded.special_response_state;
+
+insert into public.questionnaire_answer_choices (
+  id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
+) values (
+  '44444444-4444-4444-8505-000000000005',
+  '33333333-3333-4333-8005-000000000005',
+  'commitment_partnership_q05_c05',
+  'Commitments involving children or family',
+  5,
+  false,
+  null
+)
+on conflict (question_id, choice_key) do update set
+  label = excluded.label,
+  display_order = excluded.display_order,
+  mutually_exclusive = excluded.mutually_exclusive,
+  special_response_state = excluded.special_response_state;
+
+insert into public.questionnaire_answer_choices (
+  id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
+) values (
+  '44444444-4444-4444-8505-000000000006',
+  '33333333-3333-4333-8005-000000000005',
+  'commitment_partnership_q05_c06',
+  'Decisions affecting health or caregiving',
+  6,
+  false,
+  null
+)
+on conflict (question_id, choice_key) do update set
+  label = excluded.label,
+  display_order = excluded.display_order,
+  mutually_exclusive = excluded.mutually_exclusive,
+  special_response_state = excluded.special_response_state;
+
+insert into public.questionnaire_answer_choices (
+  id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
+) values (
+  '44444444-4444-4444-8505-000000000007',
+  '33333333-3333-4333-8005-000000000005',
+  'commitment_partnership_q05_c07',
+  'Major travel or extended time away',
+  7,
+  false,
+  null
+)
+on conflict (question_id, choice_key) do update set
+  label = excluded.label,
+  display_order = excluded.display_order,
+  mutually_exclusive = excluded.mutually_exclusive,
+  special_response_state = excluded.special_response_state;
+
+insert into public.questionnaire_answer_choices (
+  id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
+) values (
+  '44444444-4444-4444-8505-000000000008',
+  '33333333-3333-4333-8005-000000000005',
+  'commitment_partnership_q05_c08',
+  'Changes to shared responsibilities',
+  8,
+  false,
+  null
+)
+on conflict (question_id, choice_key) do update set
+  label = excluded.label,
+  display_order = excluded.display_order,
+  mutually_exclusive = excluded.mutually_exclusive,
+  special_response_state = excluded.special_response_state;
+
+insert into public.questionnaire_answer_choices (
+  id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
+) values (
+  '44444444-4444-4444-8505-000000000009',
+  '33333333-3333-4333-8005-000000000005',
+  'commitment_partnership_q05_c09',
+  'Significant interactions with former partners',
+  9,
+  false,
+  null
+)
+on conflict (question_id, choice_key) do update set
+  label = excluded.label,
+  display_order = excluded.display_order,
+  mutually_exclusive = excluded.mutually_exclusive,
+  special_response_state = excluded.special_response_state;
+
+insert into public.questionnaire_answer_choices (
+  id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
+) values (
+  '44444444-4444-4444-8505-000000000010',
+  '33333333-3333-4333-8005-000000000005',
+  'commitment_partnership_q05_c10',
+  'Personal decisions only when they directly affect the relationship',
+  10,
+  false,
+  null
+)
+on conflict (question_id, choice_key) do update set
+  label = excluded.label,
+  display_order = excluded.display_order,
+  mutually_exclusive = excluded.mutually_exclusive,
+  special_response_state = excluded.special_response_state;
+
+insert into public.questionnaire_questions (
+  id, category_id, question_key, question_number, prompt, statement,
+  format_label, response_behavior, context_note, implementation_note, eligibility_rule_id,
+  is_conditional, select_all_that_apply, structured_identity_config, alignment_purpose,
+  min_selections, max_selections,
+  priority_follow_up_prompt, priority_selection_count, priority_unordered,
+  priority_eligible_choice_keys, priority_excluded_choice_keys, priority_min_eligible_selections,
+  allowed_special_response_states, display_order
+) values (
+  '33333333-3333-4333-8005-000000000006',
+  '22222222-2222-4222-8222-000000000005',
+  'commitment_partnership_q06',
+  6,
+  'When partners strongly disagree about a major decision affecting both people, how should the final decision be made?',
+  null,
+  'Scenario based choice',
+  'scenario_choice'::public.questionnaire_response_behavior,
+  null,
+  null,
+  null,
+  false,
+  false,
+  null,
+  'Measures expectations for mutual consent, influence, compromise, delay, and outside guidance in consequential decisions.',
+  1,
+  1,
+  null,
+  null,
+  true,
+  null,
+  null,
+  null,
+  null,
+  6
+)
+on conflict (category_id, question_key) do update set
+  question_number = excluded.question_number,
+  prompt = excluded.prompt,
+  statement = excluded.statement,
+  format_label = excluded.format_label,
+  response_behavior = excluded.response_behavior,
+  context_note = excluded.context_note,
+  implementation_note = excluded.implementation_note,
+  eligibility_rule_id = excluded.eligibility_rule_id,
+  is_conditional = excluded.is_conditional,
+  select_all_that_apply = excluded.select_all_that_apply,
+  structured_identity_config = excluded.structured_identity_config,
+  alignment_purpose = excluded.alignment_purpose,
+  min_selections = excluded.min_selections,
+  max_selections = excluded.max_selections,
+  priority_follow_up_prompt = excluded.priority_follow_up_prompt,
+  priority_selection_count = excluded.priority_selection_count,
+  priority_unordered = excluded.priority_unordered,
+  priority_min_eligible_selections = excluded.priority_min_eligible_selections,
+  allowed_special_response_states = excluded.allowed_special_response_states,
+  display_order = excluded.display_order;
+
+insert into public.questionnaire_answer_choices (
+  id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
+) values (
+  '44444444-4444-4444-8506-000000000001',
+  '33333333-3333-4333-8005-000000000006',
+  'commitment_partnership_q06_c01',
+  'Continue discussing it until both people can genuinely agree',
+  1,
+  false,
+  null
+)
+on conflict (question_id, choice_key) do update set
+  label = excluded.label,
+  display_order = excluded.display_order,
+  mutually_exclusive = excluded.mutually_exclusive,
+  special_response_state = excluded.special_response_state;
+
+insert into public.questionnaire_answer_choices (
+  id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
+) values (
+  '44444444-4444-4444-8506-000000000002',
+  '33333333-3333-4333-8005-000000000006',
+  'commitment_partnership_q06_c02',
+  'Find the option that requires the most balanced compromise',
+  2,
+  false,
+  null
+)
+on conflict (question_id, choice_key) do update set
+  label = excluded.label,
+  display_order = excluded.display_order,
+  mutually_exclusive = excluded.mutually_exclusive,
+  special_response_state = excluded.special_response_state;
+
+insert into public.questionnaire_answer_choices (
+  id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
+) values (
+  '44444444-4444-4444-8506-000000000003',
+  '33333333-3333-4333-8005-000000000006',
+  'commitment_partnership_q06_c03',
+  'Give greater influence to the person who will be most affected',
+  3,
+  false,
+  null
+)
+on conflict (question_id, choice_key) do update set
+  label = excluded.label,
+  display_order = excluded.display_order,
+  mutually_exclusive = excluded.mutually_exclusive,
+  special_response_state = excluded.special_response_state;
+
+insert into public.questionnaire_answer_choices (
+  id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
+) values (
+  '44444444-4444-4444-8506-000000000004',
+  '33333333-3333-4333-8005-000000000006',
+  'commitment_partnership_q06_c04',
+  'Choose the option that best protects the relationship''s shared future',
+  4,
+  false,
+  null
+)
+on conflict (question_id, choice_key) do update set
+  label = excluded.label,
+  display_order = excluded.display_order,
+  mutually_exclusive = excluded.mutually_exclusive,
+  special_response_state = excluded.special_response_state;
+
+insert into public.questionnaire_answer_choices (
+  id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
+) values (
+  '44444444-4444-4444-8506-000000000005',
+  '33333333-3333-4333-8005-000000000006',
+  'commitment_partnership_q06_c05',
+  'Delay the decision when possible rather than forcing agreement',
+  5,
+  false,
+  null
+)
+on conflict (question_id, choice_key) do update set
+  label = excluded.label,
+  display_order = excluded.display_order,
+  mutually_exclusive = excluded.mutually_exclusive,
+  special_response_state = excluded.special_response_state;
+
+insert into public.questionnaire_answer_choices (
+  id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
+) values (
+  '44444444-4444-4444-8506-000000000006',
+  '33333333-3333-4333-8005-000000000006',
+  'commitment_partnership_q06_c06',
+  'Seek trusted or professional guidance when the consequences are significant',
+  6,
+  false,
+  null
+)
+on conflict (question_id, choice_key) do update set
+  label = excluded.label,
+  display_order = excluded.display_order,
+  mutually_exclusive = excluded.mutually_exclusive,
+  special_response_state = excluded.special_response_state;
+
+insert into public.questionnaire_answer_choices (
+  id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
+) values (
+  '44444444-4444-4444-8506-000000000007',
+  '33333333-3333-4333-8005-000000000006',
+  'commitment_partnership_q06_c07',
+  'Some major decisions should not move forward without both partners'' consent',
+  7,
+  false,
+  null
+)
+on conflict (question_id, choice_key) do update set
+  label = excluded.label,
+  display_order = excluded.display_order,
+  mutually_exclusive = excluded.mutually_exclusive,
+  special_response_state = excluded.special_response_state;
+
+insert into public.questionnaire_questions (
+  id, category_id, question_key, question_number, prompt, statement,
+  format_label, response_behavior, context_note, implementation_note, eligibility_rule_id,
+  is_conditional, select_all_that_apply, structured_identity_config, alignment_purpose,
+  min_selections, max_selections,
+  priority_follow_up_prompt, priority_selection_count, priority_unordered,
+  priority_eligible_choice_keys, priority_excluded_choice_keys, priority_min_eligible_selections,
+  allowed_special_response_states, display_order
+) values (
+  '33333333-3333-4333-8005-000000000007',
+  '22222222-2222-4222-8222-000000000005',
+  'commitment_partnership_q07',
+  7,
+  'If one partner receives a major opportunity that would significantly disrupt the other person''s life, what should matter most?',
+  null,
+  'Single choice',
+  'single_choice'::public.questionnaire_response_behavior,
+  null,
+  null,
+  null,
+  false,
+  false,
+  null,
+  'Examines how someone balances ambition, sacrifice, fairness, consent, and the relationship''s future.',
+  1,
+  1,
+  null,
+  null,
+  true,
+  null,
+  null,
+  null,
+  null,
+  7
+)
+on conflict (category_id, question_key) do update set
+  question_number = excluded.question_number,
+  prompt = excluded.prompt,
+  statement = excluded.statement,
+  format_label = excluded.format_label,
+  response_behavior = excluded.response_behavior,
+  context_note = excluded.context_note,
+  implementation_note = excluded.implementation_note,
+  eligibility_rule_id = excluded.eligibility_rule_id,
+  is_conditional = excluded.is_conditional,
+  select_all_that_apply = excluded.select_all_that_apply,
+  structured_identity_config = excluded.structured_identity_config,
+  alignment_purpose = excluded.alignment_purpose,
+  min_selections = excluded.min_selections,
+  max_selections = excluded.max_selections,
+  priority_follow_up_prompt = excluded.priority_follow_up_prompt,
+  priority_selection_count = excluded.priority_selection_count,
+  priority_unordered = excluded.priority_unordered,
+  priority_min_eligible_selections = excluded.priority_min_eligible_selections,
+  allowed_special_response_states = excluded.allowed_special_response_states,
+  display_order = excluded.display_order;
+
+insert into public.questionnaire_answer_choices (
+  id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
+) values (
+  '44444444-4444-4444-8507-000000000001',
+  '33333333-3333-4333-8005-000000000007',
+  'commitment_partnership_q07_c01',
+  'Whether the opportunity supports the couple''s shared future',
+  1,
+  false,
+  null
+)
+on conflict (question_id, choice_key) do update set
+  label = excluded.label,
+  display_order = excluded.display_order,
+  mutually_exclusive = excluded.mutually_exclusive,
+  special_response_state = excluded.special_response_state;
+
+insert into public.questionnaire_answer_choices (
+  id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
+) values (
+  '44444444-4444-4444-8507-000000000002',
+  '33333333-3333-4333-8005-000000000007',
+  'commitment_partnership_q07_c02',
+  'Whether a comparable opportunity is likely to come again',
+  2,
+  false,
+  null
+)
+on conflict (question_id, choice_key) do update set
+  label = excluded.label,
+  display_order = excluded.display_order,
+  mutually_exclusive = excluded.mutually_exclusive,
+  special_response_state = excluded.special_response_state;
+
+insert into public.questionnaire_answer_choices (
+  id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
+) values (
+  '44444444-4444-4444-8507-000000000003',
+  '33333333-3333-4333-8005-000000000007',
+  'commitment_partnership_q07_c03',
+  'How much disruption or sacrifice the other partner would experience',
+  3,
+  false,
+  null
+)
+on conflict (question_id, choice_key) do update set
+  label = excluded.label,
+  display_order = excluded.display_order,
+  mutually_exclusive = excluded.mutually_exclusive,
+  special_response_state = excluded.special_response_state;
+
+insert into public.questionnaire_answer_choices (
+  id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
+) values (
+  '44444444-4444-4444-8507-000000000004',
+  '33333333-3333-4333-8005-000000000007',
+  'commitment_partnership_q07_c04',
+  'Whether both people can continue pursuing meaningful personal goals',
+  4,
+  false,
+  null
+)
+on conflict (question_id, choice_key) do update set
+  label = excluded.label,
+  display_order = excluded.display_order,
+  mutually_exclusive = excluded.mutually_exclusive,
+  special_response_state = excluded.special_response_state;
+
+insert into public.questionnaire_answer_choices (
+  id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
+) values (
+  '44444444-4444-4444-8507-000000000005',
+  '33333333-3333-4333-8005-000000000007',
+  'commitment_partnership_q07_c05',
+  'Whether the relationship has previously prioritized one partner''s ambitions',
+  5,
+  false,
+  null
+)
+on conflict (question_id, choice_key) do update set
+  label = excluded.label,
+  display_order = excluded.display_order,
+  mutually_exclusive = excluded.mutually_exclusive,
+  special_response_state = excluded.special_response_state;
+
+insert into public.questionnaire_answer_choices (
+  id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
+) values (
+  '44444444-4444-4444-8507-000000000006',
+  '33333333-3333-4333-8005-000000000007',
+  'commitment_partnership_q07_c06',
+  'Whether the couple can create a plan that makes the sacrifice temporary',
+  6,
+  false,
+  null
+)
+on conflict (question_id, choice_key) do update set
+  label = excluded.label,
+  display_order = excluded.display_order,
+  mutually_exclusive = excluded.mutually_exclusive,
+  special_response_state = excluded.special_response_state;
+
+insert into public.questionnaire_answer_choices (
+  id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
+) values (
+  '44444444-4444-4444-8507-000000000007',
+  '33333333-3333-4333-8005-000000000007',
+  'commitment_partnership_q07_c07',
+  'No major opportunity should be accepted unless both partners genuinely agree',
+  7,
+  false,
+  null
+)
+on conflict (question_id, choice_key) do update set
+  label = excluded.label,
+  display_order = excluded.display_order,
+  mutually_exclusive = excluded.mutually_exclusive,
+  special_response_state = excluded.special_response_state;
+
+insert into public.questionnaire_questions (
+  id, category_id, question_key, question_number, prompt, statement,
+  format_label, response_behavior, context_note, implementation_note, eligibility_rule_id,
+  is_conditional, select_all_that_apply, structured_identity_config, alignment_purpose,
+  min_selections, max_selections,
+  priority_follow_up_prompt, priority_selection_count, priority_unordered,
+  priority_eligible_choice_keys, priority_excluded_choice_keys, priority_min_eligible_selections,
+  allowed_special_response_states, display_order
+) values (
+  '33333333-3333-4333-8005-000000000008',
+  '22222222-2222-4222-8222-000000000005',
+  'commitment_partnership_q08',
+  8,
+  'What does reliability from a long term partner mean most to you?',
+  null,
+  'Select up to four',
+  'multi_select'::public.questionnaire_response_behavior,
+  null,
+  null,
+  null,
+  false,
+  false,
+  null,
+  'Identifies the specific forms of dependability through which someone develops trust in a partnership.',
+  1,
+  4,
+  'Of the qualities you selected, which two matter most?',
+  2,
+  true,
+  null,
+  null,
+  2,
+  null,
+  8
+)
+on conflict (category_id, question_key) do update set
+  question_number = excluded.question_number,
+  prompt = excluded.prompt,
+  statement = excluded.statement,
+  format_label = excluded.format_label,
+  response_behavior = excluded.response_behavior,
+  context_note = excluded.context_note,
+  implementation_note = excluded.implementation_note,
+  eligibility_rule_id = excluded.eligibility_rule_id,
+  is_conditional = excluded.is_conditional,
+  select_all_that_apply = excluded.select_all_that_apply,
+  structured_identity_config = excluded.structured_identity_config,
+  alignment_purpose = excluded.alignment_purpose,
+  min_selections = excluded.min_selections,
+  max_selections = excluded.max_selections,
+  priority_follow_up_prompt = excluded.priority_follow_up_prompt,
+  priority_selection_count = excluded.priority_selection_count,
+  priority_unordered = excluded.priority_unordered,
+  priority_min_eligible_selections = excluded.priority_min_eligible_selections,
+  allowed_special_response_states = excluded.allowed_special_response_states,
+  display_order = excluded.display_order;
+
+insert into public.questionnaire_answer_choices (
+  id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
+) values (
+  '44444444-4444-4444-8508-000000000001',
+  '33333333-3333-4333-8005-000000000008',
+  'commitment_partnership_q08_c01',
+  'Following through on promises',
+  1,
+  false,
+  null
+)
+on conflict (question_id, choice_key) do update set
+  label = excluded.label,
+  display_order = excluded.display_order,
+  mutually_exclusive = excluded.mutually_exclusive,
+  special_response_state = excluded.special_response_state;
+
+insert into public.questionnaire_answer_choices (
+  id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
+) values (
+  '44444444-4444-4444-8508-000000000002',
+  '33333333-3333-4333-8005-000000000008',
+  'commitment_partnership_q08_c02',
+  'Being present during difficult periods',
+  2,
+  false,
+  null
+)
+on conflict (question_id, choice_key) do update set
+  label = excluded.label,
+  display_order = excluded.display_order,
+  mutually_exclusive = excluded.mutually_exclusive,
+  special_response_state = excluded.special_response_state;
+
+insert into public.questionnaire_answer_choices (
+  id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
+) values (
+  '44444444-4444-4444-8508-000000000003',
+  '33333333-3333-4333-8005-000000000008',
+  'commitment_partnership_q08_c03',
+  'Handling agreed upon responsibilities without repeated reminders',
+  3,
+  false,
+  null
+)
+on conflict (question_id, choice_key) do update set
+  label = excluded.label,
+  display_order = excluded.display_order,
+  mutually_exclusive = excluded.mutually_exclusive,
+  special_response_state = excluded.special_response_state;
+
+insert into public.questionnaire_answer_choices (
+  id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
+) values (
+  '44444444-4444-4444-8508-000000000004',
+  '33333333-3333-4333-8005-000000000008',
+  'commitment_partnership_q08_c04',
+  'Communicating promptly when plans must change',
+  4,
+  false,
+  null
+)
+on conflict (question_id, choice_key) do update set
+  label = excluded.label,
+  display_order = excluded.display_order,
+  mutually_exclusive = excluded.mutually_exclusive,
+  special_response_state = excluded.special_response_state;
+
+insert into public.questionnaire_answer_choices (
+  id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
+) values (
+  '44444444-4444-4444-8508-000000000005',
+  '33333333-3333-4333-8005-000000000008',
+  'commitment_partnership_q08_c05',
+  'Making decisions consistently rather than unpredictably',
+  5,
+  false,
+  null
+)
+on conflict (question_id, choice_key) do update set
+  label = excluded.label,
+  display_order = excluded.display_order,
+  mutually_exclusive = excluded.mutually_exclusive,
+  special_response_state = excluded.special_response_state;
+
+insert into public.questionnaire_answer_choices (
+  id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
+) values (
+  '44444444-4444-4444-8508-000000000006',
+  '33333333-3333-4333-8005-000000000008',
+  'commitment_partnership_q08_c06',
+  'Protecting information shared in confidence',
+  6,
+  false,
+  null
+)
+on conflict (question_id, choice_key) do update set
+  label = excluded.label,
+  display_order = excluded.display_order,
+  mutually_exclusive = excluded.mutually_exclusive,
+  special_response_state = excluded.special_response_state;
+
+insert into public.questionnaire_answer_choices (
+  id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
+) values (
+  '44444444-4444-4444-8508-000000000007',
+  '33333333-3333-4333-8005-000000000008',
+  'commitment_partnership_q08_c07',
+  'Being financially responsible for agreed upon obligations',
+  7,
+  false,
+  null
+)
+on conflict (question_id, choice_key) do update set
+  label = excluded.label,
+  display_order = excluded.display_order,
+  mutually_exclusive = excluded.mutually_exclusive,
+  special_response_state = excluded.special_response_state;
+
+insert into public.questionnaire_answer_choices (
+  id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
+) values (
+  '44444444-4444-4444-8508-000000000008',
+  '33333333-3333-4333-8005-000000000008',
+  'commitment_partnership_q08_c08',
+  'Defending and respecting the relationship around other people',
+  8,
+  false,
+  null
+)
+on conflict (question_id, choice_key) do update set
+  label = excluded.label,
+  display_order = excluded.display_order,
+  mutually_exclusive = excluded.mutually_exclusive,
+  special_response_state = excluded.special_response_state;
+
+insert into public.questionnaire_answer_choices (
+  id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
+) values (
+  '44444444-4444-4444-8508-000000000009',
+  '33333333-3333-4333-8005-000000000008',
+  'commitment_partnership_q08_c09',
+  'Remaining emotionally engaged when life becomes stressful',
+  9,
+  false,
+  null
+)
+on conflict (question_id, choice_key) do update set
+  label = excluded.label,
+  display_order = excluded.display_order,
+  mutually_exclusive = excluded.mutually_exclusive,
+  special_response_state = excluded.special_response_state;
+
+insert into public.questionnaire_answer_choices (
+  id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
+) values (
+  '44444444-4444-4444-8508-000000000010',
+  '33333333-3333-4333-8005-000000000008',
+  'commitment_partnership_q08_c10',
+  'Asking for help before responsibilities are neglected',
+  10,
+  false,
+  null
+)
+on conflict (question_id, choice_key) do update set
+  label = excluded.label,
+  display_order = excluded.display_order,
+  mutually_exclusive = excluded.mutually_exclusive,
+  special_response_state = excluded.special_response_state;
+
+insert into public.questionnaire_questions (
+  id, category_id, question_key, question_number, prompt, statement,
+  format_label, response_behavior, context_note, implementation_note, eligibility_rule_id,
+  is_conditional, select_all_that_apply, structured_identity_config, alignment_purpose,
+  min_selections, max_selections,
+  priority_follow_up_prompt, priority_selection_count, priority_unordered,
+  priority_eligible_choice_keys, priority_excluded_choice_keys, priority_min_eligible_selections,
+  allowed_special_response_states, display_order
+) values (
+  '33333333-3333-4333-8005-000000000009',
+  '22222222-2222-4222-8222-000000000005',
+  'commitment_partnership_q09',
+  9,
+  'When one partner needs substantial emotional or practical support, what level of responsibility should the other partner generally assume?',
+  null,
+  'Support range',
+  'scale_range'::public.questionnaire_response_behavior,
+  'The appropriate amount of support may change according to the seriousness, duration, and effect of the situation on both people and the relationship.',
+  null,
+  null,
+  false,
+  false,
+  null,
+  'Measures expectations for caregiving and partnership support without suggesting that commitment requires unlimited capacity or professional level care.',
+  1,
+  1,
+  null,
+  null,
+  true,
+  null,
+  null,
+  null,
+  null,
+  9
+)
+on conflict (category_id, question_key) do update set
+  question_number = excluded.question_number,
+  prompt = excluded.prompt,
+  statement = excluded.statement,
+  format_label = excluded.format_label,
+  response_behavior = excluded.response_behavior,
+  context_note = excluded.context_note,
+  implementation_note = excluded.implementation_note,
+  eligibility_rule_id = excluded.eligibility_rule_id,
+  is_conditional = excluded.is_conditional,
+  select_all_that_apply = excluded.select_all_that_apply,
+  structured_identity_config = excluded.structured_identity_config,
+  alignment_purpose = excluded.alignment_purpose,
+  min_selections = excluded.min_selections,
+  max_selections = excluded.max_selections,
+  priority_follow_up_prompt = excluded.priority_follow_up_prompt,
+  priority_selection_count = excluded.priority_selection_count,
+  priority_unordered = excluded.priority_unordered,
+  priority_min_eligible_selections = excluded.priority_min_eligible_selections,
+  allowed_special_response_states = excluded.allowed_special_response_states,
+  display_order = excluded.display_order;
+
+insert into public.questionnaire_answer_choices (
+  id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
+) values (
+  '44444444-4444-4444-8509-000000000001',
+  '33333333-3333-4333-8005-000000000009',
+  'commitment_partnership_q09_c01',
+  'Provide as much support as they reasonably can, even when it requires significant temporary sacrifice',
+  1,
+  false,
+  null
+)
+on conflict (question_id, choice_key) do update set
+  label = excluded.label,
+  display_order = excluded.display_order,
+  mutually_exclusive = excluded.mutually_exclusive,
+  special_response_state = excluded.special_response_state;
+
+insert into public.questionnaire_answer_choices (
+  id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
+) values (
+  '44444444-4444-4444-8509-000000000002',
+  '33333333-3333-4333-8005-000000000009',
+  'commitment_partnership_q09_c02',
+  'Provide substantial support while remaining honest about their own limits',
+  2,
+  false,
+  null
+)
+on conflict (question_id, choice_key) do update set
+  label = excluded.label,
+  display_order = excluded.display_order,
+  mutually_exclusive = excluded.mutually_exclusive,
+  special_response_state = excluded.special_response_state;
+
+insert into public.questionnaire_answer_choices (
+  id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
+) values (
+  '44444444-4444-4444-8509-000000000003',
+  '33333333-3333-4333-8005-000000000009',
+  'commitment_partnership_q09_c03',
+  'Provide meaningful support while also involving family, friends, or professionals when appropriate',
+  3,
+  false,
+  null
+)
+on conflict (question_id, choice_key) do update set
+  label = excluded.label,
+  display_order = excluded.display_order,
+  mutually_exclusive = excluded.mutually_exclusive,
+  special_response_state = excluded.special_response_state;
+
+insert into public.questionnaire_answer_choices (
+  id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
+) values (
+  '44444444-4444-4444-8509-000000000004',
+  '33333333-3333-4333-8005-000000000009',
+  'commitment_partnership_q09_c04',
+  'Provide support without becoming primarily responsible for managing the other person''s needs',
+  4,
+  false,
+  null
+)
+on conflict (question_id, choice_key) do update set
+  label = excluded.label,
+  display_order = excluded.display_order,
+  mutually_exclusive = excluded.mutually_exclusive,
+  special_response_state = excluded.special_response_state;
+
+insert into public.questionnaire_answer_choices (
+  id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
+) values (
+  '44444444-4444-4444-8509-000000000005',
+  '33333333-3333-4333-8005-000000000009',
+  'commitment_partnership_q09_c05',
+  'Maintain more limited involvement because each person should remain primarily responsible for managing their own needs',
+  5,
+  false,
+  null
+)
+on conflict (question_id, choice_key) do update set
+  label = excluded.label,
+  display_order = excluded.display_order,
+  mutually_exclusive = excluded.mutually_exclusive,
+  special_response_state = excluded.special_response_state;
+
+insert into public.questionnaire_questions (
+  id, category_id, question_key, question_number, prompt, statement,
+  format_label, response_behavior, context_note, implementation_note, eligibility_rule_id,
+  is_conditional, select_all_that_apply, structured_identity_config, alignment_purpose,
+  min_selections, max_selections,
+  priority_follow_up_prompt, priority_selection_count, priority_unordered,
+  priority_eligible_choice_keys, priority_excluded_choice_keys, priority_min_eligible_selections,
+  allowed_special_response_states, display_order
+) values (
+  '33333333-3333-4333-8005-000000000010',
+  '22222222-2222-4222-8222-000000000005',
+  'commitment_partnership_q10',
+  10,
+  'If a committed relationship becomes difficult for an extended period, what should determine whether the couple continues working on it?',
+  null,
+  'Select up to four',
+  'multi_select'::public.questionnaire_response_behavior,
+  null,
+  null,
+  null,
+  false,
+  false,
+  null,
+  'Identifies how someone balances perseverance, progress, compatibility, safety, and personal boundaries when commitment is tested.',
+  1,
+  4,
+  null,
+  null,
+  true,
+  null,
+  null,
+  null,
+  null,
+  10
+)
+on conflict (category_id, question_key) do update set
+  question_number = excluded.question_number,
+  prompt = excluded.prompt,
+  statement = excluded.statement,
+  format_label = excluded.format_label,
+  response_behavior = excluded.response_behavior,
+  context_note = excluded.context_note,
+  implementation_note = excluded.implementation_note,
+  eligibility_rule_id = excluded.eligibility_rule_id,
+  is_conditional = excluded.is_conditional,
+  select_all_that_apply = excluded.select_all_that_apply,
+  structured_identity_config = excluded.structured_identity_config,
+  alignment_purpose = excluded.alignment_purpose,
+  min_selections = excluded.min_selections,
+  max_selections = excluded.max_selections,
+  priority_follow_up_prompt = excluded.priority_follow_up_prompt,
+  priority_selection_count = excluded.priority_selection_count,
+  priority_unordered = excluded.priority_unordered,
+  priority_min_eligible_selections = excluded.priority_min_eligible_selections,
+  allowed_special_response_states = excluded.allowed_special_response_states,
+  display_order = excluded.display_order;
+
+insert into public.questionnaire_answer_choices (
+  id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
+) values (
+  '44444444-4444-4444-8510-000000000001',
+  '33333333-3333-4333-8005-000000000010',
+  'commitment_partnership_q10_c01',
+  'Whether both people still want the relationship',
+  1,
+  false,
+  null
+)
+on conflict (question_id, choice_key) do update set
+  label = excluded.label,
+  display_order = excluded.display_order,
+  mutually_exclusive = excluded.mutually_exclusive,
+  special_response_state = excluded.special_response_state;
+
+insert into public.questionnaire_answer_choices (
+  id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
+) values (
+  '44444444-4444-4444-8510-000000000002',
+  '33333333-3333-4333-8005-000000000010',
+  'commitment_partnership_q10_c02',
+  'Whether both people are making a genuine effort',
+  2,
+  false,
+  null
+)
+on conflict (question_id, choice_key) do update set
+  label = excluded.label,
+  display_order = excluded.display_order,
+  mutually_exclusive = excluded.mutually_exclusive,
+  special_response_state = excluded.special_response_state;
+
+insert into public.questionnaire_answer_choices (
+  id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
+) values (
+  '44444444-4444-4444-8510-000000000003',
+  '33333333-3333-4333-8005-000000000010',
+  'commitment_partnership_q10_c03',
+  'Whether meaningful progress is occurring',
+  3,
+  false,
+  null
+)
+on conflict (question_id, choice_key) do update set
+  label = excluded.label,
+  display_order = excluded.display_order,
+  mutually_exclusive = excluded.mutually_exclusive,
+  special_response_state = excluded.special_response_state;
+
+insert into public.questionnaire_answer_choices (
+  id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
+) values (
+  '44444444-4444-4444-8510-000000000004',
+  '33333333-3333-4333-8005-000000000010',
+  'commitment_partnership_q10_c04',
+  'Whether trust can realistically be repaired',
+  4,
+  false,
+  null
+)
+on conflict (question_id, choice_key) do update set
+  label = excluded.label,
+  display_order = excluded.display_order,
+  mutually_exclusive = excluded.mutually_exclusive,
+  special_response_state = excluded.special_response_state;
+
+insert into public.questionnaire_answer_choices (
+  id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
+) values (
+  '44444444-4444-4444-8510-000000000005',
+  '33333333-3333-4333-8005-000000000010',
+  'commitment_partnership_q10_c05',
+  'Whether the core problem is temporary or likely to remain',
+  5,
+  false,
+  null
+)
+on conflict (question_id, choice_key) do update set
+  label = excluded.label,
+  display_order = excluded.display_order,
+  mutually_exclusive = excluded.mutually_exclusive,
+  special_response_state = excluded.special_response_state;
+
+insert into public.questionnaire_answer_choices (
+  id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
+) values (
+  '44444444-4444-4444-8510-000000000006',
+  '33333333-3333-4333-8005-000000000010',
+  'commitment_partnership_q10_c06',
+  'Whether essential values and future goals remain compatible',
+  6,
+  false,
+  null
+)
+on conflict (question_id, choice_key) do update set
+  label = excluded.label,
+  display_order = excluded.display_order,
+  mutually_exclusive = excluded.mutually_exclusive,
+  special_response_state = excluded.special_response_state;
+
+insert into public.questionnaire_answer_choices (
+  id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
+) values (
+  '44444444-4444-4444-8510-000000000007',
+  '33333333-3333-4333-8005-000000000010',
+  'commitment_partnership_q10_c07',
+  'Whether the relationship remains emotionally and physically safe',
+  7,
+  false,
+  null
+)
+on conflict (question_id, choice_key) do update set
+  label = excluded.label,
+  display_order = excluded.display_order,
+  mutually_exclusive = excluded.mutually_exclusive,
+  special_response_state = excluded.special_response_state;
+
+insert into public.questionnaire_answer_choices (
+  id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
+) values (
+  '44444444-4444-4444-8510-000000000008',
+  '33333333-3333-4333-8005-000000000010',
+  'commitment_partnership_q10_c08',
+  'Whether professional support could help',
+  8,
+  false,
+  null
+)
+on conflict (question_id, choice_key) do update set
+  label = excluded.label,
+  display_order = excluded.display_order,
+  mutually_exclusive = excluded.mutually_exclusive,
+  special_response_state = excluded.special_response_state;
+
+insert into public.questionnaire_answer_choices (
+  id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
+) values (
+  '44444444-4444-4444-8510-000000000009',
+  '33333333-3333-4333-8005-000000000010',
+  'commitment_partnership_q10_c09',
+  'Whether staying requires one person to abandon essential needs or boundaries',
+  9,
+  false,
+  null
+)
+on conflict (question_id, choice_key) do update set
+  label = excluded.label,
+  display_order = excluded.display_order,
+  mutually_exclusive = excluded.mutually_exclusive,
+  special_response_state = excluded.special_response_state;
+
+insert into public.questionnaire_answer_choices (
+  id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
+) values (
+  '44444444-4444-4444-8510-000000000010',
+  '33333333-3333-4333-8005-000000000010',
+  'commitment_partnership_q10_c10',
+  'The commitments and responsibilities the couple has already built together',
+  10,
+  false,
+  null
+)
+on conflict (question_id, choice_key) do update set
+  label = excluded.label,
+  display_order = excluded.display_order,
+  mutually_exclusive = excluded.mutually_exclusive,
+  special_response_state = excluded.special_response_state;
+
+insert into public.questionnaire_categories (
+  id, version_id, category_key, category_number, title, status, display_order, locked_product_decisions
+) values (
+  '22222222-2222-4222-8222-000000000006',
+  '11111111-1111-4111-8111-111111111111',
+  'family_children_parenting',
+  6,
+  'Family, Children & Parenting',
+  'locked',
+  6,
+  '["Holiday division and narrower extended family contact questions were removed in favor of broader role, boundary, and caregiving questions.","Multiselect questions are not fully ranked. Only Q2 and Q10 receive a lightweight “choose the two most important” follow up.","Written responses are excluded because this category has no defined use for them at launch.","Structured answers power alignment; follow up priorities determine added weight."]'::jsonb
+)
+on conflict (version_id, category_key) do update set
+  title = excluded.title,
+  status = excluded.status,
+  display_order = excluded.display_order,
+  locked_product_decisions = excluded.locked_product_decisions;
+
+insert into public.questionnaire_questions (
+  id, category_id, question_key, question_number, prompt, statement,
+  format_label, response_behavior, context_note, implementation_note, eligibility_rule_id,
+  is_conditional, select_all_that_apply, structured_identity_config, alignment_purpose,
+  min_selections, max_selections,
+  priority_follow_up_prompt, priority_selection_count, priority_unordered,
+  priority_eligible_choice_keys, priority_excluded_choice_keys, priority_min_eligible_selections,
+  allowed_special_response_states, display_order
+) values (
+  '33333333-3333-4333-8006-000000000001',
+  '22222222-2222-4222-8222-000000000006',
+  'family_children_parenting_q01',
+  1,
+  'What role would you ideally like extended family to have in your long term relationship?',
+  null,
+  'Family involvement range',
+  'scale_range'::public.questionnaire_response_behavior,
+  null,
+  null,
+  null,
+  false,
+  false,
+  null,
+  'Measures expectations for family closeness, couple autonomy, and extended family involvement.',
+  1,
+  1,
+  null,
+  null,
+  true,
+  null,
+  null,
+  null,
+  null,
+  1
+)
+on conflict (category_id, question_key) do update set
+  question_number = excluded.question_number,
+  prompt = excluded.prompt,
+  statement = excluded.statement,
+  format_label = excluded.format_label,
+  response_behavior = excluded.response_behavior,
+  context_note = excluded.context_note,
+  implementation_note = excluded.implementation_note,
+  eligibility_rule_id = excluded.eligibility_rule_id,
+  is_conditional = excluded.is_conditional,
+  select_all_that_apply = excluded.select_all_that_apply,
+  structured_identity_config = excluded.structured_identity_config,
+  alignment_purpose = excluded.alignment_purpose,
+  min_selections = excluded.min_selections,
+  max_selections = excluded.max_selections,
+  priority_follow_up_prompt = excluded.priority_follow_up_prompt,
+  priority_selection_count = excluded.priority_selection_count,
+  priority_unordered = excluded.priority_unordered,
+  priority_min_eligible_selections = excluded.priority_min_eligible_selections,
+  allowed_special_response_states = excluded.allowed_special_response_states,
+  display_order = excluded.display_order;
+
+insert into public.questionnaire_answer_choices (
+  id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
+) values (
+  '44444444-4444-4444-8601-000000000001',
+  '33333333-3333-4333-8006-000000000001',
+  'family_children_parenting_q01_c01',
+  'A very active role, with frequent contact and substantial involvement in everyday life',
+  1,
+  false,
+  null
+)
+on conflict (question_id, choice_key) do update set
+  label = excluded.label,
+  display_order = excluded.display_order,
+  mutually_exclusive = excluded.mutually_exclusive,
+  special_response_state = excluded.special_response_state;
+
+insert into public.questionnaire_answer_choices (
+  id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
+) values (
+  '44444444-4444-4444-8601-000000000002',
+  '33333333-3333-4333-8006-000000000001',
+  'family_children_parenting_q01_c02',
+  'A close role, with regular contact and involvement in important parts of our lives',
+  2,
+  false,
+  null
+)
+on conflict (question_id, choice_key) do update set
+  label = excluded.label,
+  display_order = excluded.display_order,
+  mutually_exclusive = excluded.mutually_exclusive,
+  special_response_state = excluded.special_response_state;
+
+insert into public.questionnaire_answer_choices (
+  id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
+) values (
+  '44444444-4444-4444-8601-000000000003',
+  '33333333-3333-4333-8006-000000000001',
+  'family_children_parenting_q01_c03',
+  'A balanced role, with meaningful connection and clear independence as a couple',
+  3,
+  false,
+  null
+)
+on conflict (question_id, choice_key) do update set
+  label = excluded.label,
+  display_order = excluded.display_order,
+  mutually_exclusive = excluded.mutually_exclusive,
+  special_response_state = excluded.special_response_state;
+
+insert into public.questionnaire_answer_choices (
+  id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
+) values (
+  '44444444-4444-4444-8601-000000000004',
+  '33333333-3333-4333-8006-000000000001',
+  'family_children_parenting_q01_c04',
+  'A more limited role, primarily centered on important events and occasional time together',
+  4,
+  false,
+  null
+)
+on conflict (question_id, choice_key) do update set
+  label = excluded.label,
+  display_order = excluded.display_order,
+  mutually_exclusive = excluded.mutually_exclusive,
+  special_response_state = excluded.special_response_state;
+
+insert into public.questionnaire_answer_choices (
+  id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
+) values (
+  '44444444-4444-4444-8601-000000000005',
+  '33333333-3333-4333-8006-000000000001',
+  'family_children_parenting_q01_c05',
+  'A minimal role, with the couple maintaining a largely private and independent life',
+  5,
+  false,
+  null
+)
+on conflict (question_id, choice_key) do update set
+  label = excluded.label,
+  display_order = excluded.display_order,
+  mutually_exclusive = excluded.mutually_exclusive,
+  special_response_state = excluded.special_response_state;
+
+insert into public.questionnaire_questions (
+  id, category_id, question_key, question_number, prompt, statement,
+  format_label, response_behavior, context_note, implementation_note, eligibility_rule_id,
+  is_conditional, select_all_that_apply, structured_identity_config, alignment_purpose,
+  min_selections, max_selections,
+  priority_follow_up_prompt, priority_selection_count, priority_unordered,
+  priority_eligible_choice_keys, priority_excluded_choice_keys, priority_min_eligible_selections,
+  allowed_special_response_states, display_order
+) values (
+  '33333333-3333-4333-8006-000000000002',
+  '22222222-2222-4222-8222-000000000006',
+  'family_children_parenting_q02',
+  2,
+  'Which boundaries with extended family are most important in a committed relationship?',
+  null,
+  'Select up to five',
+  'multi_select'::public.questionnaire_response_behavior,
+  null,
+  null,
+  null,
+  false,
+  false,
+  null,
+  'Identifies essential boundaries involving privacy, respect, money, time, parenting, and couple autonomy.',
+  1,
+  5,
+  'Of the boundaries you selected, which two allow the least room for compromise?',
+  2,
+  true,
+  null,
+  null,
+  2,
+  null,
+  2
+)
+on conflict (category_id, question_key) do update set
+  question_number = excluded.question_number,
+  prompt = excluded.prompt,
+  statement = excluded.statement,
+  format_label = excluded.format_label,
+  response_behavior = excluded.response_behavior,
+  context_note = excluded.context_note,
+  implementation_note = excluded.implementation_note,
+  eligibility_rule_id = excluded.eligibility_rule_id,
+  is_conditional = excluded.is_conditional,
+  select_all_that_apply = excluded.select_all_that_apply,
+  structured_identity_config = excluded.structured_identity_config,
+  alignment_purpose = excluded.alignment_purpose,
+  min_selections = excluded.min_selections,
+  max_selections = excluded.max_selections,
+  priority_follow_up_prompt = excluded.priority_follow_up_prompt,
+  priority_selection_count = excluded.priority_selection_count,
+  priority_unordered = excluded.priority_unordered,
+  priority_min_eligible_selections = excluded.priority_min_eligible_selections,
+  allowed_special_response_states = excluded.allowed_special_response_states,
+  display_order = excluded.display_order;
+
+insert into public.questionnaire_answer_choices (
+  id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
+) values (
+  '44444444-4444-4444-8602-000000000001',
+  '33333333-3333-4333-8006-000000000002',
+  'family_children_parenting_q02_c01',
+  'Private relationship matters are not shared without agreement',
+  1,
+  false,
+  null
+)
+on conflict (question_id, choice_key) do update set
+  label = excluded.label,
+  display_order = excluded.display_order,
+  mutually_exclusive = excluded.mutually_exclusive,
+  special_response_state = excluded.special_response_state;
+
+insert into public.questionnaire_answer_choices (
+  id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
+) values (
+  '44444444-4444-4444-8602-000000000002',
+  '33333333-3333-4333-8006-000000000002',
+  'family_children_parenting_q02_c02',
+  'Family members do not make decisions for the couple',
+  2,
+  false,
+  null
+)
+on conflict (question_id, choice_key) do update set
+  label = excluded.label,
+  display_order = excluded.display_order,
+  mutually_exclusive = excluded.mutually_exclusive,
+  special_response_state = excluded.special_response_state;
+
+insert into public.questionnaire_answer_choices (
+  id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
+) values (
+  '44444444-4444-4444-8602-000000000003',
+  '33333333-3333-4333-8006-000000000002',
+  'family_children_parenting_q02_c03',
+  'Visits and access to the home are discussed beforehand',
+  3,
+  false,
+  null
+)
+on conflict (question_id, choice_key) do update set
+  label = excluded.label,
+  display_order = excluded.display_order,
+  mutually_exclusive = excluded.mutually_exclusive,
+  special_response_state = excluded.special_response_state;
+
+insert into public.questionnaire_answer_choices (
+  id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
+) values (
+  '44444444-4444-4444-8602-000000000004',
+  '33333333-3333-4333-8006-000000000002',
+  'family_children_parenting_q02_c04',
+  'Financial help or obligations are agreed upon together',
+  4,
+  false,
+  null
+)
+on conflict (question_id, choice_key) do update set
+  label = excluded.label,
+  display_order = excluded.display_order,
+  mutually_exclusive = excluded.mutually_exclusive,
+  special_response_state = excluded.special_response_state;
+
+insert into public.questionnaire_answer_choices (
+  id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
+) values (
+  '44444444-4444-4444-8602-000000000005',
+  '33333333-3333-4333-8006-000000000002',
+  'family_children_parenting_q02_c05',
+  'Family members treat both partners respectfully',
+  5,
+  false,
+  null
+)
+on conflict (question_id, choice_key) do update set
+  label = excluded.label,
+  display_order = excluded.display_order,
+  mutually_exclusive = excluded.mutually_exclusive,
+  special_response_state = excluded.special_response_state;
+
+insert into public.questionnaire_answer_choices (
+  id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
+) values (
+  '44444444-4444-4444-8602-000000000006',
+  '33333333-3333-4333-8006-000000000002',
+  'family_children_parenting_q02_c06',
+  'Parenting decisions remain with the child''s parent or caregivers',
+  6,
+  false,
+  null
+)
+on conflict (question_id, choice_key) do update set
+  label = excluded.label,
+  display_order = excluded.display_order,
+  mutually_exclusive = excluded.mutually_exclusive,
+  special_response_state = excluded.special_response_state;
+
+insert into public.questionnaire_answer_choices (
+  id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
+) values (
+  '44444444-4444-4444-8602-000000000007',
+  '33333333-3333-4333-8006-000000000002',
+  'family_children_parenting_q02_c07',
+  'Neither partner is pressured to tolerate harmful behavior because "they are family"',
+  7,
+  false,
+  null
+)
+on conflict (question_id, choice_key) do update set
+  label = excluded.label,
+  display_order = excluded.display_order,
+  mutually_exclusive = excluded.mutually_exclusive,
+  special_response_state = excluded.special_response_state;
+
+insert into public.questionnaire_answer_choices (
+  id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
+) values (
+  '44444444-4444-4444-8602-000000000008',
+  '33333333-3333-4333-8006-000000000002',
+  'family_children_parenting_q02_c08',
+  'Time with extended family does not consistently displace the relationship',
+  8,
+  false,
+  null
+)
+on conflict (question_id, choice_key) do update set
+  label = excluded.label,
+  display_order = excluded.display_order,
+  mutually_exclusive = excluded.mutually_exclusive,
+  special_response_state = excluded.special_response_state;
+
+insert into public.questionnaire_answer_choices (
+  id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
+) values (
+  '44444444-4444-4444-8602-000000000009',
+  '33333333-3333-4333-8006-000000000002',
+  'family_children_parenting_q02_c09',
+  'Family members do not undermine one partner to the other',
+  9,
+  false,
+  null
+)
+on conflict (question_id, choice_key) do update set
+  label = excluded.label,
+  display_order = excluded.display_order,
+  mutually_exclusive = excluded.mutually_exclusive,
+  special_response_state = excluded.special_response_state;
+
+insert into public.questionnaire_answer_choices (
+  id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
+) values (
+  '44444444-4444-4444-8602-000000000010',
+  '33333333-3333-4333-8006-000000000002',
+  'family_children_parenting_q02_c10',
+  'Each person may maintain reasonable boundaries with their own family',
+  10,
+  false,
+  null
+)
+on conflict (question_id, choice_key) do update set
+  label = excluded.label,
+  display_order = excluded.display_order,
+  mutually_exclusive = excluded.mutually_exclusive,
+  special_response_state = excluded.special_response_state;
+
+insert into public.questionnaire_questions (
+  id, category_id, question_key, question_number, prompt, statement,
+  format_label, response_behavior, context_note, implementation_note, eligibility_rule_id,
+  is_conditional, select_all_that_apply, structured_identity_config, alignment_purpose,
+  min_selections, max_selections,
+  priority_follow_up_prompt, priority_selection_count, priority_unordered,
+  priority_eligible_choice_keys, priority_excluded_choice_keys, priority_min_eligible_selections,
+  allowed_special_response_states, display_order
+) values (
+  '33333333-3333-4333-8006-000000000003',
+  '22222222-2222-4222-8222-000000000006',
+  'family_children_parenting_q03',
+  3,
+  'If a close family member needs substantial long term help, what level of responsibility should the couple generally assume?',
+  null,
+  'Support range',
+  'scale_range'::public.questionnaire_response_behavior,
+  'The appropriate level of support may depend on the family relationship, seriousness and duration of the need, available resources, other potential caregivers, and the effect on the couple or household.',
+  null,
+  null,
+  false,
+  false,
+  null,
+  'Measures expectations surrounding family duty, caregiving, financial responsibility, shared decision making, and relational boundaries.',
+  1,
+  1,
+  null,
+  null,
+  true,
+  null,
+  null,
+  null,
+  null,
+  3
+)
+on conflict (category_id, question_key) do update set
+  question_number = excluded.question_number,
+  prompt = excluded.prompt,
+  statement = excluded.statement,
+  format_label = excluded.format_label,
+  response_behavior = excluded.response_behavior,
+  context_note = excluded.context_note,
+  implementation_note = excluded.implementation_note,
+  eligibility_rule_id = excluded.eligibility_rule_id,
+  is_conditional = excluded.is_conditional,
+  select_all_that_apply = excluded.select_all_that_apply,
+  structured_identity_config = excluded.structured_identity_config,
+  alignment_purpose = excluded.alignment_purpose,
+  min_selections = excluded.min_selections,
+  max_selections = excluded.max_selections,
+  priority_follow_up_prompt = excluded.priority_follow_up_prompt,
+  priority_selection_count = excluded.priority_selection_count,
+  priority_unordered = excluded.priority_unordered,
+  priority_min_eligible_selections = excluded.priority_min_eligible_selections,
+  allowed_special_response_states = excluded.allowed_special_response_states,
+  display_order = excluded.display_order;
+
+insert into public.questionnaire_answer_choices (
+  id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
+) values (
+  '44444444-4444-4444-8603-000000000001',
+  '33333333-3333-4333-8006-000000000003',
+  'family_children_parenting_q03_c01',
+  'Provide as much direct support as reasonably possible, even if it requires significant sacrifice',
+  1,
+  false,
+  null
+)
+on conflict (question_id, choice_key) do update set
+  label = excluded.label,
+  display_order = excluded.display_order,
+  mutually_exclusive = excluded.mutually_exclusive,
+  special_response_state = excluded.special_response_state;
+
+insert into public.questionnaire_answer_choices (
+  id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
+) values (
+  '44444444-4444-4444-8603-000000000002',
+  '33333333-3333-4333-8006-000000000003',
+  'family_children_parenting_q03_c02',
+  'Provide substantial support while protecting the couple''s essential responsibilities',
+  2,
+  false,
+  null
+)
+on conflict (question_id, choice_key) do update set
+  label = excluded.label,
+  display_order = excluded.display_order,
+  mutually_exclusive = excluded.mutually_exclusive,
+  special_response_state = excluded.special_response_state;
+
+insert into public.questionnaire_answer_choices (
+  id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
+) values (
+  '44444444-4444-4444-8603-000000000003',
+  '33333333-3333-4333-8006-000000000003',
+  'family_children_parenting_q03_c03',
+  'Share meaningful support with other relatives and appropriate community or professional resources',
+  3,
+  false,
+  null
+)
+on conflict (question_id, choice_key) do update set
+  label = excluded.label,
+  display_order = excluded.display_order,
+  mutually_exclusive = excluded.mutually_exclusive,
+  special_response_state = excluded.special_response_state;
+
+insert into public.questionnaire_answer_choices (
+  id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
+) values (
+  '44444444-4444-4444-8603-000000000004',
+  '33333333-3333-4333-8006-000000000003',
+  'family_children_parenting_q03_c04',
+  'Offer limited practical or financial help within clearly agreed boundaries',
+  4,
+  false,
+  null
+)
+on conflict (question_id, choice_key) do update set
+  label = excluded.label,
+  display_order = excluded.display_order,
+  mutually_exclusive = excluded.mutually_exclusive,
+  special_response_state = excluded.special_response_state;
+
+insert into public.questionnaire_answer_choices (
+  id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
+) values (
+  '44444444-4444-4444-8603-000000000005',
+  '33333333-3333-4333-8006-000000000003',
+  'family_children_parenting_q03_c05',
+  'Each partner should remain primarily responsible for deciding what support to provide their own family',
+  5,
+  false,
+  null
+)
+on conflict (question_id, choice_key) do update set
+  label = excluded.label,
+  display_order = excluded.display_order,
+  mutually_exclusive = excluded.mutually_exclusive,
+  special_response_state = excluded.special_response_state;
+
+insert into public.questionnaire_questions (
+  id, category_id, question_key, question_number, prompt, statement,
+  format_label, response_behavior, context_note, implementation_note, eligibility_rule_id,
+  is_conditional, select_all_that_apply, structured_identity_config, alignment_purpose,
+  min_selections, max_selections,
+  priority_follow_up_prompt, priority_selection_count, priority_unordered,
+  priority_eligible_choice_keys, priority_excluded_choice_keys, priority_min_eligible_selections,
+  allowed_special_response_states, display_order
+) values (
+  '33333333-3333-4333-8006-000000000004',
+  '22222222-2222-4222-8222-000000000006',
+  'family_children_parenting_q04',
+  4,
+  'Which paths to building or expanding a family would you genuinely consider?',
+  null,
+  'Select all that apply',
+  'multi_select'::public.questionnaire_response_behavior,
+  null,
+  null,
+  null,
+  false,
+  true,
+  null,
+  'Identifies meaningful openness and limitations surrounding family formation without treating every pathway as interchangeable.',
+  0,
+  null,
+  null,
+  null,
+  true,
+  null,
+  null,
+  null,
+  null,
+  4
+)
+on conflict (category_id, question_key) do update set
+  question_number = excluded.question_number,
+  prompt = excluded.prompt,
+  statement = excluded.statement,
+  format_label = excluded.format_label,
+  response_behavior = excluded.response_behavior,
+  context_note = excluded.context_note,
+  implementation_note = excluded.implementation_note,
+  eligibility_rule_id = excluded.eligibility_rule_id,
+  is_conditional = excluded.is_conditional,
+  select_all_that_apply = excluded.select_all_that_apply,
+  structured_identity_config = excluded.structured_identity_config,
+  alignment_purpose = excluded.alignment_purpose,
+  min_selections = excluded.min_selections,
+  max_selections = excluded.max_selections,
+  priority_follow_up_prompt = excluded.priority_follow_up_prompt,
+  priority_selection_count = excluded.priority_selection_count,
+  priority_unordered = excluded.priority_unordered,
+  priority_min_eligible_selections = excluded.priority_min_eligible_selections,
+  allowed_special_response_states = excluded.allowed_special_response_states,
+  display_order = excluded.display_order;
+
+insert into public.questionnaire_answer_choices (
+  id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
+) values (
+  '44444444-4444-4444-8604-000000000001',
+  '33333333-3333-4333-8006-000000000004',
+  'family_children_parenting_q04_c01',
+  'Having biological children',
+  1,
+  false,
+  null
+)
+on conflict (question_id, choice_key) do update set
+  label = excluded.label,
+  display_order = excluded.display_order,
+  mutually_exclusive = excluded.mutually_exclusive,
+  special_response_state = excluded.special_response_state;
+
+insert into public.questionnaire_answer_choices (
+  id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
+) values (
+  '44444444-4444-4444-8604-000000000002',
+  '33333333-3333-4333-8006-000000000004',
+  'family_children_parenting_q04_c02',
+  'Adoption',
+  2,
+  false,
+  null
+)
+on conflict (question_id, choice_key) do update set
+  label = excluded.label,
+  display_order = excluded.display_order,
+  mutually_exclusive = excluded.mutually_exclusive,
+  special_response_state = excluded.special_response_state;
+
+insert into public.questionnaire_answer_choices (
+  id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
+) values (
+  '44444444-4444-4444-8604-000000000003',
+  '33333333-3333-4333-8006-000000000004',
+  'family_children_parenting_q04_c03',
+  'Foster parenting',
+  3,
+  false,
+  null
+)
+on conflict (question_id, choice_key) do update set
+  label = excluded.label,
+  display_order = excluded.display_order,
+  mutually_exclusive = excluded.mutually_exclusive,
+  special_response_state = excluded.special_response_state;
+
+insert into public.questionnaire_answer_choices (
+  id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
+) values (
+  '44444444-4444-4444-8604-000000000004',
+  '33333333-3333-4333-8006-000000000004',
+  'family_children_parenting_q04_c04',
+  'Becoming a stepparent',
+  4,
+  false,
+  null
+)
+on conflict (question_id, choice_key) do update set
+  label = excluded.label,
+  display_order = excluded.display_order,
+  mutually_exclusive = excluded.mutually_exclusive,
+  special_response_state = excluded.special_response_state;
+
+insert into public.questionnaire_answer_choices (
+  id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
+) values (
+  '44444444-4444-4444-8604-000000000005',
+  '33333333-3333-4333-8006-000000000004',
+  'family_children_parenting_q04_c05',
+  'Using fertility treatment or assisted reproduction',
+  5,
+  false,
+  null
+)
+on conflict (question_id, choice_key) do update set
+  label = excluded.label,
+  display_order = excluded.display_order,
+  mutually_exclusive = excluded.mutually_exclusive,
+  special_response_state = excluded.special_response_state;
+
+insert into public.questionnaire_answer_choices (
+  id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
+) values (
+  '44444444-4444-4444-8604-000000000006',
+  '33333333-3333-4333-8006-000000000004',
+  'family_children_parenting_q04_c06',
+  'Using donor eggs, donor sperm, or embryos',
+  6,
+  false,
+  null
+)
+on conflict (question_id, choice_key) do update set
+  label = excluded.label,
+  display_order = excluded.display_order,
+  mutually_exclusive = excluded.mutually_exclusive,
+  special_response_state = excluded.special_response_state;
+
+insert into public.questionnaire_answer_choices (
+  id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
+) values (
+  '44444444-4444-4444-8604-000000000007',
+  '33333333-3333-4333-8006-000000000004',
+  'family_children_parenting_q04_c07',
+  'Surrogacy',
+  7,
+  false,
+  null
+)
+on conflict (question_id, choice_key) do update set
+  label = excluded.label,
+  display_order = excluded.display_order,
+  mutually_exclusive = excluded.mutually_exclusive,
+  special_response_state = excluded.special_response_state;
+
+insert into public.questionnaire_answer_choices (
+  id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
+) values (
+  '44444444-4444-4444-8604-000000000008',
+  '33333333-3333-4333-8006-000000000004',
+  'family_children_parenting_q04_c08',
+  'Parenting a relative''s child if circumstances required it',
+  8,
+  false,
+  null
+)
+on conflict (question_id, choice_key) do update set
+  label = excluded.label,
+  display_order = excluded.display_order,
+  mutually_exclusive = excluded.mutually_exclusive,
+  special_response_state = excluded.special_response_state;
+
+insert into public.questionnaire_answer_choices (
+  id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
+) values (
+  '44444444-4444-4444-8604-000000000009',
+  '33333333-3333-4333-8006-000000000004',
+  'family_children_parenting_q04_c09',
+  'I already have the number of children I want',
+  9,
+  false,
+  null
+)
+on conflict (question_id, choice_key) do update set
+  label = excluded.label,
+  display_order = excluded.display_order,
+  mutually_exclusive = excluded.mutually_exclusive,
+  special_response_state = excluded.special_response_state;
+
+insert into public.questionnaire_answer_choices (
+  id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
+) values (
+  '44444444-4444-4444-8604-000000000010',
+  '33333333-3333-4333-8006-000000000004',
+  'family_children_parenting_q04_c10',
+  'I am uncertain and would need to explore the options with a partner',
+  10,
+  false,
+  null
+)
+on conflict (question_id, choice_key) do update set
+  label = excluded.label,
+  display_order = excluded.display_order,
+  mutually_exclusive = excluded.mutually_exclusive,
+  special_response_state = excluded.special_response_state;
+
+insert into public.questionnaire_questions (
+  id, category_id, question_key, question_number, prompt, statement,
+  format_label, response_behavior, context_note, implementation_note, eligibility_rule_id,
+  is_conditional, select_all_that_apply, structured_identity_config, alignment_purpose,
+  min_selections, max_selections,
+  priority_follow_up_prompt, priority_selection_count, priority_unordered,
+  priority_eligible_choice_keys, priority_excluded_choice_keys, priority_min_eligible_selections,
+  allowed_special_response_states, display_order
+) values (
+  '33333333-3333-4333-8006-000000000005',
+  '22222222-2222-4222-8222-000000000006',
+  'family_children_parenting_q05',
+  5,
+  'If biological children became difficult or impossible to have, how would you want the couple to proceed?',
+  null,
+  'Scenario based choice',
+  'scenario_choice'::public.questionnaire_response_behavior,
+  null,
+  null,
+  null,
+  false,
+  false,
+  null,
+  'Surfaces potentially life defining expectations involving infertility, alternative family building paths, and non negotiable parenting goals.',
+  1,
+  1,
+  null,
+  null,
+  true,
+  null,
+  null,
+  null,
+  null,
+  5
+)
+on conflict (category_id, question_key) do update set
+  question_number = excluded.question_number,
+  prompt = excluded.prompt,
+  statement = excluded.statement,
+  format_label = excluded.format_label,
+  response_behavior = excluded.response_behavior,
+  context_note = excluded.context_note,
+  implementation_note = excluded.implementation_note,
+  eligibility_rule_id = excluded.eligibility_rule_id,
+  is_conditional = excluded.is_conditional,
+  select_all_that_apply = excluded.select_all_that_apply,
+  structured_identity_config = excluded.structured_identity_config,
+  alignment_purpose = excluded.alignment_purpose,
+  min_selections = excluded.min_selections,
+  max_selections = excluded.max_selections,
+  priority_follow_up_prompt = excluded.priority_follow_up_prompt,
+  priority_selection_count = excluded.priority_selection_count,
+  priority_unordered = excluded.priority_unordered,
+  priority_min_eligible_selections = excluded.priority_min_eligible_selections,
+  allowed_special_response_states = excluded.allowed_special_response_states,
+  display_order = excluded.display_order;
+
+insert into public.questionnaire_answer_choices (
+  id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
+) values (
+  '44444444-4444-4444-8605-000000000001',
+  '33333333-3333-4333-8006-000000000005',
+  'family_children_parenting_q05_c01',
+  'Pursue reasonable medical evaluation or fertility treatment',
+  1,
+  false,
+  null
+)
+on conflict (question_id, choice_key) do update set
+  label = excluded.label,
+  display_order = excluded.display_order,
+  mutually_exclusive = excluded.mutually_exclusive,
+  special_response_state = excluded.special_response_state;
+
+insert into public.questionnaire_answer_choices (
+  id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
+) values (
+  '44444444-4444-4444-8605-000000000002',
+  '33333333-3333-4333-8006-000000000005',
+  'family_children_parenting_q05_c02',
+  'Explore adoption or fostering',
+  2,
+  false,
+  null
+)
+on conflict (question_id, choice_key) do update set
+  label = excluded.label,
+  display_order = excluded.display_order,
+  mutually_exclusive = excluded.mutually_exclusive,
+  special_response_state = excluded.special_response_state;
+
+insert into public.questionnaire_answer_choices (
+  id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
+) values (
+  '44444444-4444-4444-8605-000000000003',
+  '33333333-3333-4333-8006-000000000005',
+  'family_children_parenting_q05_c03',
+  'Consider multiple paths before making a decision',
+  3,
+  false,
+  null
+)
+on conflict (question_id, choice_key) do update set
+  label = excluded.label,
+  display_order = excluded.display_order,
+  mutually_exclusive = excluded.mutually_exclusive,
+  special_response_state = excluded.special_response_state;
+
+insert into public.questionnaire_answer_choices (
+  id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
+) values (
+  '44444444-4444-4444-8605-000000000004',
+  '33333333-3333-4333-8006-000000000005',
+  'family_children_parenting_q05_c04',
+  'Accept a life together without additional children',
+  4,
+  false,
+  null
+)
+on conflict (question_id, choice_key) do update set
+  label = excluded.label,
+  display_order = excluded.display_order,
+  mutually_exclusive = excluded.mutually_exclusive,
+  special_response_state = excluded.special_response_state;
+
+insert into public.questionnaire_answer_choices (
+  id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
+) values (
+  '44444444-4444-4444-8605-000000000005',
+  '33333333-3333-4333-8006-000000000005',
+  'family_children_parenting_q05_c05',
+  'Reevaluate whether the relationship can meet both people''s essential family goals',
+  5,
+  false,
+  null
+)
+on conflict (question_id, choice_key) do update set
+  label = excluded.label,
+  display_order = excluded.display_order,
+  mutually_exclusive = excluded.mutually_exclusive,
+  special_response_state = excluded.special_response_state;
+
+insert into public.questionnaire_answer_choices (
+  id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
+) values (
+  '44444444-4444-4444-8605-000000000006',
+  '33333333-3333-4333-8006-000000000005',
+  'family_children_parenting_q05_c06',
+  'I am not yet sure how I would respond',
+  6,
+  false,
+  null
+)
+on conflict (question_id, choice_key) do update set
+  label = excluded.label,
+  display_order = excluded.display_order,
+  mutually_exclusive = excluded.mutually_exclusive,
+  special_response_state = excluded.special_response_state;
+
+insert into public.questionnaire_questions (
+  id, category_id, question_key, question_number, prompt, statement,
+  format_label, response_behavior, context_note, implementation_note, eligibility_rule_id,
+  is_conditional, select_all_that_apply, structured_identity_config, alignment_purpose,
+  min_selections, max_selections,
+  priority_follow_up_prompt, priority_selection_count, priority_unordered,
+  priority_eligible_choice_keys, priority_excluded_choice_keys, priority_min_eligible_selections,
+  allowed_special_response_states, display_order
+) values (
+  '33333333-3333-4333-8006-000000000006',
+  '22222222-2222-4222-8222-000000000006',
+  'family_children_parenting_q06',
+  6,
+  'How should parenting responsibilities generally be divided?',
+  null,
+  'Single choice',
+  'single_choice'::public.questionnaire_response_behavior,
+  null,
+  null,
+  null,
+  false,
+  false,
+  null,
+  'Identifies expectations for equality, roles, flexibility, and fairness in parenting labor.',
+  1,
+  1,
+  null,
+  null,
+  true,
+  null,
+  null,
+  null,
+  null,
+  6
+)
+on conflict (category_id, question_key) do update set
+  question_number = excluded.question_number,
+  prompt = excluded.prompt,
+  statement = excluded.statement,
+  format_label = excluded.format_label,
+  response_behavior = excluded.response_behavior,
+  context_note = excluded.context_note,
+  implementation_note = excluded.implementation_note,
+  eligibility_rule_id = excluded.eligibility_rule_id,
+  is_conditional = excluded.is_conditional,
+  select_all_that_apply = excluded.select_all_that_apply,
+  structured_identity_config = excluded.structured_identity_config,
+  alignment_purpose = excluded.alignment_purpose,
+  min_selections = excluded.min_selections,
+  max_selections = excluded.max_selections,
+  priority_follow_up_prompt = excluded.priority_follow_up_prompt,
+  priority_selection_count = excluded.priority_selection_count,
+  priority_unordered = excluded.priority_unordered,
+  priority_min_eligible_selections = excluded.priority_min_eligible_selections,
+  allowed_special_response_states = excluded.allowed_special_response_states,
+  display_order = excluded.display_order;
+
+insert into public.questionnaire_answer_choices (
+  id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
+) values (
+  '44444444-4444-4444-8606-000000000001',
+  '33333333-3333-4333-8006-000000000006',
+  'family_children_parenting_q06_c01',
+  'As equally as possible across most responsibilities',
+  1,
+  false,
+  null
+)
+on conflict (question_id, choice_key) do update set
+  label = excluded.label,
+  display_order = excluded.display_order,
+  mutually_exclusive = excluded.mutually_exclusive,
+  special_response_state = excluded.special_response_state;
+
+insert into public.questionnaire_answer_choices (
+  id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
+) values (
+  '44444444-4444-4444-8606-000000000002',
+  '33333333-3333-4333-8006-000000000006',
+  'family_children_parenting_q06_c02',
+  'According to each parent''s strengths and abilities',
+  2,
+  false,
+  null
+)
+on conflict (question_id, choice_key) do update set
+  label = excluded.label,
+  display_order = excluded.display_order,
+  mutually_exclusive = excluded.mutually_exclusive,
+  special_response_state = excluded.special_response_state;
+
+insert into public.questionnaire_answer_choices (
+  id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
+) values (
+  '44444444-4444-4444-8606-000000000003',
+  '33333333-3333-4333-8006-000000000006',
+  'family_children_parenting_q06_c03',
+  'According to work schedules, availability, and current circumstances',
+  3,
+  false,
+  null
+)
+on conflict (question_id, choice_key) do update set
+  label = excluded.label,
+  display_order = excluded.display_order,
+  mutually_exclusive = excluded.mutually_exclusive,
+  special_response_state = excluded.special_response_state;
+
+insert into public.questionnaire_answer_choices (
+  id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
+) values (
+  '44444444-4444-4444-8606-000000000004',
+  '33333333-3333-4333-8006-000000000006',
+  'family_children_parenting_q06_c04',
+  'Through clearly defined roles that both partners willingly accept',
+  4,
+  false,
+  null
+)
+on conflict (question_id, choice_key) do update set
+  label = excluded.label,
+  display_order = excluded.display_order,
+  mutually_exclusive = excluded.mutually_exclusive,
+  special_response_state = excluded.special_response_state;
+
+insert into public.questionnaire_answer_choices (
+  id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
+) values (
+  '44444444-4444-4444-8606-000000000005',
+  '33333333-3333-4333-8006-000000000006',
+  'family_children_parenting_q06_c05',
+  'Flexibly, with each parent stepping in wherever needed',
+  5,
+  false,
+  null
+)
+on conflict (question_id, choice_key) do update set
+  label = excluded.label,
+  display_order = excluded.display_order,
+  mutually_exclusive = excluded.mutually_exclusive,
+  special_response_state = excluded.special_response_state;
+
+insert into public.questionnaire_answer_choices (
+  id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
+) values (
+  '44444444-4444-4444-8606-000000000006',
+  '33333333-3333-4333-8006-000000000006',
+  'family_children_parenting_q06_c06',
+  'The exact division matters less than both people believing it is fair and sustainable',
+  6,
+  false,
+  null
+)
+on conflict (question_id, choice_key) do update set
+  label = excluded.label,
+  display_order = excluded.display_order,
+  mutually_exclusive = excluded.mutually_exclusive,
+  special_response_state = excluded.special_response_state;
+
+insert into public.questionnaire_questions (
+  id, category_id, question_key, question_number, prompt, statement,
+  format_label, response_behavior, context_note, implementation_note, eligibility_rule_id,
+  is_conditional, select_all_that_apply, structured_identity_config, alignment_purpose,
+  min_selections, max_selections,
+  priority_follow_up_prompt, priority_selection_count, priority_unordered,
+  priority_eligible_choice_keys, priority_excluded_choice_keys, priority_min_eligible_selections,
+  allowed_special_response_states, display_order
+) values (
+  '33333333-3333-4333-8006-000000000007',
+  '22222222-2222-4222-8222-000000000006',
+  'family_children_parenting_q07',
+  7,
+  'Which principle should most strongly guide discipline and behavioral expectations for children?',
+  null,
+  'Single choice',
+  'single_choice'::public.questionnaire_response_behavior,
+  null,
+  null,
+  null,
+  false,
+  false,
+  null,
+  'Identifies the user''s leading parenting principle without reducing parenting philosophy to a simplistic strict versus permissive scale.',
+  1,
+  1,
+  null,
+  null,
+  true,
+  null,
+  null,
+  null,
+  null,
+  7
+)
+on conflict (category_id, question_key) do update set
+  question_number = excluded.question_number,
+  prompt = excluded.prompt,
+  statement = excluded.statement,
+  format_label = excluded.format_label,
+  response_behavior = excluded.response_behavior,
+  context_note = excluded.context_note,
+  implementation_note = excluded.implementation_note,
+  eligibility_rule_id = excluded.eligibility_rule_id,
+  is_conditional = excluded.is_conditional,
+  select_all_that_apply = excluded.select_all_that_apply,
+  structured_identity_config = excluded.structured_identity_config,
+  alignment_purpose = excluded.alignment_purpose,
+  min_selections = excluded.min_selections,
+  max_selections = excluded.max_selections,
+  priority_follow_up_prompt = excluded.priority_follow_up_prompt,
+  priority_selection_count = excluded.priority_selection_count,
+  priority_unordered = excluded.priority_unordered,
+  priority_min_eligible_selections = excluded.priority_min_eligible_selections,
+  allowed_special_response_states = excluded.allowed_special_response_states,
+  display_order = excluded.display_order;
+
+insert into public.questionnaire_answer_choices (
+  id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
+) values (
+  '44444444-4444-4444-8607-000000000001',
+  '33333333-3333-4333-8006-000000000007',
+  'family_children_parenting_q07_c01',
+  'Clear rules and consistent consequences',
+  1,
+  false,
+  null
+)
+on conflict (question_id, choice_key) do update set
+  label = excluded.label,
+  display_order = excluded.display_order,
+  mutually_exclusive = excluded.mutually_exclusive,
+  special_response_state = excluded.special_response_state;
+
+insert into public.questionnaire_answer_choices (
+  id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
+) values (
+  '44444444-4444-4444-8607-000000000002',
+  '33333333-3333-4333-8006-000000000007',
+  'family_children_parenting_q07_c02',
+  'Teaching children to understand how their behavior affects others',
+  2,
+  false,
+  null
+)
+on conflict (question_id, choice_key) do update set
+  label = excluded.label,
+  display_order = excluded.display_order,
+  mutually_exclusive = excluded.mutually_exclusive,
+  special_response_state = excluded.special_response_state;
+
+insert into public.questionnaire_answer_choices (
+  id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
+) values (
+  '44444444-4444-4444-8607-000000000003',
+  '33333333-3333-4333-8006-000000000007',
+  'family_children_parenting_q07_c03',
+  'Adjusting expectations to the child''s age, temperament, and needs',
+  3,
+  false,
+  null
+)
+on conflict (question_id, choice_key) do update set
+  label = excluded.label,
+  display_order = excluded.display_order,
+  mutually_exclusive = excluded.mutually_exclusive,
+  special_response_state = excluded.special_response_state;
+
+insert into public.questionnaire_answer_choices (
+  id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
+) values (
+  '44444444-4444-4444-8607-000000000004',
+  '33333333-3333-4333-8006-000000000007',
+  'family_children_parenting_q07_c04',
+  'Protecting the parent child relationship while correcting behavior',
+  4,
+  false,
+  null
+)
+on conflict (question_id, choice_key) do update set
+  label = excluded.label,
+  display_order = excluded.display_order,
+  mutually_exclusive = excluded.mutually_exclusive,
+  special_response_state = excluded.special_response_state;
+
+insert into public.questionnaire_answer_choices (
+  id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
+) values (
+  '44444444-4444-4444-8607-000000000005',
+  '33333333-3333-4333-8006-000000000007',
+  'family_children_parenting_q07_c05',
+  'Parents presenting a consistent approach whenever possible',
+  5,
+  false,
+  null
+)
+on conflict (question_id, choice_key) do update set
+  label = excluded.label,
+  display_order = excluded.display_order,
+  mutually_exclusive = excluded.mutually_exclusive,
+  special_response_state = excluded.special_response_state;
+
+insert into public.questionnaire_answer_choices (
+  id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
+) values (
+  '44444444-4444-4444-8607-000000000006',
+  '33333333-3333-4333-8006-000000000007',
+  'family_children_parenting_q07_c06',
+  'Using structure while remaining willing to reconsider an ineffective response',
+  6,
+  false,
+  null
+)
+on conflict (question_id, choice_key) do update set
+  label = excluded.label,
+  display_order = excluded.display_order,
+  mutually_exclusive = excluded.mutually_exclusive,
+  special_response_state = excluded.special_response_state;
+
+insert into public.questionnaire_questions (
+  id, category_id, question_key, question_number, prompt, statement,
+  format_label, response_behavior, context_note, implementation_note, eligibility_rule_id,
+  is_conditional, select_all_that_apply, structured_identity_config, alignment_purpose,
+  min_selections, max_selections,
+  priority_follow_up_prompt, priority_selection_count, priority_unordered,
+  priority_eligible_choice_keys, priority_excluded_choice_keys, priority_min_eligible_selections,
+  allowed_special_response_states, display_order
+) values (
+  '33333333-3333-4333-8006-000000000008',
+  '22222222-2222-4222-8222-000000000006',
+  'family_children_parenting_q08',
+  8,
+  'When parents disagree about an important decision involving a child, what should happen?',
+  null,
+  'Scenario based choice',
+  'scenario_choice'::public.questionnaire_response_behavior,
+  null,
+  null,
+  null,
+  false,
+  false,
+  null,
+  'Measures expectations for cooperation, expertise, experimentation, outside guidance, and mutual consent.',
+  1,
+  1,
+  null,
+  null,
+  true,
+  null,
+  null,
+  null,
+  null,
+  8
+)
+on conflict (category_id, question_key) do update set
+  question_number = excluded.question_number,
+  prompt = excluded.prompt,
+  statement = excluded.statement,
+  format_label = excluded.format_label,
+  response_behavior = excluded.response_behavior,
+  context_note = excluded.context_note,
+  implementation_note = excluded.implementation_note,
+  eligibility_rule_id = excluded.eligibility_rule_id,
+  is_conditional = excluded.is_conditional,
+  select_all_that_apply = excluded.select_all_that_apply,
+  structured_identity_config = excluded.structured_identity_config,
+  alignment_purpose = excluded.alignment_purpose,
+  min_selections = excluded.min_selections,
+  max_selections = excluded.max_selections,
+  priority_follow_up_prompt = excluded.priority_follow_up_prompt,
+  priority_selection_count = excluded.priority_selection_count,
+  priority_unordered = excluded.priority_unordered,
+  priority_min_eligible_selections = excluded.priority_min_eligible_selections,
+  allowed_special_response_states = excluded.allowed_special_response_states,
+  display_order = excluded.display_order;
+
+insert into public.questionnaire_answer_choices (
+  id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
+) values (
+  '44444444-4444-4444-8608-000000000001',
+  '33333333-3333-4333-8006-000000000008',
+  'family_children_parenting_q08_c01',
+  'Continue discussing it until both parents can support the decision',
+  1,
+  false,
+  null
+)
+on conflict (question_id, choice_key) do update set
+  label = excluded.label,
+  display_order = excluded.display_order,
+  mutually_exclusive = excluded.mutually_exclusive,
+  special_response_state = excluded.special_response_state;
+
+insert into public.questionnaire_answer_choices (
+  id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
+) values (
+  '44444444-4444-4444-8608-000000000002',
+  '33333333-3333-4333-8006-000000000008',
+  'family_children_parenting_q08_c02',
+  'Give greater influence to the parent with more knowledge or responsibility in that area',
+  2,
+  false,
+  null
+)
+on conflict (question_id, choice_key) do update set
+  label = excluded.label,
+  display_order = excluded.display_order,
+  mutually_exclusive = excluded.mutually_exclusive,
+  special_response_state = excluded.special_response_state;
+
+insert into public.questionnaire_answer_choices (
+  id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
+) values (
+  '44444444-4444-4444-8608-000000000003',
+  '33333333-3333-4333-8006-000000000008',
+  'family_children_parenting_q08_c03',
+  'Choose the option that best protects the child''s wellbeing',
+  3,
+  false,
+  null
+)
+on conflict (question_id, choice_key) do update set
+  label = excluded.label,
+  display_order = excluded.display_order,
+  mutually_exclusive = excluded.mutually_exclusive,
+  special_response_state = excluded.special_response_state;
+
+insert into public.questionnaire_answer_choices (
+  id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
+) values (
+  '44444444-4444-4444-8608-000000000004',
+  '33333333-3333-4333-8006-000000000008',
+  'family_children_parenting_q08_c04',
+  'Try a temporary approach and reevaluate it together',
+  4,
+  false,
+  null
+)
+on conflict (question_id, choice_key) do update set
+  label = excluded.label,
+  display_order = excluded.display_order,
+  mutually_exclusive = excluded.mutually_exclusive,
+  special_response_state = excluded.special_response_state;
+
+insert into public.questionnaire_answer_choices (
+  id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
+) values (
+  '44444444-4444-4444-8608-000000000005',
+  '33333333-3333-4333-8006-000000000008',
+  'family_children_parenting_q08_c05',
+  'Seek professional or trusted guidance when the consequences are significant',
+  5,
+  false,
+  null
+)
+on conflict (question_id, choice_key) do update set
+  label = excluded.label,
+  display_order = excluded.display_order,
+  mutually_exclusive = excluded.mutually_exclusive,
+  special_response_state = excluded.special_response_state;
+
+insert into public.questionnaire_answer_choices (
+  id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
+) values (
+  '44444444-4444-4444-8608-000000000006',
+  '33333333-3333-4333-8006-000000000008',
+  'family_children_parenting_q08_c06',
+  'Some major parenting decisions should not move forward without both parents'' agreement',
+  6,
+  false,
+  null
+)
+on conflict (question_id, choice_key) do update set
+  label = excluded.label,
+  display_order = excluded.display_order,
+  mutually_exclusive = excluded.mutually_exclusive,
+  special_response_state = excluded.special_response_state;
+
+insert into public.questionnaire_questions (
+  id, category_id, question_key, question_number, prompt, statement,
+  format_label, response_behavior, context_note, implementation_note, eligibility_rule_id,
+  is_conditional, select_all_that_apply, structured_identity_config, alignment_purpose,
+  min_selections, max_selections,
+  priority_follow_up_prompt, priority_selection_count, priority_unordered,
+  priority_eligible_choice_keys, priority_excluded_choice_keys, priority_min_eligible_selections,
+  allowed_special_response_states, display_order
+) values (
+  '33333333-3333-4333-8006-000000000009',
+  '22222222-2222-4222-8222-000000000006',
+  'family_children_parenting_q09',
+  9,
+  'If a partner already has children, what role should a stepparent or long term partner generally have?',
+  null,
+  'Role range',
+  'scale_range'::public.questionnaire_response_behavior,
+  'The appropriate role must be shaped by custody arrangements, legal authority, co parenting agreements, the child''s age and needs, the child''s comfort, and the seriousness and stability of the relationship.',
+  null,
+  null,
+  false,
+  false,
+  null,
+  'Measures expectations for stepparent involvement, caregiving, authority, gradual integration, and respect for existing family structures.',
+  1,
+  1,
+  null,
+  null,
+  true,
+  null,
+  null,
+  null,
+  null,
+  9
+)
+on conflict (category_id, question_key) do update set
+  question_number = excluded.question_number,
+  prompt = excluded.prompt,
+  statement = excluded.statement,
+  format_label = excluded.format_label,
+  response_behavior = excluded.response_behavior,
+  context_note = excluded.context_note,
+  implementation_note = excluded.implementation_note,
+  eligibility_rule_id = excluded.eligibility_rule_id,
+  is_conditional = excluded.is_conditional,
+  select_all_that_apply = excluded.select_all_that_apply,
+  structured_identity_config = excluded.structured_identity_config,
+  alignment_purpose = excluded.alignment_purpose,
+  min_selections = excluded.min_selections,
+  max_selections = excluded.max_selections,
+  priority_follow_up_prompt = excluded.priority_follow_up_prompt,
+  priority_selection_count = excluded.priority_selection_count,
+  priority_unordered = excluded.priority_unordered,
+  priority_min_eligible_selections = excluded.priority_min_eligible_selections,
+  allowed_special_response_states = excluded.allowed_special_response_states,
+  display_order = excluded.display_order;
+
+insert into public.questionnaire_answer_choices (
+  id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
+) values (
+  '44444444-4444-4444-8609-000000000001',
+  '33333333-3333-4333-8006-000000000009',
+  'family_children_parenting_q09_c01',
+  'Become a fully active parent with substantial shared responsibility and appropriate authority',
+  1,
+  false,
+  null
+)
+on conflict (question_id, choice_key) do update set
+  label = excluded.label,
+  display_order = excluded.display_order,
+  mutually_exclusive = excluded.mutually_exclusive,
+  special_response_state = excluded.special_response_state;
+
+insert into public.questionnaire_answer_choices (
+  id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
+) values (
+  '44444444-4444-4444-8609-000000000002',
+  '33333333-3333-4333-8006-000000000009',
+  'family_children_parenting_q09_c02',
+  'Take an active caregiving role while major decisions remain with the legal parents',
+  2,
+  false,
+  null
+)
+on conflict (question_id, choice_key) do update set
+  label = excluded.label,
+  display_order = excluded.display_order,
+  mutually_exclusive = excluded.mutually_exclusive,
+  special_response_state = excluded.special_response_state;
+
+insert into public.questionnaire_answer_choices (
+  id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
+) values (
+  '44444444-4444-4444-8609-000000000003',
+  '33333333-3333-4333-8006-000000000009',
+  'family_children_parenting_q09_c03',
+  'Build a supportive relationship first and allow responsibility or authority to develop gradually',
+  3,
+  false,
+  null
+)
+on conflict (question_id, choice_key) do update set
+  label = excluded.label,
+  display_order = excluded.display_order,
+  mutually_exclusive = excluded.mutually_exclusive,
+  special_response_state = excluded.special_response_state;
+
+insert into public.questionnaire_answer_choices (
+  id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
+) values (
+  '44444444-4444-4444-8609-000000000004',
+  '33333333-3333-4333-8006-000000000009',
+  'family_children_parenting_q09_c04',
+  'Support the parent without taking a significant disciplinary role',
+  4,
+  false,
+  null
+)
+on conflict (question_id, choice_key) do update set
+  label = excluded.label,
+  display_order = excluded.display_order,
+  mutually_exclusive = excluded.mutually_exclusive,
+  special_response_state = excluded.special_response_state;
+
+insert into public.questionnaire_answer_choices (
+  id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
+) values (
+  '44444444-4444-4444-8609-000000000005',
+  '33333333-3333-4333-8006-000000000009',
+  'family_children_parenting_q09_c05',
+  'Maintain a caring but limited role without assuming parental authority',
+  5,
+  false,
+  null
+)
+on conflict (question_id, choice_key) do update set
+  label = excluded.label,
+  display_order = excluded.display_order,
+  mutually_exclusive = excluded.mutually_exclusive,
+  special_response_state = excluded.special_response_state;
+
+insert into public.questionnaire_questions (
+  id, category_id, question_key, question_number, prompt, statement,
+  format_label, response_behavior, context_note, implementation_note, eligibility_rule_id,
+  is_conditional, select_all_that_apply, structured_identity_config, alignment_purpose,
+  min_selections, max_selections,
+  priority_follow_up_prompt, priority_selection_count, priority_unordered,
+  priority_eligible_choice_keys, priority_excluded_choice_keys, priority_min_eligible_selections,
+  allowed_special_response_states, display_order
+) values (
+  '33333333-3333-4333-8006-000000000010',
+  '22222222-2222-4222-8222-000000000006',
+  'family_children_parenting_q10',
+  10,
+  'Which family or parenting differences would most seriously threaten long term compatibility?',
+  null,
+  'Select up to five',
+  'multi_select'::public.questionnaire_response_behavior,
+  null,
+  null,
+  null,
+  false,
+  false,
+  null,
+  'Identifies high impact incompatibilities involving children, parenting, blended families, responsibility, and family boundaries.',
+  1,
+  5,
+  'Of the differences you selected, which two would be most difficult for you to move past?',
+  2,
+  true,
+  null,
+  null,
+  2,
+  null,
+  10
+)
+on conflict (category_id, question_key) do update set
+  question_number = excluded.question_number,
+  prompt = excluded.prompt,
+  statement = excluded.statement,
+  format_label = excluded.format_label,
+  response_behavior = excluded.response_behavior,
+  context_note = excluded.context_note,
+  implementation_note = excluded.implementation_note,
+  eligibility_rule_id = excluded.eligibility_rule_id,
+  is_conditional = excluded.is_conditional,
+  select_all_that_apply = excluded.select_all_that_apply,
+  structured_identity_config = excluded.structured_identity_config,
+  alignment_purpose = excluded.alignment_purpose,
+  min_selections = excluded.min_selections,
+  max_selections = excluded.max_selections,
+  priority_follow_up_prompt = excluded.priority_follow_up_prompt,
+  priority_selection_count = excluded.priority_selection_count,
+  priority_unordered = excluded.priority_unordered,
+  priority_min_eligible_selections = excluded.priority_min_eligible_selections,
+  allowed_special_response_states = excluded.allowed_special_response_states,
+  display_order = excluded.display_order;
+
+insert into public.questionnaire_answer_choices (
+  id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
+) values (
+  '44444444-4444-4444-8610-000000000001',
+  '33333333-3333-4333-8006-000000000010',
+  'family_children_parenting_q10_c01',
+  'Fundamentally different desires about having children',
+  1,
+  false,
+  null
+)
+on conflict (question_id, choice_key) do update set
+  label = excluded.label,
+  display_order = excluded.display_order,
+  mutually_exclusive = excluded.mutually_exclusive,
+  special_response_state = excluded.special_response_state;
+
+insert into public.questionnaire_answer_choices (
+  id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
+) values (
+  '44444444-4444-4444-8610-000000000002',
+  '33333333-3333-4333-8006-000000000010',
+  'family_children_parenting_q10_c02',
+  'Incompatible expectations about family size',
+  2,
+  false,
+  null
+)
+on conflict (question_id, choice_key) do update set
+  label = excluded.label,
+  display_order = excluded.display_order,
+  mutually_exclusive = excluded.mutually_exclusive,
+  special_response_state = excluded.special_response_state;
+
+insert into public.questionnaire_answer_choices (
+  id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
+) values (
+  '44444444-4444-4444-8610-000000000003',
+  '33333333-3333-4333-8006-000000000010',
+  'family_children_parenting_q10_c03',
+  'Unwillingness to accept or respect existing children',
+  3,
+  false,
+  null
+)
+on conflict (question_id, choice_key) do update set
+  label = excluded.label,
+  display_order = excluded.display_order,
+  mutually_exclusive = excluded.mutually_exclusive,
+  special_response_state = excluded.special_response_state;
+
+insert into public.questionnaire_answer_choices (
+  id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
+) values (
+  '44444444-4444-4444-8610-000000000004',
+  '33333333-3333-4333-8006-000000000010',
+  'family_children_parenting_q10_c04',
+  'Major disagreement about parenting roles',
+  4,
+  false,
+  null
+)
+on conflict (question_id, choice_key) do update set
+  label = excluded.label,
+  display_order = excluded.display_order,
+  mutually_exclusive = excluded.mutually_exclusive,
+  special_response_state = excluded.special_response_state;
+
+insert into public.questionnaire_answer_choices (
+  id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
+) values (
+  '44444444-4444-4444-8610-000000000005',
+  '33333333-3333-4333-8006-000000000010',
+  'family_children_parenting_q10_c05',
+  'Major disagreement about discipline',
+  5,
+  false,
+  null
+)
+on conflict (question_id, choice_key) do update set
+  label = excluded.label,
+  display_order = excluded.display_order,
+  mutually_exclusive = excluded.mutually_exclusive,
+  special_response_state = excluded.special_response_state;
+
+insert into public.questionnaire_answer_choices (
+  id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
+) values (
+  '44444444-4444-4444-8610-000000000006',
+  '33333333-3333-4333-8006-000000000010',
+  'family_children_parenting_q10_c06',
+  'Repeatedly undermining the other parent',
+  6,
+  false,
+  null
+)
+on conflict (question_id, choice_key) do update set
+  label = excluded.label,
+  display_order = excluded.display_order,
+  mutually_exclusive = excluded.mutually_exclusive,
+  special_response_state = excluded.special_response_state;
+
+insert into public.questionnaire_answer_choices (
+  id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
+) values (
+  '44444444-4444-4444-8610-000000000007',
+  '33333333-3333-4333-8006-000000000010',
+  'family_children_parenting_q10_c07',
+  'Expecting one person to carry most parenting responsibilities',
+  7,
+  false,
+  null
+)
+on conflict (question_id, choice_key) do update set
+  label = excluded.label,
+  display_order = excluded.display_order,
+  mutually_exclusive = excluded.mutually_exclusive,
+  special_response_state = excluded.special_response_state;
+
+insert into public.questionnaire_answer_choices (
+  id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
+) values (
+  '44444444-4444-4444-8610-000000000008',
+  '33333333-3333-4333-8006-000000000010',
+  'family_children_parenting_q10_c08',
+  'Allowing extended family to override the couple''s parenting decisions',
+  8,
+  false,
+  null
+)
+on conflict (question_id, choice_key) do update set
+  label = excluded.label,
+  display_order = excluded.display_order,
+  mutually_exclusive = excluded.mutually_exclusive,
+  special_response_state = excluded.special_response_state;
+
+insert into public.questionnaire_answer_choices (
+  id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
+) values (
+  '44444444-4444-4444-8610-000000000009',
+  '33333333-3333-4333-8006-000000000010',
+  'family_children_parenting_q10_c09',
+  'Refusing necessary medical, educational, or mental health support for a child',
+  9,
+  false,
+  null
+)
+on conflict (question_id, choice_key) do update set
+  label = excluded.label,
+  display_order = excluded.display_order,
+  mutually_exclusive = excluded.mutually_exclusive,
+  special_response_state = excluded.special_response_state;
+
+insert into public.questionnaire_answer_choices (
+  id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
+) values (
+  '44444444-4444-4444-8610-000000000010',
+  '33333333-3333-4333-8006-000000000010',
+  'family_children_parenting_q10_c10',
+  'Treating stepchildren or biological children unequally',
+  10,
+  false,
+  null
+)
+on conflict (question_id, choice_key) do update set
+  label = excluded.label,
+  display_order = excluded.display_order,
+  mutually_exclusive = excluded.mutually_exclusive,
+  special_response_state = excluded.special_response_state;
+
+insert into public.questionnaire_answer_choices (
+  id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
+) values (
+  '44444444-4444-4444-8610-000000000011',
+  '33333333-3333-4333-8006-000000000010',
+  'family_children_parenting_q10_c11',
+  'Ongoing conflict with a co parent that repeatedly destabilizes the household',
+  11,
+  false,
+  null
+)
+on conflict (question_id, choice_key) do update set
+  label = excluded.label,
+  display_order = excluded.display_order,
+  mutually_exclusive = excluded.mutually_exclusive,
+  special_response_state = excluded.special_response_state;
+
+insert into public.questionnaire_answer_choices (
+  id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
+) values (
+  '44444444-4444-4444-8610-000000000012',
+  '33333333-3333-4333-8006-000000000010',
+  'family_children_parenting_q10_c12',
+  'Expecting harmful family behavior to be tolerated without boundaries',
+  12,
+  false,
+  null
+)
+on conflict (question_id, choice_key) do update set
+  label = excluded.label,
+  display_order = excluded.display_order,
+  mutually_exclusive = excluded.mutually_exclusive,
+  special_response_state = excluded.special_response_state;
+
+insert into public.questionnaire_categories (
+  id, version_id, category_key, category_number, title, status, display_order, locked_product_decisions
+) values (
+  '22222222-2222-4222-8222-000000000007',
+  '11111111-1111-4111-8111-111111111111',
+  'faith_spirituality_worldview',
+  7,
+  'Faith, Spirituality & Worldview',
+  'locked',
+  7,
+  '["Compatible areas and interbelief conditions capture partner participation more precisely than a standalone participation question.","Extended family boundaries remain primarily in Category 6.","Multiselect questions are not fully ranked. Only Q5, Q6, and Q10 receive a lightweight “choose the two most important” follow up.","Q9 is gated by parenting eligibility and does not display for users outside that predicate.","Written responses are excluded because this category has no defined use for them at launch.","Structured answers power alignment; follow up priorities determine added weight."]'::jsonb
+)
+on conflict (version_id, category_key) do update set
+  title = excluded.title,
+  status = excluded.status,
+  display_order = excluded.display_order,
+  locked_product_decisions = excluded.locked_product_decisions;
+
+insert into public.questionnaire_questions (
+  id, category_id, question_key, question_number, prompt, statement,
+  format_label, response_behavior, context_note, implementation_note, eligibility_rule_id,
+  is_conditional, select_all_that_apply, structured_identity_config, alignment_purpose,
+  min_selections, max_selections,
+  priority_follow_up_prompt, priority_selection_count, priority_unordered,
+  priority_eligible_choice_keys, priority_excluded_choice_keys, priority_min_eligible_selections,
+  allowed_special_response_states, display_order
+) values (
+  '33333333-3333-4333-8007-000000000001',
+  '22222222-2222-4222-8222-000000000007',
+  'faith_spirituality_worldview_q01',
+  1,
+  'Which description most closely reflects your current relationship with faith or spirituality?',
+  null,
+  'Single choice',
+  'single_choice'::public.questionnaire_response_behavior,
+  null,
+  null,
+  null,
+  false,
+  false,
+  null,
+  'Establishes the current role of faith or spirituality without treating religious and nonreligious identities as opposing moral categories.',
+  1,
+  1,
+  null,
+  null,
+  true,
+  null,
+  null,
+  null,
+  null,
+  1
+)
+on conflict (category_id, question_key) do update set
+  question_number = excluded.question_number,
+  prompt = excluded.prompt,
+  statement = excluded.statement,
+  format_label = excluded.format_label,
+  response_behavior = excluded.response_behavior,
+  context_note = excluded.context_note,
+  implementation_note = excluded.implementation_note,
+  eligibility_rule_id = excluded.eligibility_rule_id,
+  is_conditional = excluded.is_conditional,
+  select_all_that_apply = excluded.select_all_that_apply,
+  structured_identity_config = excluded.structured_identity_config,
+  alignment_purpose = excluded.alignment_purpose,
+  min_selections = excluded.min_selections,
+  max_selections = excluded.max_selections,
+  priority_follow_up_prompt = excluded.priority_follow_up_prompt,
+  priority_selection_count = excluded.priority_selection_count,
+  priority_unordered = excluded.priority_unordered,
+  priority_min_eligible_selections = excluded.priority_min_eligible_selections,
+  allowed_special_response_states = excluded.allowed_special_response_states,
+  display_order = excluded.display_order;
+
+insert into public.questionnaire_answer_choices (
+  id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
+) values (
+  '44444444-4444-4444-8701-000000000001',
+  '33333333-3333-4333-8007-000000000001',
+  'faith_spirituality_worldview_q01_c01',
+  'Faith or spirituality is central to my identity and everyday life',
+  1,
+  false,
+  null
+)
+on conflict (question_id, choice_key) do update set
+  label = excluded.label,
+  display_order = excluded.display_order,
+  mutually_exclusive = excluded.mutually_exclusive,
+  special_response_state = excluded.special_response_state;
+
+insert into public.questionnaire_answer_choices (
+  id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
+) values (
+  '44444444-4444-4444-8701-000000000002',
+  '33333333-3333-4333-8007-000000000001',
+  'faith_spirituality_worldview_q01_c02',
+  'Faith or spirituality is very important to me, although my practice may vary',
+  2,
+  false,
+  null
+)
+on conflict (question_id, choice_key) do update set
+  label = excluded.label,
+  display_order = excluded.display_order,
+  mutually_exclusive = excluded.mutually_exclusive,
+  special_response_state = excluded.special_response_state;
+
+insert into public.questionnaire_answer_choices (
+  id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
+) values (
+  '44444444-4444-4444-8701-000000000003',
+  '33333333-3333-4333-8007-000000000001',
+  'faith_spirituality_worldview_q01_c03',
+  'I identify with a faith or spiritual tradition, but it plays a more limited role in my daily life',
+  3,
+  false,
+  null
+)
+on conflict (question_id, choice_key) do update set
+  label = excluded.label,
+  display_order = excluded.display_order,
+  mutually_exclusive = excluded.mutually_exclusive,
+  special_response_state = excluded.special_response_state;
+
+insert into public.questionnaire_answer_choices (
+  id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
+) values (
+  '44444444-4444-4444-8701-000000000004',
+  '33333333-3333-4333-8007-000000000001',
+  'faith_spirituality_worldview_q01_c04',
+  'I am spiritual but do not identify strongly with an organized religion',
+  4,
+  false,
+  null
+)
+on conflict (question_id, choice_key) do update set
+  label = excluded.label,
+  display_order = excluded.display_order,
+  mutually_exclusive = excluded.mutually_exclusive,
+  special_response_state = excluded.special_response_state;
+
+insert into public.questionnaire_answer_choices (
+  id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
+) values (
+  '44444444-4444-4444-8701-000000000005',
+  '33333333-3333-4333-8007-000000000001',
+  'faith_spirituality_worldview_q01_c05',
+  'I am exploring or uncertain about what I believe',
+  5,
+  false,
+  null
+)
+on conflict (question_id, choice_key) do update set
+  label = excluded.label,
+  display_order = excluded.display_order,
+  mutually_exclusive = excluded.mutually_exclusive,
+  special_response_state = excluded.special_response_state;
+
+insert into public.questionnaire_answer_choices (
+  id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
+) values (
+  '44444444-4444-4444-8701-000000000006',
+  '33333333-3333-4333-8007-000000000001',
+  'faith_spirituality_worldview_q01_c06',
+  'I do not currently consider myself religious or spiritual',
+  6,
+  false,
+  null
+)
+on conflict (question_id, choice_key) do update set
+  label = excluded.label,
+  display_order = excluded.display_order,
+  mutually_exclusive = excluded.mutually_exclusive,
+  special_response_state = excluded.special_response_state;
+
+insert into public.questionnaire_answer_choices (
+  id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
+) values (
+  '44444444-4444-4444-8701-000000000007',
+  '33333333-3333-4333-8007-000000000001',
+  'faith_spirituality_worldview_q01_c07',
+  'I hold a secular, agnostic, atheist, humanist, or other nonreligious worldview',
+  7,
+  false,
+  null
+)
+on conflict (question_id, choice_key) do update set
+  label = excluded.label,
+  display_order = excluded.display_order,
+  mutually_exclusive = excluded.mutually_exclusive,
+  special_response_state = excluded.special_response_state;
+
+insert into public.questionnaire_questions (
+  id, category_id, question_key, question_number, prompt, statement,
+  format_label, response_behavior, context_note, implementation_note, eligibility_rule_id,
+  is_conditional, select_all_that_apply, structured_identity_config, alignment_purpose,
+  min_selections, max_selections,
+  priority_follow_up_prompt, priority_selection_count, priority_unordered,
+  priority_eligible_choice_keys, priority_excluded_choice_keys, priority_min_eligible_selections,
+  allowed_special_response_states, display_order
+) values (
+  '33333333-3333-4333-8007-000000000002',
+  '22222222-2222-4222-8222-000000000007',
+  'faith_spirituality_worldview_q02',
+  2,
+  'Which religious, spiritual, or nonreligious tradition most closely reflects your current identity?',
+  null,
+  'Structured identity selection',
+  'structured_identity'::public.questionnaire_response_behavior,
+  null,
+  null,
+  null,
+  false,
+  false,
+  '{"allowsRefinement":true,"allowsUserSuppliedIdentity":true,"privacy":{"userControlsPublicDisplay":true,"userControlsPrivateMatchingUse":false}}'::jsonb,
+  'Records self identified belief tradition without assuming that a label reveals practice, doctrine, values, or relationship expectations.',
+  1,
+  1,
+  null,
+  null,
+  true,
+  null,
+  null,
+  null,
+  null,
+  2
+)
+on conflict (category_id, question_key) do update set
+  question_number = excluded.question_number,
+  prompt = excluded.prompt,
+  statement = excluded.statement,
+  format_label = excluded.format_label,
+  response_behavior = excluded.response_behavior,
+  context_note = excluded.context_note,
+  implementation_note = excluded.implementation_note,
+  eligibility_rule_id = excluded.eligibility_rule_id,
+  is_conditional = excluded.is_conditional,
+  select_all_that_apply = excluded.select_all_that_apply,
+  structured_identity_config = excluded.structured_identity_config,
+  alignment_purpose = excluded.alignment_purpose,
+  min_selections = excluded.min_selections,
+  max_selections = excluded.max_selections,
+  priority_follow_up_prompt = excluded.priority_follow_up_prompt,
+  priority_selection_count = excluded.priority_selection_count,
+  priority_unordered = excluded.priority_unordered,
+  priority_min_eligible_selections = excluded.priority_min_eligible_selections,
+  allowed_special_response_states = excluded.allowed_special_response_states,
+  display_order = excluded.display_order;
+
+insert into public.questionnaire_answer_choices (
+  id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
+) values (
+  '44444444-4444-4444-8702-000000000001',
+  '33333333-3333-4333-8007-000000000002',
+  'faith_spirituality_worldview_q02_c01',
+  'Christianity',
+  1,
+  false,
+  null
+)
+on conflict (question_id, choice_key) do update set
+  label = excluded.label,
+  display_order = excluded.display_order,
+  mutually_exclusive = excluded.mutually_exclusive,
+  special_response_state = excluded.special_response_state;
+
+insert into public.questionnaire_answer_choices (
+  id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
+) values (
+  '44444444-4444-4444-8702-000000000002',
+  '33333333-3333-4333-8007-000000000002',
+  'faith_spirituality_worldview_q02_c02',
+  'Judaism',
+  2,
+  false,
+  null
+)
+on conflict (question_id, choice_key) do update set
+  label = excluded.label,
+  display_order = excluded.display_order,
+  mutually_exclusive = excluded.mutually_exclusive,
+  special_response_state = excluded.special_response_state;
+
+insert into public.questionnaire_answer_choices (
+  id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
+) values (
+  '44444444-4444-4444-8702-000000000003',
+  '33333333-3333-4333-8007-000000000002',
+  'faith_spirituality_worldview_q02_c03',
+  'Islam',
+  3,
+  false,
+  null
+)
+on conflict (question_id, choice_key) do update set
+  label = excluded.label,
+  display_order = excluded.display_order,
+  mutually_exclusive = excluded.mutually_exclusive,
+  special_response_state = excluded.special_response_state;
+
+insert into public.questionnaire_answer_choices (
+  id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
+) values (
+  '44444444-4444-4444-8702-000000000004',
+  '33333333-3333-4333-8007-000000000002',
+  'faith_spirituality_worldview_q02_c04',
+  'Hinduism',
+  4,
+  false,
+  null
+)
+on conflict (question_id, choice_key) do update set
+  label = excluded.label,
+  display_order = excluded.display_order,
+  mutually_exclusive = excluded.mutually_exclusive,
+  special_response_state = excluded.special_response_state;
+
+insert into public.questionnaire_answer_choices (
+  id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
+) values (
+  '44444444-4444-4444-8702-000000000005',
+  '33333333-3333-4333-8007-000000000002',
+  'faith_spirituality_worldview_q02_c05',
+  'Buddhism',
+  5,
+  false,
+  null
+)
+on conflict (question_id, choice_key) do update set
+  label = excluded.label,
+  display_order = excluded.display_order,
+  mutually_exclusive = excluded.mutually_exclusive,
+  special_response_state = excluded.special_response_state;
+
+insert into public.questionnaire_answer_choices (
+  id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
+) values (
+  '44444444-4444-4444-8702-000000000006',
+  '33333333-3333-4333-8007-000000000002',
+  'faith_spirituality_worldview_q02_c06',
+  'Sikhism',
+  6,
+  false,
+  null
+)
+on conflict (question_id, choice_key) do update set
+  label = excluded.label,
+  display_order = excluded.display_order,
+  mutually_exclusive = excluded.mutually_exclusive,
+  special_response_state = excluded.special_response_state;
+
+insert into public.questionnaire_answer_choices (
+  id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
+) values (
+  '44444444-4444-4444-8702-000000000007',
+  '33333333-3333-4333-8007-000000000002',
+  'faith_spirituality_worldview_q02_c07',
+  'Baháʼí Faith',
+  7,
+  false,
+  null
+)
+on conflict (question_id, choice_key) do update set
+  label = excluded.label,
+  display_order = excluded.display_order,
+  mutually_exclusive = excluded.mutually_exclusive,
+  special_response_state = excluded.special_response_state;
+
+insert into public.questionnaire_answer_choices (
+  id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
+) values (
+  '44444444-4444-4444-8702-000000000008',
+  '33333333-3333-4333-8007-000000000002',
+  'faith_spirituality_worldview_q02_c08',
+  'Indigenous or traditional spirituality',
+  8,
+  false,
+  null
+)
+on conflict (question_id, choice_key) do update set
+  label = excluded.label,
+  display_order = excluded.display_order,
+  mutually_exclusive = excluded.mutually_exclusive,
+  special_response_state = excluded.special_response_state;
+
+insert into public.questionnaire_answer_choices (
+  id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
+) values (
+  '44444444-4444-4444-8702-000000000009',
+  '33333333-3333-4333-8007-000000000002',
+  'faith_spirituality_worldview_q02_c09',
+  'Pagan, earth centered, or nature based spirituality',
+  9,
+  false,
+  null
+)
+on conflict (question_id, choice_key) do update set
+  label = excluded.label,
+  display_order = excluded.display_order,
+  mutually_exclusive = excluded.mutually_exclusive,
+  special_response_state = excluded.special_response_state;
+
+insert into public.questionnaire_answer_choices (
+  id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
+) values (
+  '44444444-4444-4444-8702-000000000010',
+  '33333333-3333-4333-8007-000000000002',
+  'faith_spirituality_worldview_q02_c10',
+  'Unitarian Universalism',
+  10,
+  false,
+  null
+)
+on conflict (question_id, choice_key) do update set
+  label = excluded.label,
+  display_order = excluded.display_order,
+  mutually_exclusive = excluded.mutually_exclusive,
+  special_response_state = excluded.special_response_state;
+
+insert into public.questionnaire_answer_choices (
+  id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
+) values (
+  '44444444-4444-4444-8702-000000000011',
+  '33333333-3333-4333-8007-000000000002',
+  'faith_spirituality_worldview_q02_c11',
+  'Spiritual but not religious',
+  11,
+  false,
+  null
+)
+on conflict (question_id, choice_key) do update set
+  label = excluded.label,
+  display_order = excluded.display_order,
+  mutually_exclusive = excluded.mutually_exclusive,
+  special_response_state = excluded.special_response_state;
+
+insert into public.questionnaire_answer_choices (
+  id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
+) values (
+  '44444444-4444-4444-8702-000000000012',
+  '33333333-3333-4333-8007-000000000002',
+  'faith_spirituality_worldview_q02_c12',
+  'Agnostic',
+  12,
+  false,
+  null
+)
+on conflict (question_id, choice_key) do update set
+  label = excluded.label,
+  display_order = excluded.display_order,
+  mutually_exclusive = excluded.mutually_exclusive,
+  special_response_state = excluded.special_response_state;
+
+insert into public.questionnaire_answer_choices (
+  id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
+) values (
+  '44444444-4444-4444-8702-000000000013',
+  '33333333-3333-4333-8007-000000000002',
+  'faith_spirituality_worldview_q02_c13',
+  'Atheist',
+  13,
+  false,
+  null
+)
+on conflict (question_id, choice_key) do update set
+  label = excluded.label,
+  display_order = excluded.display_order,
+  mutually_exclusive = excluded.mutually_exclusive,
+  special_response_state = excluded.special_response_state;
+
+insert into public.questionnaire_answer_choices (
+  id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
+) values (
+  '44444444-4444-4444-8702-000000000014',
+  '33333333-3333-4333-8007-000000000002',
+  'faith_spirituality_worldview_q02_c14',
+  'Secular humanist',
+  14,
+  false,
+  null
+)
+on conflict (question_id, choice_key) do update set
+  label = excluded.label,
+  display_order = excluded.display_order,
+  mutually_exclusive = excluded.mutually_exclusive,
+  special_response_state = excluded.special_response_state;
+
+insert into public.questionnaire_answer_choices (
+  id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
+) values (
+  '44444444-4444-4444-8702-000000000015',
+  '33333333-3333-4333-8007-000000000002',
+  'faith_spirituality_worldview_q02_c15',
+  'No particular tradition',
+  15,
+  false,
+  null
+)
+on conflict (question_id, choice_key) do update set
+  label = excluded.label,
+  display_order = excluded.display_order,
+  mutually_exclusive = excluded.mutually_exclusive,
+  special_response_state = excluded.special_response_state;
+
+insert into public.questionnaire_answer_choices (
+  id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
+) values (
+  '44444444-4444-4444-8702-000000000016',
+  '33333333-3333-4333-8007-000000000002',
+  'faith_spirituality_worldview_q02_c16',
+  'Exploring or questioning',
+  16,
+  false,
+  null
+)
+on conflict (question_id, choice_key) do update set
+  label = excluded.label,
+  display_order = excluded.display_order,
+  mutually_exclusive = excluded.mutually_exclusive,
+  special_response_state = excluded.special_response_state;
+
+insert into public.questionnaire_answer_choices (
+  id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
+) values (
+  '44444444-4444-4444-8702-000000000017',
+  '33333333-3333-4333-8007-000000000002',
+  'faith_spirituality_worldview_q02_c17',
+  'Another religious, spiritual, or nonreligious tradition',
+  17,
+  false,
+  null
+)
+on conflict (question_id, choice_key) do update set
+  label = excluded.label,
+  display_order = excluded.display_order,
+  mutually_exclusive = excluded.mutually_exclusive,
+  special_response_state = excluded.special_response_state;
+
+insert into public.questionnaire_answer_choices (
+  id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
+) values (
+  '44444444-4444-4444-8702-000000000018',
+  '33333333-3333-4333-8007-000000000002',
+  'faith_spirituality_worldview_q02_c18',
+  'Prefer not to identify',
+  18,
+  false,
+  null
+)
+on conflict (question_id, choice_key) do update set
+  label = excluded.label,
+  display_order = excluded.display_order,
+  mutually_exclusive = excluded.mutually_exclusive,
+  special_response_state = excluded.special_response_state;
+
+insert into public.questionnaire_questions (
+  id, category_id, question_key, question_number, prompt, statement,
+  format_label, response_behavior, context_note, implementation_note, eligibility_rule_id,
+  is_conditional, select_all_that_apply, structured_identity_config, alignment_purpose,
+  min_selections, max_selections,
+  priority_follow_up_prompt, priority_selection_count, priority_unordered,
+  priority_eligible_choice_keys, priority_excluded_choice_keys, priority_min_eligible_selections,
+  allowed_special_response_states, display_order
+) values (
+  '33333333-3333-4333-8007-000000000003',
+  '22222222-2222-4222-8222-000000000007',
+  'faith_spirituality_worldview_q03',
+  3,
+  'Which practices or expressions of faith, spirituality, or worldview are currently meaningful in your life?',
+  null,
+  'Select all that apply',
+  'multi_select'::public.questionnaire_response_behavior,
+  null,
+  'This is an unrestricted multi select. An unselected practice does not automatically indicate opposition.',
+  null,
+  false,
+  true,
+  null,
+  'Identifies how belief is lived in practice rather than relying entirely on identity labels.',
+  0,
+  null,
+  null,
+  null,
+  true,
+  null,
+  null,
+  null,
+  null,
+  3
+)
+on conflict (category_id, question_key) do update set
+  question_number = excluded.question_number,
+  prompt = excluded.prompt,
+  statement = excluded.statement,
+  format_label = excluded.format_label,
+  response_behavior = excluded.response_behavior,
+  context_note = excluded.context_note,
+  implementation_note = excluded.implementation_note,
+  eligibility_rule_id = excluded.eligibility_rule_id,
+  is_conditional = excluded.is_conditional,
+  select_all_that_apply = excluded.select_all_that_apply,
+  structured_identity_config = excluded.structured_identity_config,
+  alignment_purpose = excluded.alignment_purpose,
+  min_selections = excluded.min_selections,
+  max_selections = excluded.max_selections,
+  priority_follow_up_prompt = excluded.priority_follow_up_prompt,
+  priority_selection_count = excluded.priority_selection_count,
+  priority_unordered = excluded.priority_unordered,
+  priority_min_eligible_selections = excluded.priority_min_eligible_selections,
+  allowed_special_response_states = excluded.allowed_special_response_states,
+  display_order = excluded.display_order;
+
+insert into public.questionnaire_answer_choices (
+  id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
+) values (
+  '44444444-4444-4444-8703-000000000001',
+  '33333333-3333-4333-8007-000000000003',
+  'faith_spirituality_worldview_q03_c01',
+  'Prayer',
+  1,
+  false,
+  null
+)
+on conflict (question_id, choice_key) do update set
+  label = excluded.label,
+  display_order = excluded.display_order,
+  mutually_exclusive = excluded.mutually_exclusive,
+  special_response_state = excluded.special_response_state;
+
+insert into public.questionnaire_answer_choices (
+  id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
+) values (
+  '44444444-4444-4444-8703-000000000002',
+  '33333333-3333-4333-8007-000000000003',
+  'faith_spirituality_worldview_q03_c02',
+  'Meditation or contemplation',
+  2,
+  false,
+  null
+)
+on conflict (question_id, choice_key) do update set
+  label = excluded.label,
+  display_order = excluded.display_order,
+  mutually_exclusive = excluded.mutually_exclusive,
+  special_response_state = excluded.special_response_state;
+
+insert into public.questionnaire_answer_choices (
+  id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
+) values (
+  '44444444-4444-4444-8703-000000000003',
+  '33333333-3333-4333-8007-000000000003',
+  'faith_spirituality_worldview_q03_c03',
+  'Attending religious services or gatherings',
+  3,
+  false,
+  null
+)
+on conflict (question_id, choice_key) do update set
+  label = excluded.label,
+  display_order = excluded.display_order,
+  mutually_exclusive = excluded.mutually_exclusive,
+  special_response_state = excluded.special_response_state;
+
+insert into public.questionnaire_answer_choices (
+  id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
+) values (
+  '44444444-4444-4444-8703-000000000004',
+  '33333333-3333-4333-8007-000000000003',
+  'faith_spirituality_worldview_q03_c04',
+  'Studying sacred, spiritual, philosophical, or ethical writings',
+  4,
+  false,
+  null
+)
+on conflict (question_id, choice_key) do update set
+  label = excluded.label,
+  display_order = excluded.display_order,
+  mutually_exclusive = excluded.mutually_exclusive,
+  special_response_state = excluded.special_response_state;
+
+insert into public.questionnaire_answer_choices (
+  id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
+) values (
+  '44444444-4444-4444-8703-000000000005',
+  '33333333-3333-4333-8007-000000000003',
+  'faith_spirituality_worldview_q03_c05',
+  'Participating in a faith or spiritual community',
+  5,
+  false,
+  null
+)
+on conflict (question_id, choice_key) do update set
+  label = excluded.label,
+  display_order = excluded.display_order,
+  mutually_exclusive = excluded.mutually_exclusive,
+  special_response_state = excluded.special_response_state;
+
+insert into public.questionnaire_answer_choices (
+  id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
+) values (
+  '44444444-4444-4444-8703-000000000006',
+  '33333333-3333-4333-8007-000000000003',
+  'faith_spirituality_worldview_q03_c06',
+  'Observing religious holidays or sacred days',
+  6,
+  false,
+  null
+)
+on conflict (question_id, choice_key) do update set
+  label = excluded.label,
+  display_order = excluded.display_order,
+  mutually_exclusive = excluded.mutually_exclusive,
+  special_response_state = excluded.special_response_state;
+
+insert into public.questionnaire_answer_choices (
+  id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
+) values (
+  '44444444-4444-4444-8703-000000000007',
+  '33333333-3333-4333-8007-000000000003',
+  'faith_spirituality_worldview_q03_c07',
+  'Following faith based moral or ethical guidance',
+  7,
+  false,
+  null
+)
+on conflict (question_id, choice_key) do update set
+  label = excluded.label,
+  display_order = excluded.display_order,
+  mutually_exclusive = excluded.mutually_exclusive,
+  special_response_state = excluded.special_response_state;
+
+insert into public.questionnaire_answer_choices (
+  id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
+) values (
+  '44444444-4444-4444-8703-000000000008',
+  '33333333-3333-4333-8007-000000000003',
+  'faith_spirituality_worldview_q03_c08',
+  'Volunteering, service, or charitable giving',
+  8,
+  false,
+  null
+)
+on conflict (question_id, choice_key) do update set
+  label = excluded.label,
+  display_order = excluded.display_order,
+  mutually_exclusive = excluded.mutually_exclusive,
+  special_response_state = excluded.special_response_state;
+
+insert into public.questionnaire_answer_choices (
+  id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
+) values (
+  '44444444-4444-4444-8703-000000000009',
+  '33333333-3333-4333-8007-000000000003',
+  'faith_spirituality_worldview_q03_c09',
+  'Dietary practices connected to my beliefs',
+  9,
+  false,
+  null
+)
+on conflict (question_id, choice_key) do update set
+  label = excluded.label,
+  display_order = excluded.display_order,
+  mutually_exclusive = excluded.mutually_exclusive,
+  special_response_state = excluded.special_response_state;
+
+insert into public.questionnaire_answer_choices (
+  id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
+) values (
+  '44444444-4444-4444-8703-000000000010',
+  '33333333-3333-4333-8007-000000000003',
+  'faith_spirituality_worldview_q03_c10',
+  'Clothing, appearance, or modesty practices connected to my beliefs',
+  10,
+  false,
+  null
+)
+on conflict (question_id, choice_key) do update set
+  label = excluded.label,
+  display_order = excluded.display_order,
+  mutually_exclusive = excluded.mutually_exclusive,
+  special_response_state = excluded.special_response_state;
+
+insert into public.questionnaire_answer_choices (
+  id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
+) values (
+  '44444444-4444-4444-8703-000000000011',
+  '33333333-3333-4333-8007-000000000003',
+  'faith_spirituality_worldview_q03_c11',
+  'Sabbath, worship day, or sacred time observance',
+  11,
+  false,
+  null
+)
+on conflict (question_id, choice_key) do update set
+  label = excluded.label,
+  display_order = excluded.display_order,
+  mutually_exclusive = excluded.mutually_exclusive,
+  special_response_state = excluded.special_response_state;
+
+insert into public.questionnaire_answer_choices (
+  id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
+) values (
+  '44444444-4444-4444-8703-000000000012',
+  '33333333-3333-4333-8007-000000000003',
+  'faith_spirituality_worldview_q03_c12',
+  'Rituals or traditions practiced at home',
+  12,
+  false,
+  null
+)
+on conflict (question_id, choice_key) do update set
+  label = excluded.label,
+  display_order = excluded.display_order,
+  mutually_exclusive = excluded.mutually_exclusive,
+  special_response_state = excluded.special_response_state;
+
+insert into public.questionnaire_answer_choices (
+  id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
+) values (
+  '44444444-4444-4444-8703-000000000013',
+  '33333333-3333-4333-8007-000000000003',
+  'faith_spirituality_worldview_q03_c13',
+  'Spending time in nature as a spiritual practice',
+  13,
+  false,
+  null
+)
+on conflict (question_id, choice_key) do update set
+  label = excluded.label,
+  display_order = excluded.display_order,
+  mutually_exclusive = excluded.mutually_exclusive,
+  special_response_state = excluded.special_response_state;
+
+insert into public.questionnaire_answer_choices (
+  id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
+) values (
+  '44444444-4444-4444-8703-000000000014',
+  '33333333-3333-4333-8007-000000000003',
+  'faith_spirituality_worldview_q03_c14',
+  'Personal reflection without organized practice',
+  14,
+  false,
+  null
+)
+on conflict (question_id, choice_key) do update set
+  label = excluded.label,
+  display_order = excluded.display_order,
+  mutually_exclusive = excluded.mutually_exclusive,
+  special_response_state = excluded.special_response_state;
+
+insert into public.questionnaire_answer_choices (
+  id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
+) values (
+  '44444444-4444-4444-8703-000000000015',
+  '33333333-3333-4333-8007-000000000003',
+  'faith_spirituality_worldview_q03_c15',
+  'None of these currently play a meaningful role',
+  15,
+  false,
+  null
+)
+on conflict (question_id, choice_key) do update set
+  label = excluded.label,
+  display_order = excluded.display_order,
+  mutually_exclusive = excluded.mutually_exclusive,
+  special_response_state = excluded.special_response_state;
+
+insert into public.questionnaire_answer_choices (
+  id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
+) values (
+  '44444444-4444-4444-8703-000000000016',
+  '33333333-3333-4333-8007-000000000003',
+  'faith_spirituality_worldview_q03_c16',
+  'Another practice or expression',
+  16,
+  false,
+  null
+)
+on conflict (question_id, choice_key) do update set
+  label = excluded.label,
+  display_order = excluded.display_order,
+  mutually_exclusive = excluded.mutually_exclusive,
+  special_response_state = excluded.special_response_state;
+
+insert into public.questionnaire_questions (
+  id, category_id, question_key, question_number, prompt, statement,
+  format_label, response_behavior, context_note, implementation_note, eligibility_rule_id,
+  is_conditional, select_all_that_apply, structured_identity_config, alignment_purpose,
+  min_selections, max_selections,
+  priority_follow_up_prompt, priority_selection_count, priority_unordered,
+  priority_eligible_choice_keys, priority_excluded_choice_keys, priority_min_eligible_selections,
+  allowed_special_response_states, display_order
+) values (
+  '33333333-3333-4333-8007-000000000004',
+  '22222222-2222-4222-8222-000000000007',
+  'faith_spirituality_worldview_q04',
+  4,
+  'How important is it that your long term partner shares your religious, spiritual, or nonreligious beliefs?',
+  null,
+  'Importance scale',
+  'scale_range'::public.questionnaire_response_behavior,
+  '"Shared beliefs" may refer to a specific tradition, shared core convictions, or a compatible approach to faith and worldview. Later questions clarify which meaning applies to the user.',
+  null,
+  null,
+  false,
+  false,
+  null,
+  'Measures the importance of belief similarity without assuming that all people within the same tradition are compatible.',
+  1,
+  1,
+  null,
+  null,
+  true,
+  null,
+  null,
+  null,
+  null,
+  4
+)
+on conflict (category_id, question_key) do update set
+  question_number = excluded.question_number,
+  prompt = excluded.prompt,
+  statement = excluded.statement,
+  format_label = excluded.format_label,
+  response_behavior = excluded.response_behavior,
+  context_note = excluded.context_note,
+  implementation_note = excluded.implementation_note,
+  eligibility_rule_id = excluded.eligibility_rule_id,
+  is_conditional = excluded.is_conditional,
+  select_all_that_apply = excluded.select_all_that_apply,
+  structured_identity_config = excluded.structured_identity_config,
+  alignment_purpose = excluded.alignment_purpose,
+  min_selections = excluded.min_selections,
+  max_selections = excluded.max_selections,
+  priority_follow_up_prompt = excluded.priority_follow_up_prompt,
+  priority_selection_count = excluded.priority_selection_count,
+  priority_unordered = excluded.priority_unordered,
+  priority_min_eligible_selections = excluded.priority_min_eligible_selections,
+  allowed_special_response_states = excluded.allowed_special_response_states,
+  display_order = excluded.display_order;
+
+insert into public.questionnaire_answer_choices (
+  id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
+) values (
+  '44444444-4444-4444-8704-000000000001',
+  '33333333-3333-4333-8007-000000000004',
+  'faith_spirituality_worldview_q04_c01',
+  'Essential. I need a partner who substantially shares my beliefs',
+  1,
+  false,
+  null
+)
+on conflict (question_id, choice_key) do update set
+  label = excluded.label,
+  display_order = excluded.display_order,
+  mutually_exclusive = excluded.mutually_exclusive,
+  special_response_state = excluded.special_response_state;
+
+insert into public.questionnaire_answer_choices (
+  id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
+) values (
+  '44444444-4444-4444-8704-000000000002',
+  '33333333-3333-4333-8007-000000000004',
+  'faith_spirituality_worldview_q04_c02',
+  'Very important. I strongly prefer shared beliefs, with limited room for differences',
+  2,
+  false,
+  null
+)
+on conflict (question_id, choice_key) do update set
+  label = excluded.label,
+  display_order = excluded.display_order,
+  mutually_exclusive = excluded.mutually_exclusive,
+  special_response_state = excluded.special_response_state;
+
+insert into public.questionnaire_answer_choices (
+  id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
+) values (
+  '44444444-4444-4444-8704-000000000003',
+  '33333333-3333-4333-8007-000000000004',
+  'faith_spirituality_worldview_q04_c03',
+  'Important. Shared foundations matter, although some differences are acceptable',
+  3,
+  false,
+  null
+)
+on conflict (question_id, choice_key) do update set
+  label = excluded.label,
+  display_order = excluded.display_order,
+  mutually_exclusive = excluded.mutually_exclusive,
+  special_response_state = excluded.special_response_state;
+
+insert into public.questionnaire_answer_choices (
+  id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
+) values (
+  '44444444-4444-4444-8704-000000000004',
+  '33333333-3333-4333-8007-000000000004',
+  'faith_spirituality_worldview_q04_c04',
+  'Somewhat important. Mutual respect matters more than identical beliefs',
+  4,
+  false,
+  null
+)
+on conflict (question_id, choice_key) do update set
+  label = excluded.label,
+  display_order = excluded.display_order,
+  mutually_exclusive = excluded.mutually_exclusive,
+  special_response_state = excluded.special_response_state;
+
+insert into public.questionnaire_answer_choices (
+  id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
+) values (
+  '44444444-4444-4444-8704-000000000005',
+  '33333333-3333-4333-8007-000000000004',
+  'faith_spirituality_worldview_q04_c05',
+  'Not especially important. I am comfortable with meaningful belief differences',
+  5,
+  false,
+  null
+)
+on conflict (question_id, choice_key) do update set
+  label = excluded.label,
+  display_order = excluded.display_order,
+  mutually_exclusive = excluded.mutually_exclusive,
+  special_response_state = excluded.special_response_state;
+
+insert into public.questionnaire_answer_choices (
+  id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
+) values (
+  '44444444-4444-4444-8704-000000000006',
+  '33333333-3333-4333-8007-000000000004',
+  'faith_spirituality_worldview_q04_c06',
+  'Not important. My partner''s beliefs do not need to resemble mine',
+  6,
+  false,
+  null
+)
+on conflict (question_id, choice_key) do update set
+  label = excluded.label,
+  display_order = excluded.display_order,
+  mutually_exclusive = excluded.mutually_exclusive,
+  special_response_state = excluded.special_response_state;
+
+insert into public.questionnaire_questions (
+  id, category_id, question_key, question_number, prompt, statement,
+  format_label, response_behavior, context_note, implementation_note, eligibility_rule_id,
+  is_conditional, select_all_that_apply, structured_identity_config, alignment_purpose,
+  min_selections, max_selections,
+  priority_follow_up_prompt, priority_selection_count, priority_unordered,
+  priority_eligible_choice_keys, priority_excluded_choice_keys, priority_min_eligible_selections,
+  allowed_special_response_states, display_order
+) values (
+  '33333333-3333-4333-8007-000000000005',
+  '22222222-2222-4222-8222-000000000007',
+  'faith_spirituality_worldview_q05',
+  5,
+  'Which areas would be most important for you and a partner to approach compatibly?',
+  null,
+  'Select up to five',
+  'multi_select'::public.questionnaire_response_behavior,
+  null,
+  null,
+  null,
+  false,
+  false,
+  null,
+  'Identifies where belief compatibility matters in everyday and long term relationship decisions.',
+  1,
+  5,
+  'Of the areas you selected, which two allow the least room for compromise?',
+  2,
+  true,
+  null,
+  null,
+  2,
+  null,
+  5
+)
+on conflict (category_id, question_key) do update set
+  question_number = excluded.question_number,
+  prompt = excluded.prompt,
+  statement = excluded.statement,
+  format_label = excluded.format_label,
+  response_behavior = excluded.response_behavior,
+  context_note = excluded.context_note,
+  implementation_note = excluded.implementation_note,
+  eligibility_rule_id = excluded.eligibility_rule_id,
+  is_conditional = excluded.is_conditional,
+  select_all_that_apply = excluded.select_all_that_apply,
+  structured_identity_config = excluded.structured_identity_config,
+  alignment_purpose = excluded.alignment_purpose,
+  min_selections = excluded.min_selections,
+  max_selections = excluded.max_selections,
+  priority_follow_up_prompt = excluded.priority_follow_up_prompt,
+  priority_selection_count = excluded.priority_selection_count,
+  priority_unordered = excluded.priority_unordered,
+  priority_min_eligible_selections = excluded.priority_min_eligible_selections,
+  allowed_special_response_states = excluded.allowed_special_response_states,
+  display_order = excluded.display_order;
+
+insert into public.questionnaire_answer_choices (
+  id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
+) values (
+  '44444444-4444-4444-8705-000000000001',
+  '33333333-3333-4333-8007-000000000005',
+  'faith_spirituality_worldview_q05_c01',
+  'Core beliefs about God, a higher power, or spiritual reality',
+  1,
+  false,
+  null
+)
+on conflict (question_id, choice_key) do update set
+  label = excluded.label,
+  display_order = excluded.display_order,
+  mutually_exclusive = excluded.mutually_exclusive,
+  special_response_state = excluded.special_response_state;
+
+insert into public.questionnaire_answer_choices (
+  id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
+) values (
+  '44444444-4444-4444-8705-000000000002',
+  '33333333-3333-4333-8007-000000000005',
+  'faith_spirituality_worldview_q05_c02',
+  'Religious or spiritual identity',
+  2,
+  false,
+  null
+)
+on conflict (question_id, choice_key) do update set
+  label = excluded.label,
+  display_order = excluded.display_order,
+  mutually_exclusive = excluded.mutually_exclusive,
+  special_response_state = excluded.special_response_state;
+
+insert into public.questionnaire_answer_choices (
+  id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
+) values (
+  '44444444-4444-4444-8705-000000000003',
+  '33333333-3333-4333-8007-000000000005',
+  'faith_spirituality_worldview_q05_c03',
+  'Participation in worship, services, or community gatherings',
+  3,
+  false,
+  null
+)
+on conflict (question_id, choice_key) do update set
+  label = excluded.label,
+  display_order = excluded.display_order,
+  mutually_exclusive = excluded.mutually_exclusive,
+  special_response_state = excluded.special_response_state;
+
+insert into public.questionnaire_answer_choices (
+  id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
+) values (
+  '44444444-4444-4444-8705-000000000004',
+  '33333333-3333-4333-8007-000000000005',
+  'faith_spirituality_worldview_q05_c04',
+  'Moral or ethical decision making',
+  4,
+  false,
+  null
+)
+on conflict (question_id, choice_key) do update set
+  label = excluded.label,
+  display_order = excluded.display_order,
+  mutually_exclusive = excluded.mutually_exclusive,
+  special_response_state = excluded.special_response_state;
+
+insert into public.questionnaire_answer_choices (
+  id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
+) values (
+  '44444444-4444-4444-8705-000000000005',
+  '33333333-3333-4333-8007-000000000005',
+  'faith_spirituality_worldview_q05_c05',
+  'Prayer, meditation, or spiritual practices at home',
+  5,
+  false,
+  null
+)
+on conflict (question_id, choice_key) do update set
+  label = excluded.label,
+  display_order = excluded.display_order,
+  mutually_exclusive = excluded.mutually_exclusive,
+  special_response_state = excluded.special_response_state;
+
+insert into public.questionnaire_answer_choices (
+  id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
+) values (
+  '44444444-4444-4444-8705-000000000006',
+  '33333333-3333-4333-8007-000000000005',
+  'faith_spirituality_worldview_q05_c06',
+  'Holidays, rituals, and family traditions',
+  6,
+  false,
+  null
+)
+on conflict (question_id, choice_key) do update set
+  label = excluded.label,
+  display_order = excluded.display_order,
+  mutually_exclusive = excluded.mutually_exclusive,
+  special_response_state = excluded.special_response_state;
+
+insert into public.questionnaire_answer_choices (
+  id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
+) values (
+  '44444444-4444-4444-8705-000000000007',
+  '33333333-3333-4333-8007-000000000005',
+  'faith_spirituality_worldview_q05_c07',
+  'Expectations concerning sex and physical intimacy',
+  7,
+  false,
+  null
+)
+on conflict (question_id, choice_key) do update set
+  label = excluded.label,
+  display_order = excluded.display_order,
+  mutually_exclusive = excluded.mutually_exclusive,
+  special_response_state = excluded.special_response_state;
+
+insert into public.questionnaire_answer_choices (
+  id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
+) values (
+  '44444444-4444-4444-8705-000000000008',
+  '33333333-3333-4333-8007-000000000005',
+  'faith_spirituality_worldview_q05_c08',
+  'Marriage ceremonies or religious requirements',
+  8,
+  false,
+  null
+)
+on conflict (question_id, choice_key) do update set
+  label = excluded.label,
+  display_order = excluded.display_order,
+  mutually_exclusive = excluded.mutually_exclusive,
+  special_response_state = excluded.special_response_state;
+
+insert into public.questionnaire_answer_choices (
+  id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
+) values (
+  '44444444-4444-4444-8705-000000000009',
+  '33333333-3333-4333-8007-000000000005',
+  'faith_spirituality_worldview_q05_c09',
+  'Dietary, clothing, or lifestyle practices connected to belief',
+  9,
+  false,
+  null
+)
+on conflict (question_id, choice_key) do update set
+  label = excluded.label,
+  display_order = excluded.display_order,
+  mutually_exclusive = excluded.mutually_exclusive,
+  special_response_state = excluded.special_response_state;
+
+insert into public.questionnaire_answer_choices (
+  id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
+) values (
+  '44444444-4444-4444-8705-000000000010',
+  '33333333-3333-4333-8007-000000000005',
+  'faith_spirituality_worldview_q05_c10',
+  'Charitable giving, service, or generosity',
+  10,
+  false,
+  null
+)
+on conflict (question_id, choice_key) do update set
+  label = excluded.label,
+  display_order = excluded.display_order,
+  mutually_exclusive = excluded.mutually_exclusive,
+  special_response_state = excluded.special_response_state;
+
+insert into public.questionnaire_answer_choices (
+  id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
+) values (
+  '44444444-4444-4444-8705-000000000011',
+  '33333333-3333-4333-8007-000000000005',
+  'faith_spirituality_worldview_q05_c11',
+  'Expectations for raising children',
+  11,
+  false,
+  null
+)
+on conflict (question_id, choice_key) do update set
+  label = excluded.label,
+  display_order = excluded.display_order,
+  mutually_exclusive = excluded.mutually_exclusive,
+  special_response_state = excluded.special_response_state;
+
+insert into public.questionnaire_answer_choices (
+  id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
+) values (
+  '44444444-4444-4444-8705-000000000012',
+  '33333333-3333-4333-8007-000000000005',
+  'faith_spirituality_worldview_q05_c12',
+  'Openness to questions, doubt, or changing beliefs',
+  12,
+  false,
+  null
+)
+on conflict (question_id, choice_key) do update set
+  label = excluded.label,
+  display_order = excluded.display_order,
+  mutually_exclusive = excluded.mutually_exclusive,
+  special_response_state = excluded.special_response_state;
+
+insert into public.questionnaire_answer_choices (
+  id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
+) values (
+  '44444444-4444-4444-8705-000000000013',
+  '33333333-3333-4333-8007-000000000005',
+  'faith_spirituality_worldview_q05_c13',
+  'Respect for religious and nonreligious family members',
+  13,
+  false,
+  null
+)
+on conflict (question_id, choice_key) do update set
+  label = excluded.label,
+  display_order = excluded.display_order,
+  mutually_exclusive = excluded.mutually_exclusive,
+  special_response_state = excluded.special_response_state;
+
+insert into public.questionnaire_answer_choices (
+  id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
+) values (
+  '44444444-4444-4444-8705-000000000014',
+  '33333333-3333-4333-8007-000000000005',
+  'faith_spirituality_worldview_q05_c14',
+  'The role of faith leaders or spiritual communities in the relationship',
+  14,
+  false,
+  null
+)
+on conflict (question_id, choice_key) do update set
+  label = excluded.label,
+  display_order = excluded.display_order,
+  mutually_exclusive = excluded.mutually_exclusive,
+  special_response_state = excluded.special_response_state;
+
+insert into public.questionnaire_questions (
+  id, category_id, question_key, question_number, prompt, statement,
+  format_label, response_behavior, context_note, implementation_note, eligibility_rule_id,
+  is_conditional, select_all_that_apply, structured_identity_config, alignment_purpose,
+  min_selections, max_selections,
+  priority_follow_up_prompt, priority_selection_count, priority_unordered,
+  priority_eligible_choice_keys, priority_excluded_choice_keys, priority_min_eligible_selections,
+  allowed_special_response_states, display_order
+) values (
+  '33333333-3333-4333-8007-000000000006',
+  '22222222-2222-4222-8222-000000000007',
+  'faith_spirituality_worldview_q06',
+  6,
+  'If you and your partner held different beliefs, what would you need for the relationship to remain healthy?',
+  null,
+  'Select up to four',
+  'multi_select'::public.questionnaire_response_behavior,
+  null,
+  null,
+  null,
+  false,
+  false,
+  null,
+  'Measures what makes an interfaith or belief diverse relationship genuinely workable for the respondent.',
+  1,
+  4,
+  'Of the conditions you selected, which two would be most necessary?',
+  2,
+  true,
+  null,
+  null,
+  2,
+  null,
+  6
+)
+on conflict (category_id, question_key) do update set
+  question_number = excluded.question_number,
+  prompt = excluded.prompt,
+  statement = excluded.statement,
+  format_label = excluded.format_label,
+  response_behavior = excluded.response_behavior,
+  context_note = excluded.context_note,
+  implementation_note = excluded.implementation_note,
+  eligibility_rule_id = excluded.eligibility_rule_id,
+  is_conditional = excluded.is_conditional,
+  select_all_that_apply = excluded.select_all_that_apply,
+  structured_identity_config = excluded.structured_identity_config,
+  alignment_purpose = excluded.alignment_purpose,
+  min_selections = excluded.min_selections,
+  max_selections = excluded.max_selections,
+  priority_follow_up_prompt = excluded.priority_follow_up_prompt,
+  priority_selection_count = excluded.priority_selection_count,
+  priority_unordered = excluded.priority_unordered,
+  priority_min_eligible_selections = excluded.priority_min_eligible_selections,
+  allowed_special_response_states = excluded.allowed_special_response_states,
+  display_order = excluded.display_order;
+
+insert into public.questionnaire_answer_choices (
+  id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
+) values (
+  '44444444-4444-4444-8706-000000000001',
+  '33333333-3333-4333-8007-000000000006',
+  'faith_spirituality_worldview_q06_c01',
+  'Respectful discussion without pressure to agree',
+  1,
+  false,
+  null
+)
+on conflict (question_id, choice_key) do update set
+  label = excluded.label,
+  display_order = excluded.display_order,
+  mutually_exclusive = excluded.mutually_exclusive,
+  special_response_state = excluded.special_response_state;
+
+insert into public.questionnaire_answer_choices (
+  id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
+) values (
+  '44444444-4444-4444-8706-000000000002',
+  '33333333-3333-4333-8007-000000000006',
+  'faith_spirituality_worldview_q06_c02',
+  'Freedom for each person to maintain their own beliefs',
+  2,
+  false,
+  null
+)
+on conflict (question_id, choice_key) do update set
+  label = excluded.label,
+  display_order = excluded.display_order,
+  mutually_exclusive = excluded.mutually_exclusive,
+  special_response_state = excluded.special_response_state;
+
+insert into public.questionnaire_answer_choices (
+  id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
+) values (
+  '44444444-4444-4444-8706-000000000003',
+  '33333333-3333-4333-8007-000000000006',
+  'faith_spirituality_worldview_q06_c03',
+  'Willingness to participate in one another''s important occasions',
+  3,
+  false,
+  null
+)
+on conflict (question_id, choice_key) do update set
+  label = excluded.label,
+  display_order = excluded.display_order,
+  mutually_exclusive = excluded.mutually_exclusive,
+  special_response_state = excluded.special_response_state;
+
+insert into public.questionnaire_answer_choices (
+  id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
+) values (
+  '44444444-4444-4444-8706-000000000004',
+  '33333333-3333-4333-8007-000000000006',
+  'faith_spirituality_worldview_q06_c04',
+  'Agreement about how beliefs affect major relationship decisions',
+  4,
+  false,
+  null
+)
+on conflict (question_id, choice_key) do update set
+  label = excluded.label,
+  display_order = excluded.display_order,
+  mutually_exclusive = excluded.mutually_exclusive,
+  special_response_state = excluded.special_response_state;
+
+insert into public.questionnaire_answer_choices (
+  id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
+) values (
+  '44444444-4444-4444-8706-000000000005',
+  '33333333-3333-4333-8007-000000000006',
+  'faith_spirituality_worldview_q06_c05',
+  'Clear expectations for holidays and family traditions',
+  5,
+  false,
+  null
+)
+on conflict (question_id, choice_key) do update set
+  label = excluded.label,
+  display_order = excluded.display_order,
+  mutually_exclusive = excluded.mutually_exclusive,
+  special_response_state = excluded.special_response_state;
+
+insert into public.questionnaire_answer_choices (
+  id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
+) values (
+  '44444444-4444-4444-8706-000000000006',
+  '33333333-3333-4333-8007-000000000006',
+  'faith_spirituality_worldview_q06_c06',
+  'Agreement about how children would be raised',
+  6,
+  false,
+  null
+)
+on conflict (question_id, choice_key) do update set
+  label = excluded.label,
+  display_order = excluded.display_order,
+  mutually_exclusive = excluded.mutually_exclusive,
+  special_response_state = excluded.special_response_state;
+
+insert into public.questionnaire_answer_choices (
+  id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
+) values (
+  '44444444-4444-4444-8706-000000000007',
+  '33333333-3333-4333-8007-000000000006',
+  'faith_spirituality_worldview_q06_c07',
+  'No attempt to convert or change one another',
+  7,
+  false,
+  null
+)
+on conflict (question_id, choice_key) do update set
+  label = excluded.label,
+  display_order = excluded.display_order,
+  mutually_exclusive = excluded.mutually_exclusive,
+  special_response_state = excluded.special_response_state;
+
+insert into public.questionnaire_answer_choices (
+  id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
+) values (
+  '44444444-4444-4444-8706-000000000008',
+  '33333333-3333-4333-8007-000000000006',
+  'faith_spirituality_worldview_q06_c08',
+  'Respect from each person''s family and religious or social community',
+  8,
+  false,
+  null
+)
+on conflict (question_id, choice_key) do update set
+  label = excluded.label,
+  display_order = excluded.display_order,
+  mutually_exclusive = excluded.mutually_exclusive,
+  special_response_state = excluded.special_response_state;
+
+insert into public.questionnaire_answer_choices (
+  id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
+) values (
+  '44444444-4444-4444-8706-000000000009',
+  '33333333-3333-4333-8007-000000000006',
+  'faith_spirituality_worldview_q06_c09',
+  'Shared moral or ethical foundations despite different beliefs',
+  9,
+  false,
+  null
+)
+on conflict (question_id, choice_key) do update set
+  label = excluded.label,
+  display_order = excluded.display_order,
+  mutually_exclusive = excluded.mutually_exclusive,
+  special_response_state = excluded.special_response_state;
+
+insert into public.questionnaire_answer_choices (
+  id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
+) values (
+  '44444444-4444-4444-8706-000000000010',
+  '33333333-3333-4333-8007-000000000006',
+  'faith_spirituality_worldview_q06_c10',
+  'Acceptance that either person''s beliefs may evolve',
+  10,
+  false,
+  null
+)
+on conflict (question_id, choice_key) do update set
+  label = excluded.label,
+  display_order = excluded.display_order,
+  mutually_exclusive = excluded.mutually_exclusive,
+  special_response_state = excluded.special_response_state;
+
+insert into public.questionnaire_answer_choices (
+  id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
+) values (
+  '44444444-4444-4444-8706-000000000011',
+  '33333333-3333-4333-8007-000000000006',
+  'faith_spirituality_worldview_q06_c11',
+  'Willingness to seek knowledgeable guidance when a difference becomes difficult',
+  11,
+  false,
+  null
+)
+on conflict (question_id, choice_key) do update set
+  label = excluded.label,
+  display_order = excluded.display_order,
+  mutually_exclusive = excluded.mutually_exclusive,
+  special_response_state = excluded.special_response_state;
+
+insert into public.questionnaire_questions (
+  id, category_id, question_key, question_number, prompt, statement,
+  format_label, response_behavior, context_note, implementation_note, eligibility_rule_id,
+  is_conditional, select_all_that_apply, structured_identity_config, alignment_purpose,
+  min_selections, max_selections,
+  priority_follow_up_prompt, priority_selection_count, priority_unordered,
+  priority_eligible_choice_keys, priority_excluded_choice_keys, priority_min_eligible_selections,
+  allowed_special_response_states, display_order
+) values (
+  '33333333-3333-4333-8007-000000000007',
+  '22222222-2222-4222-8222-000000000007',
+  'faith_spirituality_worldview_q07',
+  7,
+  'How comfortable would you be if a long term partner''s beliefs changed meaningfully during the relationship?',
+  null,
+  'Flexibility range',
+  'scale_range'::public.questionnaire_response_behavior,
+  'Comfort with a change may depend on whether it affects an essential belief, relationship commitment, household practice, expectations concerning children, or another important part of the shared life.',
+  'The contextual response no longer needs separate answer storage because it is now interpretive guidance rather than a selectable sixth position.',
+  null,
+  false,
+  false,
+  null,
+  'Measures adaptability when beliefs evolve without treating flexibility as inherently healthier or more mature than consistency.',
+  1,
+  1,
+  null,
+  null,
+  true,
+  null,
+  null,
+  null,
+  null,
+  7
+)
+on conflict (category_id, question_key) do update set
+  question_number = excluded.question_number,
+  prompt = excluded.prompt,
+  statement = excluded.statement,
+  format_label = excluded.format_label,
+  response_behavior = excluded.response_behavior,
+  context_note = excluded.context_note,
+  implementation_note = excluded.implementation_note,
+  eligibility_rule_id = excluded.eligibility_rule_id,
+  is_conditional = excluded.is_conditional,
+  select_all_that_apply = excluded.select_all_that_apply,
+  structured_identity_config = excluded.structured_identity_config,
+  alignment_purpose = excluded.alignment_purpose,
+  min_selections = excluded.min_selections,
+  max_selections = excluded.max_selections,
+  priority_follow_up_prompt = excluded.priority_follow_up_prompt,
+  priority_selection_count = excluded.priority_selection_count,
+  priority_unordered = excluded.priority_unordered,
+  priority_min_eligible_selections = excluded.priority_min_eligible_selections,
+  allowed_special_response_states = excluded.allowed_special_response_states,
+  display_order = excluded.display_order;
+
+insert into public.questionnaire_answer_choices (
+  id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
+) values (
+  '44444444-4444-4444-8707-000000000001',
+  '33333333-3333-4333-8007-000000000007',
+  'faith_spirituality_worldview_q07_c01',
+  'Very comfortable. I understand that beliefs may evolve, and I could adapt to substantial changes',
+  1,
+  false,
+  null
+)
+on conflict (question_id, choice_key) do update set
+  label = excluded.label,
+  display_order = excluded.display_order,
+  mutually_exclusive = excluded.mutually_exclusive,
+  special_response_state = excluded.special_response_state;
+
+insert into public.questionnaire_answer_choices (
+  id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
+) values (
+  '44444444-4444-4444-8707-000000000002',
+  '33333333-3333-4333-8007-000000000007',
+  'faith_spirituality_worldview_q07_c02',
+  'Generally comfortable, provided our core relationship values remained compatible',
+  2,
+  false,
+  null
+)
+on conflict (question_id, choice_key) do update set
+  label = excluded.label,
+  display_order = excluded.display_order,
+  mutually_exclusive = excluded.mutually_exclusive,
+  special_response_state = excluded.special_response_state;
+
+insert into public.questionnaire_answer_choices (
+  id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
+) values (
+  '44444444-4444-4444-8707-000000000003',
+  '33333333-3333-4333-8007-000000000007',
+  'faith_spirituality_worldview_q07_c03',
+  'Somewhat comfortable, depending on how the change affected our shared life',
+  3,
+  false,
+  null
+)
+on conflict (question_id, choice_key) do update set
+  label = excluded.label,
+  display_order = excluded.display_order,
+  mutually_exclusive = excluded.mutually_exclusive,
+  special_response_state = excluded.special_response_state;
+
+insert into public.questionnaire_answer_choices (
+  id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
+) values (
+  '44444444-4444-4444-8707-000000000004',
+  '33333333-3333-4333-8007-000000000007',
+  'faith_spirituality_worldview_q07_c04',
+  'Uncomfortable if the change significantly affected important practices or future plans',
+  4,
+  false,
+  null
+)
+on conflict (question_id, choice_key) do update set
+  label = excluded.label,
+  display_order = excluded.display_order,
+  mutually_exclusive = excluded.mutually_exclusive,
+  special_response_state = excluded.special_response_state;
+
+insert into public.questionnaire_answer_choices (
+  id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
+) values (
+  '44444444-4444-4444-8707-000000000005',
+  '33333333-3333-4333-8007-000000000007',
+  'faith_spirituality_worldview_q07_c05',
+  'Very uncomfortable. I need substantial long term consistency in this area',
+  5,
+  false,
+  null
+)
+on conflict (question_id, choice_key) do update set
+  label = excluded.label,
+  display_order = excluded.display_order,
+  mutually_exclusive = excluded.mutually_exclusive,
+  special_response_state = excluded.special_response_state;
+
+insert into public.questionnaire_questions (
+  id, category_id, question_key, question_number, prompt, statement,
+  format_label, response_behavior, context_note, implementation_note, eligibility_rule_id,
+  is_conditional, select_all_that_apply, structured_identity_config, alignment_purpose,
+  min_selections, max_selections,
+  priority_follow_up_prompt, priority_selection_count, priority_unordered,
+  priority_eligible_choice_keys, priority_excluded_choice_keys, priority_min_eligible_selections,
+  allowed_special_response_states, display_order
+) values (
+  '33333333-3333-4333-8007-000000000008',
+  '22222222-2222-4222-8222-000000000007',
+  'faith_spirituality_worldview_q08',
+  8,
+  'When an important relationship decision conflicts with a religious, spiritual, or deeply held ethical belief, what should guide the couple most strongly?',
+  null,
+  'Scenario based choice',
+  'scenario_choice'::public.questionnaire_response_behavior,
+  null,
+  null,
+  null,
+  false,
+  false,
+  null,
+  'Examines how someone balances conviction, mutual consent, interpretation, guidance, and relationship consequences.',
+  1,
+  1,
+  null,
+  null,
+  true,
+  null,
+  null,
+  null,
+  null,
+  8
+)
+on conflict (category_id, question_key) do update set
+  question_number = excluded.question_number,
+  prompt = excluded.prompt,
+  statement = excluded.statement,
+  format_label = excluded.format_label,
+  response_behavior = excluded.response_behavior,
+  context_note = excluded.context_note,
+  implementation_note = excluded.implementation_note,
+  eligibility_rule_id = excluded.eligibility_rule_id,
+  is_conditional = excluded.is_conditional,
+  select_all_that_apply = excluded.select_all_that_apply,
+  structured_identity_config = excluded.structured_identity_config,
+  alignment_purpose = excluded.alignment_purpose,
+  min_selections = excluded.min_selections,
+  max_selections = excluded.max_selections,
+  priority_follow_up_prompt = excluded.priority_follow_up_prompt,
+  priority_selection_count = excluded.priority_selection_count,
+  priority_unordered = excluded.priority_unordered,
+  priority_min_eligible_selections = excluded.priority_min_eligible_selections,
+  allowed_special_response_states = excluded.allowed_special_response_states,
+  display_order = excluded.display_order;
+
+insert into public.questionnaire_answer_choices (
+  id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
+) values (
+  '44444444-4444-4444-8708-000000000001',
+  '33333333-3333-4333-8007-000000000008',
+  'faith_spirituality_worldview_q08_c01',
+  'Remain faithful to the belief, even if it significantly limits the available choices',
+  1,
+  false,
+  null
+)
+on conflict (question_id, choice_key) do update set
+  label = excluded.label,
+  display_order = excluded.display_order,
+  mutually_exclusive = excluded.mutually_exclusive,
+  special_response_state = excluded.special_response_state;
+
+insert into public.questionnaire_answer_choices (
+  id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
+) values (
+  '44444444-4444-4444-8708-000000000002',
+  '33333333-3333-4333-8007-000000000008',
+  'faith_spirituality_worldview_q08_c02',
+  'Seek an option that honors the belief while reducing harm or burden to the relationship',
+  2,
+  false,
+  null
+)
+on conflict (question_id, choice_key) do update set
+  label = excluded.label,
+  display_order = excluded.display_order,
+  mutually_exclusive = excluded.mutually_exclusive,
+  special_response_state = excluded.special_response_state;
+
+insert into public.questionnaire_answer_choices (
+  id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
+) values (
+  '44444444-4444-4444-8708-000000000003',
+  '33333333-3333-4333-8007-000000000008',
+  'faith_spirituality_worldview_q08_c03',
+  'Give substantial consideration to the person whose essential belief is affected',
+  3,
+  false,
+  null
+)
+on conflict (question_id, choice_key) do update set
+  label = excluded.label,
+  display_order = excluded.display_order,
+  mutually_exclusive = excluded.mutually_exclusive,
+  special_response_state = excluded.special_response_state;
+
+insert into public.questionnaire_answer_choices (
+  id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
+) values (
+  '44444444-4444-4444-8708-000000000004',
+  '33333333-3333-4333-8007-000000000008',
+  'faith_spirituality_worldview_q08_c04',
+  'Prioritize a mutually acceptable decision that neither person is forced to violate',
+  4,
+  false,
+  null
+)
+on conflict (question_id, choice_key) do update set
+  label = excluded.label,
+  display_order = excluded.display_order,
+  mutually_exclusive = excluded.mutually_exclusive,
+  special_response_state = excluded.special_response_state;
+
+insert into public.questionnaire_answer_choices (
+  id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
+) values (
+  '44444444-4444-4444-8708-000000000005',
+  '33333333-3333-4333-8007-000000000008',
+  'faith_spirituality_worldview_q08_c05',
+  'Reexamine how the belief applies to the specific circumstances',
+  5,
+  false,
+  null
+)
+on conflict (question_id, choice_key) do update set
+  label = excluded.label,
+  display_order = excluded.display_order,
+  mutually_exclusive = excluded.mutually_exclusive,
+  special_response_state = excluded.special_response_state;
+
+insert into public.questionnaire_answer_choices (
+  id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
+) values (
+  '44444444-4444-4444-8708-000000000006',
+  '33333333-3333-4333-8007-000000000008',
+  'faith_spirituality_worldview_q08_c06',
+  'Seek guidance from trusted religious, spiritual, ethical, or professional sources',
+  6,
+  false,
+  null
+)
+on conflict (question_id, choice_key) do update set
+  label = excluded.label,
+  display_order = excluded.display_order,
+  mutually_exclusive = excluded.mutually_exclusive,
+  special_response_state = excluded.special_response_state;
+
+insert into public.questionnaire_answer_choices (
+  id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
+) values (
+  '44444444-4444-4444-8708-000000000007',
+  '33333333-3333-4333-8007-000000000008',
+  'faith_spirituality_worldview_q08_c07',
+  'Some decisions may reveal a fundamental incompatibility that compromise cannot resolve',
+  7,
+  false,
+  null
+)
+on conflict (question_id, choice_key) do update set
+  label = excluded.label,
+  display_order = excluded.display_order,
+  mutually_exclusive = excluded.mutually_exclusive,
+  special_response_state = excluded.special_response_state;
+
+insert into public.questionnaire_questions (
+  id, category_id, question_key, question_number, prompt, statement,
+  format_label, response_behavior, context_note, implementation_note, eligibility_rule_id,
+  is_conditional, select_all_that_apply, structured_identity_config, alignment_purpose,
+  min_selections, max_selections,
+  priority_follow_up_prompt, priority_selection_count, priority_unordered,
+  priority_eligible_choice_keys, priority_excluded_choice_keys, priority_min_eligible_selections,
+  allowed_special_response_states, display_order
+) values (
+  '33333333-3333-4333-8007-000000000009',
+  '22222222-2222-4222-8222-000000000007',
+  'faith_spirituality_worldview_q09',
+  9,
+  'If children were part of the relationship, how should religion, spirituality, or nonreligious beliefs primarily be approached in their upbringing?',
+  null,
+  'Conditional scenario based choice',
+  'scenario_choice'::public.questionnaire_response_behavior,
+  'Expectations concerning a child''s religious, spiritual, or nonreligious upbringing should be discussed and substantially agreed upon before making a long term parenting commitment.',
+  null,
+  '55555555-5555-4555-8555-000000000007',
+  true,
+  false,
+  null,
+  'Identifies expectations for belief formation, religious education, exposure, parental influence, and a child''s developing autonomy.',
+  1,
+  1,
+  null,
+  null,
+  true,
+  null,
+  null,
+  null,
+  null,
+  9
+)
+on conflict (category_id, question_key) do update set
+  question_number = excluded.question_number,
+  prompt = excluded.prompt,
+  statement = excluded.statement,
+  format_label = excluded.format_label,
+  response_behavior = excluded.response_behavior,
+  context_note = excluded.context_note,
+  implementation_note = excluded.implementation_note,
+  eligibility_rule_id = excluded.eligibility_rule_id,
+  is_conditional = excluded.is_conditional,
+  select_all_that_apply = excluded.select_all_that_apply,
+  structured_identity_config = excluded.structured_identity_config,
+  alignment_purpose = excluded.alignment_purpose,
+  min_selections = excluded.min_selections,
+  max_selections = excluded.max_selections,
+  priority_follow_up_prompt = excluded.priority_follow_up_prompt,
+  priority_selection_count = excluded.priority_selection_count,
+  priority_unordered = excluded.priority_unordered,
+  priority_min_eligible_selections = excluded.priority_min_eligible_selections,
+  allowed_special_response_states = excluded.allowed_special_response_states,
+  display_order = excluded.display_order;
+
+insert into public.questionnaire_answer_choices (
+  id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
+) values (
+  '44444444-4444-4444-8709-000000000001',
+  '33333333-3333-4333-8007-000000000009',
+  'faith_spirituality_worldview_q09_c01',
+  'Raise them primarily within one shared religious or spiritual tradition',
+  1,
+  false,
+  null
+)
+on conflict (question_id, choice_key) do update set
+  label = excluded.label,
+  display_order = excluded.display_order,
+  mutually_exclusive = excluded.mutually_exclusive,
+  special_response_state = excluded.special_response_state;
+
+insert into public.questionnaire_answer_choices (
+  id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
+) values (
+  '44444444-4444-4444-8709-000000000002',
+  '33333333-3333-4333-8007-000000000009',
+  'faith_spirituality_worldview_q09_c02',
+  'Raise them primarily within one tradition while respectfully teaching them about other beliefs',
+  2,
+  false,
+  null
+)
+on conflict (question_id, choice_key) do update set
+  label = excluded.label,
+  display_order = excluded.display_order,
+  mutually_exclusive = excluded.mutually_exclusive,
+  special_response_state = excluded.special_response_state;
+
+insert into public.questionnaire_answer_choices (
+  id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
+) values (
+  '44444444-4444-4444-8709-000000000003',
+  '33333333-3333-4333-8007-000000000009',
+  'faith_spirituality_worldview_q09_c03',
+  'Include meaningful participation in both partners'' traditions',
+  3,
+  false,
+  null
+)
+on conflict (question_id, choice_key) do update set
+  label = excluded.label,
+  display_order = excluded.display_order,
+  mutually_exclusive = excluded.mutually_exclusive,
+  special_response_state = excluded.special_response_state;
+
+insert into public.questionnaire_answer_choices (
+  id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
+) values (
+  '44444444-4444-4444-8709-000000000004',
+  '33333333-3333-4333-8007-000000000009',
+  'faith_spirituality_worldview_q09_c04',
+  'Provide broad exposure to different beliefs and allow increasing choice as they mature',
+  4,
+  false,
+  null
+)
+on conflict (question_id, choice_key) do update set
+  label = excluded.label,
+  display_order = excluded.display_order,
+  mutually_exclusive = excluded.mutually_exclusive,
+  special_response_state = excluded.special_response_state;
+
+insert into public.questionnaire_answer_choices (
+  id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
+) values (
+  '44444444-4444-4444-8709-000000000005',
+  '33333333-3333-4333-8007-000000000009',
+  'faith_spirituality_worldview_q09_c05',
+  'Raise them primarily within a secular or nonreligious worldview',
+  5,
+  false,
+  null
+)
+on conflict (question_id, choice_key) do update set
+  label = excluded.label,
+  display_order = excluded.display_order,
+  mutually_exclusive = excluded.mutually_exclusive,
+  special_response_state = excluded.special_response_state;
+
+insert into public.questionnaire_answer_choices (
+  id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
+) values (
+  '44444444-4444-4444-8709-000000000006',
+  '33333333-3333-4333-8007-000000000009',
+  'faith_spirituality_worldview_q09_c06',
+  'Focus on shared ethics and values without requiring a particular religious identity',
+  6,
+  false,
+  null
+)
+on conflict (question_id, choice_key) do update set
+  label = excluded.label,
+  display_order = excluded.display_order,
+  mutually_exclusive = excluded.mutually_exclusive,
+  special_response_state = excluded.special_response_state;
+
+insert into public.questionnaire_answer_choices (
+  id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
+) values (
+  '44444444-4444-4444-8709-000000000007',
+  '33333333-3333-4333-8007-000000000009',
+  'faith_spirituality_worldview_q09_c07',
+  'Allow each parent to share their beliefs without requiring the child to adopt either parent''s worldview',
+  7,
+  false,
+  null
+)
+on conflict (question_id, choice_key) do update set
+  label = excluded.label,
+  display_order = excluded.display_order,
+  mutually_exclusive = excluded.mutually_exclusive,
+  special_response_state = excluded.special_response_state;
+
+insert into public.questionnaire_questions (
+  id, category_id, question_key, question_number, prompt, statement,
+  format_label, response_behavior, context_note, implementation_note, eligibility_rule_id,
+  is_conditional, select_all_that_apply, structured_identity_config, alignment_purpose,
+  min_selections, max_selections,
+  priority_follow_up_prompt, priority_selection_count, priority_unordered,
+  priority_eligible_choice_keys, priority_excluded_choice_keys, priority_min_eligible_selections,
+  allowed_special_response_states, display_order
+) values (
+  '33333333-3333-4333-8007-000000000010',
+  '22222222-2222-4222-8222-000000000007',
+  'faith_spirituality_worldview_q10',
+  10,
+  'Which faith, spiritual, or worldview related differences would most seriously threaten long term compatibility?',
+  null,
+  'Select up to five',
+  'multi_select'::public.questionnaire_response_behavior,
+  null,
+  null,
+  null,
+  false,
+  false,
+  null,
+  'Identifies essential belief boundaries and high impact incompatibilities without judging the respondent''s religious or nonreligious identity.',
+  1,
+  5,
+  'Of the differences you selected, which two would be most difficult for you to move past?',
+  2,
+  true,
+  null,
+  null,
+  2,
+  null,
+  10
+)
+on conflict (category_id, question_key) do update set
+  question_number = excluded.question_number,
+  prompt = excluded.prompt,
+  statement = excluded.statement,
+  format_label = excluded.format_label,
+  response_behavior = excluded.response_behavior,
+  context_note = excluded.context_note,
+  implementation_note = excluded.implementation_note,
+  eligibility_rule_id = excluded.eligibility_rule_id,
+  is_conditional = excluded.is_conditional,
+  select_all_that_apply = excluded.select_all_that_apply,
+  structured_identity_config = excluded.structured_identity_config,
+  alignment_purpose = excluded.alignment_purpose,
+  min_selections = excluded.min_selections,
+  max_selections = excluded.max_selections,
+  priority_follow_up_prompt = excluded.priority_follow_up_prompt,
+  priority_selection_count = excluded.priority_selection_count,
+  priority_unordered = excluded.priority_unordered,
+  priority_min_eligible_selections = excluded.priority_min_eligible_selections,
+  allowed_special_response_states = excluded.allowed_special_response_states,
+  display_order = excluded.display_order;
+
+insert into public.questionnaire_answer_choices (
+  id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
+) values (
+  '44444444-4444-4444-8710-000000000001',
+  '33333333-3333-4333-8007-000000000010',
+  'faith_spirituality_worldview_q10_c01',
+  'Pressure to convert, deconstruct, or abandon my beliefs',
+  1,
+  false,
+  null
+)
+on conflict (question_id, choice_key) do update set
+  label = excluded.label,
+  display_order = excluded.display_order,
+  mutually_exclusive = excluded.mutually_exclusive,
+  special_response_state = excluded.special_response_state;
+
+insert into public.questionnaire_answer_choices (
+  id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
+) values (
+  '44444444-4444-4444-8710-000000000002',
+  '33333333-3333-4333-8007-000000000010',
+  'faith_spirituality_worldview_q10_c02',
+  'Disrespect toward my beliefs or lack of belief',
+  2,
+  false,
+  null
+)
+on conflict (question_id, choice_key) do update set
+  label = excluded.label,
+  display_order = excluded.display_order,
+  mutually_exclusive = excluded.mutually_exclusive,
+  special_response_state = excluded.special_response_state;
+
+insert into public.questionnaire_answer_choices (
+  id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
+) values (
+  '44444444-4444-4444-8710-000000000003',
+  '33333333-3333-4333-8007-000000000010',
+  'faith_spirituality_worldview_q10_c03',
+  'Refusal to allow reasonable personal religious or spiritual practice',
+  3,
+  false,
+  null
+)
+on conflict (question_id, choice_key) do update set
+  label = excluded.label,
+  display_order = excluded.display_order,
+  mutually_exclusive = excluded.mutually_exclusive,
+  special_response_state = excluded.special_response_state;
+
+insert into public.questionnaire_answer_choices (
+  id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
+) values (
+  '44444444-4444-4444-8710-000000000004',
+  '33333333-3333-4333-8007-000000000010',
+  'faith_spirituality_worldview_q10_c04',
+  'Incompatible expectations for raising children',
+  4,
+  false,
+  null
+)
+on conflict (question_id, choice_key) do update set
+  label = excluded.label,
+  display_order = excluded.display_order,
+  mutually_exclusive = excluded.mutually_exclusive,
+  special_response_state = excluded.special_response_state;
+
+insert into public.questionnaire_answer_choices (
+  id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
+) values (
+  '44444444-4444-4444-8710-000000000005',
+  '33333333-3333-4333-8007-000000000010',
+  'faith_spirituality_worldview_q10_c05',
+  'Incompatible beliefs about marriage, sex, or relationship roles',
+  5,
+  false,
+  null
+)
+on conflict (question_id, choice_key) do update set
+  label = excluded.label,
+  display_order = excluded.display_order,
+  mutually_exclusive = excluded.mutually_exclusive,
+  special_response_state = excluded.special_response_state;
+
+insert into public.questionnaire_answer_choices (
+  id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
+) values (
+  '44444444-4444-4444-8710-000000000006',
+  '33333333-3333-4333-8007-000000000010',
+  'faith_spirituality_worldview_q10_c06',
+  'Major disagreement about participation in a faith or spiritual community',
+  6,
+  false,
+  null
+)
+on conflict (question_id, choice_key) do update set
+  label = excluded.label,
+  display_order = excluded.display_order,
+  mutually_exclusive = excluded.mutually_exclusive,
+  special_response_state = excluded.special_response_state;
+
+insert into public.questionnaire_answer_choices (
+  id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
+) values (
+  '44444444-4444-4444-8710-000000000007',
+  '33333333-3333-4333-8007-000000000010',
+  'faith_spirituality_worldview_q10_c07',
+  'Allowing religious leaders, relatives, or community members to control relationship decisions',
+  7,
+  false,
+  null
+)
+on conflict (question_id, choice_key) do update set
+  label = excluded.label,
+  display_order = excluded.display_order,
+  mutually_exclusive = excluded.mutually_exclusive,
+  special_response_state = excluded.special_response_state;
+
+insert into public.questionnaire_answer_choices (
+  id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
+) values (
+  '44444444-4444-4444-8710-000000000008',
+  '33333333-3333-4333-8007-000000000010',
+  'faith_spirituality_worldview_q10_c08',
+  'Using belief to justify coercion, discrimination, humiliation, or harmful conduct',
+  8,
+  false,
+  null
+)
+on conflict (question_id, choice_key) do update set
+  label = excluded.label,
+  display_order = excluded.display_order,
+  mutually_exclusive = excluded.mutually_exclusive,
+  special_response_state = excluded.special_response_state;
+
+insert into public.questionnaire_answer_choices (
+  id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
+) values (
+  '44444444-4444-4444-8710-000000000009',
+  '33333333-3333-4333-8007-000000000010',
+  'faith_spirituality_worldview_q10_c09',
+  'Rejecting necessary medical or mental health care solely because of belief',
+  9,
+  false,
+  null
+)
+on conflict (question_id, choice_key) do update set
+  label = excluded.label,
+  display_order = excluded.display_order,
+  mutually_exclusive = excluded.mutually_exclusive,
+  special_response_state = excluded.special_response_state;
+
+insert into public.questionnaire_answer_choices (
+  id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
+) values (
+  '44444444-4444-4444-8710-000000000010',
+  '33333333-3333-4333-8007-000000000010',
+  'faith_spirituality_worldview_q10_c10',
+  'Treating questions, doubts, or evolving beliefs as betrayal',
+  10,
+  false,
+  null
+)
+on conflict (question_id, choice_key) do update set
+  label = excluded.label,
+  display_order = excluded.display_order,
+  mutually_exclusive = excluded.mutually_exclusive,
+  special_response_state = excluded.special_response_state;
+
+insert into public.questionnaire_answer_choices (
+  id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
+) values (
+  '44444444-4444-4444-8710-000000000011',
+  '33333333-3333-4333-8007-000000000010',
+  'faith_spirituality_worldview_q10_c11',
+  'Expecting me to conceal my beliefs or identity',
+  11,
+  false,
+  null
+)
+on conflict (question_id, choice_key) do update set
+  label = excluded.label,
+  display_order = excluded.display_order,
+  mutually_exclusive = excluded.mutually_exclusive,
+  special_response_state = excluded.special_response_state;
+
+insert into public.questionnaire_answer_choices (
+  id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
+) values (
+  '44444444-4444-4444-8710-000000000012',
+  '33333333-3333-4333-8007-000000000010',
+  'faith_spirituality_worldview_q10_c12',
+  'Repeatedly ridiculing religious or nonreligious people',
+  12,
+  false,
+  null
+)
+on conflict (question_id, choice_key) do update set
+  label = excluded.label,
+  display_order = excluded.display_order,
+  mutually_exclusive = excluded.mutually_exclusive,
+  special_response_state = excluded.special_response_state;
+
+insert into public.questionnaire_answer_choices (
+  id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
+) values (
+  '44444444-4444-4444-8710-000000000013',
+  '33333333-3333-4333-8007-000000000010',
+  'faith_spirituality_worldview_q10_c13',
+  'Incompatible household practices or observances',
+  13,
+  false,
+  null
+)
+on conflict (question_id, choice_key) do update set
+  label = excluded.label,
+  display_order = excluded.display_order,
+  mutually_exclusive = excluded.mutually_exclusive,
+  special_response_state = excluded.special_response_state;
+
+insert into public.questionnaire_answer_choices (
+  id, question_id, choice_key, label, display_order, mutually_exclusive, special_response_state
+) values (
+  '44444444-4444-4444-8710-000000000014',
+  '33333333-3333-4333-8007-000000000010',
+  'faith_spirituality_worldview_q10_c14',
+  'Fundamental moral or ethical differences that materially affect our shared life',
+  14,
   false,
   null
 )

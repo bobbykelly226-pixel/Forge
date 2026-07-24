@@ -7,6 +7,12 @@ import { CATEGORY_01 } from '@/lib/questionnaire/catalog/category-01';
 import { CATEGORY_02 } from '@/lib/questionnaire/catalog/category-02';
 import { CATEGORY_03 } from '@/lib/questionnaire/catalog/category-03';
 import { CATEGORY_04 } from '@/lib/questionnaire/catalog/category-04';
+import { CATEGORY_05 } from '@/lib/questionnaire/catalog/category-05';
+import { CATEGORY_06 } from '@/lib/questionnaire/catalog/category-06';
+import {
+  CATEGORY_07,
+  CATEGORY_07_PARENTING_ELIGIBILITY,
+} from '@/lib/questionnaire/catalog/category-07';
 import {
   getPreviewCategories,
   getQuestionnaireCatalog,
@@ -15,7 +21,6 @@ import {
 import {
   advanceStep,
   canContinueFromStep,
-  CATEGORY_INTRO_COPY,
   clearCategoryAnswers,
   DIRECTORY_COPY,
   getCategoryAnswers,
@@ -87,9 +92,9 @@ function walkCategory(category: CategoryDefinition) {
   return seen;
 }
 
-describe('Categories 2 through 4 live catalogs', () => {
+describe('Categories 5 through 7 live catalogs', () => {
   it('exports exactly ten questions per category with consecutive IDs', () => {
-    for (const category of [CATEGORY_02, CATEGORY_03, CATEGORY_04]) {
+    for (const category of [CATEGORY_05, CATEGORY_06, CATEGORY_07]) {
       assert.equal(category.questions.length, 10);
       assert.deepEqual(
         category.questions.map((q) => q.number),
@@ -111,64 +116,105 @@ describe('Categories 2 through 4 live catalogs', () => {
   });
 
   it('keeps only the listed priority follow ups', () => {
-    assert.deepEqual(questionsWithPriorityFollowUp(CATEGORY_02), [1, 9]);
-    assert.deepEqual(questionsWithPriorityFollowUp(CATEGORY_03), [3, 10]);
-    assert.deepEqual(questionsWithPriorityFollowUp(CATEGORY_04), [6, 9, 10]);
-    assert.equal(CATEGORY_04.questions.find((q) => q.number === 3)?.priorityFollowUp, undefined);
+    assert.deepEqual(questionsWithPriorityFollowUp(CATEGORY_05), [1, 8]);
+    assert.deepEqual(questionsWithPriorityFollowUp(CATEGORY_06), [2, 10]);
+    assert.deepEqual(questionsWithPriorityFollowUp(CATEGORY_07), [5, 6, 10]);
   });
 
-  it('matches exact retained Category 2 prompts and excludes removed questions', () => {
+  it('matches exact retained Category 5 prompts and choice counts', () => {
     assert.deepEqual(
-      CATEGORY_02.questions.map((q) => q.prompt),
+      CATEGORY_05.questions.map((q) => q.prompt),
       [
-        'Which principles most strongly guide the way you try to live?',
-        'If you realize you have acted against one of your own values, what are you most likely to do first?',
-        'When keeping a commitment becomes substantially harder than expected, what do you generally believe someone should do?',
-        'When your intentions were good but your actions still hurt someone, what matters most?',
-        'When someone repeatedly makes choices you disagree with, how do you usually try to respond?',
-        'Which approach to personal responsibility most closely reflects your beliefs?',
-        'How comfortable are you admitting that an important belief or judgment of yours was wrong?',
-        'When loyalty to someone conflicts with doing what you believe is right, which principle should generally come first?',
-        'Which qualities are most important in the character of a long term partner?',
-        "If a partner's behavior conflicted with a value they claimed to hold, what would matter most in deciding how you viewed it?",
+        'Once two people have agreed to an exclusive relationship, what does exclusivity generally require?',
+        'How should responsibilities generally be divided within a long term relationship?',
+        'When one partner is carrying significantly more responsibility for a period of time, what should happen?',
+        'How much independence should each person maintain within a committed relationship?',
+        'Which areas should partners generally discuss before making a decision?',
+        'When partners strongly disagree about a major decision affecting both people, how should the final decision be made?',
+        'If one partner receives a major opportunity that would significantly disrupt the other person\'s life, what should matter most?',
+        'What does reliability from a long term partner mean most to you?',
+        'When one partner needs substantial emotional or practical support, what level of responsibility should the other partner generally assume?',
+        'If a committed relationship becomes difficult for an extended period, what should determine whether the couple continues working on it?',
       ]
     );
-    const joined = CATEGORY_02.questions.map((q) => q.prompt).join('\n');
-    assert.doesNotMatch(joined, /honesty when truth/i);
-    assert.doesNotMatch(joined, /socially desirable/i);
-  });
-
-  it('matches exact retained Category 3 and 4 first and last prompts', () => {
+    assert.equal(CATEGORY_05.questions[0].choices.length, 9);
+    assert.equal(CATEGORY_05.questions[0].maxSelections, 4);
     assert.equal(
-      CATEGORY_03.questions[0].prompt,
-      'When something important is bothering you in a relationship, how do you usually prefer to address it?'
+      CATEGORY_05.questions[0].priorityFollowUp?.prompt,
+      'Of the expectations you selected, which two allow the least room for compromise?'
     );
     assert.equal(
-      CATEGORY_03.questions[9].prompt,
-      'Which communication behaviors are most important in a long term partner?'
-    );
-    assert.equal(
-      CATEGORY_04.questions[0].prompt,
-      'When tension first develops between you and a partner, what are you most likely to do?'
-    );
-    assert.equal(
-      CATEGORY_04.questions[9].prompt,
-      'Which conflict patterns would most seriously threaten your willingness to remain in a relationship?'
+      CATEGORY_05.questions[7].priorityFollowUp?.prompt,
+      'Of the qualities you selected, which two matter most?'
     );
   });
 
-  it('matches fixture excerpts for Categories 2 through 4', () => {
+  it('matches exact retained Category 6 and 7 first and last prompts', () => {
+    assert.equal(
+      CATEGORY_06.questions[0].prompt,
+      'What role would you ideally like extended family to have in your long term relationship?'
+    );
+    assert.equal(
+      CATEGORY_06.questions[9].prompt,
+      'Which family or parenting differences would most seriously threaten long term compatibility?'
+    );
+    assert.equal(
+      CATEGORY_07.questions[0].prompt,
+      'Which description most closely reflects your current relationship with faith or spirituality?'
+    );
+    assert.equal(
+      CATEGORY_07.questions[9].prompt,
+      'Which faith, spiritual, or worldview related differences would most seriously threaten long term compatibility?'
+    );
+  });
+
+  it('locks Category 6 select all and Category 7 structured identity / conditional metadata', () => {
+    const familyPaths = CATEGORY_06.questions.find((q) => q.number === 4);
+    assert.equal(familyPaths?.formatLabel, 'Select all that apply');
+    assert.equal(familyPaths?.selectAllThatApply, true);
+    assert.equal(familyPaths?.minSelections, 0);
+    assert.equal(familyPaths?.maxSelections, null);
+
+    const identity = CATEGORY_07.questions.find((q) => q.number === 2);
+    assert.equal(identity?.formatLabel, 'Structured identity selection');
+    assert.equal(identity?.responseBehavior, 'structured_identity');
+    assert.equal(identity?.structuredIdentity?.allowsRefinement, true);
+    assert.equal(identity?.structuredIdentity?.allowsUserSuppliedIdentity, true);
+    assert.equal(identity?.structuredIdentity?.privacy.userControlsPublicDisplay, true);
+    assert.equal(
+      identity?.structuredIdentity?.privacy.userControlsPrivateMatchingUse,
+      false
+    );
+    assert.ok(identity?.choices.some((c) => c.label === 'Baháʼí Faith'));
+
+    const practices = CATEGORY_07.questions.find((q) => q.number === 3);
+    assert.equal(practices?.selectAllThatApply, true);
+    assert.equal(practices?.maxSelections, null);
+
+    const parenting = CATEGORY_07.questions.find((q) => q.number === 9);
+    assert.equal(parenting?.formatLabel, 'Conditional scenario based choice');
+    assert.equal(parenting?.eligibilityRuleId, CATEGORY_07_PARENTING_ELIGIBILITY.id);
+    assert.equal(parenting?.conditional?.kind, 'conditional_scenario');
+    assert.equal(
+      parenting?.conditional?.requiresEligibilityRuleId,
+      CATEGORY_07_PARENTING_ELIGIBILITY.id
+    );
+  });
+
+  it('matches fixture excerpts for Categories 5 through 7', () => {
     for (const [category, file] of [
-      [CATEGORY_02, 'category-02-master-excerpt.md'],
-      [CATEGORY_03, 'category-03-master-excerpt.md'],
-      [CATEGORY_04, 'category-04-master-excerpt.md'],
+      [CATEGORY_05, 'category-05-master-excerpt.md'],
+      [CATEGORY_06, 'category-06-master-excerpt.md'],
+      [CATEGORY_07, 'category-07-master-excerpt.md'],
     ] as const) {
       const fixture = read(`lib/questionnaire/fixtures/${file}`);
       for (const question of category.questions) {
         assert.match(fixture, new RegExp(question.prompt.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')));
         assert.match(
           fixture,
-          new RegExp(`\\*\\*Format:\\*\\* ${question.formatLabel.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}`)
+          new RegExp(
+            `\\*\\*Format:\\*\\* ${question.formatLabel.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}`
+          )
         );
         for (const choice of question.choices) {
           assert.match(fixture, new RegExp(choice.label.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')));
@@ -186,14 +232,14 @@ describe('Categories 2 through 4 live catalogs', () => {
   });
 
   it('walks each category flow including priority substeps', () => {
-    assert.deepEqual(walkCategory(CATEGORY_02), [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]);
-    assert.deepEqual(walkCategory(CATEGORY_03), [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]);
-    assert.deepEqual(walkCategory(CATEGORY_04), [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]);
+    assert.deepEqual(walkCategory(CATEGORY_05), [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]);
+    assert.deepEqual(walkCategory(CATEGORY_06), [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]);
+    assert.deepEqual(walkCategory(CATEGORY_07), [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]);
   });
 });
 
-describe('multi-category preview session behavior', () => {
-  it('exposes Categories 1 through 7 in the preview directory set', () => {
+describe('Categories 5 through 7 preview session behavior', () => {
+  it('exposes Categories 1 through 7 with the Categories 1 to 7 specification version', () => {
     const preview = getPreviewCategories();
     assert.deepEqual(
       preview.map((c) => c.number),
@@ -201,43 +247,47 @@ describe('multi-category preview session behavior', () => {
     );
     assert.equal(getQuestionnaireCatalog().specificationVersion, SPECIFICATION_VERSION);
     assert.equal(SPECIFICATION_VERSION, 'compatibility_profile_categories_1_7_v10');
+    assert.equal(getQuestionnaireCatalog().eligibilityRules.length, 1);
+    assert.match(DIRECTORY_COPY.body, /first seven/);
+    assert.match(DIRECTORY_COPY.metadata, /1 through 7/);
+    assert.match(PREVIEW_PAGE_DESCRIPTION, /1 through 7/);
   });
 
   it('preserves in memory answers across category switches and clears only on restart', () => {
     let answersByCategory: PreviewAnswersByCategory = {
-      2: completeCategoryAnswers(CATEGORY_02),
-      3: completeCategoryAnswers(CATEGORY_03),
+      5: completeCategoryAnswers(CATEGORY_05),
+      6: completeCategoryAnswers(CATEGORY_06),
     };
-    assert.equal(isCategorySessionComplete(CATEGORY_02, answersByCategory), true);
-    assert.equal(isCategorySessionComplete(CATEGORY_03, answersByCategory), true);
-    assert.equal(isCategorySessionComplete(CATEGORY_04, answersByCategory), false);
+    assert.equal(isCategorySessionComplete(CATEGORY_05, answersByCategory), true);
+    assert.equal(isCategorySessionComplete(CATEGORY_06, answersByCategory), true);
+    assert.equal(isCategorySessionComplete(CATEGORY_07, answersByCategory), false);
 
-    const cat2Before = getCategoryAnswers(answersByCategory, 2);
+    const cat5Before = getCategoryAnswers(answersByCategory, 5);
     answersByCategory = {
       ...answersByCategory,
-      4: completeCategoryAnswers(CATEGORY_04),
+      7: completeCategoryAnswers(CATEGORY_07),
     };
-    assert.deepEqual(getCategoryAnswers(answersByCategory, 2), cat2Before);
-    assert.equal(isCategorySessionComplete(CATEGORY_04, answersByCategory), true);
+    assert.deepEqual(getCategoryAnswers(answersByCategory, 5), cat5Before);
+    assert.equal(isCategorySessionComplete(CATEGORY_07, answersByCategory), true);
 
-    answersByCategory = clearCategoryAnswers(answersByCategory, 3);
-    assert.equal(isCategorySessionComplete(CATEGORY_03, answersByCategory), false);
-    assert.equal(isCategorySessionComplete(CATEGORY_02, answersByCategory), true);
-    assert.equal(isCategorySessionComplete(CATEGORY_04, answersByCategory), true);
+    answersByCategory = clearCategoryAnswers(answersByCategory, 6);
+    assert.equal(isCategorySessionComplete(CATEGORY_06, answersByCategory), false);
+    assert.equal(isCategorySessionComplete(CATEGORY_05, answersByCategory), true);
+    assert.equal(isCategorySessionComplete(CATEGORY_07, answersByCategory), true);
   });
 
-  it('preserves Category 1 wording and priority locations', () => {
+  it('preserves Categories 1 through 4 wording and priority locations', () => {
     assert.equal(CATEGORY_01.title, 'Relationship Vision & Intentions');
     assert.deepEqual(questionsWithPriorityFollowUp(CATEGORY_01), [5, 8, 10]);
-    assert.equal(getIntroCopy(1).supporting, CATEGORY_INTRO_COPY[1].supporting);
-    assert.match(getIntroCopy(1).supporting, /There are no wrong answers/);
-    assert.equal(
-      getCompleteCopy(1).body,
-      'This is the first part of the larger Forge Compatibility Profile. Your responses will eventually help Forge explain meaningful alignment while leaving the decision and the conversation to you.'
-    );
+    assert.deepEqual(questionsWithPriorityFollowUp(CATEGORY_02), [1, 9]);
+    assert.deepEqual(questionsWithPriorityFollowUp(CATEGORY_03), [3, 10]);
+    assert.deepEqual(questionsWithPriorityFollowUp(CATEGORY_04), [6, 9, 10]);
+    assert.equal(CATEGORY_02.questions.length, 10);
+    assert.equal(CATEGORY_03.questions.length, 10);
+    assert.equal(CATEGORY_04.questions.length, 10);
   });
 
-  it('keeps user facing Category 2 through 4 and preview copy free of dash punctuation', () => {
+  it('keeps user facing Category 5 through 7 and preview copy free of dash punctuation', () => {
     const values: Array<{ label: string; value: string }> = [
       { label: 'directory title', value: DIRECTORY_COPY.title },
       { label: 'directory body', value: DIRECTORY_COPY.body },
@@ -246,7 +296,7 @@ describe('multi-category preview session behavior', () => {
       { label: 'preview page description', value: PREVIEW_PAGE_DESCRIPTION },
     ];
 
-    for (const category of [CATEGORY_02, CATEGORY_03, CATEGORY_04]) {
+    for (const category of [CATEGORY_05, CATEGORY_06, CATEGORY_07]) {
       values.push({ label: `C${category.number} title`, value: category.title });
       const intro = getIntroCopy(category.number);
       values.push(
@@ -267,6 +317,12 @@ describe('multi-category preview session behavior', () => {
             value: question.formatLabel,
           }
         );
+        if (question.contextNote) {
+          values.push({
+            label: `C${category.number} Q${question.number} context`,
+            value: question.contextNote,
+          });
+        }
         if (question.priorityFollowUp) {
           values.push({
             label: `C${category.number} Q${question.number} priority`,
@@ -291,6 +347,7 @@ describe('multi-category preview session behavior', () => {
     const files = [
       'components/questionnaire-preview/CompatibilityProfilePreviewShell.tsx',
       'components/questionnaire-preview/CategoryPreviewDirectory.tsx',
+      'components/questionnaire-preview/QuestionnaireQuestion.tsx',
       'app/onboarding-v2-preview/page.tsx',
       'lib/questionnaire/preview/category-01-preview-flow.ts',
     ];
@@ -305,9 +362,9 @@ describe('multi-category preview session behavior', () => {
   });
 
   it('supports retreat into priority substeps after base answers exist', () => {
-    const answers = completeCategoryAnswers(CATEGORY_04);
-    let step: CategoryFlowStep = { kind: 'question', questionIndex: 6, phase: 'base' };
-    step = retreatStep(CATEGORY_04, step, answers);
-    assert.deepEqual(step, { kind: 'question', questionIndex: 5, phase: 'priority' });
+    const answers = completeCategoryAnswers(CATEGORY_05);
+    let step: CategoryFlowStep = { kind: 'question', questionIndex: 8, phase: 'base' };
+    step = retreatStep(CATEGORY_05, step, answers);
+    assert.deepEqual(step, { kind: 'question', questionIndex: 7, phase: 'priority' });
   });
 });
