@@ -201,6 +201,47 @@ describe('Categories 5 through 7 live catalogs', () => {
     );
   });
 
+  it('keeps Category 7 structured identity and eligibility as architecture metadata only in preview', () => {
+    const shell = read('components/questionnaire-preview/CompatibilityProfilePreviewShell.tsx');
+    const questionUi = read('components/questionnaire-preview/QuestionnaireQuestion.tsx');
+    const flow = read('lib/questionnaire/preview/category-01-preview-flow.ts');
+
+    // Architecture remains in the catalog and seed.
+    assert.equal(getQuestionnaireCatalog().eligibilityRules[0]?.id, CATEGORY_07_PARENTING_ELIGIBILITY.id);
+    assert.ok(CATEGORY_07.questions[1].structuredIdentity);
+    assert.ok(CATEGORY_07.questions[8].eligibilityRuleId);
+
+    // Preview currently presents initial identity choices and Q9 content without executing
+    // refinement, user-supplied identity, privacy controls, or eligibility evaluation.
+    assert.doesNotMatch(questionUi, /allowsRefinement|userSupplied|publicDisplay|privateMatching/);
+    assert.doesNotMatch(shell, /eligibilityRuleId|evaluateEligibility|profile_predicate/);
+    assert.doesNotMatch(flow, /evaluateEligibility|profile_predicate|identity_refinement/);
+    assert.match(shell, /category\.questions\[step\.questionIndex\]/);
+  });
+
+  it('keeps the structural manifest at exactly 115 questions', () => {
+    const manifest = JSON.parse(
+      read('lib/questionnaire/fixtures/master-structure-manifest.json')
+    ) as {
+      questionCount: number;
+      questions: Array<{ categoryNumber: number }>;
+    };
+    assert.equal(manifest.questionCount, 115);
+    assert.equal(manifest.questions.length, 115);
+    for (const n of [1, 2, 3, 4, 5, 6, 7]) {
+      assert.equal(
+        manifest.questions.filter((q) => q.categoryNumber === n).length,
+        10
+      );
+    }
+    for (const n of [8, 9, 10]) {
+      assert.equal(
+        manifest.questions.filter((q) => q.categoryNumber === n).length,
+        15
+      );
+    }
+  });
+
   it('matches fixture excerpts for Categories 5 through 7', () => {
     for (const [category, file] of [
       [CATEGORY_05, 'category-05-master-excerpt.md'],
@@ -285,6 +326,40 @@ describe('Categories 5 through 7 preview session behavior', () => {
     assert.equal(CATEGORY_02.questions.length, 10);
     assert.equal(CATEGORY_03.questions.length, 10);
     assert.equal(CATEGORY_04.questions.length, 10);
+  });
+
+  it('keeps corrected introduction navigation from Categories 1 through 7', () => {
+    for (const categoryNumber of [1, 2, 3, 4, 5, 6, 7]) {
+      assert.equal(getIntroCopy(categoryNumber).secondary, 'Back to categories');
+    }
+    const introSource = read('components/questionnaire-preview/CategoryPreviewIntro.tsx');
+    assert.doesNotMatch(introSource, /intro\.secondary\s*===\s*['"]Back to Forge['"]/);
+    assert.match(introSource, /onBackToDirectory \?/);
+    const directory = read('components/questionnaire-preview/CategoryPreviewDirectory.tsx');
+    assert.match(directory, />\s*Back to Forge\s*</);
+    const complete = read('components/questionnaire-preview/CategoryPreviewComplete.tsx');
+    assert.match(complete, />\s*Back to Forge\s*</);
+  });
+
+  it('returns to the directory without clearing any category answers', () => {
+    const answersByCategory: PreviewAnswersByCategory = {
+      1: completeCategoryAnswers(CATEGORY_01),
+      5: completeCategoryAnswers(CATEGORY_05),
+      7: completeCategoryAnswers(CATEGORY_07),
+    };
+    const before = {
+      1: getCategoryAnswers(answersByCategory, 1),
+      5: getCategoryAnswers(answersByCategory, 5),
+      7: getCategoryAnswers(answersByCategory, 7),
+    };
+    // Directory return is step-only; answers persist until restart.
+    assert.deepEqual(getCategoryAnswers(answersByCategory, 1), before[1]);
+    assert.deepEqual(getCategoryAnswers(answersByCategory, 5), before[5]);
+    assert.deepEqual(getCategoryAnswers(answersByCategory, 7), before[7]);
+    const shell = read('components/questionnaire-preview/CompatibilityProfilePreviewShell.tsx');
+    const backToDirectoryBlock = shell.match(/function backToDirectory\(\) \{[^}]+\}/)?.[0];
+    assert.ok(backToDirectoryBlock);
+    assert.doesNotMatch(backToDirectoryBlock, /clearCategoryAnswers|setAnswersByCategory/);
   });
 
   it('keeps user facing Category 5 through 7 and preview copy free of dash punctuation', () => {
