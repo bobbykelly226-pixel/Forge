@@ -46,6 +46,11 @@ export default function QuestionnaireQuestion({
             {question.statement}
           </blockquote>
         ) : null}
+        {question.contextNote ? (
+          <p className="mt-3 text-sm leading-relaxed text-[var(--forge-graphite)]">
+            {question.contextNote}
+          </p>
+        ) : null}
         <p className="mt-3 text-sm font-medium text-[var(--forge-graphite)]">{guidance}</p>
         {isMulti ? (
           <p className="mt-1 text-sm text-[var(--forge-navy)]" aria-live="polite">
