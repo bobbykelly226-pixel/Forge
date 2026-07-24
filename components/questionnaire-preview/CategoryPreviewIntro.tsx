@@ -10,7 +10,11 @@ type CategoryPreviewIntroProps = {
   questionCount: number;
   intro: CategoryIntroCopy;
   onBegin: () => void;
-  /** Used when secondary is not an external Forge exit. */
+  /**
+   * Explicit directory return callback for the intro secondary action.
+   * When provided, secondary navigates to the category directory.
+   * When omitted, secondary falls back to the Forge app exit link.
+   */
   onBackToDirectory?: () => void;
 };
 
@@ -21,8 +25,6 @@ export default function CategoryPreviewIntro({
   onBegin,
   onBackToDirectory,
 }: CategoryPreviewIntroProps) {
-  const secondaryIsForgeExit = intro.secondary === 'Back to Forge';
-
   return (
     <section className="mx-auto w-full max-w-2xl">
       <PreviewNotice className="mb-6" />
@@ -55,14 +57,7 @@ export default function CategoryPreviewIntro({
           >
             {intro.primary}
           </button>
-          {secondaryIsForgeExit ? (
-            <Link
-              href="/app"
-              className="inline-flex min-h-12 w-full items-center justify-center rounded-2xl border border-[color-mix(in_srgb,var(--forge-silver)_70%,transparent)] bg-white px-6 py-3 text-base font-semibold text-[var(--forge-navy)] transition hover:bg-[var(--forge-surface-soft)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--forge-navy)] sm:w-auto"
-            >
-              {intro.secondary}
-            </Link>
-          ) : (
+          {onBackToDirectory ? (
             <button
               type="button"
               onClick={onBackToDirectory}
@@ -70,6 +65,13 @@ export default function CategoryPreviewIntro({
             >
               {intro.secondary}
             </button>
+          ) : (
+            <Link
+              href="/app"
+              className="inline-flex min-h-12 w-full items-center justify-center rounded-2xl border border-[color-mix(in_srgb,var(--forge-silver)_70%,transparent)] bg-white px-6 py-3 text-base font-semibold text-[var(--forge-navy)] transition hover:bg-[var(--forge-surface-soft)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--forge-navy)] sm:w-auto"
+            >
+              {intro.secondary}
+            </Link>
           )}
         </div>
       </div>

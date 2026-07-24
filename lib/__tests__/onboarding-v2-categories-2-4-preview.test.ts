@@ -21,6 +21,7 @@ import {
   getCategoryAnswers,
   getCompleteCopy,
   getIntroCopy,
+  INTRO_COPY,
   isCategoryPreviewComplete,
   isCategorySessionComplete,
   PREVIEW_NOTICE,
@@ -32,6 +33,7 @@ import {
   type CategoryFlowStep,
   type PreviewAnswers,
   type PreviewAnswersByCategory,
+  type PreviewStep,
 } from '@/lib/questionnaire/preview/category-01-preview-flow';
 import type { CategoryDefinition } from '@/lib/questionnaire/types';
 
@@ -231,6 +233,95 @@ describe('multi-category preview session behavior', () => {
     assert.deepEqual(questionsWithPriorityFollowUp(CATEGORY_01), [5, 8, 10]);
     assert.equal(getIntroCopy(1).supporting, CATEGORY_INTRO_COPY[1].supporting);
     assert.match(getIntroCopy(1).supporting, /There are no wrong answers/);
+    assert.equal(
+      getCompleteCopy(1).body,
+      'This is the first part of the larger Forge Compatibility Profile. Your responses will eventually help Forge explain meaningful alignment while leaving the decision and the conversation to you.'
+    );
+  });
+
+  it('uses Back to categories on every category introduction', () => {
+    for (const categoryNumber of [1, 2, 3, 4]) {
+      assert.equal(getIntroCopy(categoryNumber).secondary, 'Back to categories');
+    }
+    assert.equal(INTRO_COPY.secondary, 'Back to categories');
+  });
+
+  it('returns to the directory without clearing category answers', () => {
+    const answersByCategory: PreviewAnswersByCategory = {
+      1: completeCategoryAnswers(CATEGORY_01),
+      2: completeCategoryAnswers(CATEGORY_02),
+      3: completeCategoryAnswers(CATEGORY_03),
+      4: completeCategoryAnswers(CATEGORY_04),
+    };
+    const snapshot = {
+      1: getCategoryAnswers(answersByCategory, 1),
+      2: getCategoryAnswers(answersByCategory, 2),
+      3: getCategoryAnswers(answersByCategory, 3),
+      4: getCategoryAnswers(answersByCategory, 4),
+    };
+
+    // Directory return is step-only navigation; answers remain until explicit restart.
+    let step: PreviewStep = { kind: 'intro', categoryNumber: 1 };
+    step = { kind: 'directory' };
+    assert.equal(step.kind, 'directory');
+    assert.deepEqual(getCategoryAnswers(answersByCategory, 1), snapshot[1]);
+    assert.deepEqual(getCategoryAnswers(answersByCategory, 2), snapshot[2]);
+    assert.deepEqual(getCategoryAnswers(answersByCategory, 3), snapshot[3]);
+    assert.deepEqual(getCategoryAnswers(answersByCategory, 4), snapshot[4]);
+
+    const shell = read('components/questionnaire-preview/CompatibilityProfilePreviewShell.tsx');
+    assert.match(
+      shell,
+      /function backToDirectory\(\) \{\n\s*setStep\(\{ kind: 'directory' \}\);\n\s*\}/
+    );
+    const backToDirectoryBlock = shell.match(
+      /function backToDirectory\(\) \{[^}]+\}/
+    )?.[0];
+    assert.ok(backToDirectoryBlock);
+    assert.doesNotMatch(backToDirectoryBlock, /clearCategoryAnswers|setAnswersByCategory/);
+    assert.match(shell, /onBackToDirectory=\{backToDirectory\}/);
+    assert.match(shell, /function handleRestart[\s\S]*?clearCategoryAnswers/);
+
+    const introSource = read('components/questionnaire-preview/CategoryPreviewIntro.tsx');
+    assert.doesNotMatch(introSource, /intro\.secondary\s*===\s*['"]Back to Forge['"]/);
+    assert.match(introSource, /onBackToDirectory \?/);
+
+    const directory = read('components/questionnaire-preview/CategoryPreviewDirectory.tsx');
+    assert.match(directory, />\s*Back to Forge\s*</);
+    const complete = read('components/questionnaire-preview/CategoryPreviewComplete.tsx');
+    assert.match(complete, />\s*Back to Forge\s*</);
+    assert.match(complete, />\s*Back to categories\s*</);
+  });
+
+  it('keeps Category 1 questionnaire content unchanged while updating intro navigation only', () => {
+    assert.deepEqual(
+      CATEGORY_01.questions.map((q) => q.prompt),
+      [
+        'What are you ultimately hoping a meaningful relationship will grow into?',
+        'How important is marriage in the future you envision?',
+        'What pace do you prefer when building a new relationship?',
+        'Which approach to exclusivity most closely reflects what you want?',
+        'Which qualities most strongly define commitment for you?',
+        'Which statements best describe what being ready for a committed relationship means to you personally?',
+        'Which approach to personal growth best reflects the partnership you want?',
+        'In which areas would partners need reasonably compatible long term direction?',
+        'If a loving relationship revealed a major difference involving a core long term goal, what would you most likely do first?',
+        'Which relational foundations must be present before you would confidently choose a lasting partnership?',
+      ]
+    );
+    assert.deepEqual(questionsWithPriorityFollowUp(CATEGORY_01), [5, 8, 10]);
+    assert.equal(
+      CATEGORY_01.questions.find((q) => q.number === 5)?.priorityFollowUp?.prompt,
+      'Of the qualities you selected, which two matter most?'
+    );
+    assert.equal(
+      CATEGORY_01.questions.find((q) => q.number === 8)?.priorityFollowUp?.prompt,
+      'Of the areas you selected, which two allow the least room for difference?'
+    );
+    assert.equal(
+      CATEGORY_01.questions.find((q) => q.number === 10)?.priorityFollowUp?.prompt,
+      'Of the foundations you selected, which two are most essential?'
+    );
     assert.equal(
       getCompleteCopy(1).body,
       'This is the first part of the larger Forge Compatibility Profile. Your responses will eventually help Forge explain meaningful alignment while leaving the decision and the conversation to you.'

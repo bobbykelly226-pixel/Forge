@@ -68,7 +68,7 @@ export const INTRO_COPY: CategoryIntroCopy = {
     'There are no wrong answers. Choose what most honestly reflects the relationship you want and how you approach building it.',
   metadata: '10 questions',
   primary: 'Begin Category',
-  secondary: 'Back to Forge',
+  secondary: 'Back to categories',
 };
 
 export const CATEGORY_INTRO_COPY: Record<number, CategoryIntroCopy> = {
