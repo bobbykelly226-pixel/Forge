@@ -1161,7 +1161,10 @@
       "minSelections": 1,
       "maxSelections": 1,
       "features": [
-        "structured_identity"
+        "identity_privacy",
+        "identity_refinement",
+        "structured_identity",
+        "user_supplied_identity"
       ],
       "specialChoices": [],
       "structuredIdentity": {
