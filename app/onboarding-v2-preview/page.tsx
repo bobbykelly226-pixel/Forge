@@ -2,8 +2,8 @@ import { Fraunces, Manrope } from 'next/font/google';
 import { redirect } from 'next/navigation';
 
 import ForgeAppCanvas from '@/components/ForgeAppCanvas';
-import Category01PreviewShell from '@/components/questionnaire-preview/Category01PreviewShell';
-import { CATEGORY_01 } from '@/lib/questionnaire/catalog';
+import CompatibilityProfilePreviewShell from '@/components/questionnaire-preview/CompatibilityProfilePreviewShell';
+import { getPreviewCategories } from '@/lib/questionnaire/catalog';
 import { PREVIEW_PAGE_DESCRIPTION } from '@/lib/questionnaire/preview/category-01-preview-flow';
 import { createClient } from '@/lib/supabase/server';
 
@@ -38,6 +38,8 @@ export default async function OnboardingV2PreviewPage() {
     redirect('/login?redirectTo=/onboarding-v2-preview');
   }
 
+  const categories = getPreviewCategories();
+
   // Authenticated preview only — do not gate on legacy onboarding completion.
   return (
     <ForgeAppCanvas
@@ -47,7 +49,7 @@ export default async function OnboardingV2PreviewPage() {
       }}
     >
       <main className="min-h-screen px-4 py-8 sm:px-6 sm:py-10 lg:px-8">
-        <Category01PreviewShell category={CATEGORY_01} />
+        <CompatibilityProfilePreviewShell categories={categories} />
       </main>
     </ForgeAppCanvas>
   );

@@ -32,11 +32,15 @@ export {
 
 export {
   CATEGORY_01,
+  CATEGORY_02,
+  CATEGORY_03,
+  CATEGORY_04,
   QUESTIONNAIRE_VERSION,
   SPECIFICATION_VERSION,
   getCategoryByNumber,
   getEligibilityRules,
   getLockedCategories,
+  getPreviewCategories,
   getQuestionnaireCatalog,
 } from '@/lib/questionnaire/catalog';
 

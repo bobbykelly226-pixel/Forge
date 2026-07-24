@@ -13,6 +13,7 @@ type PreviewContextPanelProps = {
   totalQuestions: number;
   progress: number;
   phaseLabel?: string;
+  onBackToDirectory?: () => void;
   /** `desktop` is lg+ sidebar; `mobile` is below-lg context strip. */
   variant: 'desktop' | 'mobile';
 };
@@ -29,6 +30,7 @@ export default function PreviewContextPanel({
   totalQuestions,
   progress,
   phaseLabel,
+  onBackToDirectory,
   variant,
 }: PreviewContextPanelProps) {
   const rootClass =
@@ -51,9 +53,18 @@ export default function PreviewContextPanel({
         phaseLabel={phaseLabel}
       />
       <PreviewNotice className="mt-5" />
+      {onBackToDirectory ? (
+        <button
+          type="button"
+          onClick={onBackToDirectory}
+          className="mt-5 inline-flex text-sm font-semibold text-[var(--forge-navy)] underline-offset-4 hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--forge-navy)]"
+        >
+          Back to categories
+        </button>
+      ) : null}
       <Link
         href="/app"
-        className="mt-5 inline-flex text-sm font-semibold text-[var(--forge-navy)] underline-offset-4 hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--forge-navy)]"
+        className={`${onBackToDirectory ? 'mt-3' : 'mt-5'} inline-flex text-sm font-semibold text-[var(--forge-navy)] underline-offset-4 hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--forge-navy)]`}
       >
         Exit preview
       </Link>

@@ -32,10 +32,16 @@ function readRepo(path: string): string {
 
 describe('questionnaire architecture coverage (self-contained)', () => {
   it('loads a committed structural manifest without Cursor upload paths', () => {
-    assert.equal(MASTER_STRUCTURE_MANIFEST.questionCount, 145);
-    assert.equal(MASTER_STRUCTURE_MANIFEST.questions.length, 145);
+    assert.equal(MASTER_STRUCTURE_MANIFEST.questionCount, 130);
+    assert.equal(MASTER_STRUCTURE_MANIFEST.questions.length, 130);
     const c1 = MASTER_STRUCTURE_MANIFEST.questions.filter((q) => q.categoryNumber === 1);
     assert.equal(c1.length, 10);
+    const c2 = MASTER_STRUCTURE_MANIFEST.questions.filter((q) => q.categoryNumber === 2);
+    assert.equal(c2.length, 10);
+    const c3 = MASTER_STRUCTURE_MANIFEST.questions.filter((q) => q.categoryNumber === 3);
+    assert.equal(c3.length, 10);
+    const c4 = MASTER_STRUCTURE_MANIFEST.questions.filter((q) => q.categoryNumber === 4);
+    assert.equal(c4.length, 10);
     const sourcePath = 'lib/__tests__/questionnaire-architecture-coverage.test.ts';
     const testSource = readRepo(sourcePath);
     assert.doesNotMatch(testSource, /\/home\/ubuntu\/\.cursor\/projects\/workspace\/uploads/);
@@ -73,9 +79,9 @@ describe('questionnaire architecture coverage (self-contained)', () => {
     assert.equal(coverage.eligibilityRules.length, 3);
     assert.ok(coverage.categories.length >= 6);
 
-    // Live catalog remains Category 1 only.
+    // Live catalog is Categories 1 through 4.
     const live = getQuestionnaireCatalog();
-    assert.equal(live.categories.length, 1);
+    assert.equal(live.categories.length, 4);
     assert.equal(live.categories[0].number, 1);
     assert.equal(live.eligibilityRules.length, 0);
   });
@@ -87,12 +93,12 @@ describe('questionnaire architecture coverage (self-contained)', () => {
     assert.equal(synthetic.categories.length, 10);
     assert.equal(
       synthetic.categories.reduce((sum, c) => sum + c.questions.length, 0),
-      145
+      130
     );
     for (let n = 1; n <= 10; n += 1) {
       const category = synthetic.categories.find((c) => c.number === n);
       assert.ok(category, `missing category ${n}`);
-      assert.equal(category?.questions.length, n === 1 ? 10 : 15);
+      assert.equal(category?.questions.length, n <= 4 ? 10 : 15);
       assert.equal(category?.status, 'locked');
     }
 
@@ -123,7 +129,7 @@ describe('questionnaire architecture coverage (self-contained)', () => {
 
     // Still not the live catalog.
     const live = getQuestionnaireCatalog();
-    assert.equal(live.categories.length, 1);
+    assert.equal(live.categories.length, 4);
     assert.equal(live.questionnaireVersion !== synthetic.questionnaireVersion, true);
   });
 
@@ -516,10 +522,10 @@ describe('questionnaire architecture coverage (self-contained)', () => {
       FOUNDATION_CAPABILITY_MANIFEST.databaseIntegrity.responseRowLockForSelectionMutations,
       true
     );
-    assert.equal(MASTER_STRUCTURE_COUNTS.questions, 145);
+    assert.equal(MASTER_STRUCTURE_COUNTS.questions, 130);
     assert.equal(MASTER_STRUCTURE_COUNTS.eligibilityRuleAttachments, 3);
     assert.equal(MASTER_STRUCTURE_COUNTS.conditionalScenarioQuestions, 4);
     assert.equal(MASTER_STRUCTURE_COUNTS.structuredIdentitySelections, 2);
-    assert.equal(MASTER_STRUCTURE_COUNTS.priorityFollowUps, 38);
+    assert.equal(MASTER_STRUCTURE_COUNTS.priorityFollowUps, 33);
   });
 });
