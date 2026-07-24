@@ -1,5 +1,5 @@
 /**
- * In-memory preview flow for Category 1 Relationship Vision & Intentions.
+ * In-memory preview flow for Compatibility Profile Categories 1 through 7.
  * Answers stay in React memory only; no database writes.
  */
 
@@ -12,23 +12,56 @@ export type QuestionAnswerState = {
 
 export type PreviewAnswers = Record<string, QuestionAnswerState>;
 
-export type PreviewStep =
+/** Per-category in-memory answer bags for the multi-category preview. */
+export type PreviewAnswersByCategory = Record<number, PreviewAnswers>;
+
+/** Single-category flow step used by advance/retreat helpers. */
+export type CategoryFlowStep =
   | { kind: 'intro' }
   | { kind: 'question'; questionIndex: number; phase: 'base' | 'priority' }
   | { kind: 'complete' };
 
+/** Multi-category preview shell step. */
+export type PreviewStep =
+  | { kind: 'directory' }
+  | { kind: 'intro'; categoryNumber: number }
+  | {
+      kind: 'question';
+      categoryNumber: number;
+      questionIndex: number;
+      phase: 'base' | 'priority';
+    }
+  | { kind: 'complete'; categoryNumber: number };
+
 export type SelectionResult =
   | { ok: true; answer: QuestionAnswerState }
   | { ok: false; reason: 'at_max'; answer: QuestionAnswerState };
+
+export type CategoryIntroCopy = {
+  eyebrow: string;
+  body: string;
+  supporting: string;
+  metadata: string;
+  primary: string;
+  secondary: string;
+};
 
 export const PREVIEW_NOTICE =
   'Preview mode. Your answers are not being saved yet.' as const;
 
 /** Page metadata description for `/onboarding-v2-preview` (user facing). */
 export const PREVIEW_PAGE_DESCRIPTION =
-  'Preview Category 1. Relationship Vision & Intentions from the Forge Compatibility Profile.' as const;
+  'Preview Categories 1 through 7 from the Forge Compatibility Profile.' as const;
 
-export const INTRO_COPY = {
+export const DIRECTORY_COPY = {
+  eyebrow: 'Compatibility Profile',
+  title: 'Onboarding 2.0 Preview',
+  body: 'Explore the first seven Compatibility Profile categories. Open any category directly. Your answers stay in this browser session only and are not saved.',
+  metadata: 'Categories 1 through 7 available',
+} as const;
+
+/** Category 1 intro copy preserved exactly. */
+export const INTRO_COPY: CategoryIntroCopy = {
   eyebrow: 'Compatibility Profile',
   body: 'The future you want and the way you build toward it shapes whether a relationship can grow with clarity. These questions help Forge understand your intentions, expectations, and room for flexibility.',
   supporting:
@@ -36,12 +69,106 @@ export const INTRO_COPY = {
   metadata: '10 questions',
   primary: 'Begin Category',
   secondary: 'Back to Forge',
-} as const;
+};
+
+export const CATEGORY_INTRO_COPY: Record<number, CategoryIntroCopy> = {
+  1: INTRO_COPY,
+  2: {
+    eyebrow: 'Compatibility Profile',
+    body: 'The values you live by shape how you make decisions, take responsibility, and understand character. These questions help Forge understand the principles and behaviors that matter most to you.',
+    supporting:
+      'There are no wrong answers. Choose what most honestly reflects how you try to live and what you value in a partner.',
+    metadata: '10 questions',
+    primary: 'Begin Category',
+    secondary: 'Back to categories',
+  },
+  3: {
+    eyebrow: 'Compatibility Profile',
+    body: 'Communication affects how two people feel understood, supported, and emotionally connected. These questions explore how you express yourself, listen, and build closeness.',
+    supporting:
+      'There are no wrong answers. Choose what most honestly reflects the communication and emotional connection you want.',
+    metadata: '10 questions',
+    primary: 'Begin Category',
+    secondary: 'Back to categories',
+  },
+  4: {
+    eyebrow: 'Compatibility Profile',
+    body: 'Conflict is unavoidable. The way two people respond, repair, and reconnect often determines whether trust can grow. These questions explore what helps disagreement remain respectful and workable.',
+    supporting:
+      'There are no wrong answers. Choose what most honestly reflects how you approach conflict and what you need for repair.',
+    metadata: '10 questions',
+    primary: 'Begin Category',
+    secondary: 'Back to categories',
+  },
+  5: {
+    eyebrow: 'Compatibility Profile',
+    body: 'Partnership is built through shared responsibility, dependable action, mutual influence, and support. These questions explore how you expect two committed people to build a life together.',
+    supporting:
+      'There are no wrong answers. Choose what most honestly reflects the partnership you want to build.',
+    metadata: '10 questions',
+    primary: 'Begin Category',
+    secondary: 'Back to categories',
+  },
+  6: {
+    eyebrow: 'Compatibility Profile',
+    body: 'Family relationships, decisions about children, and parenting expectations can shape daily life and the future. These questions help Forge understand the family structure and responsibilities that matter to you.',
+    supporting:
+      'There are no wrong answers. Choose what most honestly reflects the family life and parenting partnership you want.',
+    metadata: '10 questions',
+    primary: 'Begin Category',
+    secondary: 'Back to categories',
+  },
+  7: {
+    eyebrow: 'Compatibility Profile',
+    body: 'Faith, spirituality, and worldview can influence identity, daily practice, family life, and important decisions. These questions explore the role those beliefs may have in a lasting partnership.',
+    supporting:
+      'There are no wrong answers. Choose what most honestly reflects your beliefs, practices, and room for difference.',
+    metadata: '10 questions',
+    primary: 'Begin Category',
+    secondary: 'Back to categories',
+  },
+};
 
 export const COMPLETE_COPY = {
   eyebrow: 'Category Preview Complete',
   body: 'This is the first part of the larger Forge Compatibility Profile. Your responses will eventually help Forge explain meaningful alignment while leaving the decision and the conversation to you.',
 } as const;
+
+export const CATEGORY_COMPLETE_COPY: Record<number, { eyebrow: string; body: string }> = {
+  1: COMPLETE_COPY,
+  2: {
+    eyebrow: 'Category Preview Complete',
+    body: 'This is part of the larger Forge Compatibility Profile. Your responses will eventually help Forge explain meaningful alignment while leaving the decision and the conversation to you.',
+  },
+  3: {
+    eyebrow: 'Category Preview Complete',
+    body: 'This is part of the larger Forge Compatibility Profile. Your responses will eventually help Forge explain meaningful alignment while leaving the decision and the conversation to you.',
+  },
+  4: {
+    eyebrow: 'Category Preview Complete',
+    body: 'This is part of the larger Forge Compatibility Profile. Your responses will eventually help Forge explain meaningful alignment while leaving the decision and the conversation to you.',
+  },
+  5: {
+    eyebrow: 'Category Preview Complete',
+    body: 'This is part of the larger Forge Compatibility Profile. Your responses will eventually help Forge explain meaningful alignment while leaving the decision and the conversation to you.',
+  },
+  6: {
+    eyebrow: 'Category Preview Complete',
+    body: 'This is part of the larger Forge Compatibility Profile. Your responses will eventually help Forge explain meaningful alignment while leaving the decision and the conversation to you.',
+  },
+  7: {
+    eyebrow: 'Category Preview Complete',
+    body: 'This is part of the larger Forge Compatibility Profile. Your responses will eventually help Forge explain meaningful alignment while leaving the decision and the conversation to you.',
+  },
+};
+
+export function getIntroCopy(categoryNumber: number): CategoryIntroCopy {
+  return CATEGORY_INTRO_COPY[categoryNumber] ?? INTRO_COPY;
+}
+
+export function getCompleteCopy(categoryNumber: number): { eyebrow: string; body: string } {
+  return CATEGORY_COMPLETE_COPY[categoryNumber] ?? COMPLETE_COPY;
+}
 
 export function emptyAnswer(): QuestionAnswerState {
   return { selectedChoiceIds: [], priorityChoiceIds: [] };
@@ -52,6 +179,32 @@ export function getAnswer(
   questionId: string
 ): QuestionAnswerState {
   return answers[questionId] ?? emptyAnswer();
+}
+
+export function getCategoryAnswers(
+  answersByCategory: PreviewAnswersByCategory,
+  categoryNumber: number
+): PreviewAnswers {
+  return answersByCategory[categoryNumber] ?? {};
+}
+
+export function isCategorySessionComplete(
+  category: CategoryDefinition,
+  answersByCategory: PreviewAnswersByCategory
+): boolean {
+  return isCategoryPreviewComplete(
+    category,
+    getCategoryAnswers(answersByCategory, category.number)
+  );
+}
+
+export function clearCategoryAnswers(
+  answersByCategory: PreviewAnswersByCategory,
+  categoryNumber: number
+): PreviewAnswersByCategory {
+  const next = { ...answersByCategory };
+  delete next[categoryNumber];
+  return next;
 }
 
 export function eligibleSelectedChoiceIds(
@@ -198,7 +351,7 @@ export function isPriorityAnswerValid(
 
 export function canContinueFromStep(
   category: CategoryDefinition,
-  step: PreviewStep,
+  step: CategoryFlowStep,
   answers: PreviewAnswers
 ): boolean {
   if (step.kind !== 'question') return true;
@@ -213,9 +366,9 @@ export function canContinueFromStep(
 
 export function advanceStep(
   category: CategoryDefinition,
-  step: PreviewStep,
+  step: CategoryFlowStep,
   answers: PreviewAnswers
-): PreviewStep {
+): CategoryFlowStep {
   if (step.kind === 'intro') {
     return { kind: 'question', questionIndex: 0, phase: 'base' };
   }
@@ -242,9 +395,9 @@ export function advanceStep(
 
 export function retreatStep(
   category: CategoryDefinition,
-  step: PreviewStep,
+  step: CategoryFlowStep,
   answers: PreviewAnswers
-): PreviewStep {
+): CategoryFlowStep {
   if (step.kind === 'intro') return step;
   if (step.kind === 'complete') {
     const lastIndex = category.questions.length - 1;
@@ -354,7 +507,7 @@ export function questionsWithPriorityFollowUp(
 
 export function progressFraction(
   category: CategoryDefinition,
-  step: PreviewStep
+  step: CategoryFlowStep
 ): number {
   if (step.kind === 'intro') return 0;
   if (step.kind === 'complete') return 1;
@@ -364,4 +517,29 @@ export function progressFraction(
     return (step.questionIndex + 0.5) / total;
   }
   return base;
+}
+
+export function toCategoryFlowStep(step: PreviewStep): CategoryFlowStep | null {
+  if (step.kind === 'directory') return null;
+  if (step.kind === 'intro') return { kind: 'intro' };
+  if (step.kind === 'complete') return { kind: 'complete' };
+  return {
+    kind: 'question',
+    questionIndex: step.questionIndex,
+    phase: step.phase,
+  };
+}
+
+export function fromCategoryFlowStep(
+  categoryNumber: number,
+  step: CategoryFlowStep
+): PreviewStep {
+  if (step.kind === 'intro') return { kind: 'intro', categoryNumber };
+  if (step.kind === 'complete') return { kind: 'complete', categoryNumber };
+  return {
+    kind: 'question',
+    categoryNumber,
+    questionIndex: step.questionIndex,
+    phase: step.phase,
+  };
 }

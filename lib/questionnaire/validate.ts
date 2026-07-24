@@ -494,6 +494,132 @@ function validateCategory(
     }
   }
 
+  if (category.number === 2) {
+    if (category.questions.length !== 10) {
+      issues.push(
+        issue(
+          'category_2_question_count',
+          `Category 2 must contain exactly 10 questions (found ${category.questions.length})`,
+          path
+        )
+      );
+    }
+    if (category.title !== 'Values & Character') {
+      issues.push(
+        issue(
+          'category_2_title',
+          `Category 2 title must be "Values & Character" (found "${category.title}")`,
+          path
+        )
+      );
+    }
+  }
+
+  if (category.number === 3) {
+    if (category.questions.length !== 10) {
+      issues.push(
+        issue(
+          'category_3_question_count',
+          `Category 3 must contain exactly 10 questions (found ${category.questions.length})`,
+          path
+        )
+      );
+    }
+    if (category.title !== 'Communication & Emotional Connection') {
+      issues.push(
+        issue(
+          'category_3_title',
+          `Category 3 title must be "Communication & Emotional Connection" (found "${category.title}")`,
+          path
+        )
+      );
+    }
+  }
+
+  if (category.number === 4) {
+    if (category.questions.length !== 10) {
+      issues.push(
+        issue(
+          'category_4_question_count',
+          `Category 4 must contain exactly 10 questions (found ${category.questions.length})`,
+          path
+        )
+      );
+    }
+    if (category.title !== 'Conflict & Repair') {
+      issues.push(
+        issue(
+          'category_4_title',
+          `Category 4 title must be "Conflict & Repair" (found "${category.title}")`,
+          path
+        )
+      );
+    }
+  }
+
+  if (category.number === 5) {
+    if (category.questions.length !== 10) {
+      issues.push(
+        issue(
+          'category_5_question_count',
+          `Category 5 must contain exactly 10 questions (found ${category.questions.length})`,
+          path
+        )
+      );
+    }
+    if (category.title !== 'Commitment & Partnership') {
+      issues.push(
+        issue(
+          'category_5_title',
+          `Category 5 title must be "Commitment & Partnership" (found "${category.title}")`,
+          path
+        )
+      );
+    }
+  }
+
+  if (category.number === 6) {
+    if (category.questions.length !== 10) {
+      issues.push(
+        issue(
+          'category_6_question_count',
+          `Category 6 must contain exactly 10 questions (found ${category.questions.length})`,
+          path
+        )
+      );
+    }
+    if (category.title !== 'Family, Children & Parenting') {
+      issues.push(
+        issue(
+          'category_6_title',
+          `Category 6 title must be "Family, Children & Parenting" (found "${category.title}")`,
+          path
+        )
+      );
+    }
+  }
+
+  if (category.number === 7) {
+    if (category.questions.length !== 10) {
+      issues.push(
+        issue(
+          'category_7_question_count',
+          `Category 7 must contain exactly 10 questions (found ${category.questions.length})`,
+          path
+        )
+      );
+    }
+    if (category.title !== 'Faith, Spirituality & Worldview') {
+      issues.push(
+        issue(
+          'category_7_title',
+          `Category 7 title must be "Faith, Spirituality & Worldview" (found "${category.title}")`,
+          path
+        )
+      );
+    }
+  }
+
   const questionIds = new Set<string>();
   const questionNumbers = category.questions.map((q) => q.number).sort((a, b) => a - b);
 

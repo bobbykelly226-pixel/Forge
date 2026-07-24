@@ -1,7 +1,7 @@
 /**
  * Compact architecture-coverage manifest for the full ten-category master.
  *
- * Does NOT import Categories 2–10 into the live catalog. Structural metadata for
+ * Does NOT import Categories 8–10 into the live catalog. Structural metadata for
  * the full Compatibility Profile structure lives in fixtures/master-structure-manifest.json.
  */
 
@@ -25,9 +25,11 @@ export const MASTER_FORMAT_LABELS = [
   'Autonomy range',
   'Comfort range',
   'Community-involvement range',
+  'Conditional scenario based choice',
   'Conditional scenario-based choice',
   'Directness scale',
   'Discussion-frequency range with separate no-preference response',
+  'Family involvement range',
   'Family-involvement range',
   'Financial-coordination range',
   'Flexibility range',
@@ -76,6 +78,7 @@ export const FORMAT_LABEL_TO_BEHAVIOR: Readonly<Record<MasterFormatLabel, Respon
   'Flexibility range': 'scale_range',
   'Support range': 'scale_range',
   'Independence range': 'scale_range',
+  'Family involvement range': 'scale_range',
   'Family-involvement range': 'scale_range',
   'Role range': 'scale_range',
   'Participation range': 'scale_range',
@@ -93,6 +96,7 @@ export const FORMAT_LABEL_TO_BEHAVIOR: Readonly<Record<MasterFormatLabel, Respon
   'Directness scale': 'scale_range',
   'Scenario based choice': 'scenario_choice',
   'Scenario-based choice': 'scenario_choice',
+  'Conditional scenario based choice': 'scenario_choice',
   'Conditional scenario-based choice': 'scenario_choice',
   'Structured identity selection': 'structured_identity',
 };
