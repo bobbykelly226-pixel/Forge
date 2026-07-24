@@ -24,8 +24,8 @@ import {
   syncAnswerAfterBaseChange,
   toggleBaseSelection,
   togglePrioritySelection,
+  type CategoryFlowStep,
   type PreviewAnswers,
-  type PreviewStep,
 } from '@/lib/questionnaire/preview/category-01-preview-flow';
 
 function read(path: string): string {
@@ -62,7 +62,7 @@ describe('Category 1 onboarding preview flow', () => {
       [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
     );
 
-    let step: PreviewStep = { kind: 'intro' };
+    let step: CategoryFlowStep = { kind: 'intro' };
     const answers: PreviewAnswers = {};
     const seen: number[] = [];
 
@@ -209,7 +209,7 @@ describe('Category 1 onboarding preview flow', () => {
     const unchanged = togglePrioritySelection(question, answer, selected[2]);
     assert.deepEqual(unchanged.priorityChoiceIds, [selected[0], selected[1]]);
 
-    const step: PreviewStep = { kind: 'question', questionIndex: 4, phase: 'priority' };
+    const step: CategoryFlowStep = { kind: 'question', questionIndex: 4, phase: 'priority' };
     const answers: PreviewAnswers = { [question.id]: answer };
     assert.equal(canContinueFromStep(CATEGORY_01, step, answers), true);
   });
@@ -227,7 +227,7 @@ describe('Category 1 onboarding preview flow', () => {
     assert.deepEqual(answer.priorityChoiceIds, []);
 
     const answers: PreviewAnswers = { [question.id]: answer };
-    const fromBase: PreviewStep = { kind: 'question', questionIndex: 7, phase: 'base' };
+    const fromBase: CategoryFlowStep = { kind: 'question', questionIndex: 7, phase: 'base' };
     const next = advanceStep(CATEGORY_01, fromBase, answers);
     assert.deepEqual(next, { kind: 'question', questionIndex: 8, phase: 'base' });
   });
@@ -240,7 +240,7 @@ describe('Category 1 onboarding preview flow', () => {
       [q2.id]: syncAnswerAfterBaseChange(q2, [q2.choices[3].id], []),
     };
 
-    let step: PreviewStep = { kind: 'question', questionIndex: 1, phase: 'base' };
+    let step: CategoryFlowStep = { kind: 'question', questionIndex: 1, phase: 'base' };
     step = retreatStep(CATEGORY_01, step, answers);
     assert.deepEqual(step, { kind: 'question', questionIndex: 0, phase: 'base' });
     assert.deepEqual(getAnswer(answers, q1.id).selectedChoiceIds, [q1.choices[1].id]);
@@ -262,7 +262,7 @@ describe('Category 1 onboarding preview flow', () => {
       [q6.id]: syncAnswerAfterBaseChange(q6, [q6.choices[0].id], []),
     };
 
-    let step: PreviewStep = { kind: 'question', questionIndex: 5, phase: 'base' };
+    let step: CategoryFlowStep = { kind: 'question', questionIndex: 5, phase: 'base' };
     step = retreatStep(CATEGORY_01, step, answers);
     assert.deepEqual(step, { kind: 'question', questionIndex: 4, phase: 'priority' });
     assert.deepEqual(getAnswer(answers, q5.id).priorityChoiceIds, [selected[0], selected[1]]);
@@ -408,7 +408,9 @@ describe('Category 1 onboarding preview flow', () => {
   });
 
   it('keeps mobile and desktop context panels mutually exclusive (no duplicate progress)', () => {
-    const shell = read('components/questionnaire-preview/Category01PreviewShell.tsx');
+    const shell = read(
+      'components/questionnaire-preview/CompatibilityProfilePreviewShell.tsx'
+    );
     const panel = read('components/questionnaire-preview/PreviewContextPanel.tsx');
     assert.match(shell, /variant="desktop"/);
     assert.match(shell, /variant="mobile"/);
@@ -417,6 +419,7 @@ describe('Category 1 onboarding preview flow', () => {
     assert.equal((panel.match(/<QuestionnaireProgress\b/g) || []).length, 1);
     assert.equal((panel.match(/<PreviewNotice\b/g) || []).length, 1);
     assert.match(panel, />\s*Exit preview\s*</);
+    assert.match(panel, />\s*Back to categories\s*</);
     assert.doesNotMatch(shell, /<QuestionnaireProgress/);
   });
 });

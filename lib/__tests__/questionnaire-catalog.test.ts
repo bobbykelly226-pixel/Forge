@@ -51,16 +51,23 @@ const REMOVED_PROMPT_FRAGMENTS = [
 ] as const;
 
 describe('questionnaire catalog foundation', () => {
-  it('validates the live catalog with locked Category 1', () => {
+  it('validates the live catalog with locked Categories 1 through 4', () => {
     const catalog = getQuestionnaireCatalog();
     const result = validateQuestionnaireCatalog(catalog);
     assert.equal(result.ok, true);
     assert.equal(catalog.questionnaireVersion, QUESTIONNAIRE_VERSION);
     assert.equal(catalog.specificationVersion, SPECIFICATION_VERSION);
-    assert.equal(catalog.categories.length, 1);
+    assert.equal(catalog.categories.length, 4);
     assert.equal(catalog.categories[0].title, 'Relationship Vision & Intentions');
     assert.equal(catalog.categories[0].status, 'locked');
     assert.equal(catalog.categories[0].questions.length, 10);
+    assert.equal(catalog.categories[1].title, 'Values & Character');
+    assert.equal(catalog.categories[2].title, 'Communication & Emotional Connection');
+    assert.equal(catalog.categories[3].title, 'Conflict & Repair');
+    for (const category of catalog.categories) {
+      assert.equal(category.questions.length, 10);
+      assert.equal(category.status, 'locked');
+    }
   });
 
   it('contains exactly 10 sequential Category 1 questions in the required order', () => {
@@ -288,7 +295,10 @@ describe('questionnaire migration privacy and integrity', () => {
 
   it('seeds Category 1 title, 10 questions, and selection limits', () => {
     assert.match(migration, /Relationship Vision & Intentions/);
-    assert.match(migration, /compatibility_profile_category_1_v10/);
+    assert.match(migration, /compatibility_profile_categories_1_4_v10/);
+    assert.match(migration, /values_character/);
+    assert.match(migration, /communication_emotional_connection/);
+    assert.match(migration, /conflict_repair/);
     for (let n = 1; n <= 10; n += 1) {
       assert.match(
         migration,
