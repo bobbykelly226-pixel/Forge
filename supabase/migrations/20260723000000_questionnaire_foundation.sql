@@ -12634,7 +12634,7 @@ insert into public.questionnaire_answer_choices (
   'faith_spirituality_worldview_q03_c15',
   'None of these currently play a meaningful role',
   15,
-  false,
+  true,
   null
 )
 on conflict (question_id, choice_key) do update set

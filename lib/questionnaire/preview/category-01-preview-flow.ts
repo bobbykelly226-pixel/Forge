@@ -267,6 +267,11 @@ export function toggleBaseSelection(
     return { ok: true, answer: next };
   }
 
+  const choice = question.choices.find((c) => c.id === choiceId);
+  if (!choice) {
+    return { ok: true, answer: current };
+  }
+
   const alreadySelected = current.selectedChoiceIds.includes(choiceId);
   if (alreadySelected) {
     const nextIds = current.selectedChoiceIds.filter((id) => id !== choiceId);
@@ -280,8 +285,20 @@ export function toggleBaseSelection(
     };
   }
 
+  if (choice.mutuallyExclusive) {
+    return {
+      ok: true,
+      answer: syncAnswerAfterBaseChange(question, [choiceId], current.priorityChoiceIds),
+    };
+  }
+
+  const withoutExclusive = current.selectedChoiceIds.filter((id) => {
+    const selected = question.choices.find((c) => c.id === id);
+    return !selected?.mutuallyExclusive;
+  });
+
   const max = question.maxSelections;
-  if (max !== null && current.selectedChoiceIds.length >= max) {
+  if (max !== null && withoutExclusive.length >= max) {
     return { ok: false, reason: 'at_max', answer: current };
   }
 
@@ -289,7 +306,7 @@ export function toggleBaseSelection(
     ok: true,
     answer: syncAnswerAfterBaseChange(
       question,
-      [...current.selectedChoiceIds, choiceId],
+      [...withoutExclusive, choiceId],
       current.priorityChoiceIds
     ),
   };

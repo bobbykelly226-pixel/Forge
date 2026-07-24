@@ -118,7 +118,9 @@ Used for wording regression tests.
     if (q.statement) fixture += `${q.statement}\n\n`;
     if (q.contextNote) fixture += `**Context note:** ${q.contextNote}\n\n`;
     if (q.implementationNote) fixture += `**Implementation note:** ${q.implementationNote}\n\n`;
-    for (const c of q.choices) fixture += `${c.label}\n`;
+    for (const c of q.choices) {
+      fixture += c.mutuallyExclusive ? `${c.label} (mutually exclusive)\n` : `${c.label}\n`;
+    }
     fixture += `\n`;
     if (q.priorityFollowUp) {
       fixture += `**Priority follow up:** ${q.priorityFollowUp.prompt}\n\n`;

@@ -1193,7 +1193,12 @@
       "features": [
         "select_all"
       ],
-      "specialChoices": [],
+      "specialChoices": [
+        {
+          "index": 15,
+          "mutuallyExclusive": true
+        }
+      ],
       "hasContextNote": false,
       "hasImplementationNote": true,
       "hasEligibility": false,

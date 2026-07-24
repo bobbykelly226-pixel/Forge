@@ -1,9 +1,17 @@
 import type { CategoryDefinition, QuestionDefinition } from '@/lib/questionnaire/types';
 
+type ChoiceSpecialConfig = {
+  specialResponseState?: NonNullable<
+    QuestionDefinition['choices'][number]['specialResponseState']
+  >;
+  mutuallyExclusive?: boolean;
+};
+
 type SpecialMap = Readonly<
   Record<
     number,
-    NonNullable<QuestionDefinition['choices'][number]['specialResponseState']>
+    | ChoiceSpecialConfig
+    | NonNullable<QuestionDefinition['choices'][number]['specialResponseState']>
   >
 >;
 
@@ -16,12 +24,17 @@ export function createCategoryBuilders(categoryKey: string) {
     const qid = `${categoryKey}_q${String(questionNumber).padStart(2, '0')}`;
     return labels.map((label, index) => {
       const displayOrder = index + 1;
-      const specialResponseState = specials[displayOrder];
+      const special = specials[displayOrder];
+      const specialResponseState =
+        typeof special === 'string' ? special : special?.specialResponseState;
+      const mutuallyExclusive =
+        typeof special === 'object' ? special?.mutuallyExclusive : undefined;
       return {
         id: `${qid}_c${String(displayOrder).padStart(2, '0')}`,
         label,
         displayOrder,
         ...(specialResponseState ? { specialResponseState } : {}),
+        ...(mutuallyExclusive ? { mutuallyExclusive: true } : {}),
       };
     });
   }

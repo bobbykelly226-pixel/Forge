@@ -64,7 +64,7 @@ Sabbath, worship day, or sacred time observance
 Rituals or traditions practiced at home
 Spending time in nature as a spiritual practice
 Personal reflection without organized practice
-None of these currently play a meaningful role
+None of these currently play a meaningful role (mutually exclusive)
 Another practice or expression
 
 **Alignment purpose:** Identifies how belief is lived in practice rather than relying entirely on identity labels.

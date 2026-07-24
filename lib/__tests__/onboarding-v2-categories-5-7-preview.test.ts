@@ -23,6 +23,7 @@ import {
   canContinueFromStep,
   clearCategoryAnswers,
   DIRECTORY_COPY,
+  emptyAnswer,
   getCategoryAnswers,
   getCompleteCopy,
   getIntroCopy,
@@ -34,6 +35,7 @@ import {
   retreatStep,
   shouldShowPriorityFollowUp,
   syncAnswerAfterBaseChange,
+  toggleBaseSelection,
   type CategoryFlowStep,
   type PreviewAnswers,
   type PreviewAnswersByCategory,
@@ -199,6 +201,101 @@ describe('Categories 5 through 7 live catalogs', () => {
       parenting?.conditional?.requiresEligibilityRuleId,
       CATEGORY_07_PARENTING_ELIGIBILITY.id
     );
+  });
+
+  it('marks only Category 7 Q3 none choice as mutually exclusive', () => {
+    const practices = CATEGORY_07.questions.find((q) => q.number === 3)!;
+    const exclusive = practices.choices.filter((c) => c.mutuallyExclusive);
+    assert.equal(exclusive.length, 1);
+    assert.equal(exclusive[0].label, 'None of these currently play a meaningful role');
+    assert.equal(exclusive[0].displayOrder, 15);
+    assert.equal(
+      practices.choices.filter((c) => !c.mutuallyExclusive).length,
+      practices.choices.length - 1
+    );
+  });
+
+  it('enforces Category 7 Q3 mutually exclusive selection through the preview flow', () => {
+    const practices = CATEGORY_07.questions.find((q) => q.number === 3)!;
+    const none = practices.choices.find((c) => c.mutuallyExclusive)!;
+    const prayer = practices.choices.find((c) => c.label === 'Prayer')!;
+    const meditation = practices.choices.find(
+      (c) => c.label === 'Meditation or contemplation'
+    )!;
+
+    let answer = emptyAnswer();
+    answer = toggleBaseSelection(practices, answer, prayer.id).answer;
+    answer = toggleBaseSelection(practices, answer, meditation.id).answer;
+    assert.deepEqual(answer.selectedChoiceIds.sort(), [meditation.id, prayer.id].sort());
+
+    answer = toggleBaseSelection(practices, answer, none.id).answer;
+    assert.deepEqual(answer.selectedChoiceIds, [none.id]);
+
+    answer = toggleBaseSelection(practices, answer, prayer.id).answer;
+    assert.deepEqual(answer.selectedChoiceIds, [prayer.id]);
+    assert.equal(answer.selectedChoiceIds.includes(none.id), false);
+
+    answer = toggleBaseSelection(practices, answer, meditation.id).answer;
+    assert.deepEqual(answer.selectedChoiceIds.sort(), [meditation.id, prayer.id].sort());
+
+    answer = toggleBaseSelection(practices, answer, none.id).answer;
+    answer = toggleBaseSelection(practices, answer, none.id).answer;
+    assert.deepEqual(answer.selectedChoiceIds, []);
+
+    // Ordinary practices remain unrestricted together.
+    for (const choice of practices.choices.filter((c) => !c.mutuallyExclusive).slice(0, 8)) {
+      answer = toggleBaseSelection(practices, answer, choice.id).answer;
+    }
+    assert.equal(answer.selectedChoiceIds.length, 8);
+    assert.equal(answer.selectedChoiceIds.includes(none.id), false);
+  });
+
+  it('preserves Category 7 Q3 mutually exclusive flag in the manifest and migration seed', () => {
+    const manifest = JSON.parse(
+      read('lib/questionnaire/fixtures/master-structure-manifest.json')
+    ) as {
+      questions: Array<{
+        categoryNumber: number;
+        questionNumber: number;
+        specialChoices: Array<{ index: number; mutuallyExclusive?: boolean }>;
+      }>;
+    };
+    const entry = manifest.questions.find(
+      (q) => q.categoryNumber === 7 && q.questionNumber === 3
+    );
+    assert.ok(entry);
+    assert.deepEqual(entry!.specialChoices, [{ index: 15, mutuallyExclusive: true }]);
+
+    const migration = read('supabase/migrations/20260723000000_questionnaire_foundation.sql');
+    assert.match(
+      migration,
+      /'faith_spirituality_worldview_q03_c15',[\s\S]*?None of these currently play a meaningful role[\s\S]*?\n\s*15,\n\s*true,/
+    );
+  });
+
+  it('leaves Categories 1 through 6 catalogs unchanged by the Category 7 Q3 exclusivity fix', () => {
+    assert.equal(CATEGORY_01.questions.length, 10);
+    assert.equal(CATEGORY_02.questions.length, 10);
+    assert.equal(CATEGORY_03.questions.length, 10);
+    assert.equal(CATEGORY_04.questions.length, 10);
+    assert.equal(CATEGORY_05.questions.length, 10);
+    assert.equal(CATEGORY_06.questions.length, 10);
+    for (const category of [
+      CATEGORY_01,
+      CATEGORY_02,
+      CATEGORY_03,
+      CATEGORY_04,
+      CATEGORY_05,
+      CATEGORY_06,
+    ]) {
+      for (const question of category.questions) {
+        assert.equal(
+          question.choices.some((c) => c.mutuallyExclusive),
+          false,
+          `${category.id} Q${question.number}`
+        );
+      }
+    }
   });
 
   it('keeps Category 7 structured identity and eligibility as architecture metadata only in preview', () => {
