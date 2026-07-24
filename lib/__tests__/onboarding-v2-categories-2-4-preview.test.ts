@@ -195,14 +195,14 @@ describe('Categories 2 through 4 live catalogs', () => {
 });
 
 describe('multi-category preview session behavior', () => {
-  it('exposes Categories 1 through 4 in the preview directory set', () => {
+  it('exposes Categories 1 through 7 in the preview directory set', () => {
     const preview = getPreviewCategories();
     assert.deepEqual(
       preview.map((c) => c.number),
-      [1, 2, 3, 4]
+      [1, 2, 3, 4, 5, 6, 7]
     );
     assert.equal(getQuestionnaireCatalog().specificationVersion, SPECIFICATION_VERSION);
-    assert.equal(SPECIFICATION_VERSION, 'compatibility_profile_categories_1_4_v10');
+    assert.equal(SPECIFICATION_VERSION, 'compatibility_profile_categories_1_7_v10');
   });
 
   it('preserves in memory answers across category switches and clears only on restart', () => {

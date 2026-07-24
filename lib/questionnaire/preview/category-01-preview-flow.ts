@@ -1,5 +1,5 @@
 /**
- * In-memory preview flow for Compatibility Profile Categories 1 through 4.
+ * In-memory preview flow for Compatibility Profile Categories 1 through 7.
  * Answers stay in React memory only; no database writes.
  */
 
@@ -51,13 +51,13 @@ export const PREVIEW_NOTICE =
 
 /** Page metadata description for `/onboarding-v2-preview` (user facing). */
 export const PREVIEW_PAGE_DESCRIPTION =
-  'Preview Categories 1 through 4 from the Forge Compatibility Profile.' as const;
+  'Preview Categories 1 through 7 from the Forge Compatibility Profile.' as const;
 
 export const DIRECTORY_COPY = {
   eyebrow: 'Compatibility Profile',
   title: 'Onboarding 2.0 Preview',
-  body: 'Explore the first four Compatibility Profile categories. Open any category directly. Your answers stay in this browser session only and are not saved.',
-  metadata: 'Categories 1 through 4 available',
+  body: 'Explore the first seven Compatibility Profile categories. Open any category directly. Your answers stay in this browser session only and are not saved.',
+  metadata: 'Categories 1 through 7 available',
 } as const;
 
 /** Category 1 intro copy preserved exactly. */
@@ -100,6 +100,33 @@ export const CATEGORY_INTRO_COPY: Record<number, CategoryIntroCopy> = {
     primary: 'Begin Category',
     secondary: 'Back to categories',
   },
+  5: {
+    eyebrow: 'Compatibility Profile',
+    body: 'Partnership is built through shared responsibility, dependable action, mutual influence, and support. These questions explore how you expect two committed people to build a life together.',
+    supporting:
+      'There are no wrong answers. Choose what most honestly reflects the partnership you want to build.',
+    metadata: '10 questions',
+    primary: 'Begin Category',
+    secondary: 'Back to categories',
+  },
+  6: {
+    eyebrow: 'Compatibility Profile',
+    body: 'Family relationships, decisions about children, and parenting expectations can shape daily life and the future. These questions help Forge understand the family structure and responsibilities that matter to you.',
+    supporting:
+      'There are no wrong answers. Choose what most honestly reflects the family life and parenting partnership you want.',
+    metadata: '10 questions',
+    primary: 'Begin Category',
+    secondary: 'Back to categories',
+  },
+  7: {
+    eyebrow: 'Compatibility Profile',
+    body: 'Faith, spirituality, and worldview can influence identity, daily practice, family life, and important decisions. These questions explore the role those beliefs may have in a lasting partnership.',
+    supporting:
+      'There are no wrong answers. Choose what most honestly reflects your beliefs, practices, and room for difference.',
+    metadata: '10 questions',
+    primary: 'Begin Category',
+    secondary: 'Back to categories',
+  },
 };
 
 export const COMPLETE_COPY = {
@@ -118,6 +145,18 @@ export const CATEGORY_COMPLETE_COPY: Record<number, { eyebrow: string; body: str
     body: 'This is part of the larger Forge Compatibility Profile. Your responses will eventually help Forge explain meaningful alignment while leaving the decision and the conversation to you.',
   },
   4: {
+    eyebrow: 'Category Preview Complete',
+    body: 'This is part of the larger Forge Compatibility Profile. Your responses will eventually help Forge explain meaningful alignment while leaving the decision and the conversation to you.',
+  },
+  5: {
+    eyebrow: 'Category Preview Complete',
+    body: 'This is part of the larger Forge Compatibility Profile. Your responses will eventually help Forge explain meaningful alignment while leaving the decision and the conversation to you.',
+  },
+  6: {
+    eyebrow: 'Category Preview Complete',
+    body: 'This is part of the larger Forge Compatibility Profile. Your responses will eventually help Forge explain meaningful alignment while leaving the decision and the conversation to you.',
+  },
+  7: {
     eyebrow: 'Category Preview Complete',
     body: 'This is part of the larger Forge Compatibility Profile. Your responses will eventually help Forge explain meaningful alignment while leaving the decision and the conversation to you.',
   },
