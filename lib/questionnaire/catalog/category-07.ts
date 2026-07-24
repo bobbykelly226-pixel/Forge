@@ -20,7 +20,6 @@ const { buildChoices, q, categoryKey: CATEGORY_KEY } = createCategoryBuilders(
 
 /**
  * Locked product decisions for Category 7 after the 10 question reduction.
- * Categories 8 through 10 remain at fifteen questions until the final group.
  */
 export const CATEGORY_07_LOCKED_PRODUCT_DECISIONS = [
   'Compatible areas and interbelief conditions capture partner participation more precisely than a standalone participation question.',

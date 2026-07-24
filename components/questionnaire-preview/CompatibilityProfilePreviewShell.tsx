@@ -6,13 +6,17 @@ import CategoryPreviewComplete from '@/components/questionnaire-preview/Category
 import CategoryPreviewDirectory from '@/components/questionnaire-preview/CategoryPreviewDirectory';
 import CategoryPreviewIntro from '@/components/questionnaire-preview/CategoryPreviewIntro';
 import PreviewContextPanel from '@/components/questionnaire-preview/PreviewContextPanel';
+import PreviewOverallComplete from '@/components/questionnaire-preview/PreviewOverallComplete';
 import PriorityFollowUp from '@/components/questionnaire-preview/PriorityFollowUp';
 import QuestionnaireQuestion from '@/components/questionnaire-preview/QuestionnaireQuestion';
 import type { CategoryDefinition } from '@/lib/questionnaire/types';
 import {
   advanceStep,
+  areAllCategoriesSessionComplete,
   canContinueFromStep,
+  clearAllPreviewAnswers,
   clearCategoryAnswers,
+  countAllCompletedPriorityFollowUps,
   countCompletedPriorityFollowUps,
   eligibleSelectedChoiceIds,
   fromCategoryFlowStep,
@@ -68,6 +72,16 @@ export default function CompatibilityProfilePreviewShell({
     return completed;
   }, [answersByCategory, categories]);
 
+  const allCategoriesComplete = useMemo(
+    () => areAllCategoriesSessionComplete(categories, answersByCategory),
+    [answersByCategory, categories]
+  );
+
+  const totalPriorityFollowUpsCompleted = useMemo(
+    () => countAllCompletedPriorityFollowUps(categories, answersByCategory),
+    [answersByCategory, categories]
+  );
+
   useEffect(() => {
     const key =
       step.kind === 'question'
@@ -112,6 +126,11 @@ export default function CompatibilityProfilePreviewShell({
       questionIndex: 0,
       phase: 'base',
     });
+  }
+
+  function handleRestartFullPreview() {
+    setAnswersByCategory(clearAllPreviewAnswers());
+    setStep({ kind: 'directory' });
   }
 
   function updateCategoryAnswer(
@@ -161,6 +180,16 @@ export default function CompatibilityProfilePreviewShell({
     const answers = getCategoryAnswers(answersByCategory, category.number);
     if (!canContinueFromStep(category, flowStep, answers)) return;
     const next = advanceStep(category, flowStep, answers);
+    if (next.kind === 'complete') {
+      const nextAnswers = {
+        ...answersByCategory,
+        [category.number]: answers,
+      };
+      if (areAllCategoriesSessionComplete(categories, nextAnswers)) {
+        setStep({ kind: 'all_complete' });
+        return;
+      }
+    }
     setStep(fromCategoryFlowStep(category.number, next));
   }
 
@@ -178,6 +207,16 @@ export default function CompatibilityProfilePreviewShell({
         categories={categories}
         completedCategoryNumbers={completedCategoryNumbers}
         onOpenCategory={openCategory}
+      />
+    );
+  }
+
+  if (step.kind === 'all_complete') {
+    return (
+      <PreviewOverallComplete
+        priorityFollowUpsCompleted={totalPriorityFollowUpsCompleted}
+        onReviewCategories={backToDirectory}
+        onRestartFullPreview={handleRestartFullPreview}
       />
     );
   }
@@ -219,7 +258,11 @@ export default function CompatibilityProfilePreviewShell({
         completeBody={complete.body}
         onReview={() => handleReview(category.number)}
         onRestart={() => handleRestart(category.number)}
-        onBackToDirectory={backToDirectory}
+        onBackToDirectory={
+          allCategoriesComplete
+            ? () => setStep({ kind: 'all_complete' })
+            : backToDirectory
+        }
       />
     );
   }

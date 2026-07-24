@@ -1,8 +1,9 @@
 /**
  * Compact architecture-coverage manifest for the full ten-category master.
  *
- * Does NOT import Categories 8–10 into the live catalog. Structural metadata for
- * the full Compatibility Profile structure lives in fixtures/master-structure-manifest.json.
+ * Categories 1 through 10 are exact live catalogs (100 questions). Structural
+ * metadata lives in fixtures/master-structure-manifest.json. Advanced structures
+ * removed from the final 100 question set remain proven via coverage examples.
  */
 
 import type { ResponseBehavior, ResponseState } from '@/lib/questionnaire/types';
@@ -19,7 +20,7 @@ export type {
   ManifestSpecialChoice,
 } from '@/lib/questionnaire/synthetic-catalog-from-manifest';
 
-/** Exact HQ format labels observed in the master (trailing markdown asterisks normalized). */
+/** Exact HQ format labels observed in the master plus coverage example labels. */
 export const MASTER_FORMAT_LABELS = [
   'Agreement scale',
   'Autonomy range',
@@ -28,9 +29,11 @@ export const MASTER_FORMAT_LABELS = [
   'Conditional scenario based choice',
   'Conditional scenario-based choice',
   'Directness scale',
+  'Discussion frequency range with separate no preference response',
   'Discussion-frequency range with separate no-preference response',
   'Family involvement range',
   'Family-involvement range',
+  'Financial coordination range',
   'Financial-coordination range',
   'Flexibility range',
   'Frequency range',
@@ -40,7 +43,9 @@ export const MASTER_FORMAT_LABELS = [
   'Importance scale',
   'Independence range',
   'Participation range',
+  'Privacy boundary range',
   'Privacy-boundary range',
+  'Reassurance and access range',
   'Reassurance-and-access range',
   'Role range',
   'Scenario based choice',
@@ -48,13 +53,16 @@ export const MASTER_FORMAT_LABELS = [
   'Select all that apply',
   'Select up to five',
   'Select up to four',
+  'Select up to four, with a separate current priority state',
   'Select up to four, with a separate current-priority state',
   'Select up to three',
+  'Shared participation range with separate no preference state',
   'Shared-participation range with separate no-preference state',
   'Single choice',
   'Structured identity selection',
   'Support range',
   'Transparency range with a separate context-dependent state',
+  'Trust repair posture with a separate context dependent state',
   'Trust-repair posture with a separate context-dependent state',
   'Visibility-preference range',
 ] as const;
@@ -66,6 +74,7 @@ export const FORMAT_LABEL_TO_BEHAVIOR: Readonly<Record<MasterFormatLabel, Respon
   'Single choice': 'single_choice',
   'Select up to three': 'multi_select',
   'Select up to four': 'multi_select',
+  'Select up to four, with a separate current priority state': 'multi_select',
   'Select up to four, with a separate current-priority state': 'multi_select',
   'Select up to five': 'multi_select',
   'Select all that apply': 'multi_select',
@@ -83,15 +92,21 @@ export const FORMAT_LABEL_TO_BEHAVIOR: Readonly<Record<MasterFormatLabel, Respon
   'Role range': 'scale_range',
   'Participation range': 'scale_range',
   'Community-involvement range': 'scale_range',
+  'Discussion frequency range with separate no preference response': 'scale_range',
   'Discussion-frequency range with separate no-preference response': 'scale_range',
   'Autonomy range': 'scale_range',
   'Household-media range': 'scale_range',
+  'Shared participation range with separate no preference state': 'scale_range',
   'Shared-participation range with separate no-preference state': 'scale_range',
+  'Financial coordination range': 'scale_range',
   'Financial-coordination range': 'scale_range',
   'Visibility-preference range': 'scale_range',
   'Transparency range with a separate context-dependent state': 'scale_range',
+  'Privacy boundary range': 'scale_range',
   'Privacy-boundary range': 'scale_range',
+  'Trust repair posture with a separate context dependent state': 'scale_range',
   'Trust-repair posture with a separate context-dependent state': 'scale_range',
+  'Reassurance and access range': 'scale_range',
   'Reassurance-and-access range': 'scale_range',
   'Directness scale': 'scale_range',
   'Scenario based choice': 'scenario_choice',
@@ -182,6 +197,14 @@ export const FOUNDATION_CAPABILITY_MANIFEST = {
     responseMatchesProgressVersion: true,
     responseRowLockForSelectionMutations: true,
     responseIdentityImmutableAfterInsert: true,
+  },
+  category10Protections: {
+    noHonestyScore: true,
+    noTrustRanking: true,
+    noIntegrityPercentage: true,
+    noMoralJudgmentLabel: true,
+    noSafetyDiagnosis: true,
+    privateBoundaryAnswersNotEvidenceOfExperience: true,
   },
 } as const;
 

@@ -32,22 +32,14 @@ function readRepo(path: string): string {
 
 describe('questionnaire architecture coverage (self-contained)', () => {
   it('loads a committed structural manifest without Cursor upload paths', () => {
-    assert.equal(MASTER_STRUCTURE_MANIFEST.questionCount, 115);
-    assert.equal(MASTER_STRUCTURE_MANIFEST.questions.length, 115);
-    const c1 = MASTER_STRUCTURE_MANIFEST.questions.filter((q) => q.categoryNumber === 1);
-    assert.equal(c1.length, 10);
-    const c2 = MASTER_STRUCTURE_MANIFEST.questions.filter((q) => q.categoryNumber === 2);
-    assert.equal(c2.length, 10);
-    const c3 = MASTER_STRUCTURE_MANIFEST.questions.filter((q) => q.categoryNumber === 3);
-    assert.equal(c3.length, 10);
-    const c4 = MASTER_STRUCTURE_MANIFEST.questions.filter((q) => q.categoryNumber === 4);
-    assert.equal(c4.length, 10);
-    const c5 = MASTER_STRUCTURE_MANIFEST.questions.filter((q) => q.categoryNumber === 5);
-    assert.equal(c5.length, 10);
-    const c6 = MASTER_STRUCTURE_MANIFEST.questions.filter((q) => q.categoryNumber === 6);
-    assert.equal(c6.length, 10);
-    const c7 = MASTER_STRUCTURE_MANIFEST.questions.filter((q) => q.categoryNumber === 7);
-    assert.equal(c7.length, 10);
+    assert.equal(MASTER_STRUCTURE_MANIFEST.questionCount, 100);
+    assert.equal(MASTER_STRUCTURE_MANIFEST.questions.length, 100);
+    for (const n of [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]) {
+      assert.equal(
+        MASTER_STRUCTURE_MANIFEST.questions.filter((q) => q.categoryNumber === n).length,
+        10
+      );
+    }
     const sourcePath = 'lib/__tests__/questionnaire-architecture-coverage.test.ts';
     const testSource = readRepo(sourcePath);
     assert.doesNotMatch(testSource, /\/home\/ubuntu\/\.cursor\/projects\/workspace\/uploads/);
@@ -85,34 +77,53 @@ describe('questionnaire architecture coverage (self-contained)', () => {
     assert.equal(coverage.eligibilityRules.length, 3);
     assert.ok(coverage.categories.length >= 6);
 
-    // Live catalog is Categories 1 through 7.
+    // Live catalog is Categories 1 through 10.
     const live = getQuestionnaireCatalog();
-    assert.equal(live.categories.length, 7);
+    assert.equal(live.categories.length, 10);
     assert.equal(live.categories[0].number, 1);
-    assert.equal(live.eligibilityRules.length, 1);
+    assert.equal(live.eligibilityRules.length, 3);
+    assert.equal(
+      live.categories.reduce((sum, c) => sum + c.questions.length, 0),
+      100
+    );
   });
 
-  it('proves all ten categories are representable via a synthetic manifest catalog', () => {
+  it('proves all ten exact live categories match the structural manifest', () => {
+    const live = getQuestionnaireCatalog();
     const synthetic = getSyntheticCatalogFromManifest();
     const result = validateQuestionnaireCatalog(synthetic);
     assert.equal(result.ok, true, result.ok ? '' : JSON.stringify(result.issues, null, 2));
+    assert.equal(live.categories.length, 10);
     assert.equal(synthetic.categories.length, 10);
     assert.equal(
+      live.categories.reduce((sum, c) => sum + c.questions.length, 0),
+      100
+    );
+    assert.equal(
       synthetic.categories.reduce((sum, c) => sum + c.questions.length, 0),
-      115
+      100
     );
     for (let n = 1; n <= 10; n += 1) {
-      const category = synthetic.categories.find((c) => c.number === n);
+      const category = live.categories.find((c) => c.number === n);
       assert.ok(category, `missing category ${n}`);
-      assert.equal(category?.questions.length, n <= 7 ? 10 : 15);
+      assert.equal(category?.questions.length, 10);
       assert.equal(category?.status, 'locked');
     }
 
-    // Every manifest entry maps to a validated question with matching structure.
+    // Every manifest entry maps to a validated live and synthetic question.
     for (const entry of MASTER_STRUCTURE_MANIFEST.questions) {
+      const liveCategory = live.categories.find((c) => c.number === entry.categoryNumber);
+      const liveQuestion = liveCategory?.questions.find((q) => q.number === entry.questionNumber);
+      assert.ok(liveQuestion, `missing live ${entry.categoryNumber}.${entry.questionNumber}`);
+      assert.equal(liveQuestion?.formatLabel, entry.formatLabel);
+      assert.equal(liveQuestion?.responseBehavior, entry.responseBehavior);
+      assert.equal(liveQuestion?.choices.length, entry.choiceCount);
+      assert.equal(liveQuestion?.minSelections, entry.minSelections);
+      assert.equal(liveQuestion?.maxSelections, entry.maxSelections);
+
       const category = synthetic.categories.find((c) => c.number === entry.categoryNumber);
       const question = category?.questions.find((q) => q.number === entry.questionNumber);
-      assert.ok(question, `missing ${entry.categoryNumber}.${entry.questionNumber}`);
+      assert.ok(question, `missing synth ${entry.categoryNumber}.${entry.questionNumber}`);
       assert.equal(question?.formatLabel, entry.formatLabel);
       assert.equal(question?.responseBehavior, entry.responseBehavior);
       assert.equal(question?.choices.length, entry.choiceCount);
@@ -130,12 +141,11 @@ describe('questionnaire architecture coverage (self-contained)', () => {
       }
       if (entry.structuredIdentity) {
         assert.deepEqual(question?.structuredIdentity, entry.structuredIdentity);
+        assert.deepEqual(liveQuestion?.structuredIdentity, entry.structuredIdentity);
       }
     }
 
-    // Still not the live catalog.
-    const live = getQuestionnaireCatalog();
-    assert.equal(live.categories.length, 7);
+    // Synthetic remains a separate validator proof catalog.
     assert.equal(live.questionnaireVersion !== synthetic.questionnaireVersion, true);
   });
 
@@ -155,7 +165,7 @@ describe('questionnaire architecture coverage (self-contained)', () => {
     assert.equal(politics.structuredIdentity?.privacy.userControlsPrivateMatchingUse, true);
 
     const manifestFaith = getManifestQuestion(7, 2);
-    const manifestPolitics = getManifestQuestion(8, 2);
+    const manifestPolitics = getManifestQuestion(8, 1);
     assert.ok(manifestFaith?.features.includes('structured_identity'));
     assert.ok(manifestFaith?.features.includes('identity_refinement'));
     assert.ok(manifestFaith?.structuredIdentity?.allowsRefinement);
@@ -261,27 +271,10 @@ describe('questionnaire architecture coverage (self-contained)', () => {
       false
     );
 
-    const manifestIntegrity = getManifestQuestion(10, 14);
-    assert.equal(manifestIntegrity?.listedChoiceCount, 14);
-    assert.equal(manifestIntegrity?.choiceCount, 16);
-    assert.ok(
-      manifestIntegrity?.specialChoices.some(
-        (c) => c.qualifier === 'limited_openness' && c.architectureOnly
-      )
-    );
-    assert.ok(
-      manifestIntegrity?.specialChoices.some(
-        (c) => c.qualifier === 'evaluation_preference' && c.architectureOnly
-      )
-    );
-
-    const synthetic = getSyntheticCatalogFromManifest();
-    const synthIntegrity = synthetic.categories
-      .find((c) => c.number === 10)
-      ?.questions.find((q) => q.number === 14);
-    assert.equal(synthIntegrity?.choices.length, 16);
-    assert.ok(synthIntegrity?.allowedQualifiers?.includes('limited_openness'));
-    assert.ok(synthIntegrity?.allowedQualifiers?.includes('evaluation_preference'));
+    // Former Category 10 Q14 was removed from the live 100 question catalog.
+    // limited_openness and evaluation_preference remain proven via coverage examples.
+    assert.equal(getManifestQuestion(10, 14), undefined);
+    assert.ok(ARCHITECTURE_COVERAGE_QUESTIONS.integrityQualifiers.choices.length >= 16);
   });
 
   it('represents qualifiers that coexist with concrete selections', () => {
@@ -455,9 +448,10 @@ describe('questionnaire architecture coverage (self-contained)', () => {
       );
     }
 
-    const manifestPriority = getManifestQuestion(9, 5);
+    // Former Category 9 Q5 was removed. Category 9 Q3 retains excluded priority choices.
+    const manifestPriority = getManifestQuestion(9, 3);
     assert.equal(manifestPriority?.priorityFollowUp?.minEligibleSelectionsBeforeDisplay, 2);
-    assert.deepEqual(manifestPriority?.priorityFollowUp?.excludedChoiceIndexes, [15]);
+    assert.deepEqual(manifestPriority?.priorityFollowUp?.excludedChoiceIndexes, [14, 15]);
   });
 
   it('keeps Category 1 priority follow-ups on Q5, Q8, and Q10 only', () => {
@@ -514,27 +508,44 @@ describe('questionnaire architecture coverage (self-contained)', () => {
       'identity_privacy',
       'identity_private_matching_control',
       'optional_choice_context',
-      'no_specific_requirement',
-      'limited_openness_qualifier',
-      'evaluation_preference_state',
       'qualifier_may_coexist',
       'priority_min_eligible',
       'priority_excluded_choices',
       'select_all',
       'conditional_scenario',
       'eligibility',
+      'current_priority_state',
+      'no_preference_state',
+      'context_dependent_state',
     ]) {
       assert.ok(allFeatures.has(required), required);
     }
+    // Structures removed from the final 100 remain proven via coverage examples.
+    assert.ok(
+      ARCHITECTURE_COVERAGE_QUESTIONS.noSpecificRequirement.allowedSpecialResponseStates?.includes(
+        'no_specific_requirement'
+      )
+    );
+    assert.ok(
+      ARCHITECTURE_COVERAGE_QUESTIONS.integrityQualifiers.allowedQualifiers?.includes(
+        'limited_openness'
+      )
+    );
+    assert.ok(
+      ARCHITECTURE_COVERAGE_QUESTIONS.integrityQualifiers.allowedQualifiers?.includes(
+        'evaluation_preference'
+      )
+    );
     assert.equal(FOUNDATION_CAPABILITY_MANIFEST.optionalUnscoredChoiceContext, true);
     assert.equal(
       FOUNDATION_CAPABILITY_MANIFEST.databaseIntegrity.responseRowLockForSelectionMutations,
       true
     );
-    assert.equal(MASTER_STRUCTURE_COUNTS.questions, 115);
+    assert.equal(FOUNDATION_CAPABILITY_MANIFEST.category10Protections.noHonestyScore, true);
+    assert.equal(MASTER_STRUCTURE_COUNTS.questions, 100);
     assert.equal(MASTER_STRUCTURE_COUNTS.eligibilityRuleAttachments, 3);
-    assert.equal(MASTER_STRUCTURE_COUNTS.conditionalScenarioQuestions, 4);
+    assert.equal(MASTER_STRUCTURE_COUNTS.conditionalScenarioQuestions, 3);
     assert.equal(MASTER_STRUCTURE_COUNTS.structuredIdentitySelections, 2);
-    assert.equal(MASTER_STRUCTURE_COUNTS.priorityFollowUps, 26);
+    assert.equal(MASTER_STRUCTURE_COUNTS.priorityFollowUps, 24);
   });
 });
