@@ -148,7 +148,19 @@ function manifestEntry(category: CategoryDefinition) {
     const features: string[] = [];
     if (q.priorityFollowUp) features.push('priority_follow_up');
     if (q.selectAllThatApply) features.push('select_all');
-    if (q.structuredIdentity) features.push('structured_identity');
+    if (q.structuredIdentity) {
+      features.push('structured_identity');
+      if (q.structuredIdentity.allowsRefinement) features.push('identity_refinement');
+      if (q.structuredIdentity.allowsUserSuppliedIdentity) {
+        features.push('user_supplied_identity');
+      }
+      if (q.structuredIdentity.privacy.userControlsPublicDisplay) {
+        features.push('identity_privacy');
+      }
+      if (q.structuredIdentity.privacy.userControlsPrivateMatchingUse) {
+        features.push('identity_private_matching_control');
+      }
+    }
     if (q.conditional || isConditionalFormat(q.formatLabel)) {
       features.push('conditional_scenario');
     }

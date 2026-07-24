@@ -497,7 +497,10 @@ describe('questionnaire architecture coverage (self-contained)', () => {
       FOUNDATION_CAPABILITY_MANIFEST.databaseIntegrity.responseIdentityImmutableAfterInsert,
       true
     );
-    assert.ok(migration.includes(MASTER_ELIGIBILITY_DESCRIPTION) === false); // not seeded; coverage only
+    // Category 7 parenting eligibility is seeded in this slice; keep the master
+    // description string aligned with the live rule text.
+    assert.equal(migration.includes(MASTER_ELIGIBILITY_DESCRIPTION), true);
+    assert.match(migration, /parenting_role_display_c07/);
   });
 
   it('manifest features cover every required advanced structure across categories 2–10', () => {
