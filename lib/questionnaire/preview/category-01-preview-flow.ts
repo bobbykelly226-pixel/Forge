@@ -1,5 +1,5 @@
 /**
- * In-memory preview flow for Compatibility Profile Categories 1 through 7.
+ * In-memory preview flow for Compatibility Profile Categories 1 through 10.
  * Answers stay in React memory only; no database writes.
  */
 
@@ -31,7 +31,8 @@ export type PreviewStep =
       questionIndex: number;
       phase: 'base' | 'priority';
     }
-  | { kind: 'complete'; categoryNumber: number };
+  | { kind: 'complete'; categoryNumber: number }
+  | { kind: 'all_complete' };
 
 export type SelectionResult =
   | { ok: true; answer: QuestionAnswerState }
@@ -51,13 +52,27 @@ export const PREVIEW_NOTICE =
 
 /** Page metadata description for `/onboarding-v2-preview` (user facing). */
 export const PREVIEW_PAGE_DESCRIPTION =
-  'Preview Categories 1 through 7 from the Forge Compatibility Profile.' as const;
+  'Preview all ten categories from the Forge Compatibility Profile.' as const;
 
 export const DIRECTORY_COPY = {
   eyebrow: 'Compatibility Profile',
   title: 'Onboarding 2.0 Preview',
-  body: 'Explore the first seven Compatibility Profile categories. Open any category directly. Your answers stay in this browser session only and are not saved.',
-  metadata: 'Categories 1 through 7 available',
+  body: 'Explore all ten Compatibility Profile categories. Open any category directly. Your answers stay in this browser session only and are not saved.',
+  metadata: 'Categories 1 through 10 available',
+} as const;
+
+export const OVERALL_COMPLETE_COPY = {
+  eyebrow: 'Compatibility Profile Preview Complete',
+  heading: 'You completed all ten categories',
+  body: 'This preview represents the full Forge Compatibility Profile. Your responses will eventually help Forge explain meaningful alignment while leaving the decision and the conversation to you.',
+  summaryQuestions: '100 of 100 questions answered',
+  summaryCategories: '10 of 10 categories completed',
+  summaryNotSaved: 'Preview answers were not saved',
+  review: 'Review Categories',
+  restart: 'Restart Full Preview',
+  backToForge: 'Back to Forge',
+  restartConfirm:
+    'Restart the full preview? This clears every in memory preview response for all ten categories.',
 } as const;
 
 /** Category 1 intro copy preserved exactly. */
@@ -127,6 +142,33 @@ export const CATEGORY_INTRO_COPY: Record<number, CategoryIntroCopy> = {
     primary: 'Begin Category',
     secondary: 'Back to categories',
   },
+  8: {
+    eyebrow: 'Compatibility Profile',
+    body: 'Politics and civic life can affect values, conversation, family decisions, and public participation. These questions help Forge understand where similarity matters and where difference may be workable.',
+    supporting:
+      'There are no wrong answers. Choose what most honestly reflects your political life, relationship expectations, and room for difference.',
+    metadata: '10 questions',
+    primary: 'Begin Category',
+    secondary: 'Back to categories',
+  },
+  9: {
+    eyebrow: 'Compatibility Profile',
+    body: 'Service and contribution can shape how people use their time, resources, and sense of responsibility. These questions explore the place service may have in your life and relationship.',
+    supporting:
+      'There are no wrong answers. Choose what most honestly reflects how you contribute and what you would want to share with a partner.',
+    metadata: '10 questions',
+    primary: 'Begin Category',
+    secondary: 'Back to categories',
+  },
+  10: {
+    eyebrow: 'Compatibility Profile',
+    body: 'Trust grows through honesty, responsible disclosure, privacy boundaries, reliability, and repair. These questions explore what helps you feel secure and what would make trust difficult to rebuild.',
+    supporting:
+      'There are no wrong answers. Choose what most honestly reflects the trust, privacy, and accountability you need in a partnership.',
+    metadata: '10 questions',
+    primary: 'Begin Category',
+    secondary: 'Back to categories',
+  },
 };
 
 export const COMPLETE_COPY = {
@@ -157,6 +199,18 @@ export const CATEGORY_COMPLETE_COPY: Record<number, { eyebrow: string; body: str
     body: 'This is part of the larger Forge Compatibility Profile. Your responses will eventually help Forge explain meaningful alignment while leaving the decision and the conversation to you.',
   },
   7: {
+    eyebrow: 'Category Preview Complete',
+    body: 'This is part of the larger Forge Compatibility Profile. Your responses will eventually help Forge explain meaningful alignment while leaving the decision and the conversation to you.',
+  },
+  8: {
+    eyebrow: 'Category Preview Complete',
+    body: 'This is part of the larger Forge Compatibility Profile. Your responses will eventually help Forge explain meaningful alignment while leaving the decision and the conversation to you.',
+  },
+  9: {
+    eyebrow: 'Category Preview Complete',
+    body: 'This is part of the larger Forge Compatibility Profile. Your responses will eventually help Forge explain meaningful alignment while leaving the decision and the conversation to you.',
+  },
+  10: {
     eyebrow: 'Category Preview Complete',
     body: 'This is part of the larger Forge Compatibility Profile. Your responses will eventually help Forge explain meaningful alignment while leaving the decision and the conversation to you.',
   },
@@ -205,6 +259,51 @@ export function clearCategoryAnswers(
   const next = { ...answersByCategory };
   delete next[categoryNumber];
   return next;
+}
+
+export function clearAllPreviewAnswers(): PreviewAnswersByCategory {
+  return {};
+}
+
+export function areAllCategoriesSessionComplete(
+  categories: readonly CategoryDefinition[],
+  answersByCategory: PreviewAnswersByCategory
+): boolean {
+  return categories.every((category) =>
+    isCategorySessionComplete(category, answersByCategory)
+  );
+}
+
+export function countAllCompletedPriorityFollowUps(
+  categories: readonly CategoryDefinition[],
+  answersByCategory: PreviewAnswersByCategory
+): number {
+  return categories.reduce(
+    (sum, category) =>
+      sum +
+      countCompletedPriorityFollowUps(
+        category,
+        getCategoryAnswers(answersByCategory, category.number)
+      ),
+    0
+  );
+}
+
+export function countAnsweredBaseQuestions(
+  categories: readonly CategoryDefinition[],
+  answersByCategory: PreviewAnswersByCategory
+): number {
+  let count = 0;
+  for (const category of categories) {
+    const answers = getCategoryAnswers(answersByCategory, category.number);
+    for (const question of category.questions) {
+      const answer = getAnswer(answers, question.id);
+      if (isBaseAnswerValid(question, answer) && isPriorityAnswerValid(question, answer)) {
+        count += 1;
+      }
+    }
+  }
+  return count;
 }
 
 export function eligibleSelectedChoiceIds(
@@ -537,7 +636,7 @@ export function progressFraction(
 }
 
 export function toCategoryFlowStep(step: PreviewStep): CategoryFlowStep | null {
-  if (step.kind === 'directory') return null;
+  if (step.kind === 'directory' || step.kind === 'all_complete') return null;
   if (step.kind === 'intro') return { kind: 'intro' };
   if (step.kind === 'complete') return { kind: 'complete' };
   return {

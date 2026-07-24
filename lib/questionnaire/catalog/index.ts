@@ -8,6 +8,15 @@ import {
   CATEGORY_07,
   CATEGORY_07_PARENTING_ELIGIBILITY,
 } from '@/lib/questionnaire/catalog/category-07';
+import {
+  CATEGORY_08,
+  CATEGORY_08_PARENTING_ELIGIBILITY,
+} from '@/lib/questionnaire/catalog/category-08';
+import {
+  CATEGORY_09,
+  CATEGORY_09_PARENTING_ELIGIBILITY,
+} from '@/lib/questionnaire/catalog/category-09';
+import { CATEGORY_10 } from '@/lib/questionnaire/catalog/category-10';
 import type {
   CategoryDefinition,
   EligibilityRuleDefinition,
@@ -18,8 +27,8 @@ import { assertValidQuestionnaireCatalog } from '@/lib/questionnaire/validate';
 /** Questionnaire catalog version for this foundation slice. */
 export const QUESTIONNAIRE_VERSION = 'compatibility_profile_v1';
 
-/** Specification version after Categories 1 through 7 are locked at ten questions each. */
-export const SPECIFICATION_VERSION = 'compatibility_profile_categories_1_7_v10';
+/** Specification version after Categories 1 through 10 are locked at ten questions each. */
+export const SPECIFICATION_VERSION = 'compatibility_profile_categories_1_10_v10';
 
 const CATEGORIES: CategoryDefinition[] = [
   CATEGORY_01,
@@ -29,14 +38,20 @@ const CATEGORIES: CategoryDefinition[] = [
   CATEGORY_05,
   CATEGORY_06,
   CATEGORY_07,
+  CATEGORY_08,
+  CATEGORY_09,
+  CATEGORY_10,
 ];
 
 /**
  * Eligibility rules are version-scoped and referenced by question ids.
- * Category 7 Q9 attaches parenting eligibility. Categories 8 through 10 remain
- * architecture only in this slice.
+ * Categories 7 through 9 attach parenting eligibility on their conditional Q9.
  */
-const ELIGIBILITY_RULES: EligibilityRuleDefinition[] = [CATEGORY_07_PARENTING_ELIGIBILITY];
+const ELIGIBILITY_RULES: EligibilityRuleDefinition[] = [
+  CATEGORY_07_PARENTING_ELIGIBILITY,
+  CATEGORY_08_PARENTING_ELIGIBILITY,
+  CATEGORY_09_PARENTING_ELIGIBILITY,
+];
 
 export function getQuestionnaireCatalog(): QuestionnaireCatalog {
   return assertValidQuestionnaireCatalog({
@@ -52,7 +67,7 @@ export function getLockedCategories(): CategoryDefinition[] {
 }
 
 export function getPreviewCategories(): CategoryDefinition[] {
-  return getLockedCategories().filter((category) => category.number <= 7);
+  return getLockedCategories().filter((category) => category.number <= 10);
 }
 
 export function getCategoryByNumber(number: number): CategoryDefinition | undefined {
@@ -72,4 +87,9 @@ export {
   CATEGORY_06,
   CATEGORY_07,
   CATEGORY_07_PARENTING_ELIGIBILITY,
+  CATEGORY_08,
+  CATEGORY_08_PARENTING_ELIGIBILITY,
+  CATEGORY_09,
+  CATEGORY_09_PARENTING_ELIGIBILITY,
+  CATEGORY_10,
 };

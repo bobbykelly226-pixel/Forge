@@ -1,7 +1,7 @@
 {
   "source": "Forge Compatibility Profile structural manifest",
-  "note": "Categories 1 through 7 reduced to 10 questions each (authoritative live catalog). Categories 8 through 10 remain at 15 until later PRs. Total 115.",
-  "questionCount": 115,
+  "note": "Categories 1 through 10 reduced to 10 questions each (authoritative live catalog). Total 100.",
+  "questionCount": 100,
   "questions": [
     {
       "categoryNumber": 1,
@@ -923,7 +923,9 @@
       "choiceCount": 5,
       "minSelections": 1,
       "maxSelections": 1,
-      "features": [],
+      "features": [
+        "context_note"
+      ],
       "specialChoices": [],
       "hasContextNote": true,
       "hasImplementationNote": false,
@@ -998,7 +1000,9 @@
       "choiceCount": 5,
       "minSelections": 1,
       "maxSelections": 1,
-      "features": [],
+      "features": [
+        "context_note"
+      ],
       "specialChoices": [],
       "hasContextNote": true,
       "hasImplementationNote": false,
@@ -1102,7 +1106,9 @@
       "choiceCount": 5,
       "minSelections": 1,
       "maxSelections": 1,
-      "features": [],
+      "features": [
+        "context_note"
+      ],
       "specialChoices": [],
       "hasContextNote": true,
       "hasImplementationNote": false,
@@ -1191,6 +1197,8 @@
       "minSelections": 0,
       "maxSelections": null,
       "features": [
+        "implementation_note",
+        "mutually_exclusive_choice",
         "select_all"
       ],
       "specialChoices": [
@@ -1214,7 +1222,9 @@
       "choiceCount": 6,
       "minSelections": 1,
       "maxSelections": 1,
-      "features": [],
+      "features": [
+        "context_note"
+      ],
       "specialChoices": [],
       "hasContextNote": true,
       "hasImplementationNote": false,
@@ -1279,7 +1289,10 @@
       "choiceCount": 5,
       "minSelections": 1,
       "maxSelections": 1,
-      "features": [],
+      "features": [
+        "context_note",
+        "implementation_note"
+      ],
       "specialChoices": [],
       "hasContextNote": true,
       "hasImplementationNote": true,
@@ -1315,6 +1328,7 @@
       "maxSelections": 1,
       "features": [
         "conditional_scenario",
+        "context_note",
         "eligibility"
       ],
       "specialChoices": [],
@@ -1351,23 +1365,6 @@
       "categoryNumber": 8,
       "categoryTitle": "Politics, Civic Life & Social Issues",
       "questionNumber": 1,
-      "formatLabel": "Importance range",
-      "responseBehavior": "scale_range",
-      "listedChoiceCount": 6,
-      "choiceCount": 6,
-      "minSelections": 1,
-      "maxSelections": 1,
-      "features": [],
-      "specialChoices": [],
-      "hasContextNote": false,
-      "hasImplementationNote": false,
-      "hasEligibility": false,
-      "isConditionalScenario": false
-    },
-    {
-      "categoryNumber": 8,
-      "categoryTitle": "Politics, Civic Life & Social Issues",
-      "questionNumber": 2,
       "formatLabel": "Structured identity selection",
       "responseBehavior": "structured_identity",
       "listedChoiceCount": 13,
@@ -1398,7 +1395,7 @@
     {
       "categoryNumber": 8,
       "categoryTitle": "Politics, Civic Life & Social Issues",
-      "questionNumber": 3,
+      "questionNumber": 2,
       "formatLabel": "Importance scale",
       "responseBehavior": "scale_range",
       "listedChoiceCount": 6,
@@ -1417,7 +1414,7 @@
     {
       "categoryNumber": 8,
       "categoryTitle": "Politics, Civic Life & Social Issues",
-      "questionNumber": 4,
+      "questionNumber": 3,
       "formatLabel": "Select all that apply",
       "responseBehavior": "multi_select",
       "listedChoiceCount": 16,
@@ -1443,7 +1440,7 @@
     {
       "categoryNumber": 8,
       "categoryTitle": "Politics, Civic Life & Social Issues",
-      "questionNumber": 5,
+      "questionNumber": 4,
       "formatLabel": "Select up to five",
       "responseBehavior": "multi_select",
       "listedChoiceCount": 16,
@@ -1467,7 +1464,7 @@
     {
       "categoryNumber": 8,
       "categoryTitle": "Politics, Civic Life & Social Issues",
-      "questionNumber": 6,
+      "questionNumber": 5,
       "formatLabel": "Select up to five",
       "responseBehavior": "multi_select",
       "listedChoiceCount": 18,
@@ -1492,8 +1489,8 @@
     {
       "categoryNumber": 8,
       "categoryTitle": "Politics, Civic Life & Social Issues",
-      "questionNumber": 7,
-      "formatLabel": "Scenario-based choice",
+      "questionNumber": 6,
+      "formatLabel": "Scenario based choice",
       "responseBehavior": "scenario_choice",
       "listedChoiceCount": 8,
       "choiceCount": 8,
@@ -1509,8 +1506,8 @@
     {
       "categoryNumber": 8,
       "categoryTitle": "Politics, Civic Life & Social Issues",
-      "questionNumber": 8,
-      "formatLabel": "Discussion-frequency range with separate no-preference response",
+      "questionNumber": 7,
+      "formatLabel": "Discussion frequency range with separate no preference response",
       "responseBehavior": "scale_range",
       "listedChoiceCount": 6,
       "choiceCount": 6,
@@ -1537,7 +1534,7 @@
     {
       "categoryNumber": 8,
       "categoryTitle": "Politics, Civic Life & Social Issues",
-      "questionNumber": 9,
+      "questionNumber": 8,
       "formatLabel": "Autonomy range",
       "responseBehavior": "scale_range",
       "listedChoiceCount": 6,
@@ -1556,65 +1553,8 @@
     {
       "categoryNumber": 8,
       "categoryTitle": "Politics, Civic Life & Social Issues",
-      "questionNumber": 10,
-      "formatLabel": "Scenario-based choice",
-      "responseBehavior": "scenario_choice",
-      "listedChoiceCount": 7,
-      "choiceCount": 7,
-      "minSelections": 1,
-      "maxSelections": 1,
-      "features": [
-        "context_note"
-      ],
-      "specialChoices": [],
-      "hasContextNote": true,
-      "hasImplementationNote": false,
-      "hasEligibility": false,
-      "isConditionalScenario": false
-    },
-    {
-      "categoryNumber": 8,
-      "categoryTitle": "Politics, Civic Life & Social Issues",
-      "questionNumber": 11,
-      "formatLabel": "Household-media range",
-      "responseBehavior": "scale_range",
-      "listedChoiceCount": 6,
-      "choiceCount": 6,
-      "minSelections": 1,
-      "maxSelections": 1,
-      "features": [
-        "context_note"
-      ],
-      "specialChoices": [],
-      "hasContextNote": true,
-      "hasImplementationNote": false,
-      "hasEligibility": false,
-      "isConditionalScenario": false
-    },
-    {
-      "categoryNumber": 8,
-      "categoryTitle": "Politics, Civic Life & Social Issues",
-      "questionNumber": 12,
-      "formatLabel": "Scenario-based choice",
-      "responseBehavior": "scenario_choice",
-      "listedChoiceCount": 6,
-      "choiceCount": 6,
-      "minSelections": 1,
-      "maxSelections": 1,
-      "features": [
-        "context_note"
-      ],
-      "specialChoices": [],
-      "hasContextNote": true,
-      "hasImplementationNote": false,
-      "hasEligibility": false,
-      "isConditionalScenario": false
-    },
-    {
-      "categoryNumber": 8,
-      "categoryTitle": "Politics, Civic Life & Social Issues",
-      "questionNumber": 13,
-      "formatLabel": "Conditional scenario-based choice",
+      "questionNumber": 9,
+      "formatLabel": "Conditional scenario based choice",
       "responseBehavior": "scenario_choice",
       "listedChoiceCount": 7,
       "choiceCount": 7,
@@ -1634,27 +1574,7 @@
     {
       "categoryNumber": 8,
       "categoryTitle": "Politics, Civic Life & Social Issues",
-      "questionNumber": 14,
-      "formatLabel": "Select all that apply",
-      "responseBehavior": "multi_select",
-      "listedChoiceCount": 15,
-      "choiceCount": 15,
-      "minSelections": 0,
-      "maxSelections": null,
-      "features": [
-        "implementation_note",
-        "select_all"
-      ],
-      "specialChoices": [],
-      "hasContextNote": false,
-      "hasImplementationNote": true,
-      "hasEligibility": false,
-      "isConditionalScenario": false
-    },
-    {
-      "categoryNumber": 8,
-      "categoryTitle": "Politics, Civic Life & Social Issues",
-      "questionNumber": 15,
+      "questionNumber": 10,
       "formatLabel": "Select up to five",
       "responseBehavior": "multi_select",
       "listedChoiceCount": 15,
@@ -1743,7 +1663,7 @@
       "categoryNumber": 9,
       "categoryTitle": "Service, Community & Contribution",
       "questionNumber": 3,
-      "formatLabel": "Select up to four, with a separate current-priority state",
+      "formatLabel": "Select up to four, with a separate current priority state",
       "responseBehavior": "multi_select",
       "listedChoiceCount": 15,
       "choiceCount": 15,
@@ -1764,8 +1684,9 @@
         },
         {
           "index": 15,
+          "specialResponseState": "current_priority",
           "mutuallyExclusive": true,
-          "specialResponseState": "current_priority"
+          "excludeFromPriority": true
         }
       ],
       "allowedSpecialResponseStates": [
@@ -1808,52 +1729,7 @@
       "categoryNumber": 9,
       "categoryTitle": "Service, Community & Contribution",
       "questionNumber": 5,
-      "formatLabel": "Select up to five",
-      "responseBehavior": "multi_select",
-      "listedChoiceCount": 15,
-      "choiceCount": 15,
-      "minSelections": 1,
-      "maxSelections": 5,
-      "features": [
-        "mutually_exclusive_choice",
-        "no_specific_requirement",
-        "priority_excluded_choices",
-        "priority_follow_up",
-        "priority_min_eligible"
-      ],
-      "specialChoices": [
-        {
-          "index": 15,
-          "qualifier": "no_specific_requirement",
-          "qualifierCoexistsWithSelections": false,
-          "mutuallyExclusive": true,
-          "specialResponseState": "no_specific_requirement"
-        }
-      ],
-      "allowedSpecialResponseStates": [
-        "no_specific_requirement"
-      ],
-      "allowedQualifiers": [
-        "no_specific_requirement"
-      ],
-      "priorityFollowUp": {
-        "selectionCount": 2,
-        "unordered": true,
-        "minEligibleSelectionsBeforeDisplay": 2,
-        "excludedChoiceIndexes": [
-          15
-        ]
-      },
-      "hasContextNote": false,
-      "hasImplementationNote": false,
-      "hasEligibility": false,
-      "isConditionalScenario": false
-    },
-    {
-      "categoryNumber": 9,
-      "categoryTitle": "Service, Community & Contribution",
-      "questionNumber": 6,
-      "formatLabel": "Shared-participation range with separate no-preference state",
+      "formatLabel": "Shared participation range with separate no preference state",
       "responseBehavior": "scale_range",
       "listedChoiceCount": 7,
       "choiceCount": 7,
@@ -1880,8 +1756,8 @@
     {
       "categoryNumber": 9,
       "categoryTitle": "Service, Community & Contribution",
-      "questionNumber": 7,
-      "formatLabel": "Scenario-based choice",
+      "questionNumber": 6,
+      "formatLabel": "Scenario based choice",
       "responseBehavior": "scenario_choice",
       "listedChoiceCount": 7,
       "choiceCount": 7,
@@ -1893,6 +1769,35 @@
       "specialChoices": [],
       "hasContextNote": true,
       "hasImplementationNote": false,
+      "hasEligibility": false,
+      "isConditionalScenario": false
+    },
+    {
+      "categoryNumber": 9,
+      "categoryTitle": "Service, Community & Contribution",
+      "questionNumber": 7,
+      "formatLabel": "Financial coordination range",
+      "responseBehavior": "scale_range",
+      "listedChoiceCount": 7,
+      "choiceCount": 7,
+      "minSelections": 1,
+      "maxSelections": 1,
+      "features": [
+        "context_dependent_state",
+        "context_note",
+        "implementation_note"
+      ],
+      "specialChoices": [
+        {
+          "index": 7,
+          "specialResponseState": "context_dependent"
+        }
+      ],
+      "allowedSpecialResponseStates": [
+        "context_dependent"
+      ],
+      "hasContextNote": true,
+      "hasImplementationNote": true,
       "hasEligibility": false,
       "isConditionalScenario": false
     },
@@ -1900,19 +1805,18 @@
       "categoryNumber": 9,
       "categoryTitle": "Service, Community & Contribution",
       "questionNumber": 8,
-      "formatLabel": "Financial-coordination range",
-      "responseBehavior": "scale_range",
+      "formatLabel": "Scenario based choice",
+      "responseBehavior": "scenario_choice",
       "listedChoiceCount": 7,
       "choiceCount": 7,
       "minSelections": 1,
       "maxSelections": 1,
       "features": [
-        "context_note",
-        "implementation_note"
+        "context_note"
       ],
       "specialChoices": [],
       "hasContextNote": true,
-      "hasImplementationNote": true,
+      "hasImplementationNote": false,
       "hasEligibility": false,
       "isConditionalScenario": false
     },
@@ -1920,92 +1824,7 @@
       "categoryNumber": 9,
       "categoryTitle": "Service, Community & Contribution",
       "questionNumber": 9,
-      "formatLabel": "Scenario-based choice",
-      "responseBehavior": "scenario_choice",
-      "listedChoiceCount": 7,
-      "choiceCount": 7,
-      "minSelections": 1,
-      "maxSelections": 1,
-      "features": [
-        "context_note"
-      ],
-      "specialChoices": [],
-      "hasContextNote": true,
-      "hasImplementationNote": false,
-      "hasEligibility": false,
-      "isConditionalScenario": false
-    },
-    {
-      "categoryNumber": 9,
-      "categoryTitle": "Service, Community & Contribution",
-      "questionNumber": 10,
-      "formatLabel": "Scenario-based choice",
-      "responseBehavior": "scenario_choice",
-      "listedChoiceCount": 8,
-      "choiceCount": 8,
-      "minSelections": 1,
-      "maxSelections": 1,
-      "features": [
-        "context_note"
-      ],
-      "specialChoices": [],
-      "hasContextNote": true,
-      "hasImplementationNote": false,
-      "hasEligibility": false,
-      "isConditionalScenario": false
-    },
-    {
-      "categoryNumber": 9,
-      "categoryTitle": "Service, Community & Contribution",
-      "questionNumber": 11,
-      "formatLabel": "Visibility-preference range",
-      "responseBehavior": "scale_range",
-      "listedChoiceCount": 6,
-      "choiceCount": 6,
-      "minSelections": 1,
-      "maxSelections": 1,
-      "features": [
-        "implementation_note",
-        "no_preference_state"
-      ],
-      "specialChoices": [
-        {
-          "index": 6,
-          "specialResponseState": "no_preference"
-        }
-      ],
-      "allowedSpecialResponseStates": [
-        "no_preference"
-      ],
-      "hasContextNote": false,
-      "hasImplementationNote": true,
-      "hasEligibility": false,
-      "isConditionalScenario": false
-    },
-    {
-      "categoryNumber": 9,
-      "categoryTitle": "Service, Community & Contribution",
-      "questionNumber": 12,
-      "formatLabel": "Scenario-based choice",
-      "responseBehavior": "scenario_choice",
-      "listedChoiceCount": 7,
-      "choiceCount": 7,
-      "minSelections": 1,
-      "maxSelections": 1,
-      "features": [
-        "context_note"
-      ],
-      "specialChoices": [],
-      "hasContextNote": true,
-      "hasImplementationNote": false,
-      "hasEligibility": false,
-      "isConditionalScenario": false
-    },
-    {
-      "categoryNumber": 9,
-      "categoryTitle": "Service, Community & Contribution",
-      "questionNumber": 13,
-      "formatLabel": "Conditional scenario-based choice",
+      "formatLabel": "Conditional scenario based choice",
       "responseBehavior": "scenario_choice",
       "listedChoiceCount": 8,
       "choiceCount": 8,
@@ -2025,27 +1844,7 @@
     {
       "categoryNumber": 9,
       "categoryTitle": "Service, Community & Contribution",
-      "questionNumber": 14,
-      "formatLabel": "Select all that apply",
-      "responseBehavior": "multi_select",
-      "listedChoiceCount": 16,
-      "choiceCount": 16,
-      "minSelections": 0,
-      "maxSelections": null,
-      "features": [
-        "implementation_note",
-        "select_all"
-      ],
-      "specialChoices": [],
-      "hasContextNote": false,
-      "hasImplementationNote": true,
-      "hasEligibility": false,
-      "isConditionalScenario": false
-    },
-    {
-      "categoryNumber": 9,
-      "categoryTitle": "Service, Community & Contribution",
-      "questionNumber": 15,
+      "questionNumber": 10,
       "formatLabel": "Select up to five",
       "responseBehavior": "multi_select",
       "listedChoiceCount": 15,
@@ -2070,34 +1869,6 @@
       "categoryNumber": 10,
       "categoryTitle": "Integrity, Honesty & Trust",
       "questionNumber": 1,
-      "formatLabel": "Importance scale",
-      "responseBehavior": "scale_range",
-      "listedChoiceCount": 6,
-      "choiceCount": 6,
-      "minSelections": 1,
-      "maxSelections": 1,
-      "features": [
-        "context_dependent_state",
-        "context_note"
-      ],
-      "specialChoices": [
-        {
-          "index": 4,
-          "specialResponseState": "context_dependent"
-        }
-      ],
-      "allowedSpecialResponseStates": [
-        "context_dependent"
-      ],
-      "hasContextNote": true,
-      "hasImplementationNote": false,
-      "hasEligibility": false,
-      "isConditionalScenario": false
-    },
-    {
-      "categoryNumber": 10,
-      "categoryTitle": "Integrity, Honesty & Trust",
-      "questionNumber": 2,
       "formatLabel": "Select up to five",
       "responseBehavior": "multi_select",
       "listedChoiceCount": 15,
@@ -2121,26 +1892,7 @@
     {
       "categoryNumber": 10,
       "categoryTitle": "Integrity, Honesty & Trust",
-      "questionNumber": 3,
-      "formatLabel": "Transparency range with a separate context-dependent state",
-      "responseBehavior": "scale_range",
-      "listedChoiceCount": 7,
-      "choiceCount": 7,
-      "minSelections": 1,
-      "maxSelections": 1,
-      "features": [
-        "implementation_note"
-      ],
-      "specialChoices": [],
-      "hasContextNote": false,
-      "hasImplementationNote": true,
-      "hasEligibility": false,
-      "isConditionalScenario": false
-    },
-    {
-      "categoryNumber": 10,
-      "categoryTitle": "Integrity, Honesty & Trust",
-      "questionNumber": 4,
+      "questionNumber": 2,
       "formatLabel": "Select all that apply",
       "responseBehavior": "multi_select",
       "listedChoiceCount": 15,
@@ -2150,7 +1902,6 @@
       "features": [
         "implementation_note",
         "mutually_exclusive_choice",
-        "qualifier_may_coexist",
         "select_all"
       ],
       "specialChoices": [
@@ -2167,107 +1918,8 @@
     {
       "categoryNumber": 10,
       "categoryTitle": "Integrity, Honesty & Trust",
-      "questionNumber": 5,
-      "formatLabel": "Privacy-boundary range",
-      "responseBehavior": "scale_range",
-      "listedChoiceCount": 7,
-      "choiceCount": 7,
-      "minSelections": 1,
-      "maxSelections": 1,
-      "features": [
-        "context_note",
-        "implementation_note"
-      ],
-      "specialChoices": [],
-      "hasContextNote": true,
-      "hasImplementationNote": true,
-      "hasEligibility": false,
-      "isConditionalScenario": false
-    },
-    {
-      "categoryNumber": 10,
-      "categoryTitle": "Integrity, Honesty & Trust",
-      "questionNumber": 6,
-      "formatLabel": "Scenario-based choice",
-      "responseBehavior": "scenario_choice",
-      "listedChoiceCount": 8,
-      "choiceCount": 8,
-      "minSelections": 1,
-      "maxSelections": 1,
-      "features": [
-        "context_note"
-      ],
-      "specialChoices": [],
-      "hasContextNote": true,
-      "hasImplementationNote": false,
-      "hasEligibility": false,
-      "isConditionalScenario": false
-    },
-    {
-      "categoryNumber": 10,
-      "categoryTitle": "Integrity, Honesty & Trust",
-      "questionNumber": 7,
-      "formatLabel": "Scenario-based choice",
-      "responseBehavior": "scenario_choice",
-      "listedChoiceCount": 8,
-      "choiceCount": 8,
-      "minSelections": 1,
-      "maxSelections": 1,
-      "features": [],
-      "specialChoices": [],
-      "hasContextNote": false,
-      "hasImplementationNote": false,
-      "hasEligibility": false,
-      "isConditionalScenario": false
-    },
-    {
-      "categoryNumber": 10,
-      "categoryTitle": "Integrity, Honesty & Trust",
-      "questionNumber": 8,
-      "formatLabel": "Select up to five",
-      "responseBehavior": "multi_select",
-      "listedChoiceCount": 14,
-      "choiceCount": 14,
-      "minSelections": 1,
-      "maxSelections": 5,
-      "features": [
-        "priority_follow_up"
-      ],
-      "specialChoices": [],
-      "priorityFollowUp": {
-        "selectionCount": 2,
-        "unordered": true,
-        "minEligibleSelectionsBeforeDisplay": 2
-      },
-      "hasContextNote": false,
-      "hasImplementationNote": false,
-      "hasEligibility": false,
-      "isConditionalScenario": false
-    },
-    {
-      "categoryNumber": 10,
-      "categoryTitle": "Integrity, Honesty & Trust",
-      "questionNumber": 9,
-      "formatLabel": "Scenario-based choice",
-      "responseBehavior": "scenario_choice",
-      "listedChoiceCount": 8,
-      "choiceCount": 8,
-      "minSelections": 1,
-      "maxSelections": 1,
-      "features": [
-        "context_note"
-      ],
-      "specialChoices": [],
-      "hasContextNote": true,
-      "hasImplementationNote": false,
-      "hasEligibility": false,
-      "isConditionalScenario": false
-    },
-    {
-      "categoryNumber": 10,
-      "categoryTitle": "Integrity, Honesty & Trust",
-      "questionNumber": 10,
-      "formatLabel": "Trust-repair posture with a separate context-dependent state",
+      "questionNumber": 3,
+      "formatLabel": "Privacy boundary range",
       "responseBehavior": "scale_range",
       "listedChoiceCount": 7,
       "choiceCount": 7,
@@ -2295,18 +1947,82 @@
     {
       "categoryNumber": 10,
       "categoryTitle": "Integrity, Honesty & Trust",
-      "questionNumber": 11,
-      "formatLabel": "Reassurance-and-access range",
+      "questionNumber": 4,
+      "formatLabel": "Scenario based choice",
+      "responseBehavior": "scenario_choice",
+      "listedChoiceCount": 8,
+      "choiceCount": 8,
+      "minSelections": 1,
+      "maxSelections": 1,
+      "features": [
+        "context_note"
+      ],
+      "specialChoices": [],
+      "hasContextNote": true,
+      "hasImplementationNote": false,
+      "hasEligibility": false,
+      "isConditionalScenario": false
+    },
+    {
+      "categoryNumber": 10,
+      "categoryTitle": "Integrity, Honesty & Trust",
+      "questionNumber": 5,
+      "formatLabel": "Scenario based choice",
+      "responseBehavior": "scenario_choice",
+      "listedChoiceCount": 8,
+      "choiceCount": 8,
+      "minSelections": 1,
+      "maxSelections": 1,
+      "features": [],
+      "specialChoices": [],
+      "hasContextNote": false,
+      "hasImplementationNote": false,
+      "hasEligibility": false,
+      "isConditionalScenario": false
+    },
+    {
+      "categoryNumber": 10,
+      "categoryTitle": "Integrity, Honesty & Trust",
+      "questionNumber": 6,
+      "formatLabel": "Scenario based choice",
+      "responseBehavior": "scenario_choice",
+      "listedChoiceCount": 8,
+      "choiceCount": 8,
+      "minSelections": 1,
+      "maxSelections": 1,
+      "features": [
+        "context_note"
+      ],
+      "specialChoices": [],
+      "hasContextNote": true,
+      "hasImplementationNote": false,
+      "hasEligibility": false,
+      "isConditionalScenario": false
+    },
+    {
+      "categoryNumber": 10,
+      "categoryTitle": "Integrity, Honesty & Trust",
+      "questionNumber": 7,
+      "formatLabel": "Trust repair posture with a separate context dependent state",
       "responseBehavior": "scale_range",
       "listedChoiceCount": 7,
       "choiceCount": 7,
       "minSelections": 1,
       "maxSelections": 1,
       "features": [
+        "context_dependent_state",
         "context_note",
         "implementation_note"
       ],
-      "specialChoices": [],
+      "specialChoices": [
+        {
+          "index": 7,
+          "specialResponseState": "context_dependent"
+        }
+      ],
+      "allowedSpecialResponseStates": [
+        "context_dependent"
+      ],
       "hasContextNote": true,
       "hasImplementationNote": true,
       "hasEligibility": false,
@@ -2315,78 +2031,28 @@
     {
       "categoryNumber": 10,
       "categoryTitle": "Integrity, Honesty & Trust",
-      "questionNumber": 12,
-      "formatLabel": "Scenario-based choice",
-      "responseBehavior": "scenario_choice",
-      "listedChoiceCount": 8,
-      "choiceCount": 8,
+      "questionNumber": 8,
+      "formatLabel": "Reassurance and access range",
+      "responseBehavior": "scale_range",
+      "listedChoiceCount": 7,
+      "choiceCount": 7,
       "minSelections": 1,
       "maxSelections": 1,
       "features": [
-        "context_note"
-      ],
-      "specialChoices": [],
-      "hasContextNote": true,
-      "hasImplementationNote": false,
-      "hasEligibility": false,
-      "isConditionalScenario": false
-    },
-    {
-      "categoryNumber": 10,
-      "categoryTitle": "Integrity, Honesty & Trust",
-      "questionNumber": 13,
-      "formatLabel": "Conditional scenario-based choice",
-      "responseBehavior": "scenario_choice",
-      "listedChoiceCount": 8,
-      "choiceCount": 8,
-      "minSelections": 1,
-      "maxSelections": 1,
-      "features": [
-        "conditional_scenario",
-        "context_note"
-      ],
-      "specialChoices": [],
-      "hasContextNote": true,
-      "hasImplementationNote": false,
-      "hasEligibility": false,
-      "isConditionalScenario": true
-    },
-    {
-      "categoryNumber": 10,
-      "categoryTitle": "Integrity, Honesty & Trust",
-      "questionNumber": 14,
-      "formatLabel": "Select all that apply",
-      "responseBehavior": "multi_select",
-      "listedChoiceCount": 14,
-      "choiceCount": 16,
-      "minSelections": 0,
-      "maxSelections": null,
-      "features": [
-        "evaluation_preference_state",
-        "implementation_note",
-        "limited_openness_qualifier",
-        "qualifier_may_coexist",
-        "select_all"
+        "context_dependent_state",
+        "context_note",
+        "implementation_note"
       ],
       "specialChoices": [
         {
-          "index": 15,
-          "qualifier": "limited_openness",
-          "qualifierCoexistsWithSelections": true,
-          "architectureOnly": true
-        },
-        {
-          "index": 16,
-          "qualifier": "evaluation_preference",
-          "qualifierCoexistsWithSelections": true,
-          "architectureOnly": true
+          "index": 7,
+          "specialResponseState": "context_dependent"
         }
       ],
-      "allowedQualifiers": [
-        "limited_openness",
-        "evaluation_preference"
+      "allowedSpecialResponseStates": [
+        "context_dependent"
       ],
-      "hasContextNote": false,
+      "hasContextNote": true,
       "hasImplementationNote": true,
       "hasEligibility": false,
       "isConditionalScenario": false
@@ -2394,7 +2060,26 @@
     {
       "categoryNumber": 10,
       "categoryTitle": "Integrity, Honesty & Trust",
-      "questionNumber": 15,
+      "questionNumber": 9,
+      "formatLabel": "Scenario based choice",
+      "responseBehavior": "scenario_choice",
+      "listedChoiceCount": 8,
+      "choiceCount": 8,
+      "minSelections": 1,
+      "maxSelections": 1,
+      "features": [
+        "context_note"
+      ],
+      "specialChoices": [],
+      "hasContextNote": true,
+      "hasImplementationNote": false,
+      "hasEligibility": false,
+      "isConditionalScenario": false
+    },
+    {
+      "categoryNumber": 10,
+      "categoryTitle": "Integrity, Honesty & Trust",
+      "questionNumber": 10,
       "formatLabel": "Select up to five",
       "responseBehavior": "multi_select",
       "listedChoiceCount": 15,

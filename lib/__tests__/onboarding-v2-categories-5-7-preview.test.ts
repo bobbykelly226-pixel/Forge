@@ -316,25 +316,19 @@ describe('Categories 5 through 7 live catalogs', () => {
     assert.match(shell, /category\.questions\[step\.questionIndex\]/);
   });
 
-  it('keeps the structural manifest at exactly 115 questions', () => {
+  it('keeps the structural manifest at exactly 100 questions', () => {
     const manifest = JSON.parse(
       read('lib/questionnaire/fixtures/master-structure-manifest.json')
     ) as {
       questionCount: number;
       questions: Array<{ categoryNumber: number }>;
     };
-    assert.equal(manifest.questionCount, 115);
-    assert.equal(manifest.questions.length, 115);
-    for (const n of [1, 2, 3, 4, 5, 6, 7]) {
+    assert.equal(manifest.questionCount, 100);
+    assert.equal(manifest.questions.length, 100);
+    for (const n of [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]) {
       assert.equal(
         manifest.questions.filter((q) => q.categoryNumber === n).length,
         10
-      );
-    }
-    for (const n of [8, 9, 10]) {
-      assert.equal(
-        manifest.questions.filter((q) => q.categoryNumber === n).length,
-        15
       );
     }
   });
@@ -377,18 +371,18 @@ describe('Categories 5 through 7 live catalogs', () => {
 });
 
 describe('Categories 5 through 7 preview session behavior', () => {
-  it('exposes Categories 1 through 7 with the Categories 1 to 7 specification version', () => {
+  it('exposes Categories 1 through 10 with the Categories 1 to 10 specification version', () => {
     const preview = getPreviewCategories();
     assert.deepEqual(
       preview.map((c) => c.number),
-      [1, 2, 3, 4, 5, 6, 7]
+      [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
     );
     assert.equal(getQuestionnaireCatalog().specificationVersion, SPECIFICATION_VERSION);
-    assert.equal(SPECIFICATION_VERSION, 'compatibility_profile_categories_1_7_v10');
-    assert.equal(getQuestionnaireCatalog().eligibilityRules.length, 1);
-    assert.match(DIRECTORY_COPY.body, /first seven/);
-    assert.match(DIRECTORY_COPY.metadata, /1 through 7/);
-    assert.match(PREVIEW_PAGE_DESCRIPTION, /1 through 7/);
+    assert.equal(SPECIFICATION_VERSION, 'compatibility_profile_categories_1_10_v10');
+    assert.equal(getQuestionnaireCatalog().eligibilityRules.length, 3);
+    assert.match(DIRECTORY_COPY.body, /all ten/);
+    assert.match(DIRECTORY_COPY.metadata, /1 through 10/);
+    assert.match(PREVIEW_PAGE_DESCRIPTION, /all ten/);
   });
 
   it('preserves in memory answers across category switches and clears only on restart', () => {

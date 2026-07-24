@@ -5,6 +5,10 @@ type ChoiceSpecialConfig = {
     QuestionDefinition['choices'][number]['specialResponseState']
   >;
   mutuallyExclusive?: boolean;
+  qualifier?: NonNullable<QuestionDefinition['choices'][number]['qualifier']>;
+  qualifierCoexistsWithSelections?: boolean;
+  opensOptionalContext?: boolean;
+  optionalContext?: NonNullable<QuestionDefinition['choices'][number]['optionalContext']>;
 };
 
 type SpecialMap = Readonly<
@@ -29,12 +33,33 @@ export function createCategoryBuilders(categoryKey: string) {
         typeof special === 'string' ? special : special?.specialResponseState;
       const mutuallyExclusive =
         typeof special === 'object' ? special?.mutuallyExclusive : undefined;
+      const qualifier = typeof special === 'object' ? special?.qualifier : undefined;
+      const qualifierCoexistsWithSelections =
+        typeof special === 'object' ? special?.qualifierCoexistsWithSelections : undefined;
+      const opensOptionalContext =
+        typeof special === 'object' ? special?.opensOptionalContext : undefined;
+      const optionalContext =
+        typeof special === 'object' ? special?.optionalContext : undefined;
       return {
         id: `${qid}_c${String(displayOrder).padStart(2, '0')}`,
         label,
         displayOrder,
         ...(specialResponseState ? { specialResponseState } : {}),
         ...(mutuallyExclusive ? { mutuallyExclusive: true } : {}),
+        ...(qualifier ? { qualifier } : {}),
+        ...(qualifierCoexistsWithSelections !== undefined
+          ? { qualifierCoexistsWithSelections }
+          : {}),
+        ...(opensOptionalContext
+          ? {
+              opensOptionalContext: true,
+              optionalContext: optionalContext ?? {
+                kind: 'free_text' as const,
+                required: false as const,
+                scored: false as const,
+              },
+            }
+          : {}),
       };
     });
   }

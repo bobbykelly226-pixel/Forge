@@ -2,9 +2,9 @@
  * Builds a complete, strongly typed synthetic catalog from the committed
  * structural manifest so all documented question structures can be validator-proven.
  *
- * Category 1 through 7 are the live 10 question catalogs. Categories 8–10 wording is
- * intentionally not imported — prompts/options are synthetic placeholders.
- * This catalog is NOT returned by getQuestionnaireCatalog().
+ * The live catalog now provides exact Categories 1 through 10 (100 questions).
+ * This helper still synthesizes placeholder wording from structural metadata for
+ * isolated validator proof and is NOT returned by getQuestionnaireCatalog().
  */
 
 import masterStructureManifest from '@/lib/questionnaire/fixtures/master-structure-manifest.json';
@@ -189,8 +189,8 @@ function buildQuestion(
  */
 export function getSyntheticCatalogFromManifest(): QuestionnaireCatalog {
   const entries = masterStructureManifest.questions as ManifestQuestion[];
-  if (entries.length !== 115) {
-    throw new Error(`Expected 115 manifest questions, found ${entries.length}`);
+  if (entries.length !== 100) {
+    throw new Error(`Expected 100 manifest questions, found ${entries.length}`);
   }
 
   // Assign stable eligibility rule slots for the three HQ eligibility attachments.
@@ -240,7 +240,7 @@ export function getSyntheticCatalogFromManifest(): QuestionnaireCatalog {
 
   return assertValidQuestionnaireCatalog({
     questionnaireVersion: 'architecture_synthetic_manifest_v1',
-    specificationVersion: 'compatibility_profile_categories_1_7_v10',
+    specificationVersion: 'compatibility_profile_categories_1_10_v10',
     eligibilityRules,
     categories,
   });

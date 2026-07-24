@@ -51,13 +51,13 @@ const REMOVED_PROMPT_FRAGMENTS = [
 ] as const;
 
 describe('questionnaire catalog foundation', () => {
-  it('validates the live catalog with locked Categories 1 through 7', () => {
+  it('validates the live catalog with locked Categories 1 through 10', () => {
     const catalog = getQuestionnaireCatalog();
     const result = validateQuestionnaireCatalog(catalog);
     assert.equal(result.ok, true);
     assert.equal(catalog.questionnaireVersion, QUESTIONNAIRE_VERSION);
     assert.equal(catalog.specificationVersion, SPECIFICATION_VERSION);
-    assert.equal(catalog.categories.length, 7);
+    assert.equal(catalog.categories.length, 10);
     assert.equal(catalog.categories[0].title, 'Relationship Vision & Intentions');
     assert.equal(catalog.categories[0].status, 'locked');
     assert.equal(catalog.categories[0].questions.length, 10);
@@ -67,7 +67,14 @@ describe('questionnaire catalog foundation', () => {
     assert.equal(catalog.categories[4].title, 'Commitment & Partnership');
     assert.equal(catalog.categories[5].title, 'Family, Children & Parenting');
     assert.equal(catalog.categories[6].title, 'Faith, Spirituality & Worldview');
-    assert.equal(catalog.eligibilityRules.length, 1);
+    assert.equal(catalog.categories[7].title, 'Politics, Civic Life & Social Issues');
+    assert.equal(catalog.categories[8].title, 'Service, Community & Contribution');
+    assert.equal(catalog.categories[9].title, 'Integrity, Honesty & Trust');
+    assert.equal(catalog.eligibilityRules.length, 3);
+    assert.equal(
+      catalog.categories.reduce((sum, category) => sum + category.questions.length, 0),
+      100
+    );
     for (const category of catalog.categories) {
       assert.equal(category.questions.length, 10);
       assert.equal(category.status, 'locked');
@@ -299,7 +306,7 @@ describe('questionnaire migration privacy and integrity', () => {
 
   it('seeds Category 1 title, 10 questions, and selection limits', () => {
     assert.match(migration, /Relationship Vision & Intentions/);
-    assert.match(migration, /compatibility_profile_categories_1_7_v10/);
+    assert.match(migration, /compatibility_profile_categories_1_10_v10/);
     assert.match(migration, /values_character/);
     assert.match(migration, /communication_emotional_connection/);
     assert.match(migration, /conflict_repair/);
