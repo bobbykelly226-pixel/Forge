@@ -23,7 +23,8 @@ export type PersistedQuestionAnswer = {
   priorityChoiceIds: string[];
   choiceContexts: Record<string, string>;
   identity: PersistedIdentityFields;
-  clientMutation: number;
+  /** Server authoritative compare-and-swap revision for this question. */
+  revision: number;
   responseState?: ResponseState;
   activeQualifiers?: ResponseQualifier[];
 };
@@ -37,7 +38,7 @@ export function emptyPersistedAnswer(): PersistedQuestionAnswer {
       publicDisplayAllowed: false,
       privateMatchingAllowed: false,
     },
-    clientMutation: 0,
+    revision: 0,
   };
 }
 
@@ -119,7 +120,7 @@ export function sanitizeAnswerAgainstCatalog(
     priorityChoiceIds: synced.priorityChoiceIds,
     choiceContexts: contexts,
     identity,
-    clientMutation: answer.clientMutation,
+    revision: answer.revision,
     responseState: deriveSpecialResponseState(question, synced.selectedChoiceIds),
     activeQualifiers: deriveActiveQualifiers(question, synced.selectedChoiceIds),
   };

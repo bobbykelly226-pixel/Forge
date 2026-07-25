@@ -23,6 +23,7 @@ export const SAVE_STATUS_COPY = {
   saving: 'Saving',
   saved: 'Saved',
   error: 'Could not save your answer. Try again.',
+  progressError: 'Could not save your progress. Try again.',
 } as const;
 
 export const CATEGORY_COMPLETE_COPY = {

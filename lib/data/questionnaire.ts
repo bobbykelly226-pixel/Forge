@@ -54,11 +54,16 @@ function asString(value: unknown): string | null {
   return typeof value === 'string' && value.trim().length > 0 ? value : null;
 }
 
+function asFiniteNumber(value: unknown, fallback = 0): number {
+  return typeof value === 'number' && Number.isFinite(value) ? value : fallback;
+}
+
 export type LoadedQuestionnaireProgress = {
   status: 'not_started' | 'in_progress' | 'completed';
   categoryKey: string | null;
   questionKey: string | null;
   phase: 'intro' | 'base' | 'priority' | 'complete' | null;
+  writeGeneration: number;
   startedAt: string | null;
   completedAt: string | null;
   updatedAt: string | null;
@@ -68,6 +73,7 @@ export type LoadedQuestionnaireState = {
   versionKey: string;
   progress: LoadedQuestionnaireProgress;
   answersByCategory: Record<number, Record<string, PersistedQuestionAnswer>>;
+  writeGeneration: number;
 };
 
 function questionByKey(categories: CategoryDefinition[], questionKey: string) {
@@ -101,6 +107,8 @@ export async function loadMyQuestionnaireState(): Promise<
       ? (result.data.progress as Record<string, unknown>)
       : {};
 
+  const writeGeneration = asFiniteNumber(progressRaw.write_generation, 0);
+
   const progress: LoadedQuestionnaireProgress = {
     status:
       progressRaw.status === 'completed' ||
@@ -117,6 +125,7 @@ export async function loadMyQuestionnaireState(): Promise<
       progressRaw.phase === 'complete'
         ? progressRaw.phase
         : null,
+    writeGeneration,
     startedAt: asString(progressRaw.started_at),
     completedAt: asString(progressRaw.completed_at),
     updatedAt: asString(progressRaw.updated_at),
@@ -132,6 +141,11 @@ export async function loadMyQuestionnaireState(): Promise<
     if (!questionKey) continue;
     const located = questionByKey(catalog.categories, questionKey);
     if (!located) continue;
+
+    const revision = asFiniteNumber(
+      r.revision ?? r.client_mutation,
+      0
+    );
 
     const selectedRows = Array.isArray(r.selected_choices) ? r.selected_choices : [];
     const selectedChoiceIds: string[] = [];
@@ -150,6 +164,18 @@ export async function loadMyQuestionnaireState(): Promise<
       ? r.priority_choice_keys.filter((item): item is string => typeof item === 'string')
       : [];
 
+    // Preserve tombstone revisions so delayed clears/saves keep compare-and-swap integrity.
+    if (r.response_state === 'unanswered' && selectedChoiceIds.length === 0) {
+      if (!answersByCategory[located.category.number]) {
+        answersByCategory[located.category.number] = {};
+      }
+      answersByCategory[located.category.number][questionKey] = {
+        ...emptyPersistedAnswer(),
+        revision,
+      };
+      continue;
+    }
+
     const answer = sanitizeAnswerAgainstCatalog(located.question, {
       selectedChoiceIds,
       priorityChoiceIds,
@@ -166,10 +192,7 @@ export async function loadMyQuestionnaireState(): Promise<
             ? r.identity_private_matching_allowed
             : false,
       },
-      clientMutation:
-        typeof r.client_mutation === 'number' && Number.isFinite(r.client_mutation)
-          ? r.client_mutation
-          : 0,
+      revision,
       responseState:
         typeof r.response_state === 'string'
           ? (r.response_state as ResponseState)
@@ -193,14 +216,21 @@ export async function loadMyQuestionnaireState(): Promise<
       versionKey: QUESTIONNAIRE_VERSION,
       progress,
       answersByCategory,
+      writeGeneration,
     },
   };
 }
 
+export type SaveResponseResult = {
+  revision: number;
+  writeGeneration: number;
+};
+
 export async function saveMyQuestionnaireResponse(input: {
   questionKey: string;
   answer: PersistedQuestionAnswer;
-}): Promise<DataAccessResult<{ clientMutation: number }>> {
+  expectedWriteGeneration: number;
+}): Promise<DataAccessResult<SaveResponseResult>> {
   const { supabase, user } = await requireUser();
   if (!user) return { success: false, message: 'You must be signed in.' };
 
@@ -212,7 +242,11 @@ export async function saveMyQuestionnaireResponse(input: {
 
   const sanitized = sanitizeAnswerAgainstCatalog(located.question, input.answer);
   if (sanitized.selectedChoiceIds.length === 0) {
-    return clearMyQuestionnaireQuestion(input.questionKey);
+    return clearMyQuestionnaireQuestion({
+      questionKey: input.questionKey,
+      expectedRevision: sanitized.revision,
+      expectedWriteGeneration: input.expectedWriteGeneration,
+    });
   }
 
   const choiceContexts: Record<string, string> = {};
@@ -235,7 +269,7 @@ export async function saveMyQuestionnaireResponse(input: {
     };
   }
 
-  const mutation = Math.max(sanitized.clientMutation, 1);
+  // Server derives response_state and qualifiers. Do not send client values.
   const { data, error } = await supabase.rpc('save_my_questionnaire_response', {
     p_version_key: QUESTIONNAIRE_VERSION,
     p_question_key: input.questionKey,
@@ -243,9 +277,8 @@ export async function saveMyQuestionnaireResponse(input: {
     p_priority_choice_keys: sanitized.priorityChoiceIds,
     p_choice_contexts: choiceContexts,
     p_identity: identity,
-    p_client_mutation: mutation,
-    p_response_state: sanitized.responseState ?? 'answered',
-    p_active_qualifiers: sanitized.activeQualifiers ?? [],
+    p_expected_revision: sanitized.revision,
+    p_expected_write_generation: input.expectedWriteGeneration,
   });
 
   const result = rpcResult(data, error, 'Could not save your answer. Try again.');
@@ -256,35 +289,49 @@ export async function saveMyQuestionnaireResponse(input: {
   return {
     success: true,
     data: {
-      clientMutation:
-        typeof result.data?.client_mutation === 'number'
-          ? (result.data.client_mutation as number)
-          : mutation,
+      revision: asFiniteNumber(result.data?.revision, sanitized.revision + 1),
+      writeGeneration: asFiniteNumber(
+        result.data?.write_generation,
+        input.expectedWriteGeneration
+      ),
     },
   };
 }
 
-export async function clearMyQuestionnaireQuestion(
-  questionKey: string
-): Promise<DataAccessResult<{ clientMutation: number }>> {
+export async function clearMyQuestionnaireQuestion(input: {
+  questionKey: string;
+  expectedRevision: number;
+  expectedWriteGeneration: number;
+}): Promise<DataAccessResult<SaveResponseResult>> {
   const { supabase, user } = await requireUser();
   if (!user) return { success: false, message: 'You must be signed in.' };
 
   const { data, error } = await supabase.rpc('clear_my_questionnaire_question', {
     p_version_key: QUESTIONNAIRE_VERSION,
-    p_question_key: questionKey,
+    p_question_key: input.questionKey,
+    p_expected_revision: input.expectedRevision,
+    p_expected_write_generation: input.expectedWriteGeneration,
   });
   const result = rpcResult(data, error, 'Could not clear this answer. Try again.');
   if (!result.success) return { success: false, message: result.message };
-  return { success: true, data: { clientMutation: 0 } };
+  return {
+    success: true,
+    data: {
+      revision: asFiniteNumber(result.data?.revision, input.expectedRevision + 1),
+      writeGeneration: asFiniteNumber(
+        result.data?.write_generation,
+        input.expectedWriteGeneration
+      ),
+    },
+  };
 }
 
 export async function saveMyQuestionnaireProgressPosition(input: {
   categoryKey?: string | null;
   questionKey?: string | null;
   phase?: 'intro' | 'base' | 'priority' | 'complete' | null;
-  status?: 'not_started' | 'in_progress' | 'completed' | null;
-}): Promise<DataAccessResult<true>> {
+  expectedWriteGeneration: number;
+}): Promise<DataAccessResult<{ writeGeneration: number; status?: string }>> {
   const { supabase, user } = await requireUser();
   if (!user) return { success: false, message: 'You must be signed in.' };
 
@@ -293,34 +340,56 @@ export async function saveMyQuestionnaireProgressPosition(input: {
     p_category_key: input.categoryKey ?? undefined,
     p_question_key: input.questionKey ?? undefined,
     p_phase: input.phase ?? undefined,
-    p_status: input.status ?? undefined,
+    p_expected_write_generation: input.expectedWriteGeneration,
   });
   const result = rpcResult(data, error, 'Could not save your progress. Try again.');
   if (!result.success) return { success: false, message: result.message };
-  return { success: true, data: true };
+  return {
+    success: true,
+    data: {
+      writeGeneration: asFiniteNumber(
+        result.data?.write_generation,
+        input.expectedWriteGeneration
+      ),
+      status: typeof result.data?.status === 'string' ? result.data.status : undefined,
+    },
+  };
 }
 
-export async function clearMyQuestionnaireCategory(
-  categoryKey: string
-): Promise<DataAccessResult<true>> {
+export async function clearMyQuestionnaireCategory(input: {
+  categoryKey: string;
+  expectedWriteGeneration: number;
+}): Promise<DataAccessResult<{ writeGeneration: number }>> {
   const { supabase, user } = await requireUser();
   if (!user) return { success: false, message: 'You must be signed in.' };
 
   const { data, error } = await supabase.rpc('clear_my_questionnaire_category', {
     p_version_key: QUESTIONNAIRE_VERSION,
-    p_category_key: categoryKey,
+    p_category_key: input.categoryKey,
+    p_expected_write_generation: input.expectedWriteGeneration,
   });
   const result = rpcResult(data, error, 'Could not restart this category. Try again.');
   if (!result.success) return { success: false, message: result.message };
-  return { success: true, data: true };
+  return {
+    success: true,
+    data: {
+      writeGeneration: asFiniteNumber(
+        result.data?.write_generation,
+        input.expectedWriteGeneration + 1
+      ),
+    },
+  };
 }
 
-export async function clearMyQuestionnaireProfile(): Promise<DataAccessResult<true>> {
+export async function clearMyQuestionnaireProfile(input: {
+  expectedWriteGeneration: number;
+}): Promise<DataAccessResult<{ writeGeneration: number }>> {
   const { supabase, user } = await requireUser();
   if (!user) return { success: false, message: 'You must be signed in.' };
 
   const { data, error } = await supabase.rpc('clear_my_questionnaire_profile', {
     p_version_key: QUESTIONNAIRE_VERSION,
+    p_expected_write_generation: input.expectedWriteGeneration,
   });
   const result = rpcResult(
     data,
@@ -328,7 +397,15 @@ export async function clearMyQuestionnaireProfile(): Promise<DataAccessResult<tr
     'Could not restart your Compatibility Profile. Try again.'
   );
   if (!result.success) return { success: false, message: result.message };
-  return { success: true, data: true };
+  return {
+    success: true,
+    data: {
+      writeGeneration: asFiniteNumber(
+        result.data?.write_generation,
+        input.expectedWriteGeneration + 1
+      ),
+    },
+  };
 }
 
 export async function loadParentingEligibilityProfile(): Promise<

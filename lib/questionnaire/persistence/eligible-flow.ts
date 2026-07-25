@@ -55,7 +55,7 @@ export function firstIncompleteEligibleIndex(
           priorityChoiceIds: [],
           choiceContexts: {},
           identity: {},
-          clientMutation: 0,
+          revision: 0,
         }
       )
     ) {

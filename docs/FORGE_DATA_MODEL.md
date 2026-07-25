@@ -2,7 +2,21 @@
 
 Authoritative documentation for the Forge Backend Foundation persistence layer.
 
-**Remote migration status (verified 2026-07-24 during Compatibility Profile Persistence V1):** This cloud agent environment has **no linked Supabase project** (`npx supabase migration list --linked` returns `LegacyProjectNotLinkedError`). No `SUPABASE_ACCESS_TOKEN`, project ref link, or `NEXT_PUBLIC_SUPABASE_*` credentials are available here, so remote migration history and live schema could **not** be inspected or applied from this run. Migrations `20260723000000_questionnaire_foundation.sql` and `20260725000000_compatibility_profile_persistence_v1.sql` are present in the repository and ready to apply with `supabase db push --linked` / `supabase migration up --linked` once a project is linked. **Do not treat them as applied** until linked history and schema verify that result.
+**Remote migration status (re-diagnosed 2026-07-25 during Persistence V1 audit hardening):**
+
+| Layer | Result |
+|---|---|
+| Supabase CLI | 2.109.1 present |
+| `supabase/.temp/project-ref` | Absent |
+| Explicit `supabase link --project-ref uwgjdqzwcgbaaudbrvgx` | Failed: management auth required |
+| `SUPABASE_ACCESS_TOKEN` | Absent |
+| `SUPABASE_DB_PASSWORD` / DB URLs | Absent |
+| `npx supabase projects list` | Failed: `LegacyPlatformAuthRequiredError` (access token not provided) |
+| `supabase login --no-browser` | Failed: non-TTY cannot use automatic login; token required |
+| Network to `api.supabase.com` / project host | Reachable |
+| Classification | **Supabase management authentication is missing.** Local project link is also missing, but cannot be restored until management auth exists. App env vars (`NEXT_PUBLIC_SUPABASE_*`) are not substitutes. |
+
+Migrations `20260723000000_questionnaire_foundation.sql` and audit-hardened `20260725000000_compatibility_profile_persistence_v1.sql` remain in the repository and are **not claimed applied**.
 
 **Earlier documented status (pre-questionnaire foundation):** Linked history previously recorded `20260714000000` (`forge_backend_foundation`), `20260714060000` (`migrate_compatibility_to_profile_answers`), `20260714180000` (`discovery_connections_persistence`), `20260714190000` (`discovery_without_completion_gate`), `20260714200000` (`fix_discovery_visibility_status_write`), and `20260714210000` (`structured_profile_fields_and_location`).
 

@@ -38,7 +38,7 @@ export function isCategoryComplete(
       priorityChoiceIds: [],
       choiceContexts: {},
       identity: {},
-      clientMutation: 0,
+      revision: 0,
     })
   );
 }
@@ -54,7 +54,7 @@ export function countCompletedEligibleQuestions(
       priorityChoiceIds: [],
       choiceContexts: {},
       identity: {},
-      clientMutation: 0,
+      revision: 0,
     })
   ).length;
 }
@@ -162,7 +162,7 @@ export function firstIncompleteQuestionIndex(
         priorityChoiceIds: [],
         choiceContexts: {},
         identity: {},
-        clientMutation: 0,
+        revision: 0,
       })
     ) {
       return i;

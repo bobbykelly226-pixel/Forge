@@ -42,17 +42,20 @@ export async function loadCompatibilityProfileStateAction() {
 export async function saveCompatibilityAnswerAction(input: {
   questionKey: string;
   answer: PersistedQuestionAnswer;
-}): Promise<ActionResult<{ clientMutation: number }>> {
+  expectedWriteGeneration: number;
+}): Promise<ActionResult<{ revision: number; writeGeneration: number }>> {
   const result = await saveMyQuestionnaireResponse(input);
   if (!result.success) return { success: false, message: result.message };
   revalidateCompatibilityPaths();
   return { success: true, data: result.data };
 }
 
-export async function clearCompatibilityAnswerAction(
-  questionKey: string
-): Promise<ActionResult<{ clientMutation: number }>> {
-  const result = await clearMyQuestionnaireQuestion(questionKey);
+export async function clearCompatibilityAnswerAction(input: {
+  questionKey: string;
+  expectedRevision: number;
+  expectedWriteGeneration: number;
+}): Promise<ActionResult<{ revision: number; writeGeneration: number }>> {
+  const result = await clearMyQuestionnaireQuestion(input);
   if (!result.success) return { success: false, message: result.message };
   revalidateCompatibilityPaths();
   return { success: true, data: result.data };
@@ -62,26 +65,29 @@ export async function saveCompatibilityProgressAction(input: {
   categoryKey?: string | null;
   questionKey?: string | null;
   phase?: 'intro' | 'base' | 'priority' | 'complete' | null;
-  status?: 'not_started' | 'in_progress' | 'completed' | null;
-}): Promise<ActionResult> {
+  expectedWriteGeneration: number;
+}): Promise<ActionResult<{ writeGeneration: number; status?: string }>> {
   const result = await saveMyQuestionnaireProgressPosition(input);
   if (!result.success) return { success: false, message: result.message };
   revalidateCompatibilityPaths();
-  return { success: true };
+  return { success: true, data: result.data };
 }
 
-export async function restartCompatibilityCategoryAction(
-  categoryKey: string
-): Promise<ActionResult> {
-  const result = await clearMyQuestionnaireCategory(categoryKey);
+export async function restartCompatibilityCategoryAction(input: {
+  categoryKey: string;
+  expectedWriteGeneration: number;
+}): Promise<ActionResult<{ writeGeneration: number }>> {
+  const result = await clearMyQuestionnaireCategory(input);
   if (!result.success) return { success: false, message: result.message };
   revalidateCompatibilityPaths();
-  return { success: true };
+  return { success: true, data: result.data };
 }
 
-export async function restartCompatibilityProfileAction(): Promise<ActionResult> {
-  const result = await clearMyQuestionnaireProfile();
+export async function restartCompatibilityProfileAction(input: {
+  expectedWriteGeneration: number;
+}): Promise<ActionResult<{ writeGeneration: number }>> {
+  const result = await clearMyQuestionnaireProfile(input);
   if (!result.success) return { success: false, message: result.message };
   revalidateCompatibilityPaths();
-  return { success: true };
+  return { success: true, data: result.data };
 }

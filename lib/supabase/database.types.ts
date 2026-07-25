@@ -1048,6 +1048,7 @@ export type Database = {
           updated_at: string
           user_id: string
           version_id: string
+          write_generation: number
         }
         Insert: {
           completed_at?: string | null
@@ -1060,6 +1061,7 @@ export type Database = {
           updated_at?: string
           user_id: string
           version_id: string
+          write_generation?: number
         }
         Update: {
           completed_at?: string | null
@@ -1072,6 +1074,7 @@ export type Database = {
           updated_at?: string
           user_id?: string
           version_id?: string
+          write_generation?: number
         }
         Relationships: []
       }
@@ -1079,6 +1082,7 @@ export type Database = {
         Row: {
           active_qualifiers: Database["public"]["Enums"]["questionnaire_response_qualifier"][]
           client_mutation: number
+          revision: number
           created_at: string
           id: string
           identity_private_matching_allowed: boolean | null
@@ -1094,6 +1098,7 @@ export type Database = {
         Insert: {
           active_qualifiers?: Database["public"]["Enums"]["questionnaire_response_qualifier"][]
           client_mutation?: number
+          revision?: number
           created_at?: string
           id?: string
           identity_private_matching_allowed?: boolean | null
@@ -1109,6 +1114,7 @@ export type Database = {
         Update: {
           active_qualifiers?: Database["public"]["Enums"]["questionnaire_response_qualifier"][]
           client_mutation?: number
+          revision?: number
           created_at?: string
           id?: string
           identity_private_matching_allowed?: boolean | null
@@ -1524,15 +1530,24 @@ export type Database = {
       }
       withdraw_interest: { Args: { p_recipient_id: string }; Returns: Json }
       clear_my_questionnaire_category: {
-        Args: { p_category_key: string; p_version_key: string }
+        Args: {
+          p_category_key: string
+          p_expected_write_generation?: number
+          p_version_key: string
+        }
         Returns: Json
       }
       clear_my_questionnaire_profile: {
-        Args: { p_version_key: string }
+        Args: { p_expected_write_generation?: number; p_version_key: string }
         Returns: Json
       }
       clear_my_questionnaire_question: {
-        Args: { p_question_key: string; p_version_key: string }
+        Args: {
+          p_expected_revision?: number
+          p_expected_write_generation?: number
+          p_question_key: string
+          p_version_key: string
+        }
         Returns: Json
       }
       forge_active_questionnaire_version_id: { Args: never; Returns: string }
@@ -1543,23 +1558,22 @@ export type Database = {
       save_my_questionnaire_progress_position: {
         Args: {
           p_category_key?: string
+          p_expected_write_generation?: number
           p_phase?: string
           p_question_key?: string
-          p_status?: string
           p_version_key: string
         }
         Returns: Json
       }
       save_my_questionnaire_response: {
         Args: {
-          p_active_qualifiers?: Database["public"]["Enums"]["questionnaire_response_qualifier"][]
           p_choice_contexts?: Json
           p_choice_keys: string[]
-          p_client_mutation?: number
+          p_expected_revision?: number
+          p_expected_write_generation?: number
           p_identity?: Json
           p_priority_choice_keys?: string[]
           p_question_key: string
-          p_response_state?: Database["public"]["Enums"]["questionnaire_response_state"]
           p_version_key: string
         }
         Returns: Json

@@ -73,6 +73,7 @@ export default async function CompatibilityProfilePage() {
           categories={catalog.categories}
           initialAnswersByCategory={loaded.data.state.answersByCategory}
           initialProgress={loaded.data.state.progress}
+          initialWriteGeneration={loaded.data.state.writeGeneration}
           parentingProfile={loaded.data.parentingProfile}
         />
       </main>

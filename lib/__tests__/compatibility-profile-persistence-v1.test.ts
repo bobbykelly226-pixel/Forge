@@ -133,7 +133,7 @@ describe('Compatibility Profile Persistence V1', () => {
     const sanitized = sanitizeAnswerAgainstCatalog(question, {
       ...emptyPersistedAnswer(),
       selectedChoiceIds: [foreign, question.choices[0].id],
-      clientMutation: 1,
+      revision: 1,
     });
     assert.deepEqual(sanitized.selectedChoiceIds, [question.choices[0].id]);
     assert.ok(!sanitized.selectedChoiceIds.includes(foreign));
@@ -165,7 +165,7 @@ describe('Compatibility Profile Persistence V1', () => {
           ...answer,
           selectedChoiceIds: result.answer.selectedChoiceIds,
           priorityChoiceIds: result.answer.priorityChoiceIds,
-          clientMutation: answer.clientMutation + 1,
+          revision: answer.revision + 1,
         });
       }
     }
@@ -247,7 +247,7 @@ describe('Compatibility Profile Persistence V1', () => {
         [openChoice.id]: 'Private context note',
         [closedChoice.id]: 'Should not persist',
       },
-      clientMutation: 1,
+      revision: 1,
     });
     assert.equal(sanitized.choiceContexts[openChoice.id], 'Private context note');
     assert.equal(sanitized.choiceContexts[closedChoice.id], undefined);
@@ -285,7 +285,7 @@ describe('Compatibility Profile Persistence V1', () => {
         publicDisplayAllowed: true,
         privateMatchingAllowed: false,
       },
-      clientMutation: 1,
+      revision: 1,
     });
     assert.equal(sanitized.identity.refinement, 'More detail');
     assert.equal(sanitized.identity.userSupplied, 'Custom label');
@@ -294,7 +294,7 @@ describe('Compatibility Profile Persistence V1', () => {
     const defaults = sanitizeAnswerAgainstCatalog(politics, {
       ...emptyPersistedAnswer(),
       selectedChoiceIds: [politics.choices[0].id],
-      clientMutation: 1,
+      revision: 1,
     });
     assert.equal(defaults.identity.publicDisplayAllowed, false);
     assert.equal(defaults.identity.privateMatchingAllowed, false);
@@ -369,7 +369,7 @@ describe('Compatibility Profile Persistence V1', () => {
           .slice(0, question.minSelections)
           .map((choice) => choice.id),
         priorityChoiceIds: [],
-        clientMutation: 1,
+        revision: 1,
       });
       if (shouldShowPriorityFollowUp(question, answers[question.id].selectedChoiceIds)) {
         const need = question.priorityFollowUp?.selectionCount ?? 2;
@@ -383,7 +383,7 @@ describe('Compatibility Profile Persistence V1', () => {
     answers[q9.id] = sanitizeAnswerAgainstCatalog(q9, {
       ...emptyPersistedAnswer(),
       selectedChoiceIds: [q9.choices[0].id],
-      clientMutation: 1,
+      revision: 1,
     });
 
     const ineligibleProfile = {
@@ -425,7 +425,7 @@ describe('Compatibility Profile Persistence V1', () => {
         let answer = sanitizeAnswerAgainstCatalog(question, {
           ...emptyPersistedAnswer(),
           selectedChoiceIds: selected,
-          clientMutation: 1,
+          revision: 1,
         });
         if (shouldShowPriorityFollowUp(question, answer.selectedChoiceIds)) {
           const need = question.priorityFollowUp?.selectionCount ?? 2;
@@ -437,13 +437,13 @@ describe('Compatibility Profile Persistence V1', () => {
             answer = sanitizeAnswerAgainstCatalog(question, {
               ...answer,
               selectedChoiceIds: [...answer.selectedChoiceIds, extra.id],
-              clientMutation: answer.clientMutation + 1,
+              revision: answer.revision + 1,
             });
           }
           answer = sanitizeAnswerAgainstCatalog(question, {
             ...answer,
             priorityChoiceIds: answer.selectedChoiceIds.slice(0, need),
-            clientMutation: answer.clientMutation + 1,
+            revision: answer.revision + 1,
           });
         }
         assert.equal(isPersistedAnswerComplete(question, answer), true);
@@ -467,18 +467,18 @@ describe('Compatibility Profile Persistence V1', () => {
     const first = queue.enqueue('q1', 1, async () => {
       await slowGate;
       order.push(1);
-      return { success: true as const, data: { clientMutation: 1 } };
+      return { success: true as const, data: { revision: 1 } };
     });
     const second = queue.enqueue('q1', 2, async () => {
       order.push(2);
-      return { success: true as const, data: { clientMutation: 2 } };
+      return { success: true as const, data: { revision: 2 } };
     });
 
     resolveSlow?.();
     const [firstResult, secondResult] = await Promise.all([first, second]);
     assert.equal(secondResult.ok, true);
     if (secondResult.ok && !secondResult.superseded) {
-      assert.equal(secondResult.data.clientMutation, 2);
+      assert.equal(secondResult.data.revision, 2);
     }
     assert.ok(firstResult.ok);
     // Mutation 1 is superseded once mutation 2 is queued, so only the latest run persists.
@@ -566,8 +566,10 @@ describe('Compatibility Profile Persistence V1', () => {
     assert.match(types, /user_questionnaire_responses/);
     assert.match(types, /user_questionnaire_selected_choices/);
     assert.match(types, /user_questionnaire_priority_selections/);
-    assert.match(migration, /client_mutation/);
-    assert.match(migration, /stale_mutation/);
+    assert.match(migration, /revision/);
+    assert.match(migration, /write_generation/);
+    assert.match(migration, /stale_revision/);
+    assert.match(migration, /stale_generation/);
   });
 
   it('does not install a new runtime dependency for this build', () => {
