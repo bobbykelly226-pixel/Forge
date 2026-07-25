@@ -47,7 +47,7 @@ import {
   toEligibleCategoryView,
 } from '@/lib/questionnaire/persistence/eligible-flow';
 import { SAVE_STATUS_COPY } from '@/lib/questionnaire/persistence/copy';
-import { QuestionSaveQueue } from '@/lib/questionnaire/persistence/save-queue';
+import { QuestionSaveWorker } from '@/lib/questionnaire/persistence/save-worker';
 import type { LoadedQuestionnaireProgress } from '@/lib/data/questionnaire';
 import type { CategoryDefinition } from '@/lib/questionnaire/types';
 import {
@@ -90,7 +90,10 @@ function categoryStatus(
 ): CategoryDirectoryItem['status'] {
   if (isCategoryComplete(category, answers, profile)) return 'complete';
   const hasAny = Object.values(answers).some(
-    (answer) => answer.selectedChoiceIds.length > 0
+    (answer) =>
+      answer.selectedChoiceIds.length > 0 ||
+      answer.responseState === 'answered' ||
+      (answer.revision > 0 && answer.responseState !== 'unanswered')
   );
   return hasAny ? 'in_progress' : 'not_started';
 }
@@ -105,6 +108,8 @@ export default function CompatibilityProfileShell({
   const [step, setStep] = useState<PreviewStep>({ kind: 'directory' });
   const [answersByCategory, setAnswersByCategory] = useState(initialAnswersByCategory);
   const [writeGeneration, setWriteGeneration] = useState(initialWriteGeneration);
+  const [savedProgress, setSavedProgress] =
+    useState<LoadedQuestionnaireProgress>(initialProgress);
   const [saveStatus, setSaveStatus] = useState<SaveStatusKind>('idle');
   const [saveError, setSaveError] = useState<string | null>(null);
   const [continueBusy, setContinueBusy] = useState(false);
@@ -116,8 +121,7 @@ export default function CompatibilityProfileShell({
     questionKey?: string | null;
     phase?: 'intro' | 'base' | 'priority' | 'complete' | null;
   } | null>(null);
-  const saveQueueRef = useRef(new QuestionSaveQueue());
-  const saveTokenRef = useRef(new Map<string, number>());
+  const saveWorkerRef = useRef(new QuestionSaveWorker());
   const pendingAnswerRef = useRef<{
     questionKey: string;
     answer: PersistedQuestionAnswer;
@@ -128,6 +132,15 @@ export default function CompatibilityProfileShell({
   useEffect(() => {
     writeGenerationRef.current = writeGeneration;
   }, [writeGeneration]);
+
+  useEffect(() => {
+    // Seed per-question revisions so the first save uses the loaded CAS values.
+    for (const answers of Object.values(initialAnswersByCategory)) {
+      for (const [questionKey, answer] of Object.entries(answers)) {
+        saveWorkerRef.current.setRevision(questionKey, answer.revision);
+      }
+    }
+  }, [initialAnswersByCategory]);
 
   const categoriesByNumber = useMemo(
     () => new Map(categories.map((category) => [category.number, category])),
@@ -214,6 +227,22 @@ export default function CompatibilityProfileShell({
       setWriteGeneration(outcome.data.writeGeneration);
       writeGenerationRef.current = outcome.data.writeGeneration;
     }
+    setSavedProgress((prev) => ({
+      ...prev,
+      categoryKey: input.categoryKey ?? null,
+      questionKey: input.questionKey ?? null,
+      phase: input.phase ?? null,
+      status:
+        outcome.data?.status === 'completed' ||
+        outcome.data?.status === 'in_progress' ||
+        outcome.data?.status === 'not_started'
+          ? outcome.data.status
+          : prev.status,
+      writeGeneration:
+        typeof outcome.data?.writeGeneration === 'number'
+          ? outcome.data.writeGeneration
+          : prev.writeGeneration,
+    }));
     setPendingProgress(null);
     setSaveStatus('saved');
     return true;
@@ -224,8 +253,6 @@ export default function CompatibilityProfileShell({
     answer: PersistedQuestionAnswer
   ): Promise<boolean> {
     const sanitized = sanitizeAnswerAgainstCatalog(question, answer);
-    const nextToken = (saveTokenRef.current.get(question.id) ?? 0) + 1;
-    saveTokenRef.current.set(question.id, nextToken);
     pendingAnswerRef.current = {
       questionKey: question.id,
       answer: sanitized,
@@ -233,36 +260,55 @@ export default function CompatibilityProfileShell({
     setSaveStatus('saving');
     setSaveError(null);
 
-    const result = await saveQueueRef.current.enqueue(
+    const generation = saveWorkerRef.current.getGeneration();
+    const result = await saveWorkerRef.current.enqueue(
       question.id,
-      nextToken,
-      async () => {
+      { answer: sanitized, generation },
+      async ({ answer: desired, expectedRevision, operationId }) => {
         const outcome = await saveCompatibilityAnswerAction({
           questionKey: question.id,
-          answer: sanitized,
+          answer: desired,
+          expectedRevision,
           expectedWriteGeneration: writeGenerationRef.current,
+          operationId,
         });
         if (!outcome.success) {
-          return { success: false as const, message: outcome.message };
+          const code = outcome.message.includes('newer answer')
+            ? 'stale_revision'
+            : outcome.message.includes('restarted')
+              ? 'stale_generation'
+              : undefined;
+          return {
+            success: false as const,
+            message: outcome.message,
+            code,
+          };
         }
         return {
           success: true as const,
-          data: outcome.data ?? {
-            revision: sanitized.revision + 1,
-            writeGeneration: writeGenerationRef.current,
+          data: {
+            revision: outcome.data?.revision ?? expectedRevision + 1,
+            writeGeneration:
+              outcome.data?.writeGeneration ?? writeGenerationRef.current,
+            operationId: outcome.data?.operationId ?? operationId,
           },
         };
       }
     );
 
-    if (result.ok && result.superseded) {
-      return true;
-    }
     if (!result.ok) {
+      if (result.cancelled) {
+        return false;
+      }
       setSaveStatus('error');
       setSaveError(result.message || SAVE_STATUS_COPY.error);
       return false;
     }
+
+    const latestDesired =
+      pendingAnswerRef.current?.questionKey === question.id
+        ? pendingAnswerRef.current.answer
+        : sanitized;
 
     setAnswersByCategory((prev) => {
       const category = categories.find((item) =>
@@ -274,8 +320,15 @@ export default function CompatibilityProfileShell({
         [category.number]: {
           ...(prev[category.number] ?? {}),
           [question.id]: {
-            ...sanitized,
+            ...latestDesired,
             revision: result.data.revision,
+            responseState:
+              latestDesired.selectedChoiceIds.length === 0 &&
+              question.minSelections === 0
+                ? 'answered'
+                : latestDesired.selectedChoiceIds.length === 0
+                  ? 'unanswered'
+                  : latestDesired.responseState,
           },
         },
       };
@@ -339,16 +392,16 @@ export default function CompatibilityProfileShell({
     let phase: 'base' | 'priority' = 'base';
 
     if (
-      initialProgress.categoryKey === category.id &&
-      initialProgress.questionKey &&
-      (initialProgress.phase === 'base' || initialProgress.phase === 'priority')
+      savedProgress.categoryKey === category.id &&
+      savedProgress.questionKey &&
+      (savedProgress.phase === 'base' || savedProgress.phase === 'priority')
     ) {
       const resumed = eligible.questions.findIndex(
-        (question) => question.id === initialProgress.questionKey
+        (question) => question.id === savedProgress.questionKey
       );
       if (resumed >= 0) {
         questionIndex = resumed;
-        phase = initialProgress.phase;
+        phase = savedProgress.phase;
       }
     }
 
@@ -383,18 +436,18 @@ export default function CompatibilityProfileShell({
     if (!category) return;
     const eligible = toEligibleCategoryView(category, parentingProfile);
     const question = eligible.questions[0];
-    setStep({
-      kind: 'question',
-      categoryNumber,
-      questionIndex: 0,
-      phase: 'base',
-    });
     const saved = await persistProgress({
       categoryKey: category.id,
       questionKey: question?.id ?? null,
       phase: 'base',
     });
     if (!saved) return;
+    setStep({
+      kind: 'question',
+      categoryNumber,
+      questionIndex: 0,
+      phase: 'base',
+    });
   }
 
   async function handleToggleBase(
@@ -522,7 +575,6 @@ export default function CompatibilityProfileShell({
         parentingProfile
       );
       const nextStep = fromCategoryFlowStep(category.number, next);
-      setStep(nextStep);
 
       if (next.kind === 'complete') {
         const nextAnswers = {
@@ -540,9 +592,7 @@ export default function CompatibilityProfileShell({
           phase: 'complete',
         });
         if (!progressSaved) return;
-        if (allDone) {
-          setStep({ kind: 'all_complete' });
-        }
+        setStep(allDone ? { kind: 'all_complete' } : nextStep);
         return;
       }
 
@@ -555,25 +605,62 @@ export default function CompatibilityProfileShell({
           phase: next.phase,
         });
         if (!progressSaved) return;
+        setStep(nextStep);
+        return;
+      }
+
+      if (next.kind === 'intro') {
+        const progressSaved = await persistProgress({
+          categoryKey: category.id,
+          questionKey: null,
+          phase: 'intro',
+        });
+        if (!progressSaved) return;
+        setStep(nextStep);
       }
     } finally {
       setContinueBusy(false);
     }
   }
 
-  function handleBack(category: CategoryDefinition) {
+  async function handleBack(category: CategoryDefinition) {
     const flowStep = toCategoryFlowStep(step);
     if (!flowStep) return;
     const answers = answersByCategory[category.number] ?? {};
     const next = retreatEligible(category, flowStep, answers, parentingProfile);
-    setStep(fromCategoryFlowStep(category.number, next));
+    const nextStep = fromCategoryFlowStep(category.number, next);
+
+    if (next.kind === 'intro') {
+      const saved = await persistProgress({
+        categoryKey: category.id,
+        questionKey: null,
+        phase: 'intro',
+      });
+      if (!saved) return;
+      setStep(nextStep);
+      return;
+    }
+
+    if (next.kind === 'question') {
+      const eligible = toEligibleCategoryView(category, parentingProfile);
+      const question = eligible.questions[next.questionIndex];
+      const saved = await persistProgress({
+        categoryKey: category.id,
+        questionKey: question?.id ?? null,
+        phase: next.phase,
+      });
+      if (!saved) return;
+      setStep(nextStep);
+    }
   }
 
   async function confirmCategoryRestart(category: CategoryDefinition) {
     setRestartBusy(true);
+    saveWorkerRef.current.bumpGeneration();
     const result = await restartCompatibilityCategoryAction({
       categoryKey: category.id,
       expectedWriteGeneration: writeGenerationRef.current,
+      operationId: crypto.randomUUID(),
     });
     setRestartBusy(false);
     if (!result.success) {
@@ -590,18 +677,21 @@ export default function CompatibilityProfileShell({
       [category.number]: {},
     }));
     setShowCategoryRestart(false);
-    setStep({ kind: 'intro', categoryNumber: category.number });
-    await persistProgress({
+    const saved = await persistProgress({
       categoryKey: category.id,
       questionKey: null,
       phase: 'intro',
     });
+    if (!saved) return;
+    setStep({ kind: 'intro', categoryNumber: category.number });
   }
 
   async function confirmFullRestart() {
     setRestartBusy(true);
+    saveWorkerRef.current.bumpGeneration();
     const result = await restartCompatibilityProfileAction({
       expectedWriteGeneration: writeGenerationRef.current,
+      operationId: crypto.randomUUID(),
     });
     setRestartBusy(false);
     if (!result.success) {
@@ -614,6 +704,16 @@ export default function CompatibilityProfileShell({
       writeGenerationRef.current = result.data.writeGeneration;
     }
     setAnswersByCategory({});
+    setSavedProgress({
+      status: 'not_started',
+      categoryKey: null,
+      questionKey: null,
+      phase: null,
+      writeGeneration: writeGenerationRef.current,
+      startedAt: null,
+      completedAt: null,
+      updatedAt: null,
+    });
     setShowFullRestart(false);
     setStep({ kind: 'directory' });
   }
@@ -702,16 +802,37 @@ export default function CompatibilityProfileShell({
         )}
         showRestartConfirm={showCategoryRestart}
         restartBusy={restartBusy}
-        onReview={() =>
-          setStep({
-            kind: 'question',
-            categoryNumber: category.number,
-            questionIndex: 0,
-            phase: 'base',
-          })
-        }
+        onReview={() => {
+          void (async () => {
+            const reviewQuestion = eligible.questions[0];
+            const saved = await persistProgress({
+              categoryKey: category.id,
+              questionKey: reviewQuestion?.id ?? null,
+              phase: 'base',
+            });
+            if (!saved) return;
+            setStep({
+              kind: 'question',
+              categoryNumber: category.number,
+              questionIndex: 0,
+              phase: 'base',
+            });
+          })();
+        }}
         onBackToCategories={
-          overallComplete ? () => setStep({ kind: 'all_complete' }) : backToDirectory
+          overallComplete
+            ? () => {
+                void (async () => {
+                  const saved = await persistProgress({
+                    categoryKey: null,
+                    questionKey: null,
+                    phase: null,
+                  });
+                  if (!saved) return;
+                  setStep({ kind: 'all_complete' });
+                })();
+              }
+            : () => void backToDirectory()
         }
         onRequestRestart={() => setShowCategoryRestart(true)}
         onConfirmRestart={() => void confirmCategoryRestart(category)}
@@ -811,7 +932,7 @@ export default function CompatibilityProfileShell({
         <div className="mt-8 flex flex-col-reverse gap-3 sm:flex-row sm:items-center sm:justify-between">
           <button
             type="button"
-            onClick={() => handleBack(category)}
+            onClick={() => void handleBack(category)}
             className="inline-flex min-h-12 items-center justify-center rounded-2xl border border-[color-mix(in_srgb,var(--forge-silver)_70%,transparent)] bg-white px-6 py-3 text-base font-semibold text-[var(--forge-navy)] transition hover:bg-[var(--forge-surface-soft)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--forge-navy)]"
           >
             Back

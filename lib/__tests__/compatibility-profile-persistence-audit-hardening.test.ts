@@ -8,7 +8,7 @@ import {
   sanitizeAnswerAgainstCatalog,
 } from '@/lib/questionnaire/persistence/answer-state';
 import { SAVE_STATUS_COPY } from '@/lib/questionnaire/persistence/copy';
-import { QuestionSaveQueue } from '@/lib/questionnaire/persistence/save-queue';
+import { QuestionSaveWorker } from '@/lib/questionnaire/persistence/save-worker';
 import { getQuestionnaireCatalog } from '@/lib/questionnaire/catalog';
 
 function read(path: string): string {
@@ -23,6 +23,7 @@ describe('Compatibility Profile Persistence V1 audit hardening', () => {
   const actions = read('app/actions/questionnaire.ts');
   const shell = read('components/compatibility-profile/CompatibilityProfileShell.tsx');
   const catalog = getQuestionnaireCatalog();
+  const dbTest = read('supabase/tests/compatibility_profile_persistence_v1.test.sql');
 
   it('enforces catalog integrity inside save_my_questionnaire_response', () => {
     assert.match(migration, /Too many choices were selected for this question/);
@@ -33,9 +34,10 @@ describe('Compatibility Profile Persistence V1 audit hardening', () => {
     assert.match(migration, /Priority selections must match the required count/);
     assert.match(migration, /Optional context is not enabled for one or more choices/);
     assert.match(migration, /Identity fields are not configured for this question/);
+    assert.match(migration, /Duplicate choice keys are not allowed/);
+    assert.match(migration, /Duplicate priority choice keys are not allowed/);
     assert.match(migration, /v_derived_state/);
     assert.match(migration, /v_derived_qualifiers/);
-    // Client trusted state/qualifiers removed from RPC signature.
     assert.doesNotMatch(
       migration,
       /p_response_state public\.questionnaire_response_state/
@@ -46,15 +48,53 @@ describe('Compatibility Profile Persistence V1 audit hardening', () => {
     );
   });
 
-  it('uses server authoritative revision CAS and write generation protection', () => {
+  it('closes the authenticated direct table write bypass', () => {
+    assert.match(
+      migration,
+      /revoke insert, update, delete on public\.user_questionnaire_progress/i
+    );
+    assert.match(
+      migration,
+      /revoke insert, update, delete on public\.user_questionnaire_responses/i
+    );
+    assert.match(
+      migration,
+      /revoke insert, update, delete on public\.user_questionnaire_selected_choices/i
+    );
+    assert.match(
+      migration,
+      /revoke insert, update, delete on public\.user_questionnaire_priority_selections/i
+    );
+    assert.match(migration, /drop policy if exists user_questionnaire_responses_insert_own/);
+    assert.match(migration, /drop policy if exists user_questionnaire_responses_update_own/);
+    assert.match(migration, /drop policy if exists user_questionnaire_responses_delete_own/);
+    assert.match(migration, /grant select on public\.user_questionnaire_responses to authenticated/);
+    assert.match(migration, /has_table_privilege\('authenticated'/);
+    assert.doesNotMatch(dataLayer, /\.from\('user_questionnaire_responses'\)\s*\.insert/);
+    assert.doesNotMatch(dataLayer, /\.from\('user_questionnaire_progress'\)\s*\.update/);
+    assert.doesNotMatch(shell, /\.from\('user_questionnaire_/);
+  });
+
+  it('uses server authoritative revision CAS, write generation, and operation idempotency', () => {
     assert.match(migration, /p_expected_revision/);
     assert.match(migration, /p_expected_write_generation/);
+    assert.match(migration, /p_operation_id/);
+    assert.match(migration, /user_questionnaire_write_operations/);
     assert.match(migration, /write_generation/);
     assert.match(migration, /stale_revision/);
     assert.match(migration, /stale_generation/);
     assert.match(migration, /revision = v_new_revision/);
-    // Equal expected revisions cannot rewrite without increment.
     assert.match(migration, /coalesce\(v_existing_revision, 0\) <> coalesce\(p_expected_revision, 0\)/);
+    assert.match(dataLayer, /p_operation_id/);
+    assert.match(actions, /operationId\?:/);
+  });
+
+  it('persists explicit empty answers for min_selections = 0 without tombstoning them', () => {
+    assert.match(migration, /min_selections = 0/);
+    assert.match(migration, /Empty choices: optional questions/);
+    assert.match(migration, /v_derived_state := 'answered'/);
+    assert.match(dataLayer, /minSelections > 0/);
+    assert.match(dbTest, /family_children_parenting_q04/);
   });
 
   it('keeps clear tombstones so delayed saves cannot resurrect cleared answers', () => {
@@ -63,7 +103,6 @@ describe('Compatibility Profile Persistence V1 audit hardening', () => {
       migration,
       /create or replace function public\.clear_my_questionnaire_question/
     );
-    // Clear must bump revision rather than hard-delete without a tombstone path.
     assert.match(
       migration,
       /clear_my_questionnaire_question[\s\S]*revision = v_new_revision/
@@ -80,6 +119,7 @@ describe('Compatibility Profile Persistence V1 audit hardening', () => {
       migration,
       /clear_my_questionnaire_profile[\s\S]*write_generation = v_new_generation/
     );
+    assert.match(shell, /saveWorkerRef\.current\.bumpGeneration/);
   });
 
   it('derives completion in the database and rejects client completed status', () => {
@@ -90,6 +130,7 @@ describe('Compatibility Profile Persistence V1 audit hardening', () => {
       migration,
       /forge_user_open_to_parenting_or_stepparenting_role/
     );
+    assert.match(migration, /v_has_resume_position/);
     assert.doesNotMatch(
       migration,
       /p_status public\.questionnaire_progress_status/
@@ -99,10 +140,18 @@ describe('Compatibility Profile Persistence V1 audit hardening', () => {
     assert.doesNotMatch(shell, /status:\s*'completed'/);
   });
 
-  it('awaits progress saves and surfaces retriable progress failures', () => {
+  it('saves progress before navigation and keeps mutable resume state', () => {
     assert.match(shell, /async function persistProgress/);
     assert.match(shell, /await saveCompatibilityProgressAction/);
     assert.doesNotMatch(shell, /void saveCompatibilityProgressAction/);
+    assert.match(shell, /savedProgress/);
+    assert.match(shell, /setSavedProgress/);
+    assert.doesNotMatch(
+      shell,
+      /initialProgress\.categoryKey === category\.id/
+    );
+    assert.match(shell, /async function handleBegin/);
+    assert.match(shell, /async function handleBack/);
     assert.match(shell, /SAVE_STATUS_COPY\.progressError|progressError/);
     assert.match(shell, /pendingProgress/);
     assert.match(shell, /retryPendingSave/);
@@ -132,32 +181,45 @@ describe('Compatibility Profile Persistence V1 audit hardening', () => {
     assert.equal(sanitized.revision, 3);
   });
 
-  it('coalesces local save tokens without advancing server revision locally', async () => {
-    const queue = new QuestionSaveQueue();
-    const seenExpected: number[] = [];
+  it('uses QuestionSaveWorker so in-flight revision returns are always consumed', async () => {
+    assert.match(shell, /QuestionSaveWorker/);
+    assert.doesNotMatch(shell, /QuestionSaveQueue/);
+    const worker = new QuestionSaveWorker();
+    worker.setRevision('q1', 7);
+    const generation = worker.getGeneration();
     let resolveSlow: (() => void) | undefined;
     const gate = new Promise<void>((resolve) => {
       resolveSlow = resolve;
     });
+    const seen: number[] = [];
 
-    const first = queue.enqueue('q1', 1, async () => {
+    const first = worker.enqueue('q1', { answer: { n: 1 }, generation }, async (args) => {
+      seen.push(args.expectedRevision);
       await gate;
-      seenExpected.push(1);
-      return { success: true as const, data: { revision: 5 } };
+      return { success: true as const, data: { revision: 8 } };
     });
-    const second = queue.enqueue('q1', 2, async () => {
-      seenExpected.push(2);
-      return { success: true as const, data: { revision: 5 } };
+    const second = worker.enqueue('q1', { answer: { n: 2 }, generation }, async (args) => {
+      seen.push(args.expectedRevision);
+      return { success: true as const, data: { revision: 9 } };
     });
     resolveSlow?.();
     const [a, b] = await Promise.all([first, second]);
     assert.ok(a.ok);
     assert.ok(b.ok);
-    assert.ok(seenExpected.includes(2));
+    assert.deepEqual(seen, [7, 8]);
+    assert.equal(worker.getRevision('q1'), 9);
+  });
+
+  it('ships executable pgTAP database tests rather than regex-only RPC proofs', () => {
+    assert.match(dbTest, /select plan\(/);
+    assert.match(dbTest, /save_my_questionnaire_response/);
+    assert.match(dbTest, /authenticated lacks direct INSERT\/UPDATE/);
+    assert.match(dbTest, /same operation_id retry/);
+    assert.match(dbTest, /clear tombstone prevents resurrection/);
+    assert.match(dbTest, /family_children_parenting_q04/);
   });
 
   it('documents authenticated RPC bypass rejection contracts in SQL', () => {
-    // Executable against a linked DB once available.
     const contracts = [
       'One or more choices are invalid for this question.',
       'Too many choices were selected for this question.',
@@ -165,6 +227,7 @@ describe('Compatibility Profile Persistence V1 audit hardening', () => {
       'Priority choices must be selected base choices.',
       'A newer answer is already saved.',
       'Your Compatibility Profile was restarted. Reload and try again.',
+      'Duplicate choice keys are not allowed.',
     ];
     for (const message of contracts) {
       assert.match(migration, new RegExp(message.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')));

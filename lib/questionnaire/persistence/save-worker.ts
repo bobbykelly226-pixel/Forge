@@ -225,7 +225,9 @@ export class QuestionSaveWorker {
         error instanceof Error ? error.message : 'Could not save your answer. Try again.';
 
       // A newer desired for the same generation may have arrived; try that next.
-      if (slot.desired && slot.desired.generation === this.generation) {
+      // Re-read from the map: TS narrows slot.desired to null after the claim above.
+      const desiredAfterError = this.slots.get(questionKey)?.desired ?? null;
+      if (desiredAfterError && desiredAfterError.generation === this.generation) {
         void this.pump(questionKey);
         return;
       }
@@ -251,6 +253,9 @@ export class QuestionSaveWorker {
 
     slot.inFlight = false;
 
+    // Re-read after await: enqueue may have set a newer desired while we were in flight.
+    const desiredAfterFlight = this.slots.get(questionKey)?.desired ?? null;
+
     // Generation was bumped while in flight: do not resolve UI with this completion.
     if (sentGeneration !== this.generation) {
       this.resolveWaiters(slot, sentGeneration, {
@@ -259,14 +264,14 @@ export class QuestionSaveWorker {
         message: CANCELLED_MESSAGE,
         code: 'stale_generation',
       });
-      if (slot.desired && slot.desired.generation === this.generation) {
+      if (desiredAfterFlight && desiredAfterFlight.generation === this.generation) {
         void this.pump(questionKey);
       }
       return;
     }
 
     // Newer desired pending for the same generation: send it with the updated revision.
-    if (slot.desired && slot.desired.generation === this.generation) {
+    if (desiredAfterFlight && desiredAfterFlight.generation === this.generation) {
       void this.pump(questionKey);
       return;
     }

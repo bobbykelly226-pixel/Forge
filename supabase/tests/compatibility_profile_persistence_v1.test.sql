@@ -350,34 +350,18 @@ select is(
 );
 
 -- ---------------------------------------------------------------------------
--- 7. Duplicate choice keys rejected (or canonicalized without duplicate rows)
+-- 7. Duplicate choice keys rejected (no silent DISTINCT normalization)
 -- ---------------------------------------------------------------------------
-select ok(
-  (
-    with save as (
-      select pg_temp._cp_save(
-        'relationship_vision_intentions_q03',
-        array[
-          'relationship_vision_intentions_q03_c01',
-          'relationship_vision_intentions_q03_c01'
-        ]
-      ) as result
-    ),
-    rows as (
-      select count(*)::int as n
-      from public.user_questionnaire_selected_choices sc
-      join public.user_questionnaire_responses r on r.id = sc.response_id
-      join public.questionnaire_questions q on q.id = r.question_id
-      join public.questionnaire_answer_choices ac on ac.id = sc.choice_id
-      where r.user_id = auth.uid()
-        and q.question_key = 'relationship_vision_intentions_q03'
-        and ac.choice_key = 'relationship_vision_intentions_q03_c01'
-    )
-    select
-      (select result->>'ok' from save) = 'false'
-      or (select n from rows) = 1
-  ),
-  'duplicate choice keys are rejected or canonicalized to a single selected row'
+select is(
+  pg_temp._cp_save(
+    'relationship_vision_intentions_q03',
+    array[
+      'relationship_vision_intentions_q03_c01',
+      'relationship_vision_intentions_q03_c01'
+    ]
+  )->>'message',
+  'Duplicate choice keys are not allowed.',
+  'duplicate choice keys are rejected without silent DISTINCT normalization'
 );
 
 -- ---------------------------------------------------------------------------

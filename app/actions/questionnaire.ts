@@ -43,7 +43,16 @@ export async function saveCompatibilityAnswerAction(input: {
   questionKey: string;
   answer: PersistedQuestionAnswer;
   expectedWriteGeneration: number;
-}): Promise<ActionResult<{ revision: number; writeGeneration: number }>> {
+  expectedRevision?: number;
+  operationId?: string;
+}): Promise<
+  ActionResult<{
+    revision: number;
+    writeGeneration: number;
+    operationId?: string;
+    responseState?: string;
+  }>
+> {
   const result = await saveMyQuestionnaireResponse(input);
   if (!result.success) return { success: false, message: result.message };
   revalidateCompatibilityPaths();
@@ -54,7 +63,15 @@ export async function clearCompatibilityAnswerAction(input: {
   questionKey: string;
   expectedRevision: number;
   expectedWriteGeneration: number;
-}): Promise<ActionResult<{ revision: number; writeGeneration: number }>> {
+  operationId?: string;
+}): Promise<
+  ActionResult<{
+    revision: number;
+    writeGeneration: number;
+    operationId?: string;
+    responseState?: string;
+  }>
+> {
   const result = await clearMyQuestionnaireQuestion(input);
   if (!result.success) return { success: false, message: result.message };
   revalidateCompatibilityPaths();
@@ -76,6 +93,7 @@ export async function saveCompatibilityProgressAction(input: {
 export async function restartCompatibilityCategoryAction(input: {
   categoryKey: string;
   expectedWriteGeneration: number;
+  operationId?: string;
 }): Promise<ActionResult<{ writeGeneration: number }>> {
   const result = await clearMyQuestionnaireCategory(input);
   if (!result.success) return { success: false, message: result.message };
@@ -85,6 +103,7 @@ export async function restartCompatibilityCategoryAction(input: {
 
 export async function restartCompatibilityProfileAction(input: {
   expectedWriteGeneration: number;
+  operationId?: string;
 }): Promise<ActionResult<{ writeGeneration: number }>> {
   const result = await clearMyQuestionnaireProfile(input);
   if (!result.success) return { success: false, message: result.message };

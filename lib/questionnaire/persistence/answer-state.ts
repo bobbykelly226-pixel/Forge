@@ -65,7 +65,10 @@ export function deriveSpecialResponseState(
   question: QuestionDefinition,
   selectedChoiceIds: readonly string[]
 ): ResponseState {
-  if (selectedChoiceIds.length === 0) return 'unanswered';
+  // Confirmed zero selections on minSelections: 0 questions are answered, not unanswered.
+  if (selectedChoiceIds.length === 0) {
+    return question.minSelections === 0 ? 'answered' : 'unanswered';
+  }
   const selected = new Set(selectedChoiceIds);
   for (const choice of question.choices) {
     if (!selected.has(choice.id) || !choice.specialResponseState) continue;

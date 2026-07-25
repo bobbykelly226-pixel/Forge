@@ -32,7 +32,7 @@ import {
   RESTART_FULL_COPY,
   SAVE_STATUS_COPY,
 } from '@/lib/questionnaire/persistence/copy';
-import { QuestionSaveQueue } from '@/lib/questionnaire/persistence/save-queue';
+import { QuestionSaveWorker } from '@/lib/questionnaire/persistence/save-worker';
 import {
   shouldShowPriorityFollowUp,
   syncAnswerAfterBaseChange,
@@ -456,34 +456,94 @@ describe('Compatibility Profile Persistence V1', () => {
     assert.equal(countAllEligibleQuestions(catalog.categories, profile), 100);
   });
 
-  it('coalesces saves so stale mutations cannot overwrite newer answers', async () => {
-    const queue = new QuestionSaveQueue();
-    const order: number[] = [];
+  it('coalesces in-flight saves and sends the newest answer with the returned revision', async () => {
+    const worker = new QuestionSaveWorker();
+    worker.setRevision('q1', 0);
+    const generation = worker.getGeneration();
+    const seen: Array<{ value: string; revision: number }> = [];
     let resolveSlow: (() => void) | undefined;
     const slowGate = new Promise<void>((resolve) => {
       resolveSlow = resolve;
     });
 
-    const first = queue.enqueue('q1', 1, async () => {
-      await slowGate;
-      order.push(1);
-      return { success: true as const, data: { revision: 1 } };
-    });
-    const second = queue.enqueue('q1', 2, async () => {
-      order.push(2);
-      return { success: true as const, data: { revision: 2 } };
-    });
+    const first = worker.enqueue(
+      'q1',
+      { answer: { value: 'a' }, generation },
+      async (args) => {
+        seen.push({ value: args.answer.value, revision: args.expectedRevision });
+        await slowGate;
+        return { success: true as const, data: { revision: 1, operationId: args.operationId } };
+      }
+    );
+    const second = worker.enqueue(
+      'q1',
+      { answer: { value: 'b' }, generation },
+      async (args) => {
+        seen.push({ value: args.answer.value, revision: args.expectedRevision });
+        return { success: true as const, data: { revision: 2, operationId: args.operationId } };
+      }
+    );
 
+    assert.equal(seen.length, 1);
+    assert.equal(seen[0]?.revision, 0);
     resolveSlow?.();
     const [firstResult, secondResult] = await Promise.all([first, second]);
+    assert.equal(firstResult.ok, true);
     assert.equal(secondResult.ok, true);
-    if (secondResult.ok && !secondResult.superseded) {
-      assert.equal(secondResult.data.revision, 2);
+    assert.equal(seen.length, 2);
+    assert.equal(seen[1]?.value, 'b');
+    assert.equal(seen[1]?.revision, 1);
+    assert.equal(worker.getRevision('q1'), 2);
+  });
+
+  it('treats confirmed empty selections as answered for all five minSelections: 0 questions', () => {
+    const zeroSelectionQuestions = catalog.categories.flatMap((category) =>
+      category.questions
+        .filter((question) => question.minSelections === 0)
+        .map((question) => ({ category, question }))
+    );
+    assert.equal(zeroSelectionQuestions.length, 5);
+    assert.deepEqual(
+      zeroSelectionQuestions.map(({ category, question }) => [
+        category.number,
+        question.number,
+        question.id,
+      ]),
+      [
+        [6, 4, 'family_children_parenting_q04'],
+        [7, 3, 'faith_spirituality_worldview_q03'],
+        [8, 3, 'politics_civic_life_social_issues_q03'],
+        [9, 2, 'service_community_contribution_q02'],
+        [10, 2, 'integrity_honesty_trust_q02'],
+      ]
+    );
+
+    for (const { question } of zeroSelectionQuestions) {
+      const empty = sanitizeAnswerAgainstCatalog(question, emptyPersistedAnswer());
+      assert.equal(empty.selectedChoiceIds.length, 0);
+      assert.equal(deriveSpecialResponseState(question, empty.selectedChoiceIds), 'answered');
+      assert.equal(empty.responseState, 'answered');
+      assert.equal(isPersistedAnswerComplete(question, empty), true);
+      assert.notEqual(empty.responseState, 'unanswered');
     }
-    assert.ok(firstResult.ok);
-    // Mutation 1 is superseded once mutation 2 is queued, so only the latest run persists.
-    assert.ok(order.includes(2));
-    assert.equal(queue.isSuperseded('q1', 1), true);
+
+    const required = catalog.categories[0].questions[0];
+    assert.ok(required.minSelections > 0);
+    const requiredEmpty = sanitizeAnswerAgainstCatalog(required, emptyPersistedAnswer());
+    assert.equal(requiredEmpty.responseState, 'unanswered');
+    assert.equal(isPersistedAnswerComplete(required, requiredEmpty), false);
+  });
+
+  it('routes empty saves through save RPC for minSelections 0 and clear for required questions', () => {
+    const dataLayer = read('lib/data/questionnaire.ts');
+    assert.match(dataLayer, /minSelections > 0/);
+    assert.match(dataLayer, /clearMyQuestionnaireQuestion/);
+    assert.match(dataLayer, /p_operation_id/);
+    assert.match(dataLayer, /answered-empty|minSelections: 0|response_state === 'answered'/);
+    assert.doesNotMatch(
+      dataLayer,
+      /if \(sanitized\.selectedChoiceIds\.length === 0\) \{\s*return clearMyQuestionnaireQuestion/
+    );
   });
 
   it('keeps restart confirmation copy exact and dash free for new persistence copy', () => {
@@ -570,6 +630,14 @@ describe('Compatibility Profile Persistence V1', () => {
     assert.match(migration, /write_generation/);
     assert.match(migration, /stale_revision/);
     assert.match(migration, /stale_generation/);
+    assert.match(migration, /p_operation_id/);
+    assert.match(migration, /Duplicate choice keys are not allowed/);
+    assert.match(migration, /user_questionnaire_write_operations/);
+    assert.match(
+      migration,
+      /revoke insert, update, delete on public\.user_questionnaire_responses/i
+    );
+    assert.match(types, /p_operation_id\?:/);
   });
 
   it('does not install a new runtime dependency for this build', () => {

@@ -142,10 +142,7 @@ export async function loadMyQuestionnaireState(): Promise<
     const located = questionByKey(catalog.categories, questionKey);
     if (!located) continue;
 
-    const revision = asFiniteNumber(
-      r.revision ?? r.client_mutation,
-      0
-    );
+    const revision = asFiniteNumber(r.revision ?? r.client_mutation, 0);
 
     const selectedRows = Array.isArray(r.selected_choices) ? r.selected_choices : [];
     const selectedChoiceIds: string[] = [];
@@ -165,6 +162,7 @@ export async function loadMyQuestionnaireState(): Promise<
       : [];
 
     // Preserve tombstone revisions so delayed clears/saves keep compare-and-swap integrity.
+    // Explicit answered-empty (minSelections: 0) is NOT a tombstone.
     if (r.response_state === 'unanswered' && selectedChoiceIds.length === 0) {
       if (!answersByCategory[located.category.number]) {
         answersByCategory[located.category.number] = {};
@@ -172,6 +170,7 @@ export async function loadMyQuestionnaireState(): Promise<
       answersByCategory[located.category.number][questionKey] = {
         ...emptyPersistedAnswer(),
         revision,
+        responseState: 'unanswered',
       };
       continue;
     }
@@ -204,6 +203,15 @@ export async function loadMyQuestionnaireState(): Promise<
         : undefined,
     });
 
+    // Prefer server-derived state for answered-empty rows.
+    if (
+      r.response_state === 'answered' &&
+      selectedChoiceIds.length === 0 &&
+      located.question.minSelections === 0
+    ) {
+      answer.responseState = 'answered';
+    }
+
     if (!answersByCategory[located.category.number]) {
       answersByCategory[located.category.number] = {};
     }
@@ -224,12 +232,17 @@ export async function loadMyQuestionnaireState(): Promise<
 export type SaveResponseResult = {
   revision: number;
   writeGeneration: number;
+  operationId?: string;
+  responseState?: string;
+  code?: string;
 };
 
 export async function saveMyQuestionnaireResponse(input: {
   questionKey: string;
   answer: PersistedQuestionAnswer;
   expectedWriteGeneration: number;
+  expectedRevision?: number;
+  operationId?: string;
 }): Promise<DataAccessResult<SaveResponseResult>> {
   const { supabase, user } = await requireUser();
   if (!user) return { success: false, message: 'You must be signed in.' };
@@ -240,12 +253,22 @@ export async function saveMyQuestionnaireResponse(input: {
     return { success: false, message: 'Question was not found in the active catalog.' };
   }
 
-  const sanitized = sanitizeAnswerAgainstCatalog(located.question, input.answer);
-  if (sanitized.selectedChoiceIds.length === 0) {
+  const sanitized = sanitizeAnswerAgainstCatalog(located.question, {
+    ...input.answer,
+    revision:
+      typeof input.expectedRevision === 'number'
+        ? input.expectedRevision
+        : input.answer.revision,
+  });
+
+  // Required questions cleared to zero choices remain unanswered tombstones.
+  // minSelections: 0 confirmed empties persist as answered via the save RPC.
+  if (sanitized.selectedChoiceIds.length === 0 && located.question.minSelections > 0) {
     return clearMyQuestionnaireQuestion({
       questionKey: input.questionKey,
       expectedRevision: sanitized.revision,
       expectedWriteGeneration: input.expectedWriteGeneration,
+      operationId: input.operationId,
     });
   }
 
@@ -279,6 +302,7 @@ export async function saveMyQuestionnaireResponse(input: {
     p_identity: identity,
     p_expected_revision: sanitized.revision,
     p_expected_write_generation: input.expectedWriteGeneration,
+    p_operation_id: input.operationId ?? undefined,
   });
 
   const result = rpcResult(data, error, 'Could not save your answer. Try again.');
@@ -294,6 +318,14 @@ export async function saveMyQuestionnaireResponse(input: {
         result.data?.write_generation,
         input.expectedWriteGeneration
       ),
+      operationId:
+        typeof result.data?.operation_id === 'string'
+          ? result.data.operation_id
+          : input.operationId,
+      responseState:
+        typeof result.data?.response_state === 'string'
+          ? result.data.response_state
+          : undefined,
     },
   };
 }
@@ -302,6 +334,7 @@ export async function clearMyQuestionnaireQuestion(input: {
   questionKey: string;
   expectedRevision: number;
   expectedWriteGeneration: number;
+  operationId?: string;
 }): Promise<DataAccessResult<SaveResponseResult>> {
   const { supabase, user } = await requireUser();
   if (!user) return { success: false, message: 'You must be signed in.' };
@@ -311,9 +344,15 @@ export async function clearMyQuestionnaireQuestion(input: {
     p_question_key: input.questionKey,
     p_expected_revision: input.expectedRevision,
     p_expected_write_generation: input.expectedWriteGeneration,
+    p_operation_id: input.operationId ?? undefined,
   });
   const result = rpcResult(data, error, 'Could not clear this answer. Try again.');
-  if (!result.success) return { success: false, message: result.message };
+  if (!result.success) {
+    return {
+      success: false,
+      message: result.message,
+    };
+  }
   return {
     success: true,
     data: {
@@ -322,6 +361,11 @@ export async function clearMyQuestionnaireQuestion(input: {
         result.data?.write_generation,
         input.expectedWriteGeneration
       ),
+      operationId:
+        typeof result.data?.operation_id === 'string'
+          ? result.data.operation_id
+          : input.operationId,
+      responseState: 'unanswered',
     },
   };
 }
@@ -359,6 +403,7 @@ export async function saveMyQuestionnaireProgressPosition(input: {
 export async function clearMyQuestionnaireCategory(input: {
   categoryKey: string;
   expectedWriteGeneration: number;
+  operationId?: string;
 }): Promise<DataAccessResult<{ writeGeneration: number }>> {
   const { supabase, user } = await requireUser();
   if (!user) return { success: false, message: 'You must be signed in.' };
@@ -367,6 +412,7 @@ export async function clearMyQuestionnaireCategory(input: {
     p_version_key: QUESTIONNAIRE_VERSION,
     p_category_key: input.categoryKey,
     p_expected_write_generation: input.expectedWriteGeneration,
+    p_operation_id: input.operationId ?? undefined,
   });
   const result = rpcResult(data, error, 'Could not restart this category. Try again.');
   if (!result.success) return { success: false, message: result.message };
@@ -383,6 +429,7 @@ export async function clearMyQuestionnaireCategory(input: {
 
 export async function clearMyQuestionnaireProfile(input: {
   expectedWriteGeneration: number;
+  operationId?: string;
 }): Promise<DataAccessResult<{ writeGeneration: number }>> {
   const { supabase, user } = await requireUser();
   if (!user) return { success: false, message: 'You must be signed in.' };
@@ -390,6 +437,7 @@ export async function clearMyQuestionnaireProfile(input: {
   const { data, error } = await supabase.rpc('clear_my_questionnaire_profile', {
     p_version_key: QUESTIONNAIRE_VERSION,
     p_expected_write_generation: input.expectedWriteGeneration,
+    p_operation_id: input.operationId ?? undefined,
   });
   const result = rpcResult(
     data,
