@@ -11,7 +11,7 @@
 
 begin;
 
-select plan(46);
+select plan(49);
 
 -- ---------------------------------------------------------------------------
 -- Helpers (pg_temp = session-scoped; CREATE TEMPORARY FUNCTION is not valid)

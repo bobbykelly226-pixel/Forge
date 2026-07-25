@@ -8,6 +8,10 @@ import {
   sanitizeAnswerAgainstCatalog,
 } from '@/lib/questionnaire/persistence/answer-state';
 import { SAVE_STATUS_COPY } from '@/lib/questionnaire/persistence/copy';
+import {
+  countTopLevelPgTapAssertions,
+  parsePgTapPlan,
+} from '@/lib/questionnaire/persistence/pgtap-plan';
 import { QuestionSaveWorker } from '@/lib/questionnaire/persistence/save-worker';
 import { getQuestionnaireCatalog } from '@/lib/questionnaire/catalog';
 
@@ -225,6 +229,13 @@ describe('Compatibility Profile Persistence V1 audit hardening', () => {
     assert.match(dbTest, /idempotency_conflict/);
     assert.match(dbTest, /clear tombstone prevents resurrection/);
     assert.match(dbTest, /family_children_parenting_q04/);
+  });
+
+  it('keeps the declared pgTAP plan equal to the top-level assertion count', () => {
+    const plan = parsePgTapPlan(dbTest);
+    const assertions = countTopLevelPgTapAssertions(dbTest);
+    assert.equal(plan, assertions);
+    assert.equal(assertions, 49);
   });
 
   it('retains transport-failed save attempts for same-operation Retry', () => {
