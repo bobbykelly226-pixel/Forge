@@ -2,7 +2,7 @@
 
 Authoritative documentation for the Forge Backend Foundation persistence layer.
 
-**Remote migration status (re-diagnosed 2026-07-25 during Persistence V1 audit hardening):**
+**Remote migration status (re-diagnosed 2026-07-25 during Persistence V1 correction pass):**
 
 | Layer | Result |
 |---|---|
@@ -12,15 +12,18 @@ Authoritative documentation for the Forge Backend Foundation persistence layer.
 | `SUPABASE_ACCESS_TOKEN` | Absent |
 | `SUPABASE_DB_PASSWORD` / DB URLs | Absent |
 | `npx supabase projects list` | Failed: `LegacyPlatformAuthRequiredError` (access token not provided) |
-| `supabase login --no-browser` | Failed: non-TTY cannot use automatic login; token required |
+| `supabase migration list --linked` | Not run — link unavailable |
+| Docker / `supabase test db` | Unavailable in this environment |
 | Network to `api.supabase.com` / project host | Reachable |
-| Classification | **Supabase management authentication is missing.** Local project link is also missing, but cannot be restored until management auth exists. App env vars (`NEXT_PUBLIC_SUPABASE_*`) are not substitutes. |
+| Classification | **Supabase management authentication is missing.** Linked history cannot be inspected and migrations cannot be applied until a token is provided. App env vars (`NEXT_PUBLIC_SUPABASE_*`) are not substitutes. |
 
-Migrations `20260723000000_questionnaire_foundation.sql` and audit-hardened `20260725000000_compatibility_profile_persistence_v1.sql` remain in the repository and are **not claimed applied**.
+Migrations `20260723000000_questionnaire_foundation.sql` and corrected-in-place `20260725000000_compatibility_profile_persistence_v1.sql` (including section 10: revoke direct writes, operation idempotency, explicit empty answers) remain in the repository and are **not claimed applied**. Linked history has never been successfully inspected in this environment, so “unapplied everywhere” is **not** asserted.
+
+Executable pgTAP contracts live at `supabase/tests/compatibility_profile_persistence_v1.test.sql` and require a local/linked Supabase database to run.
 
 **Earlier documented status (pre-questionnaire foundation):** Linked history previously recorded `20260714000000` (`forge_backend_foundation`), `20260714060000` (`migrate_compatibility_to_profile_answers`), `20260714180000` (`discovery_connections_persistence`), `20260714190000` (`discovery_without_completion_gate`), `20260714200000` (`fix_discovery_visibility_status_write`), and `20260714210000` (`structured_profile_fields_and_location`).
 
-**Types status:** `lib/supabase/database.types.ts` was previously generated from the linked schema after `20260714210000`. For Compatibility Profile Persistence V1, questionnaire tables/enums/RPCs were **hand-extended from the migration SQL** because linked type generation could not run in this environment. Regenerate with `npm run supabase:types` after the questionnaire migrations are applied on the linked project.
+**Types status:** `lib/supabase/database.types.ts` was previously generated from the linked schema after `20260714210000`. For Compatibility Profile Persistence V1, questionnaire tables/enums/RPCs (including `p_operation_id`) were **hand-extended from the migration SQL** because linked type generation could not run in this environment. Regenerate with `npm run supabase:types` after the questionnaire migrations are applied on the linked project. Do not treat hand-extended types as linked-schema confirmation.
 
 ---
 
