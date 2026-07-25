@@ -5543,7 +5543,74 @@ begin
     raise exception 'hardened operation_id RPC signatures missing';
   end if;
 
-  -- privileges: authenticated must NOT have execute on dropped sigs (already gone);
-  -- authenticated MUST have execute on new sigs
+  -- Dropped overloads are absent (to_regprocedure null above), so they retain no EXECUTE.
+  -- Hardened signatures: authenticated may execute; anon/public must not.
+  if not has_function_privilege(
+       'authenticated',
+       'public.save_my_questionnaire_response(text,text,text[],uuid,text[],jsonb,jsonb,bigint,bigint)',
+       'execute'
+     )
+     or not has_function_privilege(
+       'authenticated',
+       'public.clear_my_questionnaire_question(text,text,uuid,bigint,bigint)',
+       'execute'
+     )
+     or not has_function_privilege(
+       'authenticated',
+       'public.clear_my_questionnaire_category(text,text,uuid,bigint)',
+       'execute'
+     )
+     or not has_function_privilege(
+       'authenticated',
+       'public.clear_my_questionnaire_profile(text,uuid,bigint)',
+       'execute'
+     )
+  then
+    raise exception 'authenticated lacks EXECUTE on hardened questionnaire mutation RPCs';
+  end if;
+
+  if has_function_privilege(
+       'anon',
+       'public.save_my_questionnaire_response(text,text,text[],uuid,text[],jsonb,jsonb,bigint,bigint)',
+       'execute'
+     )
+     or has_function_privilege(
+       'anon',
+       'public.clear_my_questionnaire_question(text,text,uuid,bigint,bigint)',
+       'execute'
+     )
+     or has_function_privilege(
+       'anon',
+       'public.clear_my_questionnaire_category(text,text,uuid,bigint)',
+       'execute'
+     )
+     or has_function_privilege(
+       'anon',
+       'public.clear_my_questionnaire_profile(text,uuid,bigint)',
+       'execute'
+     )
+     or has_function_privilege(
+       'public',
+       'public.save_my_questionnaire_response(text,text,text[],uuid,text[],jsonb,jsonb,bigint,bigint)',
+       'execute'
+     )
+     or has_function_privilege(
+       'public',
+       'public.clear_my_questionnaire_question(text,text,uuid,bigint,bigint)',
+       'execute'
+     )
+     or has_function_privilege(
+       'public',
+       'public.clear_my_questionnaire_category(text,text,uuid,bigint)',
+       'execute'
+     )
+     or has_function_privilege(
+       'public',
+       'public.clear_my_questionnaire_profile(text,uuid,bigint)',
+       'execute'
+     )
+  then
+    raise exception 'anon or public still has EXECUTE on questionnaire mutation RPCs';
+  end if;
 end;
 $$;

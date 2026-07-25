@@ -372,10 +372,10 @@ export class QuestionSaveWorker {
         expectedRevision,
         operationId,
       });
-    } catch (error) {
+    } catch {
       slot.inFlight = false;
-      const message =
-        error instanceof Error ? error.message : 'Could not save your answer. Try again.';
+      // Never surface raw transport/network details to waiters or the UI.
+      const message = 'Could not save your answer. Try again.';
 
       if (sentGeneration !== this.generation) {
         slot.retainedAttempt = null;

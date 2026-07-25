@@ -24,7 +24,48 @@ export const SAVE_STATUS_COPY = {
   saved: 'Saved',
   error: 'Could not save your answer. Try again.',
   progressError: 'Could not save your progress. Try again.',
+  restartError: 'Could not complete the restart. Try again.',
+  loadError: 'Could not load your Compatibility Profile.',
 } as const;
+
+/** Safe user-facing copy keyed by authoritative database codes. */
+export const QUESTIONNAIRE_ERROR_COPY = {
+  stale_revision: 'A newer answer is already saved.',
+  stale_generation: 'Your Compatibility Profile was restarted. Reload and try again.',
+  idempotency_conflict: 'That action could not be completed. Try again.',
+  operation_id_required: 'Could not complete that action. Try again.',
+} as const;
+
+/**
+ * Map structured questionnaire failures to dash-free user copy.
+ * Never surface raw transport/network text.
+ */
+export function questionnaireErrorMessage(input: {
+  code?: string;
+  message?: string | null;
+  transportError?: boolean;
+  fallback: string;
+}): string {
+  if (input.code && input.code in QUESTIONNAIRE_ERROR_COPY) {
+    return QUESTIONNAIRE_ERROR_COPY[input.code as keyof typeof QUESTIONNAIRE_ERROR_COPY];
+  }
+  if (input.transportError) {
+    return input.fallback;
+  }
+  const candidate = typeof input.message === 'string' ? input.message.trim() : '';
+  // Authoritative RPC messages are already user-facing; reject anything that looks internal.
+  if (
+    candidate &&
+    !/^(error|failed|network|fetch|socket|ECONN|timeout|postgres|permission denied)/i.test(
+      candidate
+    ) &&
+    !candidate.includes('\n') &&
+    candidate.length < 180
+  ) {
+    return candidate;
+  }
+  return input.fallback;
+}
 
 export const CATEGORY_COMPLETE_COPY = {
   eyebrow: 'Category Complete',

@@ -5,6 +5,7 @@
  * logical operation ID, while authoritative failures abandon it.
  */
 
+import { SAVE_STATUS_COPY } from '@/lib/questionnaire/persistence/copy';
 import {
   beginRestartOperation,
   type RestartOperation,
@@ -97,20 +98,32 @@ export async function executeRestartAttempt(input: {
       result: outcome,
       applySuccess: false,
     };
-  } catch (error) {
-    const message =
-      error instanceof Error && error.message.trim()
-        ? 'Could not complete the restart. Try again.'
-        : 'Could not complete the restart. Try again.';
+  } catch {
     return {
       pending: op,
       result: {
         success: false,
-        message,
+        message: SAVE_STATUS_COPY.restartError,
         transportError: true,
       },
       applySuccess: false,
     };
+  }
+}
+
+/**
+ * Always restore restartBusy in finally, including thrown transport failures.
+ * Production shell uses this so busy-state handling is unit-testable.
+ */
+export async function withRestartBusy<T>(
+  setBusy: (busy: boolean) => void,
+  run: () => Promise<T>
+): Promise<T> {
+  setBusy(true);
+  try {
+    return await run();
+  } finally {
+    setBusy(false);
   }
 }
 

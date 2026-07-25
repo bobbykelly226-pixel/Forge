@@ -11,7 +11,7 @@
 
 begin;
 
-select plan(44);
+select plan(46);
 
 -- ---------------------------------------------------------------------------
 -- Helpers (pg_temp = session-scoped; CREATE TEMPORARY FUNCTION is not valid)
@@ -1083,6 +1083,186 @@ select is(
   ),
   'operation_id_required',
   'explicit null operation_id on clear question is rejected'
+);
+
+-- Use an already-answered question so null clear/restart attempts can prove no mutation.
+select ok(
+  pg_temp._cp_question_revision('relationship_vision_intentions_q01') > 0,
+  'owner has an answered question available for null-operation mutation checks'
+);
+
+select ok(
+  (
+    with before_resp as (
+      select count(*)::int as n
+      from public.user_questionnaire_responses r
+      join public.questionnaire_questions q on q.id = r.question_id
+      where r.user_id = auth.uid()
+        and q.question_key = 'relationship_vision_intentions_q01'
+        and r.response_state = 'answered'
+    ),
+    before_rev as (
+      select pg_temp._cp_question_revision('relationship_vision_intentions_q01') as revision
+    ),
+    before_gen as (
+      select write_generation
+      from public.user_questionnaire_progress
+      where user_id = auth.uid()
+        and version_id = public.forge_active_questionnaire_version_id()
+    ),
+    attempted as (
+      select public.clear_my_questionnaire_question(
+        p_version_key => 'compatibility_profile_v1',
+        p_question_key => 'relationship_vision_intentions_q01',
+        p_operation_id => null,
+        p_expected_revision => (select revision from before_rev),
+        p_expected_write_generation => (select write_generation from before_gen)
+      ) as result
+    ),
+    after_resp as (
+      select count(*)::int as n
+      from public.user_questionnaire_responses r
+      join public.questionnaire_questions q on q.id = r.question_id
+      where r.user_id = auth.uid()
+        and q.question_key = 'relationship_vision_intentions_q01'
+        and r.response_state = 'answered'
+    ),
+    after_rev as (
+      select pg_temp._cp_question_revision('relationship_vision_intentions_q01') as revision
+    ),
+    after_gen as (
+      select write_generation
+      from public.user_questionnaire_progress
+      where user_id = auth.uid()
+        and version_id = public.forge_active_questionnaire_version_id()
+    )
+    select
+      (select result->>'code' from attempted) = 'operation_id_required'
+      and (select n from before_resp) = (select n from after_resp)
+      and (select revision from before_rev) = (select revision from after_rev)
+      and (select write_generation from before_gen) = (select write_generation from after_gen)
+  ),
+  'null-operation clear question does not mutate responses or generation'
+);
+
+select ok(
+  (
+    with before_resp as (
+      select count(*)::int as n
+      from public.user_questionnaire_responses r
+      where r.user_id = auth.uid()
+    ),
+    before_gen as (
+      select write_generation
+      from public.user_questionnaire_progress
+      where user_id = auth.uid()
+        and version_id = public.forge_active_questionnaire_version_id()
+    ),
+    attempted as (
+      select public.clear_my_questionnaire_category(
+        p_version_key => 'compatibility_profile_v1',
+        p_category_key => 'relationship_vision_intentions',
+        p_operation_id => null,
+        p_expected_write_generation => (select write_generation from before_gen)
+      ) as result
+    ),
+    after_resp as (
+      select count(*)::int as n
+      from public.user_questionnaire_responses r
+      where r.user_id = auth.uid()
+    ),
+    after_gen as (
+      select write_generation
+      from public.user_questionnaire_progress
+      where user_id = auth.uid()
+        and version_id = public.forge_active_questionnaire_version_id()
+    )
+    select
+      (select result->>'code' from attempted) = 'operation_id_required'
+      and (select n from before_resp) = (select n from after_resp)
+      and (select write_generation from before_gen) = (select write_generation from after_gen)
+  ),
+  'null-operation category restart does not mutate responses or generation'
+);
+
+select ok(
+  (
+    with before_resp as (
+      select count(*)::int as n
+      from public.user_questionnaire_responses r
+      where r.user_id = auth.uid()
+    ),
+    before_gen as (
+      select write_generation
+      from public.user_questionnaire_progress
+      where user_id = auth.uid()
+        and version_id = public.forge_active_questionnaire_version_id()
+    ),
+    before_rev as (
+      select pg_temp._cp_question_revision('relationship_vision_intentions_q01') as revision
+    ),
+    attempted as (
+      select public.clear_my_questionnaire_profile(
+        p_version_key => 'compatibility_profile_v1',
+        p_operation_id => null,
+        p_expected_write_generation => (select write_generation from before_gen)
+      ) as result
+    ),
+    after_resp as (
+      select count(*)::int as n
+      from public.user_questionnaire_responses r
+      where r.user_id = auth.uid()
+    ),
+    after_gen as (
+      select write_generation
+      from public.user_questionnaire_progress
+      where user_id = auth.uid()
+        and version_id = public.forge_active_questionnaire_version_id()
+    ),
+    after_rev as (
+      select pg_temp._cp_question_revision('relationship_vision_intentions_q01') as revision
+    )
+    select
+      (select result->>'code' from attempted) = 'operation_id_required'
+      and (select n from before_resp) = (select n from after_resp)
+      and (select write_generation from before_gen) = (select write_generation from after_gen)
+      and (select revision from before_rev) = (select revision from after_rev)
+  ),
+  'null-operation full restart does not mutate responses, revisions, or generation'
+);
+
+select ok(
+  has_function_privilege(
+    'authenticated',
+    'public.save_my_questionnaire_response(text,text,text[],uuid,text[],jsonb,jsonb,bigint,bigint)',
+    'execute'
+  )
+  and has_function_privilege(
+    'authenticated',
+    'public.clear_my_questionnaire_question(text,text,uuid,bigint,bigint)',
+    'execute'
+  )
+  and has_function_privilege(
+    'authenticated',
+    'public.clear_my_questionnaire_category(text,text,uuid,bigint)',
+    'execute'
+  )
+  and has_function_privilege(
+    'authenticated',
+    'public.clear_my_questionnaire_profile(text,uuid,bigint)',
+    'execute'
+  )
+  and not has_function_privilege(
+    'anon',
+    'public.save_my_questionnaire_response(text,text,text[],uuid,text[],jsonb,jsonb,bigint,bigint)',
+    'execute'
+  )
+  and not has_function_privilege(
+    'anon',
+    'public.clear_my_questionnaire_profile(text,uuid,bigint)',
+    'execute'
+  ),
+  'only authenticated retains EXECUTE on hardened mutation RPCs'
 );
 
 select * from finish();

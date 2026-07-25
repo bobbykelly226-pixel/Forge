@@ -46,9 +46,13 @@ import {
   retreatEligible,
   toEligibleCategoryView,
 } from '@/lib/questionnaire/persistence/eligible-flow';
-import { SAVE_STATUS_COPY } from '@/lib/questionnaire/persistence/copy';
+import {
+  questionnaireErrorMessage,
+  SAVE_STATUS_COPY,
+} from '@/lib/questionnaire/persistence/copy';
 import {
   executeRestartAttempt,
+  withRestartBusy,
   type RestartOperation,
 } from '@/lib/questionnaire/persistence/restart-coordinator';
 import { QuestionSaveWorker } from '@/lib/questionnaire/persistence/save-worker';
@@ -131,6 +135,10 @@ export default function CompatibilityProfileShell({
     answer: PersistedQuestionAnswer;
   } | null>(null);
   const pendingRestartRef = useRef<RestartOperation | null>(null);
+  /** Survives authoritative abandon so Retry starts a new logical operation. */
+  const restartIntentRef = useRef<
+    { kind: 'category'; categoryKey: string } | { kind: 'profile' } | null
+  >(null);
   const writeGenerationRef = useRef(initialWriteGeneration);
   const stepKeyRef = useRef('directory');
 
@@ -225,7 +233,14 @@ export default function CompatibilityProfileShell({
     });
     if (!outcome.success) {
       setSaveStatus('error');
-      setSaveError(outcome.message || SAVE_STATUS_COPY.progressError);
+      setSaveError(
+        questionnaireErrorMessage({
+          code: outcome.code,
+          message: outcome.message,
+          transportError: outcome.transportError,
+          fallback: SAVE_STATUS_COPY.progressError,
+        })
+      );
       return false;
     }
     if (typeof outcome.data?.writeGeneration === 'number') {
@@ -307,11 +322,10 @@ export default function CompatibilityProfileShell({
             operationId: outcome.data?.operationId ?? operationId,
           },
         };
-      } catch (error) {
+      } catch {
         // Thrown transport failures are retained by the worker with the same operation ID.
-        throw error instanceof Error
-          ? error
-          : new Error('Could not save your answer. Try again.');
+        // Worker sanitizes the waiter message; rethrow a safe Error for the catch path.
+        throw new Error(SAVE_STATUS_COPY.error);
       }
     };
 
@@ -326,7 +340,14 @@ export default function CompatibilityProfileShell({
         return false;
       }
       setSaveStatus('error');
-      setSaveError(result.message || SAVE_STATUS_COPY.error);
+      setSaveError(
+        questionnaireErrorMessage({
+          code: result.code,
+          message: result.message,
+          transportError: result.retriable ? true : undefined,
+          fallback: SAVE_STATUS_COPY.error,
+        })
+      );
       return false;
     }
 
@@ -680,9 +701,9 @@ export default function CompatibilityProfileShell({
   }
 
   async function confirmCategoryRestart(category: CategoryDefinition) {
-    setRestartBusy(true);
+    restartIntentRef.current = { kind: 'category', categoryKey: category.id };
     setSaveError(null);
-    try {
+    await withRestartBusy(setRestartBusy, async () => {
       const attempt = await executeRestartAttempt({
         pending: pendingRestartRef.current,
         kind: 'category',
@@ -697,7 +718,12 @@ export default function CompatibilityProfileShell({
           if (!outcome.success) {
             return {
               success: false as const,
-              message: outcome.message,
+              message: questionnaireErrorMessage({
+                code: outcome.code,
+                message: outcome.message,
+                transportError: outcome.transportError,
+                fallback: SAVE_STATUS_COPY.restartError,
+              }),
               code: outcome.code,
               transportError: outcome.transportError,
             };
@@ -717,6 +743,7 @@ export default function CompatibilityProfileShell({
       }
       if (!attempt.applySuccess) return;
 
+      restartIntentRef.current = null;
       setWriteGeneration(attempt.result.writeGeneration);
       writeGenerationRef.current = attempt.result.writeGeneration;
       // Invalidate pre-restart in-flight UI updates, then reset revisions for this category.
@@ -741,15 +768,13 @@ export default function CompatibilityProfileShell({
       });
       if (!saved) return;
       setStep({ kind: 'intro', categoryNumber: category.number });
-    } finally {
-      setRestartBusy(false);
-    }
+    });
   }
 
   async function confirmFullRestart() {
-    setRestartBusy(true);
+    restartIntentRef.current = { kind: 'profile' };
     setSaveError(null);
-    try {
+    await withRestartBusy(setRestartBusy, async () => {
       const attempt = await executeRestartAttempt({
         pending: pendingRestartRef.current,
         kind: 'profile',
@@ -762,7 +787,12 @@ export default function CompatibilityProfileShell({
           if (!outcome.success) {
             return {
               success: false as const,
-              message: outcome.message,
+              message: questionnaireErrorMessage({
+                code: outcome.code,
+                message: outcome.message,
+                transportError: outcome.transportError,
+                fallback: SAVE_STATUS_COPY.restartError,
+              }),
               code: outcome.code,
               transportError: outcome.transportError,
             };
@@ -782,6 +812,7 @@ export default function CompatibilityProfileShell({
       }
       if (!attempt.applySuccess) return;
 
+      restartIntentRef.current = null;
       setWriteGeneration(attempt.result.writeGeneration);
       writeGenerationRef.current = attempt.result.writeGeneration;
       saveWorkerRef.current.bumpGeneration();
@@ -800,22 +831,21 @@ export default function CompatibilityProfileShell({
       });
       setShowFullRestart(false);
       setStep({ kind: 'directory' });
-    } finally {
-      setRestartBusy(false);
-    }
+    });
   }
 
   async function retryPendingSave() {
-    if (pendingRestartRef.current?.kind === 'category') {
-      const category = categories.find(
-        (item) => item.id === pendingRestartRef.current?.categoryKey
-      );
+    // Transport failures retain pendingRestartRef; authoritative abandon clears it
+    // but restartIntentRef remains so Retry starts a new operation ID.
+    const restartIntent = restartIntentRef.current;
+    if (restartIntent?.kind === 'category') {
+      const category = categories.find((item) => item.id === restartIntent.categoryKey);
       if (category) {
         await confirmCategoryRestart(category);
         return;
       }
     }
-    if (pendingRestartRef.current?.kind === 'profile') {
+    if (restartIntent?.kind === 'profile') {
       await confirmFullRestart();
       return;
     }
@@ -834,7 +864,14 @@ export default function CompatibilityProfileShell({
       if (!result.ok) {
         if (result.cancelled) return;
         setSaveStatus('error');
-        setSaveError(result.message || SAVE_STATUS_COPY.error);
+        setSaveError(
+          questionnaireErrorMessage({
+            code: result.code,
+            message: result.message,
+            transportError: result.retriable ? true : undefined,
+            fallback: SAVE_STATUS_COPY.error,
+          })
+        );
         return;
       }
       const located = categories

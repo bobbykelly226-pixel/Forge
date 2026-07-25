@@ -112,7 +112,7 @@ export async function loadMyQuestionnaireState(): Promise<
   });
   const result = rpcResult(data, error, 'Could not load your Compatibility Profile.');
   if (!result.success) {
-    return { success: false, message: result.message };
+    return failureFromResult(result, 'Could not load your Compatibility Profile.');
   }
   if (!result.data) {
     return { success: false, message: 'Could not load your Compatibility Profile.' };
@@ -399,7 +399,9 @@ export async function saveMyQuestionnaireProgressPosition(input: {
     p_expected_write_generation: input.expectedWriteGeneration,
   });
   const result = rpcResult(data, error, 'Could not save your progress. Try again.');
-  if (!result.success) return { success: false, message: result.message };
+  if (!result.success) {
+    return failureFromResult(result, 'Could not save your progress. Try again.');
+  }
   return {
     success: true,
     data: {

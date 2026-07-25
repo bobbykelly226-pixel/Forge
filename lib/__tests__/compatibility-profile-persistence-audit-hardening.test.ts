@@ -254,8 +254,13 @@ describe('Compatibility Profile Persistence V1 audit hardening', () => {
     assert.doesNotMatch(dataLayer, /p_operation_id: input\.operationId \?\? undefined/);
     assert.match(actions, /operationId: string/);
     assert.match(shell, /executeRestartAttempt/);
+    assert.match(shell, /withRestartBusy/);
+    assert.match(shell, /restartIntentRef/);
     const coordinator = read('lib/questionnaire/persistence/restart-coordinator.ts');
     assert.match(coordinator, /export async function executeRestartAttempt/);
+    assert.match(coordinator, /export async function withRestartBusy/);
+    assert.match(migration, /authenticated lacks EXECUTE on hardened questionnaire mutation RPCs/);
+    assert.match(migration, /anon or public still has EXECUTE on questionnaire mutation RPCs/);
   });
 
   it('preserves structured database error codes through rpcResult', () => {

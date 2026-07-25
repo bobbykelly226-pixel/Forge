@@ -3,6 +3,7 @@ import { describe, it } from 'node:test';
 
 import {
   executeRestartAttempt,
+  withRestartBusy,
   type RestartOperation,
 } from '@/lib/questionnaire/persistence/restart-coordinator';
 import { QuestionSaveWorker } from '@/lib/questionnaire/persistence/save-worker';
@@ -30,9 +31,12 @@ describe('executeRestartAttempt (production restart coordinator)', () => {
     assert.equal(first.result.success, false);
     if (!first.result.success) {
       assert.equal(first.result.transportError, true);
+      assert.match(first.result.message, /restart/i);
+      assert.doesNotMatch(first.result.message, /network down/i);
     }
     assert.ok(first.pending);
     assert.equal(first.applySuccess, false);
+    assert.equal(first.pending?.expectedWriteGeneration, 4);
     pending = first.pending;
 
     const second = await executeRestartAttempt({
@@ -49,10 +53,9 @@ describe('executeRestartAttempt (production restart coordinator)', () => {
     assert.equal(second.applySuccess, true);
     assert.equal(second.pending, null);
     assert.equal(seen[0], seen[1]);
-    assert.equal(pending?.expectedWriteGeneration, 4);
   });
 
-  it('thrown full-restart response preserves the same operation ID', async () => {
+  it('thrown full-restart response preserves the same operation ID and expected generation', async () => {
     const seen: string[] = [];
     let pending: RestartOperation | null = null;
 
@@ -67,6 +70,7 @@ describe('executeRestartAttempt (production restart coordinator)', () => {
     });
     pending = first.pending;
     assert.ok(pending);
+    assert.equal(pending.expectedWriteGeneration, 2);
 
     const second = await executeRestartAttempt({
       pending,
@@ -79,6 +83,31 @@ describe('executeRestartAttempt (production restart coordinator)', () => {
     });
     assert.equal(second.result.success, true);
     assert.equal(seen[0], seen[1]);
+    assert.equal(pending.expectedWriteGeneration, 2);
+  });
+
+  it('withRestartBusy always resets restartBusy after thrown failures', async () => {
+    let busy = false;
+    const setBusy = (value: boolean) => {
+      busy = value;
+    };
+
+    await assert.rejects(
+      () =>
+        withRestartBusy(setBusy, async () => {
+          assert.equal(busy, true);
+          throw new Error('transport collapsed');
+        }),
+      /transport collapsed/
+    );
+    assert.equal(busy, false);
+
+    const value = await withRestartBusy(setBusy, async () => {
+      assert.equal(busy, true);
+      return 'ok';
+    });
+    assert.equal(value, 'ok');
+    assert.equal(busy, false);
   });
 
   it('transport-classified returned failure preserves the operation', async () => {
@@ -95,6 +124,7 @@ describe('executeRestartAttempt (production restart coordinator)', () => {
     });
     assert.ok(first.pending);
     assert.equal(first.applySuccess, false);
+    assert.equal(first.pending?.expectedWriteGeneration, 1);
   });
 
   it('authoritative failure abandons the operation', async () => {
@@ -114,19 +144,24 @@ describe('executeRestartAttempt (production restart coordinator)', () => {
     assert.equal(first.applySuccess, false);
   });
 
-  it('idempotency_conflict abandons and a new attempt gets a new operation ID', async () => {
+  it('idempotency_conflict abandons and a new attempt gets a different operation ID', async () => {
+    let abandonedId = '';
     const abandoned = await executeRestartAttempt({
       pending: null,
       kind: 'profile',
       currentWriteGeneration: 7,
-      execute: async () => ({
-        success: false,
-        message: 'This operation id was already used with a different request.',
-        code: 'idempotency_conflict',
-        transportError: false,
-      }),
+      execute: async (op) => {
+        abandonedId = op.operationId;
+        return {
+          success: false,
+          message: 'This operation id was already used with a different request.',
+          code: 'idempotency_conflict',
+          transportError: false,
+        };
+      },
     });
     assert.equal(abandoned.pending, null);
+    assert.ok(abandonedId);
 
     const ids: string[] = [];
     const next = await executeRestartAttempt({
@@ -141,6 +176,7 @@ describe('executeRestartAttempt (production restart coordinator)', () => {
     assert.equal(next.result.success, true);
     assert.equal(ids.length, 1);
     assert.ok(ids[0]);
+    assert.notEqual(ids[0], abandonedId);
   });
 
   it('successful category restart path reports applySuccess without resetting untouched revisions', async () => {
@@ -229,6 +265,7 @@ describe('executeRestartAttempt (production restart coordinator)', () => {
       execute: async () => ({ success: true, writeGeneration: 2 }),
     });
     assert.equal(restart.applySuccess, true);
+    // Shell applies bump + reset only after applySuccess, mirroring production.
     worker.bumpGeneration();
     worker.resetQuestions(['q1']);
     assert.equal(worker.getRevision('q1'), 0);
