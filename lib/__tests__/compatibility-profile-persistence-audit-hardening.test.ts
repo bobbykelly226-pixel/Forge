@@ -80,6 +80,9 @@ describe('Compatibility Profile Persistence V1 audit hardening', () => {
     assert.match(migration, /p_expected_write_generation/);
     assert.match(migration, /p_operation_id/);
     assert.match(migration, /user_questionnaire_write_operations/);
+    assert.match(migration, /forge_questionnaire_resolve_operation/);
+    assert.match(migration, /idempotency_conflict/);
+    assert.match(migration, /target_key/);
     assert.match(migration, /write_generation/);
     assert.match(migration, /stale_revision/);
     assert.match(migration, /stale_generation/);
@@ -120,6 +123,9 @@ describe('Compatibility Profile Persistence V1 audit hardening', () => {
       /clear_my_questionnaire_profile[\s\S]*write_generation = v_new_generation/
     );
     assert.match(shell, /saveWorkerRef\.current\.bumpGeneration/);
+    assert.match(shell, /resetQuestions|resetAllQuestions/);
+    assert.match(shell, /beginRestartOperation/);
+    assert.match(shell, /pendingRestartRef/);
   });
 
   it('derives completion in the database and rejects client completed status', () => {
@@ -213,10 +219,23 @@ describe('Compatibility Profile Persistence V1 audit hardening', () => {
   it('ships executable pgTAP database tests rather than regex-only RPC proofs', () => {
     assert.match(dbTest, /select plan\(/);
     assert.match(dbTest, /save_my_questionnaire_response/);
-    assert.match(dbTest, /authenticated lacks direct INSERT\/UPDATE/);
+    assert.match(dbTest, /authenticated lacks INSERT\/UPDATE\/DELETE on user_questionnaire_progress/);
+    assert.match(dbTest, /authenticated lacks all privileges on user_questionnaire_write_operations/);
     assert.match(dbTest, /same operation_id retry/);
+    assert.match(dbTest, /idempotency_conflict/);
     assert.match(dbTest, /clear tombstone prevents resurrection/);
     assert.match(dbTest, /family_children_parenting_q04/);
+  });
+
+  it('retains transport-failed save attempts for same-operation Retry', () => {
+    assert.match(shell, /transportError:\s*true/);
+    assert.match(shell, /hasRetainedAttempt/);
+    assert.match(shell, /saveWorkerRef\.current\.retry/);
+    const workerSource = read('lib/questionnaire/persistence/save-worker.ts');
+    assert.match(workerSource, /retainedAttempt/);
+    assert.match(workerSource, /transportError/);
+    assert.match(workerSource, /resetQuestions/);
+    assert.match(workerSource, /resetAllQuestions/);
   });
 
   it('documents authenticated RPC bypass rejection contracts in SQL', () => {

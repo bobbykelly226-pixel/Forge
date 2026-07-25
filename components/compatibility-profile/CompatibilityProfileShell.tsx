@@ -47,7 +47,11 @@ import {
   toEligibleCategoryView,
 } from '@/lib/questionnaire/persistence/eligible-flow';
 import { SAVE_STATUS_COPY } from '@/lib/questionnaire/persistence/copy';
-import { QuestionSaveWorker } from '@/lib/questionnaire/persistence/save-worker';
+import {
+  beginRestartOperation,
+  QuestionSaveWorker,
+  type RestartOperation,
+} from '@/lib/questionnaire/persistence/save-worker';
 import type { LoadedQuestionnaireProgress } from '@/lib/data/questionnaire';
 import type { CategoryDefinition } from '@/lib/questionnaire/types';
 import {
@@ -126,6 +130,7 @@ export default function CompatibilityProfileShell({
     questionKey: string;
     answer: PersistedQuestionAnswer;
   } | null>(null);
+  const pendingRestartRef = useRef<RestartOperation | null>(null);
   const writeGenerationRef = useRef(initialWriteGeneration);
   const stepKeyRef = useRef('directory');
 
@@ -261,10 +266,16 @@ export default function CompatibilityProfileShell({
     setSaveError(null);
 
     const generation = saveWorkerRef.current.getGeneration();
-    const result = await saveWorkerRef.current.enqueue(
-      question.id,
-      { answer: sanitized, generation },
-      async ({ answer: desired, expectedRevision, operationId }) => {
+    const runSave = async ({
+      answer: desired,
+      expectedRevision,
+      operationId,
+    }: {
+      answer: PersistedQuestionAnswer;
+      expectedRevision: number;
+      operationId: string;
+    }) => {
+      try {
         const outcome = await saveCompatibilityAnswerAction({
           questionKey: question.id,
           answer: desired,
@@ -277,7 +288,23 @@ export default function CompatibilityProfileShell({
             ? 'stale_revision'
             : outcome.message.includes('restarted')
               ? 'stale_generation'
-              : undefined;
+              : outcome.message.includes('idempotency')
+                ? 'idempotency_conflict'
+                : undefined;
+          // Generic/network failures may be lost responses after a successful write.
+          // Keep the operation ID so Retry resends the same logical attempt.
+          if (
+            !code &&
+            (outcome.message === SAVE_STATUS_COPY.error ||
+              outcome.message.includes('Try again') ||
+              /network|fetch|timeout|interrupted/i.test(outcome.message))
+          ) {
+            return {
+              success: false as const,
+              transportError: true as const,
+              message: outcome.message,
+            };
+          }
           return {
             success: false as const,
             message: outcome.message,
@@ -293,7 +320,18 @@ export default function CompatibilityProfileShell({
             operationId: outcome.data?.operationId ?? operationId,
           },
         };
+      } catch (error) {
+        // Thrown transport failures are retained by the worker with the same operation ID.
+        throw error instanceof Error
+          ? error
+          : new Error('Could not save your answer. Try again.');
       }
+    };
+
+    const result = await saveWorkerRef.current.enqueue(
+      question.id,
+      { answer: sanitized, generation },
+      runSave
     );
 
     if (!result.ok) {
@@ -656,21 +694,45 @@ export default function CompatibilityProfileShell({
 
   async function confirmCategoryRestart(category: CategoryDefinition) {
     setRestartBusy(true);
-    saveWorkerRef.current.bumpGeneration();
+    setSaveError(null);
+    if (
+      !pendingRestartRef.current ||
+      pendingRestartRef.current.kind !== 'category' ||
+      pendingRestartRef.current.categoryKey !== category.id
+    ) {
+      pendingRestartRef.current = beginRestartOperation(
+        'category',
+        writeGenerationRef.current,
+        category.id
+      );
+    }
+    const restartOp = pendingRestartRef.current;
     const result = await restartCompatibilityCategoryAction({
       categoryKey: category.id,
-      expectedWriteGeneration: writeGenerationRef.current,
-      operationId: crypto.randomUUID(),
+      expectedWriteGeneration: restartOp.expectedWriteGeneration,
+      operationId: restartOp.operationId,
     });
     setRestartBusy(false);
     if (!result.success) {
+      // Keep restartOp so Retry reuses the same operation ID and expected generation.
       setSaveStatus('error');
       setSaveError(result.message);
       return;
     }
+    pendingRestartRef.current = null;
     if (typeof result.data?.writeGeneration === 'number') {
       setWriteGeneration(result.data.writeGeneration);
       writeGenerationRef.current = result.data.writeGeneration;
+    }
+    // Invalidate pre-restart in-flight UI updates, then reset revisions for this category.
+    saveWorkerRef.current.bumpGeneration();
+    const categoryQuestionKeys = category.questions.map((question) => question.id);
+    saveWorkerRef.current.resetQuestions(categoryQuestionKeys);
+    if (
+      pendingAnswerRef.current &&
+      categoryQuestionKeys.includes(pendingAnswerRef.current.questionKey)
+    ) {
+      pendingAnswerRef.current = null;
     }
     setAnswersByCategory((prev) => ({
       ...prev,
@@ -688,10 +750,17 @@ export default function CompatibilityProfileShell({
 
   async function confirmFullRestart() {
     setRestartBusy(true);
-    saveWorkerRef.current.bumpGeneration();
+    setSaveError(null);
+    if (!pendingRestartRef.current || pendingRestartRef.current.kind !== 'profile') {
+      pendingRestartRef.current = beginRestartOperation(
+        'profile',
+        writeGenerationRef.current
+      );
+    }
+    const restartOp = pendingRestartRef.current;
     const result = await restartCompatibilityProfileAction({
-      expectedWriteGeneration: writeGenerationRef.current,
-      operationId: crypto.randomUUID(),
+      expectedWriteGeneration: restartOp.expectedWriteGeneration,
+      operationId: restartOp.operationId,
     });
     setRestartBusy(false);
     if (!result.success) {
@@ -699,10 +768,14 @@ export default function CompatibilityProfileShell({
       setSaveError(result.message);
       return;
     }
+    pendingRestartRef.current = null;
     if (typeof result.data?.writeGeneration === 'number') {
       setWriteGeneration(result.data.writeGeneration);
       writeGenerationRef.current = result.data.writeGeneration;
     }
+    saveWorkerRef.current.bumpGeneration();
+    saveWorkerRef.current.resetAllQuestions();
+    pendingAnswerRef.current = null;
     setAnswersByCategory({});
     setSavedProgress({
       status: 'not_started',
@@ -719,12 +792,62 @@ export default function CompatibilityProfileShell({
   }
 
   async function retryPendingSave() {
+    if (pendingRestartRef.current?.kind === 'category') {
+      const category = categories.find(
+        (item) => item.id === pendingRestartRef.current?.categoryKey
+      );
+      if (category) {
+        await confirmCategoryRestart(category);
+        return;
+      }
+    }
+    if (pendingRestartRef.current?.kind === 'profile') {
+      await confirmFullRestart();
+      return;
+    }
     if (pendingProgress) {
       await persistProgress(pendingProgress);
       return;
     }
     const pending = pendingAnswerRef.current;
     if (!pending) return;
+
+    // Prefer exact same-operation retry when a transport failure was retained.
+    if (saveWorkerRef.current.hasRetainedAttempt(pending.questionKey)) {
+      setSaveStatus('saving');
+      setSaveError(null);
+      const result = await saveWorkerRef.current.retry(pending.questionKey);
+      if (!result.ok) {
+        if (result.cancelled) return;
+        setSaveStatus('error');
+        setSaveError(result.message || SAVE_STATUS_COPY.error);
+        return;
+      }
+      const located = categories
+        .flatMap((category) =>
+          category.questions.map((question) => ({ category, question }))
+        )
+        .find((item) => item.question.id === pending.questionKey);
+      if (located) {
+        setAnswersByCategory((prev) => ({
+          ...prev,
+          [located.category.number]: {
+            ...(prev[located.category.number] ?? {}),
+            [pending.questionKey]: {
+              ...pending.answer,
+              revision: result.data.revision,
+            },
+          },
+        }));
+      }
+      if (typeof result.data.writeGeneration === 'number') {
+        setWriteGeneration(result.data.writeGeneration);
+        writeGenerationRef.current = result.data.writeGeneration;
+      }
+      setSaveStatus('saved');
+      return;
+    }
+
     const located = categories
       .flatMap((category) =>
         category.questions.map((question) => ({ category, question }))

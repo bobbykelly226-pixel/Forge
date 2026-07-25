@@ -11,7 +11,7 @@
 
 begin;
 
-select plan(26);
+select plan(37);
 
 -- ---------------------------------------------------------------------------
 -- Helpers (pg_temp = session-scoped; CREATE TEMPORARY FUNCTION is not valid)
@@ -220,12 +220,42 @@ begin
 end $$;
 
 -- ---------------------------------------------------------------------------
--- 1. Authenticated direct INSERT/UPDATE on responses denied (or no privilege)
+-- 1. Authenticated direct mutations denied on all private questionnaire tables
 -- ---------------------------------------------------------------------------
 select ok(
+  not has_table_privilege('authenticated', 'public.user_questionnaire_progress', 'INSERT')
+  and not has_table_privilege('authenticated', 'public.user_questionnaire_progress', 'UPDATE')
+  and not has_table_privilege('authenticated', 'public.user_questionnaire_progress', 'DELETE'),
+  'authenticated lacks INSERT/UPDATE/DELETE on user_questionnaire_progress'
+);
+
+select ok(
   not has_table_privilege('authenticated', 'public.user_questionnaire_responses', 'INSERT')
-  and not has_table_privilege('authenticated', 'public.user_questionnaire_responses', 'UPDATE'),
-  'authenticated lacks direct INSERT/UPDATE privilege on user_questionnaire_responses'
+  and not has_table_privilege('authenticated', 'public.user_questionnaire_responses', 'UPDATE')
+  and not has_table_privilege('authenticated', 'public.user_questionnaire_responses', 'DELETE'),
+  'authenticated lacks INSERT/UPDATE/DELETE on user_questionnaire_responses'
+);
+
+select ok(
+  not has_table_privilege('authenticated', 'public.user_questionnaire_selected_choices', 'INSERT')
+  and not has_table_privilege('authenticated', 'public.user_questionnaire_selected_choices', 'UPDATE')
+  and not has_table_privilege('authenticated', 'public.user_questionnaire_selected_choices', 'DELETE'),
+  'authenticated lacks INSERT/UPDATE/DELETE on user_questionnaire_selected_choices'
+);
+
+select ok(
+  not has_table_privilege('authenticated', 'public.user_questionnaire_priority_selections', 'INSERT')
+  and not has_table_privilege('authenticated', 'public.user_questionnaire_priority_selections', 'UPDATE')
+  and not has_table_privilege('authenticated', 'public.user_questionnaire_priority_selections', 'DELETE'),
+  'authenticated lacks INSERT/UPDATE/DELETE on user_questionnaire_priority_selections'
+);
+
+select ok(
+  not has_table_privilege('authenticated', 'public.user_questionnaire_write_operations', 'SELECT')
+  and not has_table_privilege('authenticated', 'public.user_questionnaire_write_operations', 'INSERT')
+  and not has_table_privilege('authenticated', 'public.user_questionnaire_write_operations', 'UPDATE')
+  and not has_table_privilege('authenticated', 'public.user_questionnaire_write_operations', 'DELETE'),
+  'authenticated lacks all privileges on user_questionnaire_write_operations'
 );
 
 select pg_temp._cp_authenticate(
@@ -251,6 +281,20 @@ select throws_ok(
   null,
   null,
   'authenticated direct INSERT into user_questionnaire_responses is denied'
+);
+
+select throws_ok(
+  format(
+    $sql$
+      update public.user_questionnaire_progress
+      set status = 'completed'
+      where user_id = %L
+    $sql$,
+    (select user_id from _cp_users where label = 'owner')
+  ),
+  null,
+  null,
+  'authenticated direct UPDATE on user_questionnaire_progress is denied'
 );
 
 -- ---------------------------------------------------------------------------
@@ -772,6 +816,180 @@ select has_function(
   'forge_user_open_to_parenting_or_stepparenting_role',
   array['uuid'],
   'forge_user_open_to_parenting_or_stepparenting_role eligibility helper exists'
+);
+
+-- ---------------------------------------------------------------------------
+-- 19. Fingerprint-aware idempotency ledger
+-- ---------------------------------------------------------------------------
+select ok(
+  (
+    with op as (
+      select gen_random_uuid() as operation_id
+    ),
+    first_save as (
+      select pg_temp._cp_save(
+        'faith_spirituality_worldview_q01',
+        array['faith_spirituality_worldview_q01_c01'],
+        '{}',
+        '{}'::jsonb,
+        '{}'::jsonb,
+        0,
+        pg_temp._cp_write_generation(),
+        (select operation_id from op)
+      ) as result
+    ),
+    same_retry as (
+      select pg_temp._cp_save(
+        'faith_spirituality_worldview_q01',
+        array['faith_spirituality_worldview_q01_c01'],
+        '{}',
+        '{}'::jsonb,
+        '{}'::jsonb,
+        0,
+        pg_temp._cp_write_generation(),
+        (select operation_id from op)
+      ) as result
+    )
+    select
+      (select result->>'ok' from first_save) = 'true'
+      and (select result->>'ok' from same_retry) = 'true'
+      and (select result->>'revision' from first_save)
+        = (select result->>'revision' from same_retry)
+  ),
+  'same operation_id and same payload returns the original result'
+);
+
+select ok(
+  (
+    with op as (
+      select gen_random_uuid() as operation_id
+    ),
+    first_save as (
+      select pg_temp._cp_save(
+        'faith_spirituality_worldview_q02',
+        array['faith_spirituality_worldview_q02_c01'],
+        '{}',
+        '{}'::jsonb,
+        '{}'::jsonb,
+        0,
+        pg_temp._cp_write_generation(),
+        (select operation_id from op)
+      ) as result
+    ),
+    different_answer as (
+      select pg_temp._cp_save(
+        'faith_spirituality_worldview_q02',
+        array['faith_spirituality_worldview_q02_c02'],
+        '{}',
+        '{}'::jsonb,
+        '{}'::jsonb,
+        0,
+        pg_temp._cp_write_generation(),
+        (select operation_id from op)
+      ) as result
+    )
+    select
+      (select result->>'ok' from first_save) = 'true'
+      and (select result->>'ok' from different_answer) = 'false'
+      and (select result->>'code' from different_answer) = 'idempotency_conflict'
+  ),
+  'same operation_id with a different answer is rejected as idempotency_conflict'
+);
+
+select ok(
+  (
+    with op as (
+      select gen_random_uuid() as operation_id
+    ),
+    first_save as (
+      select pg_temp._cp_save(
+        'integrity_honesty_trust_q01',
+        array['integrity_honesty_trust_q01_c01'],
+        '{}',
+        '{}'::jsonb,
+        '{}'::jsonb,
+        0,
+        pg_temp._cp_write_generation(),
+        (select operation_id from op)
+      ) as result
+    ),
+    clear_reuse as (
+      select public.clear_my_questionnaire_question(
+        'compatibility_profile_v1',
+        'integrity_honesty_trust_q01',
+        ((select result->>'revision' from first_save)::bigint),
+        pg_temp._cp_write_generation(),
+        (select operation_id from op)
+      ) as result
+    )
+    select
+      (select result->>'ok' from first_save) = 'true'
+      and (select result->>'ok' from clear_reuse) = 'false'
+      and (select result->>'code' from clear_reuse) = 'idempotency_conflict'
+  ),
+  'same operation_id reused across save and clear is rejected'
+);
+
+select ok(
+  (
+    with op as (
+      select gen_random_uuid() as operation_id
+    ),
+    wg as (
+      select pg_temp._cp_write_generation() as write_generation
+    ),
+    first_restart as (
+      select public.clear_my_questionnaire_category(
+        'compatibility_profile_v1',
+        'relationship_vision_intentions',
+        (select write_generation from wg),
+        (select operation_id from op)
+      ) as result
+    ),
+    different_target as (
+      select public.clear_my_questionnaire_category(
+        'compatibility_profile_v1',
+        'family_children_parenting',
+        (select write_generation from wg),
+        (select operation_id from op)
+      ) as result
+    )
+    select
+      (select result->>'ok' from first_restart) = 'true'
+      and (select result->>'ok' from different_target) = 'false'
+      and (select result->>'code' from different_target) = 'idempotency_conflict'
+  ),
+  'same operation_id with a different restart target is rejected'
+);
+
+select throws_ok(
+  $sql$
+    select * from public.user_questionnaire_write_operations
+  $sql$,
+  null,
+  null,
+  'authenticated cannot SELECT user_questionnaire_write_operations'
+);
+
+select throws_ok(
+  format(
+    $sql$
+      insert into public.user_questionnaire_write_operations (
+        operation_id, user_id, version_id, operation_kind, request_fingerprint, result
+      ) values (
+        gen_random_uuid(),
+        %L,
+        public.forge_active_questionnaire_version_id(),
+        'save_response',
+        'x',
+        '{"ok":true}'::jsonb
+      )
+    $sql$,
+    (select user_id from _cp_users where label = 'owner')
+  ),
+  null,
+  null,
+  'authenticated cannot INSERT into user_questionnaire_write_operations'
 );
 
 select * from finish();

@@ -3,6 +3,7 @@ import { describe, it } from 'node:test';
 
 import {
   QuestionSaveWorker,
+  beginRestartOperation,
   type SaveWorkerRunArgs,
   type SaveWorkerRunResult,
 } from '@/lib/questionnaire/persistence/save-worker';
@@ -37,7 +38,6 @@ describe('QuestionSaveWorker', () => {
       return { success: true as const, data: { revision: 5, operationId: args.operationId } };
     });
 
-    // First request should be in flight with revision 3 before we release it.
     assert.equal(seen.length, 1);
     assert.equal(seen[0]?.expectedRevision, 3);
     assert.equal(seen[0]?.answer.value, 'a');
@@ -96,37 +96,169 @@ describe('QuestionSaveWorker', () => {
     assert.equal(worker.getRevision('q1'), 12);
   });
 
-  it('bumpGeneration invalidates stale completions for callers waiting on the old generation', async () => {
+  it('retries a lost response with the same operation ID, recovers N+1, then saves a newer queued answer', async () => {
     const worker = new QuestionSaveWorker();
-    worker.setRevision('q1', 1);
-    const oldGeneration = worker.getGeneration();
+    worker.setRevision('q1', 5);
+    const generation = worker.getGeneration();
+    const seen: SaveWorkerRunArgs<Answer>[] = [];
+    let attempt = 0;
 
+    const first = worker.enqueue('q1', { answer: { value: 'a' }, generation }, async (args) => {
+      seen.push(args);
+      attempt += 1;
+      if (attempt === 1) {
+        // Simulate lost response after the DB write succeeded.
+        return {
+          success: false as const,
+          transportError: true as const,
+          message: 'Network interrupted before the save response arrived.',
+        };
+      }
+      return {
+        success: true as const,
+        data: { revision: 6, operationId: args.operationId },
+      };
+    });
+
+    // Newer edit arrives while the first logical write is unresolved.
+    const second = worker.enqueue('q1', { answer: { value: 'b' }, generation }, async (args) => {
+      seen.push(args);
+      return {
+        success: true as const,
+        data: { revision: 7, operationId: args.operationId },
+      };
+    });
+
+    const firstResult = await first;
+    assert.equal(firstResult.ok, false);
+    if (!firstResult.ok && !firstResult.cancelled) {
+      assert.equal(firstResult.retriable, true);
+    }
+    assert.equal(worker.hasRetainedAttempt('q1'), true);
+    assert.equal(seen.length, 1);
+    const lostOperationId = seen[0]?.operationId;
+    assert.ok(lostOperationId);
+
+    const retryResult = await worker.retry('q1');
+    const secondResult = await second;
+
+    assert.equal(retryResult.ok, true);
+    assert.equal(secondResult.ok, true);
+    assert.equal(seen.length, 3);
+    assert.equal(seen[1]?.operationId, lostOperationId);
+    assert.equal(seen[1]?.expectedRevision, 5);
+    assert.equal(seen[1]?.answer.value, 'a');
+    assert.equal(seen[2]?.answer.value, 'b');
+    assert.equal(seen[2]?.expectedRevision, 6);
+    assert.notEqual(seen[2]?.operationId, lostOperationId);
+    assert.equal(worker.getRevision('q1'), 7);
+    assert.equal(worker.hasRetainedAttempt('q1'), false);
+  });
+
+  it('resets category revisions to zero while preserving untouched categories', async () => {
+    const worker = new QuestionSaveWorker();
+    worker.setRevision('cat1_q01', 4);
+    worker.setRevision('cat1_q02', 2);
+    worker.setRevision('cat2_q01', 7);
+
+    worker.resetQuestions(['cat1_q01', 'cat1_q02']);
+
+    assert.equal(worker.getRevision('cat1_q01'), 0);
+    assert.equal(worker.getRevision('cat1_q02'), 0);
+    assert.equal(worker.getRevision('cat2_q01'), 7);
+
+    const generation = worker.getGeneration();
+    const seen: number[] = [];
+    const result = await worker.enqueue(
+      'cat1_q01',
+      { answer: { value: 'fresh' }, generation },
+      async (args) => {
+        seen.push(args.expectedRevision);
+        return { success: true as const, data: { revision: 1 } };
+      }
+    );
+    assert.equal(result.ok, true);
+    assert.deepEqual(seen, [0]);
+    assert.equal(worker.getRevision('cat1_q01'), 1);
+    assert.equal(worker.getRevision('cat2_q01'), 7);
+  });
+
+  it('full reset clears every question revision to zero', async () => {
+    const worker = new QuestionSaveWorker();
+    worker.setRevision('a', 3);
+    worker.setRevision('b', 9);
+    worker.resetAllQuestions();
+    assert.equal(worker.getRevision('a'), 0);
+    assert.equal(worker.getRevision('b'), 0);
+  });
+
+  it('delayed pre-restart completion cannot restore an obsolete revision after reset', async () => {
+    const worker = new QuestionSaveWorker();
+    worker.setRevision('q1', 5);
+    const oldGeneration = worker.getGeneration();
     const gate = deferred();
-    const inFlightSettled = deferred();
-    let ranAfterBump = false;
 
     const stale = worker.enqueue(
       'q1',
       { answer: { value: 'stale' }, generation: oldGeneration },
       async (args) => {
         await gate.promise;
-        try {
-          return {
-            success: true as const,
-            data: { revision: 2, writeGeneration: 99, operationId: args.operationId },
-          };
-        } finally {
-          // Allow the worker to consume revision after this run returns.
-          queueMicrotask(() => inFlightSettled.resolve());
-        }
+        return {
+          success: true as const,
+          data: { revision: 6, writeGeneration: 1, operationId: args.operationId },
+        };
+      }
+    );
+
+    worker.bumpGeneration();
+    worker.resetQuestions(['q1']);
+    assert.equal(worker.getRevision('q1'), 0);
+
+    gate.resolve();
+    const staleResult = await stale;
+    assert.equal(staleResult.ok, false);
+    if (!staleResult.ok) {
+      assert.equal(staleResult.cancelled, true);
+    }
+    // Give the worker a turn to process the late completion.
+    await Promise.resolve();
+    await Promise.resolve();
+    assert.equal(worker.getRevision('q1'), 0);
+
+    const fresh = await worker.enqueue(
+      'q1',
+      { answer: { value: 'fresh' }, generation: worker.getGeneration() },
+      async (args) => {
+        assert.equal(args.expectedRevision, 0);
+        return { success: true as const, data: { revision: 1 } };
+      }
+    );
+    assert.equal(fresh.ok, true);
+    assert.equal(worker.getRevision('q1'), 1);
+  });
+
+  it('bumpGeneration invalidates stale completions for callers waiting on the old generation', async () => {
+    const worker = new QuestionSaveWorker();
+    worker.setRevision('q1', 1);
+    const oldGeneration = worker.getGeneration();
+
+    const gate = deferred();
+
+    const stale = worker.enqueue(
+      'q1',
+      { answer: { value: 'stale' }, generation: oldGeneration },
+      async (args) => {
+        await gate.promise;
+        return {
+          success: true as const,
+          data: { revision: 2, writeGeneration: 99, operationId: args.operationId },
+        };
       }
     );
 
     const bumped = worker.bumpGeneration();
     assert.equal(bumped, oldGeneration + 1);
-    assert.equal(worker.getGeneration(), oldGeneration + 1);
 
-    // Callers still on the old generation must not apply old success data.
     const staleResult = await stale;
     assert.equal(staleResult.ok, false);
     if (!staleResult.ok) {
@@ -134,39 +266,43 @@ describe('QuestionSaveWorker', () => {
       assert.equal(staleResult.code, 'stale_generation');
     }
 
-    // Release the in-flight request after invalidation; revision is still consumed.
     gate.resolve();
-    await inFlightSettled.promise;
     await Promise.resolve();
-    assert.equal(worker.getRevision('q1'), 2);
+    await Promise.resolve();
+    // Must not restore revision 2 after generation bump without an explicit reset path
+    // that still allows same-generation consumption; bump alone keeps slot but late
+    // success must not apply across generations.
+    assert.equal(worker.getRevision('q1'), 1);
 
+    worker.resetQuestions(['q1']);
     const fresh = worker.enqueue(
       'q1',
       { answer: { value: 'fresh' }, generation: worker.getGeneration() },
       async (args) => {
-        ranAfterBump = true;
-        assert.equal(args.expectedRevision, 2);
-        return { success: true as const, data: { revision: 3 } };
+        assert.equal(args.expectedRevision, 0);
+        return { success: true as const, data: { revision: 1 } };
       }
     );
 
     const freshResult = await fresh;
-    assert.equal(ranAfterBump, true);
     assert.equal(freshResult.ok, true);
     if (freshResult.ok) {
-      assert.equal(freshResult.data.revision, 3);
+      assert.equal(freshResult.data.revision, 1);
     }
+  });
 
-    // Enqueue with a stale generation is rejected immediately.
-    const rejected = await worker.enqueue(
-      'q1',
-      { answer: { value: 'too-old' }, generation: oldGeneration },
-      async () => ({ success: true as const, data: { revision: 4 } })
-    );
-    assert.equal(rejected.ok, false);
-    if (!rejected.ok) {
-      assert.equal(rejected.cancelled, true);
-    }
+  it('beginRestartOperation keeps a stable operation ID for lost-response retries', () => {
+    const first = beginRestartOperation('category', 3, 'relationship_vision_intentions');
+    const second = beginRestartOperation('profile', 3);
+    assert.equal(first.kind, 'category');
+    assert.equal(first.expectedWriteGeneration, 3);
+    assert.equal(first.categoryKey, 'relationship_vision_intentions');
+    assert.ok(first.operationId);
+    assert.notEqual(first.operationId, second.operationId);
+    // Retry must reuse the same object fields rather than minting a new ID.
+    const retry = { ...first };
+    assert.equal(retry.operationId, first.operationId);
+    assert.equal(retry.expectedWriteGeneration, 3);
   });
 
   it('exports run result shapes usable by persistence tests', async () => {

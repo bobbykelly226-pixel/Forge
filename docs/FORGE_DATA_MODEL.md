@@ -2,7 +2,7 @@
 
 Authoritative documentation for the Forge Backend Foundation persistence layer.
 
-**Remote migration status (re-diagnosed 2026-07-25 during Persistence V1 correction pass):**
+**Remote migration status (re-diagnosed 2026-07-25 during Persistence V1 idempotency correction pass):**
 
 | Layer | Result |
 |---|---|
