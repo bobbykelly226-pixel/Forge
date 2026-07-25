@@ -49,32 +49,54 @@ const TAP_ASSERTION_FNS = new Set([
   'policies_are',
 ]);
 
+const DOLLAR_TAG = /\$([A-Za-z_]*)\$/g;
+
 /**
  * Returns the number of top-level `select <tap_fn>(...)` assertions,
  * ignoring `plan` / `finish`, SQL comments, and dollar-quoted bodies.
  */
 export function countTopLevelPgTapAssertions(sql: string): number {
-  const dollarStack: string[] = [];
+  let dollarTag: string | null = null;
   let count = 0;
 
-  for (const line of sql.split(/\r?\n/)) {
-    let pos = 0;
-    while (pos < line.length) {
-      const match = /\$([A-Za-z_]*)\$/.exec(line.slice(pos));
-      if (!match || match.index === undefined) break;
-      const tag = match[0];
-      const at = pos + match.index;
-      if (dollarStack.length > 0 && dollarStack[dollarStack.length - 1] === tag) {
-        dollarStack.pop();
-      } else if (dollarStack.length === 0) {
-        dollarStack.push(tag);
+  for (const rawLine of sql.split(/\r?\n/)) {
+    const startedInside = dollarTag !== null;
+    let visible = '';
+    let i = 0;
+
+    while (i < rawLine.length) {
+      DOLLAR_TAG.lastIndex = i;
+      const match = DOLLAR_TAG.exec(rawLine);
+      if (!match || match.index === undefined) {
+        if (dollarTag === null) visible += rawLine.slice(i);
+        break;
       }
-      pos = at + tag.length;
+
+      const tag = match[0];
+      const at = match.index;
+
+      if (dollarTag === null) {
+        // Outside quotes: keep text before the opener, then enter the quote.
+        visible += rawLine.slice(i, at);
+        dollarTag = tag;
+        i = at + tag.length;
+        continue;
+      }
+
+      if (tag === dollarTag) {
+        // Close current dollar quote; discard quoted content.
+        dollarTag = null;
+        i = at + tag.length;
+        continue;
+      }
+
+      // Different tag inside an open quote — still quoted content.
+      i = at + tag.length;
     }
 
-    if (dollarStack.length > 0) continue;
+    if (startedInside) continue;
 
-    const trimmed = line.trim();
+    const trimmed = visible.trim();
     if (!trimmed || trimmed.startsWith('--')) continue;
 
     const call = /^select\s+([A-Za-z_][A-Za-z0-9_]*)\s*\(/i.exec(trimmed);
