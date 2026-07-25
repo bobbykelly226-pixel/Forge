@@ -89,7 +89,7 @@ describe('Compatibility Profile Persistence V1 audit hardening', () => {
     assert.match(migration, /revision = v_new_revision/);
     assert.match(migration, /coalesce\(v_existing_revision, 0\) <> coalesce\(p_expected_revision, 0\)/);
     assert.match(dataLayer, /p_operation_id/);
-    assert.match(actions, /operationId\?:/);
+    assert.match(actions, /operationId: string/);
   });
 
   it('persists explicit empty answers for min_selections = 0 without tombstoning them', () => {
@@ -124,7 +124,7 @@ describe('Compatibility Profile Persistence V1 audit hardening', () => {
     );
     assert.match(shell, /saveWorkerRef\.current\.bumpGeneration/);
     assert.match(shell, /resetQuestions|resetAllQuestions/);
-    assert.match(shell, /beginRestartOperation/);
+    assert.match(shell, /executeRestartAttempt/);
     assert.match(shell, /pendingRestartRef/);
   });
 
@@ -228,7 +228,7 @@ describe('Compatibility Profile Persistence V1 audit hardening', () => {
   });
 
   it('retains transport-failed save attempts for same-operation Retry', () => {
-    assert.match(shell, /transportError:\s*true/);
+    assert.match(shell, /transportError/);
     assert.match(shell, /hasRetainedAttempt/);
     assert.match(shell, /saveWorkerRef\.current\.retry/);
     const workerSource = read('lib/questionnaire/persistence/save-worker.ts');
@@ -236,6 +236,34 @@ describe('Compatibility Profile Persistence V1 audit hardening', () => {
     assert.match(workerSource, /transportError/);
     assert.match(workerSource, /resetQuestions/);
     assert.match(workerSource, /resetAllQuestions/);
+  });
+
+  it('drops legacy mutation overloads and requires operation_id', () => {
+    assert.match(migration, /legacy questionnaire mutation overloads still present/);
+    assert.match(migration, /hardened operation_id RPC signatures missing/);
+    assert.match(migration, /operation_id_required/);
+    assert.match(
+      migration,
+      /drop function if exists public\.save_my_questionnaire_response\(text, text, text\[\], text\[\], jsonb, jsonb, bigint, bigint\)/
+    );
+    assert.match(
+      migration,
+      /create or replace function public\.save_my_questionnaire_response\(\s*p_version_key text,\s*p_question_key text,\s*p_choice_keys text\[\],\s*p_operation_id uuid,/
+    );
+    assert.match(dataLayer, /operationId: string/);
+    assert.doesNotMatch(dataLayer, /p_operation_id: input\.operationId \?\? undefined/);
+    assert.match(actions, /operationId: string/);
+    assert.match(shell, /executeRestartAttempt/);
+    const coordinator = read('lib/questionnaire/persistence/restart-coordinator.ts');
+    assert.match(coordinator, /export async function executeRestartAttempt/);
+  });
+
+  it('preserves structured database error codes through rpcResult', () => {
+    assert.match(dataLayer, /transportError: true/);
+    assert.match(dataLayer, /transportError: false/);
+    assert.match(dataLayer, /code: typeof payload\.code === 'string'/);
+    assert.doesNotMatch(shell, /outcome\.message\.includes\('newer answer'\)/);
+    assert.doesNotMatch(shell, /outcome\.message\.includes\('restarted'\)/);
   });
 
   it('documents authenticated RPC bypass rejection contracts in SQL', () => {

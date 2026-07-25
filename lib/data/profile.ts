@@ -10,6 +10,13 @@ import { logSupabaseError } from '@/lib/supabase/log-error';
 export type DataAccessError = {
   success: false;
   message: string;
+  /** Authoritative database/business code when present (e.g. stale_revision). */
+  code?: string;
+  /**
+   * True when the failure may be a lost/transport response after a write.
+   * False when the database returned an authoritative {ok:false} payload.
+   */
+  transportError?: boolean;
 };
 
 export type DataAccessSuccess<T> = {

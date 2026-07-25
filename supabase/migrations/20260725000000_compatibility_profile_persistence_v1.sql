@@ -4253,3 +4253,1297 @@ comment on function public.clear_my_questionnaire_profile(
   text, bigint, uuid
 ) is
   'Authenticated write boundary: full Compatibility Profile clear for the active version. Idempotency resolved after progress lock.';
+
+
+-- ---------------------------------------------------------------------------
+-- 12. Mandatory operation_id + drop legacy mutation overloads
+-- ---------------------------------------------------------------------------
+-- Authoritative write signatures (p_operation_id required, before defaults):
+--   save_my_questionnaire_response(text, text, text[], uuid, text[], jsonb, jsonb, bigint, bigint)
+--   clear_my_questionnaire_question(text, text, uuid, bigint, bigint)
+--   clear_my_questionnaire_category(text, text, uuid, bigint)
+--   clear_my_questionnaire_profile(text, uuid, bigint)
+
+-- A. Drop all obsolete / prior mutation overloads
+drop function if exists public.save_my_questionnaire_response(text, text, text[], text[], jsonb, jsonb, bigint, bigint);
+drop function if exists public.save_my_questionnaire_response(text, text, text[], text[], jsonb, jsonb, bigint, bigint, uuid);
+drop function if exists public.save_my_questionnaire_response(text, text, text[], text[], jsonb, jsonb, bigint, public.questionnaire_response_state, public.questionnaire_response_qualifier[]);
+drop function if exists public.clear_my_questionnaire_question(text, text);
+drop function if exists public.clear_my_questionnaire_question(text, text, bigint, bigint);
+drop function if exists public.clear_my_questionnaire_question(text, text, bigint, bigint, uuid);
+drop function if exists public.clear_my_questionnaire_category(text, text);
+drop function if exists public.clear_my_questionnaire_category(text, text, bigint);
+drop function if exists public.clear_my_questionnaire_category(text, text, bigint, uuid);
+drop function if exists public.clear_my_questionnaire_profile(text);
+drop function if exists public.clear_my_questionnaire_profile(text, bigint);
+drop function if exists public.clear_my_questionnaire_profile(text, bigint, uuid);
+
+-- B. Recreate hardened write RPCs with required p_operation_id
+
+create or replace function public.save_my_questionnaire_response(
+  p_version_key text,
+  p_question_key text,
+  p_choice_keys text[],
+  p_operation_id uuid,
+  p_priority_choice_keys text[] default '{}',
+  p_choice_contexts jsonb default '{}'::jsonb,
+  p_identity jsonb default '{}'::jsonb,
+  p_expected_revision bigint default 0,
+  p_expected_write_generation bigint default 0
+)
+returns jsonb
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  v_uid uuid := auth.uid();
+  v_version_id uuid;
+  v_question_id uuid;
+  v_response_id uuid;
+  v_existing_revision bigint;
+  v_write_generation bigint;
+  v_min integer;
+  v_max integer;
+  v_behavior public.questionnaire_response_behavior;
+  v_identity_config jsonb;
+  v_allowed_states public.questionnaire_response_state[];
+  v_allowed_qualifiers public.questionnaire_response_qualifier[];
+  v_priority_prompt text;
+  v_priority_count integer;
+  v_priority_min_eligible integer;
+  v_eligible jsonb;
+  v_excluded jsonb;
+  v_choice_keys text[];
+  v_priority_keys text[];
+  v_choice_key text;
+  v_choice_id uuid;
+  v_context text;
+  v_opens_context boolean;
+  v_special public.questionnaire_response_state;
+  v_qualifier public.questionnaire_response_qualifier;
+  v_mutually_exclusive boolean;
+  v_exclusive_count integer := 0;
+  v_selected_count integer := 0;
+  v_raw_count integer;
+  v_distinct_count integer;
+  v_derived_state public.questionnaire_response_state := 'answered';
+  v_derived_qualifiers public.questionnaire_response_qualifier[] := '{}';
+  v_priority_key text;
+  v_priority_id uuid;
+  v_eligible_selected_count integer := 0;
+  v_new_revision bigint;
+  v_identity_refinement text := null;
+  v_identity_user_supplied text := null;
+  v_identity_public boolean := null;
+  v_identity_private boolean := null;
+  v_choice_contexts jsonb := coalesce(p_choice_contexts, '{}'::jsonb);
+  v_identity jsonb := coalesce(p_identity, '{}'::jsonb);
+  v_ctx_key text;
+  v_ctx_val jsonb;
+  v_id_type text;
+  v_cached jsonb;
+  v_result jsonb;
+  v_fingerprint text;
+begin
+  if v_uid is null then
+    return jsonb_build_object('ok', false, 'message', 'Authentication required.');
+  end if;
+  if p_operation_id is null then
+    return jsonb_build_object(
+      'ok', false,
+      'code', 'operation_id_required',
+      'message', 'An operation id is required.'
+    );
+  end if;
+  if p_version_key is null or char_length(trim(p_version_key)) = 0 then
+    return jsonb_build_object('ok', false, 'message', 'Questionnaire version is required.');
+  end if;
+  if p_question_key is null or char_length(trim(p_question_key)) = 0 then
+    return jsonb_build_object('ok', false, 'message', 'Question is required.');
+  end if;
+
+  if jsonb_typeof(v_choice_contexts) <> 'object' then
+    return jsonb_build_object(
+      'ok', false,
+      'message', 'choice_contexts must be a JSON object.'
+    );
+  end if;
+  for v_ctx_key, v_ctx_val in
+    select key, value from jsonb_each(v_choice_contexts)
+  loop
+    if v_ctx_val is not null
+       and jsonb_typeof(v_ctx_val) <> 'null'
+       and jsonb_typeof(v_ctx_val) <> 'string' then
+      return jsonb_build_object(
+        'ok', false,
+        'message', 'choice_contexts values must be JSON strings when present.'
+      );
+    end if;
+  end loop;
+
+  if jsonb_typeof(v_identity) <> 'object' then
+    return jsonb_build_object(
+      'ok', false,
+      'message', 'identity must be a JSON object.'
+    );
+  end if;
+  if v_identity ? 'refinement' then
+    v_id_type := jsonb_typeof(v_identity->'refinement');
+    if v_id_type is distinct from 'string' and v_id_type is distinct from 'null' then
+      return jsonb_build_object(
+        'ok', false,
+        'message', 'identity.refinement must be a string or null.'
+      );
+    end if;
+  end if;
+  if v_identity ? 'user_supplied' then
+    v_id_type := jsonb_typeof(v_identity->'user_supplied');
+    if v_id_type is distinct from 'string' and v_id_type is distinct from 'null' then
+      return jsonb_build_object(
+        'ok', false,
+        'message', 'identity.user_supplied must be a string or null.'
+      );
+    end if;
+  end if;
+  if v_identity ? 'public_display_allowed' then
+    if jsonb_typeof(v_identity->'public_display_allowed') <> 'boolean' then
+      return jsonb_build_object(
+        'ok', false,
+        'message', 'identity.public_display_allowed must be a boolean.'
+      );
+    end if;
+  end if;
+  if v_identity ? 'private_matching_allowed' then
+    if jsonb_typeof(v_identity->'private_matching_allowed') <> 'boolean' then
+      return jsonb_build_object(
+        'ok', false,
+        'message', 'identity.private_matching_allowed must be a boolean.'
+      );
+    end if;
+  end if;
+
+  select
+    count(*)::integer,
+    count(distinct trim(key))::integer
+    into v_raw_count, v_distinct_count
+  from unnest(coalesce(p_choice_keys, '{}')) as key
+  where char_length(trim(key)) > 0;
+
+  if coalesce(v_raw_count, 0) <> coalesce(v_distinct_count, 0) then
+    return jsonb_build_object(
+      'ok', false,
+      'message', 'Duplicate choice keys are not allowed.'
+    );
+  end if;
+
+  select
+    count(*)::integer,
+    count(distinct trim(key))::integer
+    into v_raw_count, v_distinct_count
+  from unnest(coalesce(p_priority_choice_keys, '{}')) as key
+  where char_length(trim(key)) > 0;
+
+  if coalesce(v_raw_count, 0) <> coalesce(v_distinct_count, 0) then
+    return jsonb_build_object(
+      'ok', false,
+      'message', 'Duplicate priority choice keys are not allowed.'
+    );
+  end if;
+
+  select v.id into v_version_id
+  from public.questionnaire_versions v
+  where v.version_key = p_version_key
+    and v.is_active = true
+  limit 1;
+
+  if v_version_id is null then
+    return jsonb_build_object('ok', false, 'message', 'Active questionnaire version was not found.');
+  end if;
+
+  select q.id,
+         q.min_selections,
+         q.max_selections,
+         q.response_behavior,
+         q.structured_identity_config,
+         q.allowed_special_response_states,
+         q.allowed_qualifiers,
+         q.priority_follow_up_prompt,
+         q.priority_selection_count,
+         q.priority_min_eligible_selections,
+         q.priority_eligible_choice_keys,
+         q.priority_excluded_choice_keys
+    into v_question_id,
+         v_min,
+         v_max,
+         v_behavior,
+         v_identity_config,
+         v_allowed_states,
+         v_allowed_qualifiers,
+         v_priority_prompt,
+         v_priority_count,
+         v_priority_min_eligible,
+         v_eligible,
+         v_excluded
+  from public.questionnaire_questions q
+  join public.questionnaire_categories c on c.id = q.category_id
+  where c.version_id = v_version_id
+    and q.question_key = p_question_key
+  limit 1;
+
+  if v_question_id is null then
+    return jsonb_build_object('ok', false, 'message', 'Question was not found in the active catalog.');
+  end if;
+
+  v_fingerprint := md5(
+    jsonb_build_object(
+      'kind', 'save_response',
+      'version_key', p_version_key,
+      'question_key', p_question_key,
+      'choice_keys', to_jsonb(coalesce(p_choice_keys, '{}')),
+      'priority_choice_keys', to_jsonb(coalesce(p_priority_choice_keys, '{}')),
+      'choice_contexts', v_choice_contexts,
+      'identity', v_identity,
+      'expected_revision', coalesce(p_expected_revision, 0),
+      'expected_write_generation', coalesce(p_expected_write_generation, 0)
+    )::text
+  );
+
+  perform public.forge_ensure_questionnaire_progress(v_uid, v_version_id);
+
+  select p.write_generation
+    into v_write_generation
+  from public.user_questionnaire_progress p
+  where p.user_id = v_uid
+    and p.version_id = v_version_id
+  for update;
+
+  v_cached := public.forge_questionnaire_resolve_operation(
+    v_uid,
+    p_operation_id,
+    'save_response',
+    v_version_id,
+    v_question_id,
+    null,
+    v_fingerprint
+  );
+  if v_cached is not null then
+    return v_cached;
+  end if;
+
+  if coalesce(p_expected_write_generation, 0) <> coalesce(v_write_generation, 0) then
+    return jsonb_build_object(
+      'ok', false,
+      'code', 'stale_generation',
+      'message', 'Your Compatibility Profile was restarted. Reload and try again.',
+      'write_generation', v_write_generation
+    );
+  end if;
+
+  select coalesce(array_agg(trim(key) order by ordinality), '{}')
+    into v_choice_keys
+  from unnest(coalesce(p_choice_keys, '{}')) with ordinality as t(key, ordinality)
+  where char_length(trim(key)) > 0;
+
+  v_selected_count := coalesce(array_length(v_choice_keys, 1), 0);
+
+  -- Empty choices: optional questions (min_selections = 0) persist as answered.
+  if v_selected_count = 0 then
+    if coalesce(v_min, 1) > 0 then
+      return jsonb_build_object(
+        'ok', false,
+        'message', 'At least one valid choice is required.'
+      );
+    end if;
+    if v_max is not null and v_selected_count > v_max then
+      return jsonb_build_object(
+        'ok', false,
+        'message', 'Too many choices were selected for this question.'
+      );
+    end if;
+
+    v_derived_state := 'answered';
+    v_derived_qualifiers := '{}';
+    v_priority_keys := '{}';
+    v_identity_refinement := null;
+    v_identity_user_supplied := null;
+    v_identity_public := null;
+    v_identity_private := null;
+
+    if v_behavior = 'structured_identity' and v_identity_config is not null then
+      -- Empty optional identity answer clears identity fields.
+      null;
+    elsif v_identity is not null
+          and (
+            nullif(trim(coalesce(v_identity->>'refinement', '')), '') is not null
+            or nullif(trim(coalesce(v_identity->>'user_supplied', '')), '') is not null
+            or (v_identity ? 'public_display_allowed')
+            or (v_identity ? 'private_matching_allowed')
+          ) then
+      return jsonb_build_object(
+        'ok', false,
+        'message', 'Identity fields are not configured for this question.'
+      );
+    end if;
+
+    select r.id, r.revision
+      into v_response_id, v_existing_revision
+    from public.user_questionnaire_responses r
+    where r.user_id = v_uid
+      and r.version_id = v_version_id
+      and r.question_id = v_question_id
+    for update;
+
+    if v_response_id is not null then
+      if coalesce(v_existing_revision, 0) <> coalesce(p_expected_revision, 0) then
+        return jsonb_build_object(
+          'ok', false,
+          'code', 'stale_revision',
+          'message', 'A newer answer is already saved.',
+          'revision', v_existing_revision
+        );
+      end if;
+      v_new_revision := coalesce(v_existing_revision, 0) + 1;
+
+      update public.user_questionnaire_responses
+      set
+        response_state = v_derived_state,
+        active_qualifiers = v_derived_qualifiers,
+        identity_refinement = null,
+        identity_user_supplied = null,
+        identity_public_display_allowed = null,
+        identity_private_matching_allowed = null,
+        revision = v_new_revision,
+        client_mutation = v_new_revision,
+        updated_at = now()
+      where id = v_response_id;
+
+      delete from public.user_questionnaire_priority_selections
+      where response_id = v_response_id;
+      delete from public.user_questionnaire_selected_choices
+      where response_id = v_response_id;
+    else
+      if coalesce(p_expected_revision, 0) <> 0 then
+        return jsonb_build_object(
+          'ok', false,
+          'code', 'stale_revision',
+          'message', 'A newer answer is already saved.',
+          'revision', 0
+        );
+      end if;
+      v_new_revision := 1;
+
+      insert into public.user_questionnaire_responses (
+        user_id,
+        version_id,
+        question_id,
+        response_state,
+        active_qualifiers,
+        identity_refinement,
+        identity_user_supplied,
+        identity_public_display_allowed,
+        identity_private_matching_allowed,
+        revision,
+        client_mutation
+      ) values (
+        v_uid,
+        v_version_id,
+        v_question_id,
+        v_derived_state,
+        v_derived_qualifiers,
+        null,
+        null,
+        null,
+        null,
+        v_new_revision,
+        v_new_revision
+      )
+      returning id into v_response_id;
+    end if;
+
+    perform public.forge_recalculate_questionnaire_progress(v_uid, v_version_id);
+
+    v_result := jsonb_build_object(
+      'ok', true,
+      'response_id', v_response_id,
+      'question_key', p_question_key,
+      'revision', v_new_revision,
+      'write_generation', v_write_generation,
+      'response_state', v_derived_state,
+      'active_qualifiers', to_jsonb(v_derived_qualifiers),
+      'operation_id', p_operation_id
+    );
+
+    begin
+      insert into public.user_questionnaire_write_operations (
+        operation_id, user_id, version_id, operation_kind, question_id, target_key,
+        request_fingerprint, result
+      ) values (
+        p_operation_id, v_uid, v_version_id, 'save_response', v_question_id, null,
+        v_fingerprint, v_result
+      );
+    exception
+      when unique_violation then
+        v_cached := public.forge_questionnaire_resolve_operation(
+          v_uid,
+          p_operation_id,
+          'save_response',
+          v_version_id,
+          v_question_id,
+          null,
+          v_fingerprint
+        );
+        if v_cached is not null then
+          return v_cached;
+        end if;
+        raise;
+    end;
+
+    return v_result;
+  end if;
+
+  if v_selected_count < coalesce(v_min, 1) then
+    return jsonb_build_object('ok', false, 'message', 'Too few choices were selected for this question.');
+  end if;
+  if v_max is not null and v_selected_count > v_max then
+    return jsonb_build_object('ok', false, 'message', 'Too many choices were selected for this question.');
+  end if;
+
+  foreach v_choice_key in array v_choice_keys
+  loop
+    select ac.id, ac.opens_optional_context, ac.special_response_state, ac.qualifier, ac.mutually_exclusive
+      into v_choice_id, v_opens_context, v_special, v_qualifier, v_mutually_exclusive
+    from public.questionnaire_answer_choices ac
+    where ac.question_id = v_question_id
+      and ac.choice_key = v_choice_key
+    limit 1;
+
+    if v_choice_id is null then
+      return jsonb_build_object('ok', false, 'message', 'One or more choices are invalid for this question.');
+    end if;
+
+    if v_mutually_exclusive then
+      v_exclusive_count := v_exclusive_count + 1;
+    end if;
+
+    if v_choice_contexts ? v_choice_key
+       and nullif(trim(v_choice_contexts->>v_choice_key), '') is not null
+       and not v_opens_context then
+      return jsonb_build_object('ok', false, 'message', 'Optional context is not enabled for one or more choices.');
+    end if;
+
+    if v_special is not null
+       and (v_allowed_states is null or v_special = any(v_allowed_states)) then
+      v_derived_state := v_special;
+    end if;
+
+    if v_qualifier is not null
+       and (v_allowed_qualifiers is null or v_qualifier = any(v_allowed_qualifiers))
+       and not (v_qualifier = any(v_derived_qualifiers)) then
+      v_derived_qualifiers := array_append(v_derived_qualifiers, v_qualifier);
+    end if;
+
+    if v_excluded is null or not (v_excluded ? v_choice_key) then
+      if v_eligible is null or (v_eligible ? v_choice_key) then
+        v_eligible_selected_count := v_eligible_selected_count + 1;
+      end if;
+    end if;
+  end loop;
+
+  if v_exclusive_count > 0 and v_selected_count > 1 then
+    return jsonb_build_object('ok', false, 'message', 'Mutually exclusive choices cannot be combined.');
+  end if;
+
+  if exists (
+    select 1
+    from jsonb_object_keys(v_choice_contexts) as ctx_key
+    where nullif(trim(v_choice_contexts->>ctx_key), '') is not null
+      and not (ctx_key = any(v_choice_keys))
+  ) then
+    return jsonb_build_object('ok', false, 'message', 'Optional context is not enabled for one or more choices.');
+  end if;
+
+  select coalesce(array_agg(trim(key) order by ordinality), '{}')
+    into v_priority_keys
+  from unnest(coalesce(p_priority_choice_keys, '{}')) with ordinality as t(key, ordinality)
+  where char_length(trim(key)) > 0;
+
+  if v_priority_prompt is not null and v_priority_count is not null
+     and v_eligible_selected_count >= coalesce(v_priority_min_eligible, v_priority_count) then
+    if coalesce(array_length(v_priority_keys, 1), 0) <> v_priority_count then
+      return jsonb_build_object('ok', false, 'message', 'Priority selections must match the required count.');
+    end if;
+    foreach v_priority_key in array v_priority_keys
+    loop
+      if not (v_priority_key = any(v_choice_keys)) then
+        return jsonb_build_object('ok', false, 'message', 'Priority choices must be selected base choices.');
+      end if;
+      if v_excluded is not null and (v_excluded ? v_priority_key) then
+        return jsonb_build_object('ok', false, 'message', 'One or more priority choices are excluded.');
+      end if;
+      if v_eligible is not null and not (v_eligible ? v_priority_key) then
+        return jsonb_build_object('ok', false, 'message', 'One or more priority choices are not eligible.');
+      end if;
+      select ac.id into v_priority_id
+      from public.questionnaire_answer_choices ac
+      where ac.question_id = v_question_id
+        and ac.choice_key = v_priority_key
+      limit 1;
+      if v_priority_id is null then
+        return jsonb_build_object('ok', false, 'message', 'One or more priority choices are invalid for this question.');
+      end if;
+    end loop;
+  else
+    if coalesce(array_length(v_priority_keys, 1), 0) > 0 then
+      v_priority_keys := '{}';
+    end if;
+  end if;
+
+  if v_behavior = 'structured_identity' and v_identity_config is not null then
+    if coalesce((v_identity_config->>'allowsRefinement')::boolean, false) then
+      v_identity_refinement := nullif(trim(coalesce(v_identity->>'refinement', '')), '');
+    end if;
+    if coalesce((v_identity_config->>'allowsUserSuppliedIdentity')::boolean, false) then
+      v_identity_user_supplied := nullif(trim(coalesce(v_identity->>'user_supplied', '')), '');
+    end if;
+    if coalesce((v_identity_config->'privacy'->>'userControlsPublicDisplay')::boolean, false) then
+      v_identity_public := coalesce((v_identity->>'public_display_allowed')::boolean, false);
+    else
+      v_identity_public := false;
+    end if;
+    if coalesce((v_identity_config->'privacy'->>'userControlsPrivateMatchingUse')::boolean, false) then
+      v_identity_private := coalesce((v_identity->>'private_matching_allowed')::boolean, false);
+    else
+      v_identity_private := false;
+    end if;
+  else
+    if nullif(trim(coalesce(v_identity->>'refinement', '')), '') is not null
+       or nullif(trim(coalesce(v_identity->>'user_supplied', '')), '') is not null
+       or (v_identity ? 'public_display_allowed')
+       or (v_identity ? 'private_matching_allowed') then
+      return jsonb_build_object('ok', false, 'message', 'Identity fields are not configured for this question.');
+    end if;
+  end if;
+
+  select r.id, r.revision
+    into v_response_id, v_existing_revision
+  from public.user_questionnaire_responses r
+  where r.user_id = v_uid
+    and r.version_id = v_version_id
+    and r.question_id = v_question_id
+  for update;
+
+  if v_response_id is not null then
+    if coalesce(v_existing_revision, 0) <> coalesce(p_expected_revision, 0) then
+      return jsonb_build_object(
+        'ok', false,
+        'code', 'stale_revision',
+        'message', 'A newer answer is already saved.',
+        'revision', v_existing_revision
+      );
+    end if;
+    v_new_revision := coalesce(v_existing_revision, 0) + 1;
+
+    update public.user_questionnaire_responses
+    set
+      response_state = v_derived_state,
+      active_qualifiers = v_derived_qualifiers,
+      identity_refinement = v_identity_refinement,
+      identity_user_supplied = v_identity_user_supplied,
+      identity_public_display_allowed = v_identity_public,
+      identity_private_matching_allowed = v_identity_private,
+      revision = v_new_revision,
+      client_mutation = v_new_revision,
+      updated_at = now()
+    where id = v_response_id;
+
+    delete from public.user_questionnaire_priority_selections
+    where response_id = v_response_id;
+
+    delete from public.user_questionnaire_selected_choices
+    where response_id = v_response_id;
+  else
+    if coalesce(p_expected_revision, 0) <> 0 then
+      return jsonb_build_object(
+        'ok', false,
+        'code', 'stale_revision',
+        'message', 'A newer answer is already saved.',
+        'revision', 0
+      );
+    end if;
+    v_new_revision := 1;
+
+    insert into public.user_questionnaire_responses (
+      user_id,
+      version_id,
+      question_id,
+      response_state,
+      active_qualifiers,
+      identity_refinement,
+      identity_user_supplied,
+      identity_public_display_allowed,
+      identity_private_matching_allowed,
+      revision,
+      client_mutation
+    ) values (
+      v_uid,
+      v_version_id,
+      v_question_id,
+      v_derived_state,
+      v_derived_qualifiers,
+      v_identity_refinement,
+      v_identity_user_supplied,
+      v_identity_public,
+      v_identity_private,
+      v_new_revision,
+      v_new_revision
+    )
+    returning id into v_response_id;
+  end if;
+
+  foreach v_choice_key in array v_choice_keys
+  loop
+    select ac.id, ac.opens_optional_context
+      into v_choice_id, v_opens_context
+    from public.questionnaire_answer_choices ac
+    where ac.question_id = v_question_id
+      and ac.choice_key = v_choice_key
+    limit 1;
+
+    v_context := null;
+    if v_opens_context
+       and v_choice_contexts ? v_choice_key then
+      v_context := left(nullif(trim(v_choice_contexts->>v_choice_key), ''), 2000);
+    end if;
+
+    insert into public.user_questionnaire_selected_choices (
+      response_id, choice_id, context_text
+    ) values (
+      v_response_id, v_choice_id, v_context
+    );
+  end loop;
+
+  if v_priority_keys is not null then
+    foreach v_priority_key in array v_priority_keys
+    loop
+      select ac.id into v_priority_id
+      from public.questionnaire_answer_choices ac
+      where ac.question_id = v_question_id
+        and ac.choice_key = v_priority_key
+      limit 1;
+
+      insert into public.user_questionnaire_priority_selections (
+        response_id, choice_id
+      ) values (
+        v_response_id, v_priority_id
+      );
+    end loop;
+  end if;
+
+  perform public.forge_recalculate_questionnaire_progress(v_uid, v_version_id);
+
+  v_result := jsonb_build_object(
+    'ok', true,
+    'response_id', v_response_id,
+    'question_key', p_question_key,
+    'revision', v_new_revision,
+    'write_generation', v_write_generation,
+    'response_state', v_derived_state,
+    'active_qualifiers', to_jsonb(v_derived_qualifiers),
+    'operation_id', p_operation_id
+  );
+
+  begin
+    insert into public.user_questionnaire_write_operations (
+      operation_id, user_id, version_id, operation_kind, question_id, target_key,
+      request_fingerprint, result
+    ) values (
+      p_operation_id, v_uid, v_version_id, 'save_response', v_question_id, null,
+      v_fingerprint, v_result
+    );
+  exception
+    when unique_violation then
+      v_cached := public.forge_questionnaire_resolve_operation(
+        v_uid,
+        p_operation_id,
+        'save_response',
+        v_version_id,
+        v_question_id,
+        null,
+        v_fingerprint
+      );
+      if v_cached is not null then
+        return v_cached;
+      end if;
+      raise;
+  end;
+
+  return v_result;
+exception
+  when others then
+    return jsonb_build_object(
+      'ok', false,
+      'message', 'Could not save your answer. Try again.'
+    );
+end;
+$$;
+
+revoke all on function public.save_my_questionnaire_response(
+  text, text, text[], uuid, text[], jsonb, jsonb, bigint, bigint
+) from public, anon;
+grant execute on function public.save_my_questionnaire_response(
+  text, text, text[], uuid, text[], jsonb, jsonb, bigint, bigint
+) to authenticated;
+
+create or replace function public.clear_my_questionnaire_question(
+  p_version_key text,
+  p_question_key text,
+  p_operation_id uuid,
+  p_expected_revision bigint default 0,
+  p_expected_write_generation bigint default 0
+)
+returns jsonb
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  v_uid uuid := auth.uid();
+  v_version_id uuid;
+  v_question_id uuid;
+  v_response_id uuid;
+  v_existing_revision bigint;
+  v_write_generation bigint;
+  v_new_revision bigint;
+  v_cached jsonb;
+  v_result jsonb;
+  v_fingerprint text;
+begin
+  if v_uid is null then
+    return jsonb_build_object('ok', false, 'message', 'Authentication required.');
+  end if;
+  if p_operation_id is null then
+    return jsonb_build_object(
+      'ok', false,
+      'code', 'operation_id_required',
+      'message', 'An operation id is required.'
+    );
+  end if;
+  if p_version_key is null or char_length(trim(p_version_key)) = 0 then
+    return jsonb_build_object('ok', false, 'message', 'Questionnaire version is required.');
+  end if;
+  if p_question_key is null or char_length(trim(p_question_key)) = 0 then
+    return jsonb_build_object('ok', false, 'message', 'Question is required.');
+  end if;
+
+  select v.id into v_version_id
+  from public.questionnaire_versions v
+  where v.version_key = p_version_key
+    and v.is_active = true
+  limit 1;
+
+  if v_version_id is null then
+    return jsonb_build_object('ok', false, 'message', 'Active questionnaire version was not found.');
+  end if;
+
+  select q.id into v_question_id
+  from public.questionnaire_questions q
+  join public.questionnaire_categories c on c.id = q.category_id
+  where c.version_id = v_version_id
+    and q.question_key = p_question_key
+  limit 1;
+
+  if v_question_id is null then
+    return jsonb_build_object('ok', false, 'message', 'Question was not found in the active catalog.');
+  end if;
+
+  v_fingerprint := md5(
+    jsonb_build_object(
+      'kind', 'clear_question',
+      'version_key', p_version_key,
+      'question_key', p_question_key,
+      'expected_revision', coalesce(p_expected_revision, 0),
+      'expected_write_generation', coalesce(p_expected_write_generation, 0)
+    )::text
+  );
+
+  perform public.forge_ensure_questionnaire_progress(v_uid, v_version_id);
+
+  select p.write_generation
+    into v_write_generation
+  from public.user_questionnaire_progress p
+  where p.user_id = v_uid
+    and p.version_id = v_version_id
+  for update;
+
+  v_cached := public.forge_questionnaire_resolve_operation(
+    v_uid,
+    p_operation_id,
+    'clear_question',
+    v_version_id,
+    v_question_id,
+    null,
+    v_fingerprint
+  );
+  if v_cached is not null then
+    return v_cached;
+  end if;
+
+  if coalesce(p_expected_write_generation, 0) <> coalesce(v_write_generation, 0) then
+    return jsonb_build_object(
+      'ok', false,
+      'code', 'stale_generation',
+      'message', 'Your Compatibility Profile was restarted. Reload and try again.',
+      'write_generation', v_write_generation
+    );
+  end if;
+
+  select r.id, r.revision
+    into v_response_id, v_existing_revision
+  from public.user_questionnaire_responses r
+  where r.user_id = v_uid
+    and r.version_id = v_version_id
+    and r.question_id = v_question_id
+  for update;
+
+  if v_response_id is null then
+    if coalesce(p_expected_revision, 0) <> 0 then
+      return jsonb_build_object(
+        'ok', false,
+        'code', 'stale_revision',
+        'message', 'A newer answer is already saved.',
+        'revision', 0
+      );
+    end if;
+    insert into public.user_questionnaire_responses (
+      user_id, version_id, question_id, response_state, active_qualifiers, revision, client_mutation
+    ) values (
+      v_uid, v_version_id, v_question_id, 'unanswered', '{}', 1, 1
+    )
+    returning id, revision into v_response_id, v_new_revision;
+  else
+    if coalesce(v_existing_revision, 0) <> coalesce(p_expected_revision, 0) then
+      return jsonb_build_object(
+        'ok', false,
+        'code', 'stale_revision',
+        'message', 'A newer answer is already saved.',
+        'revision', v_existing_revision
+      );
+    end if;
+    v_new_revision := coalesce(v_existing_revision, 0) + 1;
+
+    delete from public.user_questionnaire_priority_selections
+    where response_id = v_response_id;
+    delete from public.user_questionnaire_selected_choices
+    where response_id = v_response_id;
+
+    update public.user_questionnaire_responses
+    set
+      response_state = 'unanswered',
+      active_qualifiers = '{}',
+      identity_refinement = null,
+      identity_user_supplied = null,
+      identity_public_display_allowed = null,
+      identity_private_matching_allowed = null,
+      revision = v_new_revision,
+      client_mutation = v_new_revision,
+      updated_at = now()
+    where id = v_response_id;
+  end if;
+
+  perform public.forge_recalculate_questionnaire_progress(v_uid, v_version_id);
+
+  v_result := jsonb_build_object(
+    'ok', true,
+    'question_key', p_question_key,
+    'revision', v_new_revision,
+    'write_generation', v_write_generation,
+    'operation_id', p_operation_id
+  );
+
+  begin
+    insert into public.user_questionnaire_write_operations (
+      operation_id, user_id, version_id, operation_kind, question_id, target_key,
+      request_fingerprint, result
+    ) values (
+      p_operation_id, v_uid, v_version_id, 'clear_question', v_question_id, null,
+      v_fingerprint, v_result
+    );
+  exception
+    when unique_violation then
+      v_cached := public.forge_questionnaire_resolve_operation(
+        v_uid,
+        p_operation_id,
+        'clear_question',
+        v_version_id,
+        v_question_id,
+        null,
+        v_fingerprint
+      );
+      if v_cached is not null then
+        return v_cached;
+      end if;
+      raise;
+  end;
+
+  return v_result;
+end;
+$$;
+
+revoke all on function public.clear_my_questionnaire_question(text, text, uuid, bigint, bigint)
+  from public, anon;
+grant execute on function public.clear_my_questionnaire_question(text, text, uuid, bigint, bigint)
+  to authenticated;
+
+create or replace function public.clear_my_questionnaire_category(
+  p_version_key text,
+  p_category_key text,
+  p_operation_id uuid,
+  p_expected_write_generation bigint default 0
+)
+returns jsonb
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  v_uid uuid := auth.uid();
+  v_version_id uuid;
+  v_category_id uuid;
+  v_deleted integer := 0;
+  v_write_generation bigint;
+  v_new_generation bigint;
+  v_cached jsonb;
+  v_result jsonb;
+  v_fingerprint text;
+  v_target_key text;
+begin
+  if v_uid is null then
+    return jsonb_build_object('ok', false, 'message', 'Authentication required.');
+  end if;
+  if p_operation_id is null then
+    return jsonb_build_object(
+      'ok', false,
+      'code', 'operation_id_required',
+      'message', 'An operation id is required.'
+    );
+  end if;
+  if p_version_key is null or char_length(trim(p_version_key)) = 0 then
+    return jsonb_build_object('ok', false, 'message', 'Questionnaire version is required.');
+  end if;
+  if p_category_key is null or char_length(trim(p_category_key)) = 0 then
+    return jsonb_build_object('ok', false, 'message', 'Category is required.');
+  end if;
+
+  select v.id into v_version_id
+  from public.questionnaire_versions v
+  where v.version_key = p_version_key
+    and v.is_active = true
+  limit 1;
+
+  if v_version_id is null then
+    return jsonb_build_object('ok', false, 'message', 'Active questionnaire version was not found.');
+  end if;
+
+  select c.id into v_category_id
+  from public.questionnaire_categories c
+  where c.version_id = v_version_id
+    and c.category_key = p_category_key
+  limit 1;
+
+  if v_category_id is null then
+    return jsonb_build_object('ok', false, 'message', 'Category was not found.');
+  end if;
+
+  v_target_key := p_category_key;
+
+  v_fingerprint := md5(
+    jsonb_build_object(
+      'kind', 'clear_category',
+      'version_key', p_version_key,
+      'category_key', p_category_key,
+      'expected_write_generation', coalesce(p_expected_write_generation, 0)
+    )::text
+  );
+
+  perform public.forge_ensure_questionnaire_progress(v_uid, v_version_id);
+
+  select p.write_generation
+    into v_write_generation
+  from public.user_questionnaire_progress p
+  where p.user_id = v_uid
+    and p.version_id = v_version_id
+  for update;
+
+  v_cached := public.forge_questionnaire_resolve_operation(
+    v_uid,
+    p_operation_id,
+    'clear_category',
+    v_version_id,
+    null,
+    v_target_key,
+    v_fingerprint
+  );
+  if v_cached is not null then
+    return v_cached;
+  end if;
+
+  if coalesce(p_expected_write_generation, 0) <> coalesce(v_write_generation, 0) then
+    return jsonb_build_object(
+      'ok', false,
+      'code', 'stale_generation',
+      'message', 'Your Compatibility Profile was restarted. Reload and try again.',
+      'write_generation', v_write_generation
+    );
+  end if;
+
+  delete from public.user_questionnaire_responses r
+  using public.questionnaire_questions q
+  where r.user_id = v_uid
+    and r.version_id = v_version_id
+    and r.question_id = q.id
+    and q.category_id = v_category_id;
+
+  get diagnostics v_deleted = row_count;
+  v_new_generation := coalesce(v_write_generation, 0) + 1;
+
+  update public.user_questionnaire_progress
+  set
+    write_generation = v_new_generation,
+    current_category_id = v_category_id,
+    current_question_id = null,
+    current_phase = 'intro',
+    updated_at = now()
+  where user_id = v_uid
+    and version_id = v_version_id;
+
+  perform public.forge_recalculate_questionnaire_progress(v_uid, v_version_id);
+
+  v_result := jsonb_build_object(
+    'ok', true,
+    'category_key', p_category_key,
+    'deleted_responses', v_deleted,
+    'write_generation', v_new_generation,
+    'operation_id', p_operation_id
+  );
+
+  begin
+    insert into public.user_questionnaire_write_operations (
+      operation_id, user_id, version_id, operation_kind, question_id, target_key,
+      request_fingerprint, result
+    ) values (
+      p_operation_id, v_uid, v_version_id, 'clear_category', null, v_target_key,
+      v_fingerprint, v_result
+    );
+  exception
+    when unique_violation then
+      v_cached := public.forge_questionnaire_resolve_operation(
+        v_uid,
+        p_operation_id,
+        'clear_category',
+        v_version_id,
+        null,
+        v_target_key,
+        v_fingerprint
+      );
+      if v_cached is not null then
+        return v_cached;
+      end if;
+      raise;
+  end;
+
+  return v_result;
+end;
+$$;
+
+revoke all on function public.clear_my_questionnaire_category(text, text, uuid, bigint)
+  from public, anon;
+grant execute on function public.clear_my_questionnaire_category(text, text, uuid, bigint)
+  to authenticated;
+
+create or replace function public.clear_my_questionnaire_profile(
+  p_version_key text,
+  p_operation_id uuid,
+  p_expected_write_generation bigint default 0
+)
+returns jsonb
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  v_uid uuid := auth.uid();
+  v_version_id uuid;
+  v_write_generation bigint;
+  v_new_generation bigint;
+  v_cached jsonb;
+  v_result jsonb;
+  v_fingerprint text;
+begin
+  if v_uid is null then
+    return jsonb_build_object('ok', false, 'message', 'Authentication required.');
+  end if;
+  if p_operation_id is null then
+    return jsonb_build_object(
+      'ok', false,
+      'code', 'operation_id_required',
+      'message', 'An operation id is required.'
+    );
+  end if;
+  if p_version_key is null or char_length(trim(p_version_key)) = 0 then
+    return jsonb_build_object('ok', false, 'message', 'Questionnaire version is required.');
+  end if;
+
+  select v.id into v_version_id
+  from public.questionnaire_versions v
+  where v.version_key = p_version_key
+    and v.is_active = true
+  limit 1;
+
+  if v_version_id is null then
+    return jsonb_build_object('ok', false, 'message', 'Active questionnaire version was not found.');
+  end if;
+
+  v_fingerprint := md5(
+    jsonb_build_object(
+      'kind', 'clear_profile',
+      'version_key', p_version_key,
+      'expected_write_generation', coalesce(p_expected_write_generation, 0)
+    )::text
+  );
+
+  perform public.forge_ensure_questionnaire_progress(v_uid, v_version_id);
+
+  select p.write_generation
+    into v_write_generation
+  from public.user_questionnaire_progress p
+  where p.user_id = v_uid
+    and p.version_id = v_version_id
+  for update;
+
+  v_cached := public.forge_questionnaire_resolve_operation(
+    v_uid,
+    p_operation_id,
+    'clear_profile',
+    v_version_id,
+    null,
+    null,
+    v_fingerprint
+  );
+  if v_cached is not null then
+    return v_cached;
+  end if;
+
+  if coalesce(p_expected_write_generation, 0) <> coalesce(v_write_generation, 0) then
+    return jsonb_build_object(
+      'ok', false,
+      'code', 'stale_generation',
+      'message', 'Your Compatibility Profile was restarted. Reload and try again.',
+      'write_generation', v_write_generation
+    );
+  end if;
+
+  delete from public.user_questionnaire_responses
+  where user_id = v_uid
+    and version_id = v_version_id;
+
+  v_new_generation := coalesce(v_write_generation, 0) + 1;
+
+  update public.user_questionnaire_progress
+  set
+    status = 'not_started',
+    write_generation = v_new_generation,
+    current_category_id = null,
+    current_question_id = null,
+    current_phase = null,
+    started_at = null,
+    completed_at = null,
+    updated_at = now()
+  where user_id = v_uid
+    and version_id = v_version_id;
+
+  v_result := jsonb_build_object(
+    'ok', true,
+    'version_key', p_version_key,
+    'write_generation', v_new_generation,
+    'operation_id', p_operation_id
+  );
+
+  begin
+    insert into public.user_questionnaire_write_operations (
+      operation_id, user_id, version_id, operation_kind, question_id, target_key,
+      request_fingerprint, result
+    ) values (
+      p_operation_id, v_uid, v_version_id, 'clear_profile', null, null,
+      v_fingerprint, v_result
+    );
+  exception
+    when unique_violation then
+      v_cached := public.forge_questionnaire_resolve_operation(
+        v_uid,
+        p_operation_id,
+        'clear_profile',
+        v_version_id,
+        null,
+        null,
+        v_fingerprint
+      );
+      if v_cached is not null then
+        return v_cached;
+      end if;
+      raise;
+  end;
+
+  return v_result;
+end;
+$$;
+
+revoke all on function public.clear_my_questionnaire_profile(text, uuid, bigint)
+  from public, anon;
+grant execute on function public.clear_my_questionnaire_profile(text, uuid, bigint)
+  to authenticated;
+
+comment on function public.save_my_questionnaire_response(
+  text, text, text[], uuid, text[], jsonb, jsonb, bigint, bigint
+) is
+  'Authenticated write boundary: save/replace one question response. Required p_operation_id; idempotency resolved after progress lock with fingerprint match.';
+comment on function public.clear_my_questionnaire_question(
+  text, text, uuid, bigint, bigint
+) is
+  'Authenticated write boundary: tombstone one question answer. Required p_operation_id; idempotency resolved after progress lock with fingerprint match.';
+comment on function public.clear_my_questionnaire_category(
+  text, text, uuid, bigint
+) is
+  'Authenticated write boundary: clear one category and bump write_generation. Required p_operation_id; target_key=category_key in ledger.';
+comment on function public.clear_my_questionnaire_profile(
+  text, uuid, bigint
+) is
+  'Authenticated write boundary: full Compatibility Profile clear for the active version. Required p_operation_id; idempotency resolved after progress lock.';
+
+-- C. Verification: legacy overloads gone; hardened signatures present
+do $$
+begin
+  if to_regprocedure('public.save_my_questionnaire_response(text,text,text[],text[],jsonb,jsonb,bigint,bigint)') is not null
+     or to_regprocedure('public.save_my_questionnaire_response(text,text,text[],text[],jsonb,jsonb,bigint,bigint,uuid)') is not null
+     or to_regprocedure('public.clear_my_questionnaire_question(text,text,bigint,bigint)') is not null
+     or to_regprocedure('public.clear_my_questionnaire_question(text,text,bigint,bigint,uuid)') is not null
+     or to_regprocedure('public.clear_my_questionnaire_category(text,text,bigint)') is not null
+     or to_regprocedure('public.clear_my_questionnaire_category(text,text,bigint,uuid)') is not null
+     or to_regprocedure('public.clear_my_questionnaire_profile(text,bigint)') is not null
+     or to_regprocedure('public.clear_my_questionnaire_profile(text,bigint,uuid)') is not null
+  then
+    raise exception 'legacy questionnaire mutation overloads still present';
+  end if;
+
+  if to_regprocedure('public.save_my_questionnaire_response(text,text,text[],uuid,text[],jsonb,jsonb,bigint,bigint)') is null
+     or to_regprocedure('public.clear_my_questionnaire_question(text,text,uuid,bigint,bigint)') is null
+     or to_regprocedure('public.clear_my_questionnaire_category(text,text,uuid,bigint)') is null
+     or to_regprocedure('public.clear_my_questionnaire_profile(text,uuid,bigint)') is null
+  then
+    raise exception 'hardened operation_id RPC signatures missing';
+  end if;
+
+  -- privileges: authenticated must NOT have execute on dropped sigs (already gone);
+  -- authenticated MUST have execute on new sigs
+end;
+$$;

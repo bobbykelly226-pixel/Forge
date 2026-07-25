@@ -637,7 +637,7 @@ describe('Compatibility Profile Persistence V1', () => {
       migration,
       /revoke insert, update, delete on public\.user_questionnaire_responses/i
     );
-    assert.match(types, /p_operation_id\?:/);
+    assert.match(types, /p_operation_id: string/);
   });
 
   it('does not install a new runtime dependency for this build', () => {

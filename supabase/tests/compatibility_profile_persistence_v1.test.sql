@@ -11,7 +11,7 @@
 
 begin;
 
-select plan(37);
+select plan(44);
 
 -- ---------------------------------------------------------------------------
 -- Helpers (pg_temp = session-scoped; CREATE TEMPORARY FUNCTION is not valid)
@@ -145,47 +145,19 @@ returns jsonb
 language plpgsql
 as $$
 declare
-  v_sql text;
-  v_result jsonb;
+  v_operation_id uuid := coalesce(p_operation_id, gen_random_uuid());
 begin
-  if p_operation_id is not null
-     and exists (
-       select 1
-       from pg_proc p
-       join pg_namespace n on n.oid = p.pronamespace
-       where n.nspname = 'public'
-         and p.proname = 'save_my_questionnaire_response'
-         and pg_get_function_identity_arguments(p.oid) ilike '%operation%'
-     ) then
-    v_sql := $q$
-      select public.save_my_questionnaire_response(
-        p_version_key => 'compatibility_profile_v1',
-        p_question_key => $1,
-        p_choice_keys => $2,
-        p_priority_choice_keys => $3,
-        p_choice_contexts => $4,
-        p_identity => $5,
-        p_expected_revision => $6,
-        p_expected_write_generation => $7,
-        p_operation_id => $8
-      )
-    $q$;
-    execute v_sql
-      into v_result
-      using p_question_key, p_choice_keys, p_priority_keys, p_contexts, p_identity,
-            p_revision, p_write_generation, p_operation_id;
-    return v_result;
-  end if;
-
+  -- Always call the hardened required-operation_id signature.
   return public.save_my_questionnaire_response(
-    'compatibility_profile_v1',
-    p_question_key,
-    p_choice_keys,
-    p_priority_keys,
-    p_contexts,
-    p_identity,
-    p_revision,
-    p_write_generation
+    p_version_key => 'compatibility_profile_v1',
+    p_question_key => p_question_key,
+    p_choice_keys => p_choice_keys,
+    p_operation_id => v_operation_id,
+    p_priority_choice_keys => p_priority_keys,
+    p_choice_contexts => p_contexts,
+    p_identity => p_identity,
+    p_expected_revision => p_revision,
+    p_expected_write_generation => p_write_generation
   );
 end;
 $$;
@@ -474,14 +446,15 @@ select ok(
     select (result->>'ok') = 'false'
     from (
       select public.save_my_questionnaire_response(
-        'compatibility_profile_v1',
-        'service_community_contribution_q02',
-        array['service_community_contribution_q02_c19'],
-        '{}',
-        '["not-an-object"]'::jsonb,
-        '{}'::jsonb,
-        0,
-        pg_temp._cp_write_generation()
+        p_version_key => 'compatibility_profile_v1',
+        p_question_key => 'service_community_contribution_q02',
+        p_choice_keys => array['service_community_contribution_q02_c19'],
+        p_operation_id => gen_random_uuid(),
+        p_priority_choice_keys => '{}',
+        p_choice_contexts => '["not-an-object"]'::jsonb,
+        p_identity => '{}'::jsonb,
+        p_expected_revision => 0,
+        p_expected_write_generation => pg_temp._cp_write_generation()
       ) as result
     ) s
   ),
@@ -525,10 +498,11 @@ select ok(
   (
     with cleared as (
       select public.clear_my_questionnaire_question(
-        'compatibility_profile_v1',
-        'relationship_vision_intentions_q01',
-        pg_temp._cp_question_revision('relationship_vision_intentions_q01'),
-        pg_temp._cp_write_generation()
+        p_version_key => 'compatibility_profile_v1',
+        p_question_key => 'relationship_vision_intentions_q01',
+        p_operation_id => gen_random_uuid(),
+        p_expected_revision => pg_temp._cp_question_revision('relationship_vision_intentions_q01'),
+        p_expected_write_generation => pg_temp._cp_write_generation()
       ) as result
     )
     select
@@ -661,10 +635,11 @@ select ok(
     ),
     cleared as (
       select public.clear_my_questionnaire_question(
-        'compatibility_profile_v1',
-        'relationship_vision_intentions_q04',
-        (select revision from rev),
-        pg_temp._cp_write_generation()
+        p_version_key => 'compatibility_profile_v1',
+        p_question_key => 'relationship_vision_intentions_q04',
+        p_operation_id => gen_random_uuid(),
+        p_expected_revision => (select revision from rev),
+        p_expected_write_generation => pg_temp._cp_write_generation()
       ) as result
     ),
     resurrect as (
@@ -705,9 +680,10 @@ select ok(
     ),
     restarted as (
       select public.clear_my_questionnaire_category(
-        'compatibility_profile_v1',
-        'relationship_vision_intentions',
-        (select write_generation from wg)
+        p_version_key => 'compatibility_profile_v1',
+        p_category_key => 'relationship_vision_intentions',
+        p_operation_id => gen_random_uuid(),
+        p_expected_write_generation => (select write_generation from wg)
       ) as result
     ),
     blocked as (
@@ -738,8 +714,9 @@ select ok(
     ),
     restarted as (
       select public.clear_my_questionnaire_profile(
-        'compatibility_profile_v1',
-        (select write_generation from wg)
+        p_version_key => 'compatibility_profile_v1',
+        p_operation_id => gen_random_uuid(),
+        p_expected_write_generation => (select write_generation from wg)
       ) as result
     ),
     blocked as (
@@ -915,11 +892,11 @@ select ok(
     ),
     clear_reuse as (
       select public.clear_my_questionnaire_question(
-        'compatibility_profile_v1',
-        'integrity_honesty_trust_q01',
-        ((select result->>'revision' from first_save)::bigint),
-        pg_temp._cp_write_generation(),
-        (select operation_id from op)
+        p_version_key => 'compatibility_profile_v1',
+        p_question_key => 'integrity_honesty_trust_q01',
+        p_operation_id => (select operation_id from op),
+        p_expected_revision => ((select result->>'revision' from first_save)::bigint),
+        p_expected_write_generation => pg_temp._cp_write_generation()
       ) as result
     )
     select
@@ -940,18 +917,18 @@ select ok(
     ),
     first_restart as (
       select public.clear_my_questionnaire_category(
-        'compatibility_profile_v1',
-        'relationship_vision_intentions',
-        (select write_generation from wg),
-        (select operation_id from op)
+        p_version_key => 'compatibility_profile_v1',
+        p_category_key => 'relationship_vision_intentions',
+        p_operation_id => (select operation_id from op),
+        p_expected_write_generation => (select write_generation from wg)
       ) as result
     ),
     different_target as (
       select public.clear_my_questionnaire_category(
-        'compatibility_profile_v1',
-        'family_children_parenting',
-        (select write_generation from wg),
-        (select operation_id from op)
+        p_version_key => 'compatibility_profile_v1',
+        p_category_key => 'family_children_parenting',
+        p_operation_id => (select operation_id from op),
+        p_expected_write_generation => (select write_generation from wg)
       ) as result
     )
     select
@@ -990,6 +967,122 @@ select throws_ok(
   null,
   null,
   'authenticated cannot INSERT into user_questionnaire_write_operations'
+);
+
+-- ---------------------------------------------------------------------------
+-- 20. Legacy overloads absent; only hardened operation_id signatures remain
+-- ---------------------------------------------------------------------------
+select ok(
+  to_regprocedure('public.save_my_questionnaire_response(text,text,text[],text[],jsonb,jsonb,bigint,bigint)') is null
+  and to_regprocedure('public.save_my_questionnaire_response(text,text,text[],text[],jsonb,jsonb,bigint,bigint,uuid)') is null
+  and to_regprocedure('public.clear_my_questionnaire_question(text,text,bigint,bigint)') is null
+  and to_regprocedure('public.clear_my_questionnaire_question(text,text,bigint,bigint,uuid)') is null
+  and to_regprocedure('public.clear_my_questionnaire_category(text,text,bigint)') is null
+  and to_regprocedure('public.clear_my_questionnaire_category(text,text,bigint,uuid)') is null
+  and to_regprocedure('public.clear_my_questionnaire_profile(text,bigint)') is null
+  and to_regprocedure('public.clear_my_questionnaire_profile(text,bigint,uuid)') is null,
+  'obsolete operation-id-free and trailing-uuid mutation overloads are absent'
+);
+
+select ok(
+  to_regprocedure('public.save_my_questionnaire_response(text,text,text[],uuid,text[],jsonb,jsonb,bigint,bigint)') is not null
+  and to_regprocedure('public.clear_my_questionnaire_question(text,text,uuid,bigint,bigint)') is not null
+  and to_regprocedure('public.clear_my_questionnaire_category(text,text,uuid,bigint)') is not null
+  and to_regprocedure('public.clear_my_questionnaire_profile(text,uuid,bigint)') is not null,
+  'only hardened required-operation_id mutation signatures remain'
+);
+
+-- ---------------------------------------------------------------------------
+-- 21. Explicit null operation_id rejected; no mutation side effects
+-- ---------------------------------------------------------------------------
+select is(
+  (
+    select public.save_my_questionnaire_response(
+      p_version_key => 'compatibility_profile_v1',
+      p_question_key => 'politics_civic_life_social_issues_q01',
+      p_choice_keys => array['politics_civic_life_social_issues_q01_c01'],
+      p_operation_id => null,
+      p_expected_revision => 0,
+      p_expected_write_generation => pg_temp._cp_write_generation()
+    )->>'code'
+  ),
+  'operation_id_required',
+  'explicit null operation_id is rejected with operation_id_required'
+);
+
+select ok(
+  (
+    with before as (
+      select count(*)::int as n
+      from public.user_questionnaire_responses r
+      where r.user_id = auth.uid()
+    ),
+    attempted as (
+      select public.save_my_questionnaire_response(
+        p_version_key => 'compatibility_profile_v1',
+        p_question_key => 'politics_civic_life_social_issues_q01',
+        p_choice_keys => array['politics_civic_life_social_issues_q01_c01'],
+        p_operation_id => null,
+        p_expected_revision => 0,
+        p_expected_write_generation => pg_temp._cp_write_generation()
+      ) as result
+    ),
+    after as (
+      select count(*)::int as n
+      from public.user_questionnaire_responses r
+      where r.user_id = auth.uid()
+    )
+    select
+      (select result->>'ok' from attempted) = 'false'
+      and (select n from before) = (select n from after)
+      and not exists (
+        select 1
+        from public.user_questionnaire_responses r
+        join public.questionnaire_questions q on q.id = r.question_id
+        where r.user_id = auth.uid()
+          and q.question_key = 'politics_civic_life_social_issues_q01'
+      )
+  ),
+  'null-operation save attempts do not mutate responses'
+);
+
+select is(
+  (
+    select public.clear_my_questionnaire_profile(
+      p_version_key => 'compatibility_profile_v1',
+      p_operation_id => null,
+      p_expected_write_generation => pg_temp._cp_write_generation()
+    )->>'code'
+  ),
+  'operation_id_required',
+  'explicit null operation_id on full restart is rejected'
+);
+
+select is(
+  (
+    select public.clear_my_questionnaire_category(
+      p_version_key => 'compatibility_profile_v1',
+      p_category_key => 'faith_spirituality_worldview',
+      p_operation_id => null,
+      p_expected_write_generation => pg_temp._cp_write_generation()
+    )->>'code'
+  ),
+  'operation_id_required',
+  'explicit null operation_id on category restart is rejected'
+);
+
+select is(
+  (
+    select public.clear_my_questionnaire_question(
+      p_version_key => 'compatibility_profile_v1',
+      p_question_key => 'relationship_vision_intentions_q03',
+      p_operation_id => null,
+      p_expected_revision => 0,
+      p_expected_write_generation => pg_temp._cp_write_generation()
+    )->>'code'
+  ),
+  'operation_id_required',
+  'explicit null operation_id on clear question is rejected'
 );
 
 select * from finish();

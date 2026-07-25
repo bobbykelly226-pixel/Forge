@@ -2,7 +2,7 @@
 
 Authoritative documentation for the Forge Backend Foundation persistence layer.
 
-**Remote migration status (re-diagnosed 2026-07-25 during Persistence V1 idempotency correction pass):**
+**Remote migration status (re-diagnosed 2026-07-25 during Persistence V1 mandatory operation_id correction pass):**
 
 | Layer | Result |
 |---|---|
@@ -145,7 +145,13 @@ Untouched by Compatibility Profile persistence: Essential Profile `/onboarding`,
 ### Compatibility Profile persistence (repository migrations)
 
 - `20260723000000_questionnaire_foundation.sql` — catalog + response tables, RLS, 100-question seed (`compatibility_profile_categories_1_10_v10`)
-- `20260725000000_compatibility_profile_persistence_v1.sql` — resume fields, `client_mutation`, secure RPCs (`save_my_questionnaire_response`, clear/load/progress helpers)
+- `20260725000000_compatibility_profile_persistence_v1.sql` — resume fields, server `revision`/`write_generation`, mandatory-`operation_id` mutation RPCs only:
+  - `save_my_questionnaire_response(text, text, text[], uuid, text[], jsonb, jsonb, bigint, bigint)`
+  - `clear_my_questionnaire_question(text, text, uuid, bigint, bigint)`
+  - `clear_my_questionnaire_category(text, text, uuid, bigint)`
+  - `clear_my_questionnaire_profile(text, uuid, bigint)`
+  - plus `save_my_questionnaire_progress_position` and `load_my_questionnaire_state`
+  - Legacy operation-id-free mutation overloads are dropped. Direct table writes are revoked.
 
 Application code must not dual-write Compatibility Profile answers into `profile_answers`, `compatibility_answers`, `profiles`, or `user_app_state`.
 

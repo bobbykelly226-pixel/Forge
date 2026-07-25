@@ -37,17 +37,33 @@ function rpcResult(
   fallback: string
 ): DataAccessResult<RpcOk> {
   if (error) {
+    // Request/transport failure — no authoritative DB payload. Safe to retry.
     console.error(fallback, error.message);
-    return { success: false, message: fallback };
+    return { success: false, message: fallback, transportError: true };
   }
   const payload = (data ?? {}) as RpcOk;
   if (!payload.ok) {
+    // Authoritative database {ok:false} — preserve structured code.
     return {
       success: false,
       message: typeof payload.message === 'string' ? payload.message : fallback,
+      code: typeof payload.code === 'string' ? payload.code : undefined,
+      transportError: false,
     };
   }
   return { success: true, data: payload };
+}
+
+function failureFromResult(
+  result: Extract<DataAccessResult<unknown>, { success: false }>,
+  fallback: string
+): DataAccessResult<never> {
+  return {
+    success: false,
+    message: result.message || fallback,
+    code: result.code,
+    transportError: result.transportError,
+  };
 }
 
 function asString(value: unknown): string | null {
@@ -232,9 +248,8 @@ export async function loadMyQuestionnaireState(): Promise<
 export type SaveResponseResult = {
   revision: number;
   writeGeneration: number;
-  operationId?: string;
+  operationId: string;
   responseState?: string;
-  code?: string;
 };
 
 export async function saveMyQuestionnaireResponse(input: {
@@ -242,7 +257,7 @@ export async function saveMyQuestionnaireResponse(input: {
   answer: PersistedQuestionAnswer;
   expectedWriteGeneration: number;
   expectedRevision?: number;
-  operationId?: string;
+  operationId: string;
 }): Promise<DataAccessResult<SaveResponseResult>> {
   const { supabase, user } = await requireUser();
   if (!user) return { success: false, message: 'You must be signed in.' };
@@ -297,17 +312,17 @@ export async function saveMyQuestionnaireResponse(input: {
     p_version_key: QUESTIONNAIRE_VERSION,
     p_question_key: input.questionKey,
     p_choice_keys: sanitized.selectedChoiceIds,
+    p_operation_id: input.operationId,
     p_priority_choice_keys: sanitized.priorityChoiceIds,
     p_choice_contexts: choiceContexts,
     p_identity: identity,
     p_expected_revision: sanitized.revision,
     p_expected_write_generation: input.expectedWriteGeneration,
-    p_operation_id: input.operationId ?? undefined,
   });
 
   const result = rpcResult(data, error, 'Could not save your answer. Try again.');
   if (!result.success) {
-    return { success: false, message: result.message };
+    return failureFromResult(result, 'Could not save your answer. Try again.');
   }
 
   return {
@@ -334,7 +349,7 @@ export async function clearMyQuestionnaireQuestion(input: {
   questionKey: string;
   expectedRevision: number;
   expectedWriteGeneration: number;
-  operationId?: string;
+  operationId: string;
 }): Promise<DataAccessResult<SaveResponseResult>> {
   const { supabase, user } = await requireUser();
   if (!user) return { success: false, message: 'You must be signed in.' };
@@ -342,16 +357,13 @@ export async function clearMyQuestionnaireQuestion(input: {
   const { data, error } = await supabase.rpc('clear_my_questionnaire_question', {
     p_version_key: QUESTIONNAIRE_VERSION,
     p_question_key: input.questionKey,
+    p_operation_id: input.operationId,
     p_expected_revision: input.expectedRevision,
     p_expected_write_generation: input.expectedWriteGeneration,
-    p_operation_id: input.operationId ?? undefined,
   });
   const result = rpcResult(data, error, 'Could not clear this answer. Try again.');
   if (!result.success) {
-    return {
-      success: false,
-      message: result.message,
-    };
+    return failureFromResult(result, 'Could not clear this answer. Try again.');
   }
   return {
     success: true,
@@ -403,19 +415,21 @@ export async function saveMyQuestionnaireProgressPosition(input: {
 export async function clearMyQuestionnaireCategory(input: {
   categoryKey: string;
   expectedWriteGeneration: number;
-  operationId?: string;
-}): Promise<DataAccessResult<{ writeGeneration: number }>> {
+  operationId: string;
+}): Promise<DataAccessResult<{ writeGeneration: number; operationId: string }>> {
   const { supabase, user } = await requireUser();
   if (!user) return { success: false, message: 'You must be signed in.' };
 
   const { data, error } = await supabase.rpc('clear_my_questionnaire_category', {
     p_version_key: QUESTIONNAIRE_VERSION,
     p_category_key: input.categoryKey,
+    p_operation_id: input.operationId,
     p_expected_write_generation: input.expectedWriteGeneration,
-    p_operation_id: input.operationId ?? undefined,
   });
   const result = rpcResult(data, error, 'Could not restart this category. Try again.');
-  if (!result.success) return { success: false, message: result.message };
+  if (!result.success) {
+    return failureFromResult(result, 'Could not restart this category. Try again.');
+  }
   return {
     success: true,
     data: {
@@ -423,28 +437,34 @@ export async function clearMyQuestionnaireCategory(input: {
         result.data?.write_generation,
         input.expectedWriteGeneration + 1
       ),
+      operationId: input.operationId,
     },
   };
 }
 
 export async function clearMyQuestionnaireProfile(input: {
   expectedWriteGeneration: number;
-  operationId?: string;
-}): Promise<DataAccessResult<{ writeGeneration: number }>> {
+  operationId: string;
+}): Promise<DataAccessResult<{ writeGeneration: number; operationId: string }>> {
   const { supabase, user } = await requireUser();
   if (!user) return { success: false, message: 'You must be signed in.' };
 
   const { data, error } = await supabase.rpc('clear_my_questionnaire_profile', {
     p_version_key: QUESTIONNAIRE_VERSION,
+    p_operation_id: input.operationId,
     p_expected_write_generation: input.expectedWriteGeneration,
-    p_operation_id: input.operationId ?? undefined,
   });
   const result = rpcResult(
     data,
     error,
     'Could not restart your Compatibility Profile. Try again.'
   );
-  if (!result.success) return { success: false, message: result.message };
+  if (!result.success) {
+    return failureFromResult(
+      result,
+      'Could not restart your Compatibility Profile. Try again.'
+    );
+  }
   return {
     success: true,
     data: {
@@ -452,6 +472,7 @@ export async function clearMyQuestionnaireProfile(input: {
         result.data?.write_generation,
         input.expectedWriteGeneration + 1
       ),
+      operationId: input.operationId,
     },
   };
 }

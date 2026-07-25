@@ -2,169 +2,242 @@ import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 
 import {
-  beginRestartOperation,
-  QuestionSaveWorker,
+  executeRestartAttempt,
   type RestartOperation,
-} from '@/lib/questionnaire/persistence/save-worker';
+} from '@/lib/questionnaire/persistence/restart-coordinator';
+import { QuestionSaveWorker } from '@/lib/questionnaire/persistence/save-worker';
 
-/**
- * Models the shell's stable restart attempt: one operation ID + expected
- * write generation retained until an authoritative result arrives.
- */
-async function runRestartAttempt(
-  pending: RestartOperation | null,
-  kind: 'category' | 'profile',
-  expectedWriteGeneration: number,
-  categoryKey: string | undefined,
-  execute: (op: RestartOperation) => Promise<
-    | { success: true; writeGeneration: number }
-    | { success: false; transportError?: boolean; message: string }
-  >
-): Promise<{
-  pending: RestartOperation | null;
-  result:
-    | { success: true; writeGeneration: number }
-    | { success: false; message: string };
-}> {
-  const op =
-    pending &&
-    pending.kind === kind &&
-    pending.categoryKey === categoryKey
-      ? pending
-      : beginRestartOperation(kind, expectedWriteGeneration, categoryKey);
-
-  const outcome = await execute(op);
-  if (!outcome.success) {
-    // Retain op across transport / lost-response failures.
-    return {
-      pending: op,
-      result: { success: false, message: outcome.message },
-    };
-  }
-  return {
-    pending: null,
-    result: { success: true, writeGeneration: outcome.writeGeneration },
-  };
-}
-
-describe('restart operation idempotency', () => {
-  it('category restart lost response retries with the same operation ID and expected generation', async () => {
-    const seen: RestartOperation[] = [];
-    let attempts = 0;
+describe('executeRestartAttempt (production restart coordinator)', () => {
+  it('thrown category-restart response preserves the same operation ID for Retry', async () => {
+    const seen: string[] = [];
     let pending: RestartOperation | null = null;
+    let attempts = 0;
 
-    const first = await runRestartAttempt(
+    const first = await executeRestartAttempt({
       pending,
-      'category',
-      4,
-      'relationship_vision_intentions',
-      async (op) => {
-        seen.push(op);
+      kind: 'category',
+      categoryKey: 'relationship_vision_intentions',
+      currentWriteGeneration: 4,
+      execute: async (op) => {
+        seen.push(op.operationId);
         attempts += 1;
         if (attempts === 1) {
-          return {
-            success: false,
-            transportError: true,
-            message: 'Network interrupted before the restart response arrived.',
-          };
+          throw new Error('network down');
         }
         return { success: true, writeGeneration: 5 };
-      }
-    );
+      },
+    });
     assert.equal(first.result.success, false);
-    pending = first.pending;
-    assert.ok(pending);
-    assert.equal(pending.operationId, seen[0]?.operationId);
-    assert.equal(pending.expectedWriteGeneration, 4);
-
-    const second = await runRestartAttempt(
-      pending,
-      'category',
-      4,
-      'relationship_vision_intentions',
-      async (op) => {
-        seen.push(op);
-        return { success: true, writeGeneration: 5 };
-      }
-    );
-    assert.equal(second.result.success, true);
-    if (second.result.success) {
-      assert.equal(second.result.writeGeneration, 5);
+    if (!first.result.success) {
+      assert.equal(first.result.transportError, true);
     }
+    assert.ok(first.pending);
+    assert.equal(first.applySuccess, false);
+    pending = first.pending;
+
+    const second = await executeRestartAttempt({
+      pending,
+      kind: 'category',
+      categoryKey: 'relationship_vision_intentions',
+      currentWriteGeneration: 4,
+      execute: async (op) => {
+        seen.push(op.operationId);
+        return { success: true, writeGeneration: 5 };
+      },
+    });
+    assert.equal(second.result.success, true);
+    assert.equal(second.applySuccess, true);
     assert.equal(second.pending, null);
-    assert.equal(seen.length, 2);
-    assert.equal(seen[0]?.operationId, seen[1]?.operationId);
-    assert.equal(seen[0]?.expectedWriteGeneration, 4);
-    assert.equal(seen[1]?.expectedWriteGeneration, 4);
+    assert.equal(seen[0], seen[1]);
+    assert.equal(pending?.expectedWriteGeneration, 4);
   });
 
-  it('full restart lost response retries with the same operation ID', async () => {
+  it('thrown full-restart response preserves the same operation ID', async () => {
     const seen: string[] = [];
-    let attempts = 0;
     let pending: RestartOperation | null = null;
 
-    const first = await runRestartAttempt(
+    const first = await executeRestartAttempt({
       pending,
-      'profile',
-      2,
-      undefined,
-      async (op) => {
+      kind: 'profile',
+      currentWriteGeneration: 2,
+      execute: async (op) => {
         seen.push(op.operationId);
-        attempts += 1;
-        if (attempts === 1) {
-          return {
-            success: false,
-            transportError: true,
-            message: 'Could not restart your Compatibility Profile. Try again.',
-          };
-        }
-        return { success: true, writeGeneration: 3 };
-      }
-    );
+        throw new Error('socket hang up');
+      },
+    });
     pending = first.pending;
     assert.ok(pending);
 
-    const second = await runRestartAttempt(
+    const second = await executeRestartAttempt({
       pending,
-      'profile',
-      2,
-      undefined,
-      async (op) => {
+      kind: 'profile',
+      currentWriteGeneration: 2,
+      execute: async (op) => {
         seen.push(op.operationId);
         return { success: true, writeGeneration: 3 };
-      }
-    );
+      },
+    });
     assert.equal(second.result.success, true);
     assert.equal(seen[0], seen[1]);
-    assert.equal(second.pending, null);
   });
 
-  it('after successful category restart the first new save uses revision 0', async () => {
+  it('transport-classified returned failure preserves the operation', async () => {
+    const first = await executeRestartAttempt({
+      pending: null,
+      kind: 'category',
+      categoryKey: 'family_children_parenting',
+      currentWriteGeneration: 1,
+      execute: async () => ({
+        success: false,
+        message: 'Could not restart this category. Try again.',
+        transportError: true,
+      }),
+    });
+    assert.ok(first.pending);
+    assert.equal(first.applySuccess, false);
+  });
+
+  it('authoritative failure abandons the operation', async () => {
+    const first = await executeRestartAttempt({
+      pending: null,
+      kind: 'category',
+      categoryKey: 'family_children_parenting',
+      currentWriteGeneration: 1,
+      execute: async () => ({
+        success: false,
+        message: 'Your Compatibility Profile was restarted. Reload and try again.',
+        code: 'stale_generation',
+        transportError: false,
+      }),
+    });
+    assert.equal(first.pending, null);
+    assert.equal(first.applySuccess, false);
+  });
+
+  it('idempotency_conflict abandons and a new attempt gets a new operation ID', async () => {
+    const abandoned = await executeRestartAttempt({
+      pending: null,
+      kind: 'profile',
+      currentWriteGeneration: 7,
+      execute: async () => ({
+        success: false,
+        message: 'This operation id was already used with a different request.',
+        code: 'idempotency_conflict',
+        transportError: false,
+      }),
+    });
+    assert.equal(abandoned.pending, null);
+
+    const ids: string[] = [];
+    const next = await executeRestartAttempt({
+      pending: null,
+      kind: 'profile',
+      currentWriteGeneration: 7,
+      execute: async (op) => {
+        ids.push(op.operationId);
+        return { success: true, writeGeneration: 8 };
+      },
+    });
+    assert.equal(next.result.success, true);
+    assert.equal(ids.length, 1);
+    assert.ok(ids[0]);
+  });
+
+  it('successful category restart path reports applySuccess without resetting untouched revisions', async () => {
     const worker = new QuestionSaveWorker();
     worker.setRevision('relationship_vision_intentions_q01', 6);
     worker.setRevision('family_children_parenting_q01', 3);
 
-    // Simulate successful category restart handling in the shell.
+    const attempt = await executeRestartAttempt({
+      pending: null,
+      kind: 'category',
+      categoryKey: 'relationship_vision_intentions',
+      currentWriteGeneration: 2,
+      execute: async () => ({ success: true, writeGeneration: 3 }),
+    });
+    assert.equal(attempt.applySuccess, true);
+    assert.equal(attempt.pending, null);
+
+    // Production shell applies these only after applySuccess.
     worker.bumpGeneration();
     worker.resetQuestions([
       'relationship_vision_intentions_q01',
       'relationship_vision_intentions_q02',
     ]);
-
     assert.equal(worker.getRevision('relationship_vision_intentions_q01'), 0);
     assert.equal(worker.getRevision('family_children_parenting_q01'), 3);
+  });
 
-    const generation = worker.getGeneration();
-    const seen: number[] = [];
-    const result = await worker.enqueue(
-      'relationship_vision_intentions_q01',
-      { answer: { value: 'new' }, generation },
-      async (args) => {
-        seen.push(args.expectedRevision);
-        return { success: true as const, data: { revision: 1 } };
+  it('failed restart does not apply success side effects (no revision reset)', async () => {
+    const worker = new QuestionSaveWorker();
+    worker.setRevision('q1', 9);
+    const attempt = await executeRestartAttempt({
+      pending: null,
+      kind: 'category',
+      categoryKey: 'relationship_vision_intentions',
+      currentWriteGeneration: 1,
+      execute: async () => {
+        throw new Error('failed');
+      },
+    });
+    assert.equal(attempt.applySuccess, false);
+    assert.ok(attempt.pending);
+    // Shell must not call resetQuestions when applySuccess is false.
+    assert.equal(worker.getRevision('q1'), 9);
+  });
+
+  it('successful full restart resets every revision when shell applies side effects', async () => {
+    const worker = new QuestionSaveWorker();
+    worker.setRevision('a', 2);
+    worker.setRevision('b', 5);
+    const attempt = await executeRestartAttempt({
+      pending: null,
+      kind: 'profile',
+      currentWriteGeneration: 0,
+      execute: async () => ({ success: true, writeGeneration: 1 }),
+    });
+    assert.equal(attempt.applySuccess, true);
+    worker.bumpGeneration();
+    worker.resetAllQuestions();
+    assert.equal(worker.getRevision('a'), 0);
+    assert.equal(worker.getRevision('b'), 0);
+  });
+
+  it('delayed pre-restart completion cannot restore an obsolete revision after reset', async () => {
+    const worker = new QuestionSaveWorker();
+    worker.setRevision('q1', 5);
+    const oldGeneration = worker.getGeneration();
+    let resolveGate!: () => void;
+    const gate = new Promise<void>((resolve) => {
+      resolveGate = resolve;
+    });
+
+    const stale = worker.enqueue(
+      'q1',
+      { answer: { value: 'stale' }, generation: oldGeneration },
+      async () => {
+        await gate;
+        return { success: true as const, data: { revision: 6 } };
       }
     );
-    assert.equal(result.ok, true);
-    assert.deepEqual(seen, [0]);
+
+    const restart = await executeRestartAttempt({
+      pending: null,
+      kind: 'category',
+      categoryKey: 'cat',
+      currentWriteGeneration: 1,
+      execute: async () => ({ success: true, writeGeneration: 2 }),
+    });
+    assert.equal(restart.applySuccess, true);
+    worker.bumpGeneration();
+    worker.resetQuestions(['q1']);
+    assert.equal(worker.getRevision('q1'), 0);
+
+    resolveGate();
+    const staleResult = await stale;
+    assert.equal(staleResult.ok, false);
+    await Promise.resolve();
+    await Promise.resolve();
+    assert.equal(worker.getRevision('q1'), 0);
   });
 });

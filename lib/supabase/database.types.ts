@@ -1533,7 +1533,7 @@ export type Database = {
         Args: {
           p_category_key: string
           p_expected_write_generation?: number
-          p_operation_id?: string
+          p_operation_id: string
           p_version_key: string
         }
         Returns: Json
@@ -1541,7 +1541,7 @@ export type Database = {
       clear_my_questionnaire_profile: {
         Args: {
           p_expected_write_generation?: number
-          p_operation_id?: string
+          p_operation_id: string
           p_version_key: string
         }
         Returns: Json
@@ -1550,7 +1550,7 @@ export type Database = {
         Args: {
           p_expected_revision?: number
           p_expected_write_generation?: number
-          p_operation_id?: string
+          p_operation_id: string
           p_question_key: string
           p_version_key: string
         }
@@ -1578,7 +1578,7 @@ export type Database = {
           p_expected_revision?: number
           p_expected_write_generation?: number
           p_identity?: Json
-          p_operation_id?: string
+          p_operation_id: string
           p_priority_choice_keys?: string[]
           p_question_key: string
           p_version_key: string
