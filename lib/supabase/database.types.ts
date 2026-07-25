@@ -786,6 +786,382 @@ export type Database = {
       }
     }
     Views: {
+
+      questionnaire_versions: {
+        Row: {
+          created_at: string
+          id: string
+          is_active: boolean
+          specification_version: string
+          title: string
+          version_key: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          specification_version: string
+          title: string
+          version_key: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          specification_version?: string
+          title?: string
+          version_key?: string
+        }
+        Relationships: []
+      }
+      questionnaire_categories: {
+        Row: {
+          category_key: string
+          category_number: number
+          created_at: string
+          display_order: number
+          id: string
+          locked_product_decisions: Json
+          status: Database["public"]["Enums"]["questionnaire_category_status"]
+          title: string
+          version_id: string
+        }
+        Insert: {
+          category_key: string
+          category_number: number
+          created_at?: string
+          display_order: number
+          id?: string
+          locked_product_decisions?: Json
+          status?: Database["public"]["Enums"]["questionnaire_category_status"]
+          title: string
+          version_id: string
+        }
+        Update: {
+          category_key?: string
+          category_number?: number
+          created_at?: string
+          display_order?: number
+          id?: string
+          locked_product_decisions?: Json
+          status?: Database["public"]["Enums"]["questionnaire_category_status"]
+          title?: string
+          version_id?: string
+        }
+        Relationships: []
+      }
+      questionnaire_eligibility_rules: {
+        Row: {
+          condition: Json
+          created_at: string
+          description: string
+          id: string
+          rule_key: string
+          version_id: string
+        }
+        Insert: {
+          condition?: Json
+          created_at?: string
+          description: string
+          id?: string
+          rule_key: string
+          version_id: string
+        }
+        Update: {
+          condition?: Json
+          created_at?: string
+          description?: string
+          id?: string
+          rule_key?: string
+          version_id?: string
+        }
+        Relationships: []
+      }
+      questionnaire_questions: {
+        Row: {
+          alignment_purpose: string
+          allowed_qualifiers:
+            | Database["public"]["Enums"]["questionnaire_response_qualifier"][]
+            | null
+          allowed_special_response_states:
+            | Database["public"]["Enums"]["questionnaire_response_state"][]
+            | null
+          category_id: string
+          context_note: string | null
+          created_at: string
+          display_order: number
+          eligibility_rule_id: string | null
+          format_label: string
+          id: string
+          implementation_note: string | null
+          is_conditional: boolean
+          max_selections: number | null
+          min_selections: number
+          priority_eligible_choice_keys: Json | null
+          priority_excluded_choice_keys: Json | null
+          priority_follow_up_prompt: string | null
+          priority_min_eligible_selections: number | null
+          priority_selection_count: number | null
+          priority_unordered: boolean
+          prompt: string
+          question_key: string
+          question_number: number
+          response_behavior: Database["public"]["Enums"]["questionnaire_response_behavior"]
+          select_all_that_apply: boolean
+          statement: string | null
+          structured_identity_config: Json | null
+        }
+        Insert: {
+          alignment_purpose: string
+          allowed_qualifiers?:
+            | Database["public"]["Enums"]["questionnaire_response_qualifier"][]
+            | null
+          allowed_special_response_states?:
+            | Database["public"]["Enums"]["questionnaire_response_state"][]
+            | null
+          category_id: string
+          context_note?: string | null
+          created_at?: string
+          display_order: number
+          eligibility_rule_id?: string | null
+          format_label: string
+          id?: string
+          implementation_note?: string | null
+          is_conditional?: boolean
+          max_selections?: number | null
+          min_selections?: number
+          priority_eligible_choice_keys?: Json | null
+          priority_excluded_choice_keys?: Json | null
+          priority_follow_up_prompt?: string | null
+          priority_min_eligible_selections?: number | null
+          priority_selection_count?: number | null
+          priority_unordered?: boolean
+          prompt: string
+          question_key: string
+          question_number: number
+          response_behavior: Database["public"]["Enums"]["questionnaire_response_behavior"]
+          select_all_that_apply?: boolean
+          statement?: string | null
+          structured_identity_config?: Json | null
+        }
+        Update: {
+          alignment_purpose?: string
+          allowed_qualifiers?:
+            | Database["public"]["Enums"]["questionnaire_response_qualifier"][]
+            | null
+          allowed_special_response_states?:
+            | Database["public"]["Enums"]["questionnaire_response_state"][]
+            | null
+          category_id?: string
+          context_note?: string | null
+          created_at?: string
+          display_order?: number
+          eligibility_rule_id?: string | null
+          format_label?: string
+          id?: string
+          implementation_note?: string | null
+          is_conditional?: boolean
+          max_selections?: number | null
+          min_selections?: number
+          priority_eligible_choice_keys?: Json | null
+          priority_excluded_choice_keys?: Json | null
+          priority_follow_up_prompt?: string | null
+          priority_min_eligible_selections?: number | null
+          priority_selection_count?: number | null
+          priority_unordered?: boolean
+          prompt?: string
+          question_key?: string
+          question_number?: number
+          response_behavior?: Database["public"]["Enums"]["questionnaire_response_behavior"]
+          select_all_that_apply?: boolean
+          statement?: string | null
+          structured_identity_config?: Json | null
+        }
+        Relationships: []
+      }
+      questionnaire_answer_choices: {
+        Row: {
+          choice_key: string
+          created_at: string
+          display_order: number
+          id: string
+          label: string
+          mutually_exclusive: boolean
+          opens_optional_context: boolean
+          optional_context_config: Json | null
+          qualifier:
+            | Database["public"]["Enums"]["questionnaire_response_qualifier"]
+            | null
+          qualifier_coexists_with_selections: boolean
+          question_id: string
+          special_response_state:
+            | Database["public"]["Enums"]["questionnaire_response_state"]
+            | null
+        }
+        Insert: {
+          choice_key: string
+          created_at?: string
+          display_order: number
+          id?: string
+          label: string
+          mutually_exclusive?: boolean
+          opens_optional_context?: boolean
+          optional_context_config?: Json | null
+          qualifier?:
+            | Database["public"]["Enums"]["questionnaire_response_qualifier"]
+            | null
+          qualifier_coexists_with_selections?: boolean
+          question_id: string
+          special_response_state?:
+            | Database["public"]["Enums"]["questionnaire_response_state"]
+            | null
+        }
+        Update: {
+          choice_key?: string
+          created_at?: string
+          display_order?: number
+          id?: string
+          label?: string
+          mutually_exclusive?: boolean
+          opens_optional_context?: boolean
+          optional_context_config?: Json | null
+          qualifier?:
+            | Database["public"]["Enums"]["questionnaire_response_qualifier"]
+            | null
+          qualifier_coexists_with_selections?: boolean
+          question_id?: string
+          special_response_state?:
+            | Database["public"]["Enums"]["questionnaire_response_state"]
+            | null
+        }
+        Relationships: []
+      }
+      user_questionnaire_progress: {
+        Row: {
+          completed_at: string | null
+          created_at: string
+          current_category_id: string | null
+          current_phase: string | null
+          current_question_id: string | null
+          started_at: string | null
+          status: Database["public"]["Enums"]["questionnaire_progress_status"]
+          updated_at: string
+          user_id: string
+          version_id: string
+        }
+        Insert: {
+          completed_at?: string | null
+          created_at?: string
+          current_category_id?: string | null
+          current_phase?: string | null
+          current_question_id?: string | null
+          started_at?: string | null
+          status?: Database["public"]["Enums"]["questionnaire_progress_status"]
+          updated_at?: string
+          user_id: string
+          version_id: string
+        }
+        Update: {
+          completed_at?: string | null
+          created_at?: string
+          current_category_id?: string | null
+          current_phase?: string | null
+          current_question_id?: string | null
+          started_at?: string | null
+          status?: Database["public"]["Enums"]["questionnaire_progress_status"]
+          updated_at?: string
+          user_id?: string
+          version_id?: string
+        }
+        Relationships: []
+      }
+      user_questionnaire_responses: {
+        Row: {
+          active_qualifiers: Database["public"]["Enums"]["questionnaire_response_qualifier"][]
+          client_mutation: number
+          created_at: string
+          id: string
+          identity_private_matching_allowed: boolean | null
+          identity_public_display_allowed: boolean | null
+          identity_refinement: string | null
+          identity_user_supplied: string | null
+          question_id: string
+          response_state: Database["public"]["Enums"]["questionnaire_response_state"]
+          updated_at: string
+          user_id: string
+          version_id: string
+        }
+        Insert: {
+          active_qualifiers?: Database["public"]["Enums"]["questionnaire_response_qualifier"][]
+          client_mutation?: number
+          created_at?: string
+          id?: string
+          identity_private_matching_allowed?: boolean | null
+          identity_public_display_allowed?: boolean | null
+          identity_refinement?: string | null
+          identity_user_supplied?: string | null
+          question_id: string
+          response_state?: Database["public"]["Enums"]["questionnaire_response_state"]
+          updated_at?: string
+          user_id: string
+          version_id: string
+        }
+        Update: {
+          active_qualifiers?: Database["public"]["Enums"]["questionnaire_response_qualifier"][]
+          client_mutation?: number
+          created_at?: string
+          id?: string
+          identity_private_matching_allowed?: boolean | null
+          identity_public_display_allowed?: boolean | null
+          identity_refinement?: string | null
+          identity_user_supplied?: string | null
+          question_id?: string
+          response_state?: Database["public"]["Enums"]["questionnaire_response_state"]
+          updated_at?: string
+          user_id?: string
+          version_id?: string
+        }
+        Relationships: []
+      }
+      user_questionnaire_selected_choices: {
+        Row: {
+          choice_id: string
+          context_text: string | null
+          created_at: string
+          response_id: string
+        }
+        Insert: {
+          choice_id: string
+          context_text?: string | null
+          created_at?: string
+          response_id: string
+        }
+        Update: {
+          choice_id?: string
+          context_text?: string | null
+          created_at?: string
+          response_id?: string
+        }
+        Relationships: []
+      }
+      user_questionnaire_priority_selections: {
+        Row: {
+          choice_id: string
+          created_at: string
+          response_id: string
+        }
+        Insert: {
+          choice_id: string
+          created_at?: string
+          response_id: string
+        }
+        Update: {
+          choice_id?: string
+          created_at?: string
+          response_id?: string
+        }
+        Relationships: []
+      }
       discoverable_profile_photos: {
         Row: {
           display_order: number | null
@@ -1147,6 +1523,47 @@ export type Database = {
         Returns: Json
       }
       withdraw_interest: { Args: { p_recipient_id: string }; Returns: Json }
+      clear_my_questionnaire_category: {
+        Args: { p_category_key: string; p_version_key: string }
+        Returns: Json
+      }
+      clear_my_questionnaire_profile: {
+        Args: { p_version_key: string }
+        Returns: Json
+      }
+      clear_my_questionnaire_question: {
+        Args: { p_question_key: string; p_version_key: string }
+        Returns: Json
+      }
+      forge_active_questionnaire_version_id: { Args: never; Returns: string }
+      load_my_questionnaire_state: {
+        Args: { p_version_key: string }
+        Returns: Json
+      }
+      save_my_questionnaire_progress_position: {
+        Args: {
+          p_category_key?: string
+          p_phase?: string
+          p_question_key?: string
+          p_status?: string
+          p_version_key: string
+        }
+        Returns: Json
+      }
+      save_my_questionnaire_response: {
+        Args: {
+          p_active_qualifiers?: Database["public"]["Enums"]["questionnaire_response_qualifier"][]
+          p_choice_contexts?: Json
+          p_choice_keys: string[]
+          p_client_mutation?: number
+          p_identity?: Json
+          p_priority_choice_keys?: string[]
+          p_question_key: string
+          p_response_state?: Database["public"]["Enums"]["questionnaire_response_state"]
+          p_version_key: string
+        }
+        Returns: Json
+      }
     }
     Enums: {
       answer_visibility: "private" | "shared_with_matches" | "public_summary"
@@ -1182,6 +1599,31 @@ export type Database = {
         | "inappropriate_content"
         | "safety_concern"
         | "other"
+      questionnaire_category_status: "locked" | "draft" | "preview"
+      questionnaire_progress_status: "not_started" | "in_progress" | "completed"
+      questionnaire_response_behavior:
+        | "single_choice"
+        | "multi_select"
+        | "scale_range"
+        | "scenario_choice"
+        | "structured_identity"
+      questionnaire_response_qualifier:
+        | "no_specific_requirement"
+        | "limited_openness"
+        | "evaluation_preference"
+        | "limited_capacity_contribution"
+      questionnaire_response_state:
+        | "answered"
+        | "unanswered"
+        | "skipped"
+        | "withheld"
+        | "inapplicable"
+        | "no_preference"
+        | "context_dependent"
+        | "limited_capacity"
+        | "not_currently_relevant"
+        | "current_priority"
+        | "no_specific_requirement"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -1345,6 +1787,34 @@ export const Constants = {
         "inappropriate_content",
         "safety_concern",
         "other",
+      ],
+      questionnaire_category_status: ["locked", "draft", "preview"],
+      questionnaire_progress_status: ["not_started", "in_progress", "completed"],
+      questionnaire_response_behavior: [
+        "single_choice",
+        "multi_select",
+        "scale_range",
+        "scenario_choice",
+        "structured_identity",
+      ],
+      questionnaire_response_qualifier: [
+        "no_specific_requirement",
+        "limited_openness",
+        "evaluation_preference",
+        "limited_capacity_contribution",
+      ],
+      questionnaire_response_state: [
+        "answered",
+        "unanswered",
+        "skipped",
+        "withheld",
+        "inapplicable",
+        "no_preference",
+        "context_dependent",
+        "limited_capacity",
+        "not_currently_relevant",
+        "current_priority",
+        "no_specific_requirement",
       ],
     },
   },

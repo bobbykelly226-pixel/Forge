@@ -4,7 +4,15 @@ import { redirect } from 'next/navigation';
 import ForgeAppCanvas from '@/components/ForgeAppCanvas';
 import NotificationsProvider from '@/components/notifications/NotificationsProvider';
 import MyProfileHub from '@/components/profile/MyProfileHub';
+import { loadCompatibilityProfileStateAction } from '@/app/actions/questionnaire';
 import { loadCurrentUserProfileBundle } from '@/lib/data/bundle';
+import { getQuestionnaireCatalog } from '@/lib/questionnaire/catalog';
+import {
+  areAllCategoriesComplete,
+  countAllCompletedEligibleQuestions,
+  countAllEligibleQuestions,
+  countCompletedCategories,
+} from '@/lib/questionnaire/persistence/completion';
 import { resolveAuthoritativeProfilePhotoUrl, toManagedProfilePhoto } from '@/lib/profile-photo';
 import { PROFILE_ANSWER_KEYS } from '@/lib/types/profile-answers';
 import type { Profile } from '@/lib/types/profile';
@@ -48,7 +56,7 @@ export default async function MyProfileHubPage({ searchParams }: PageProps) {
   const resolvedParams = searchParams ? await searchParams : {};
   const initialSection = resolvedParams.section ?? null;
 
-  const [bundle, privateDetailsResult] = await Promise.all([
+  const [bundle, privateDetailsResult, compatibilityState] = await Promise.all([
     loadCurrentUserProfileBundle(),
     supabase
       .from('profile_private_details')
@@ -57,6 +65,7 @@ export default async function MyProfileHubPage({ searchParams }: PageProps) {
       )
       .eq('user_id', user.id)
       .maybeSingle(),
+    loadCompatibilityProfileStateAction(),
   ]);
 
   if (!bundle.success) {
@@ -111,6 +120,39 @@ export default async function MyProfileHubPage({ searchParams }: PageProps) {
     profile_photo_url: photoUrl,
   } as Profile;
 
+  const catalog = getQuestionnaireCatalog();
+  const parentingProfile = compatibilityState.success
+    ? compatibilityState.data.parentingProfile
+    : null;
+  const answersByCategory = compatibilityState.success
+    ? compatibilityState.data.state.answersByCategory
+    : {};
+  const completedCategories = countCompletedCategories(
+    catalog.categories,
+    answersByCategory,
+    parentingProfile
+  );
+  const completedQuestions = countAllCompletedEligibleQuestions(
+    catalog.categories,
+    answersByCategory,
+    parentingProfile
+  );
+  const totalEligibleQuestions = countAllEligibleQuestions(
+    catalog.categories,
+    parentingProfile
+  );
+  const overallComplete = areAllCategoriesComplete(
+    catalog.categories,
+    answersByCategory,
+    parentingProfile
+  );
+  const compatibilityAction =
+    overallComplete
+      ? ('review' as const)
+      : completedQuestions > 0
+        ? ('continue' as const)
+        : ('start' as const);
+
   return (
     <ForgeAppCanvas
       desktopViewportLock
@@ -140,6 +182,13 @@ export default async function MyProfileHubPage({ searchParams }: PageProps) {
           hasImportantAlignmentFactors={hasImportantAlignmentFactors}
           photos={photos.map(toManagedProfilePhoto)}
           initialSection={initialSection}
+          compatibilityCard={{
+            completedCategories,
+            totalCategories: 10,
+            completedQuestions,
+            totalEligibleQuestions,
+            action: compatibilityAction,
+          }}
         />
       </NotificationsProvider>
     </ForgeAppCanvas>

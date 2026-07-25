@@ -402,9 +402,10 @@ describe('Category 1 onboarding preview flow', () => {
     }
 
     const appPage = read('app/app/page.tsx');
-    assert.match(appPage, /Preview Onboarding 2\.0/);
+    assert.match(appPage, /Compatibility Profile Preview/);
     assert.match(appPage, /href="\/onboarding-v2-preview"/);
     assert.match(appPage, /href="\/onboarding"/);
+    assert.match(appPage, /href="\/compatibility-profile"/);
   });
 
   it('keeps mobile and desktop context panels mutually exclusive (no duplicate progress)', () => {

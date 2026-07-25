@@ -46,6 +46,8 @@ export async function proxy(request: NextRequest) {
     (pathname.startsWith('/app') ||
       pathname === '/profile' ||
       pathname.startsWith('/profile/') ||
+      pathname === '/compatibility-profile' ||
+      pathname.startsWith('/compatibility-profile/') ||
       pathname.startsWith('/onboarding') ||
       pathname === '/onboarding-v2-preview' ||
       pathname.startsWith('/onboarding-v2-preview/') ||
