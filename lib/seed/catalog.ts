@@ -21,6 +21,7 @@ export type SeedAlignmentFactor = {
   explanation: string;
   viewerAnswer?: string;
   partnerAnswer?: string;
+  answerContextMode?: 'private_comparison';
   isPotentialDealbreaker?: boolean;
 };
 

@@ -10,12 +10,14 @@ import { DiscoveryActionsProvider } from '@/components/discovery/DiscoveryAction
 import DiscoveryProfileView from '@/components/discovery/DiscoveryProfileView';
 import {
   evaluateCompatibility,
+  evaluateQuestionnaireCompatibility,
   personFromPublicDiscoveryProfile,
   toAlignmentPresentation,
 } from '@/lib/compatibility';
 import { loadViewerCompatibilityPerson } from '@/lib/compatibility/load-viewer';
 import { findConversationForPeer } from '@/lib/conversations/resolve';
 import { getActiveConnectionIdWithPeer } from '@/lib/data/active-connection';
+import { loadQuestionnaireAlignmentComparison } from '@/lib/data/questionnaire-alignment';
 import { createEmptyActionState } from '@/lib/discovery-actions-types';
 import { isSeedProfileId } from '@/lib/seed/access';
 import { createClient } from '@/lib/supabase/server';
@@ -130,17 +132,34 @@ export default async function DiscoveryProfilePage({
   let existingConversationId: string | null = null;
 
   if (!isSeedProfileId(profileId)) {
-    const [viewer, connectionResult, conversationsResult] = await Promise.all([
+    const [
+      viewer,
+      questionnaireComparison,
+      connectionResult,
+      conversationsResult,
+    ] = await Promise.all([
       loadViewerCompatibilityPerson(),
+      loadQuestionnaireAlignmentComparison(profileId),
       getActiveConnectionIdWithPeer(profileId),
       listMyConversationsAction(),
     ]);
-    if (viewer.success) {
-      const engineResult = evaluateCompatibility(
-        viewer.person,
-        personFromPublicDiscoveryProfile(result.profile)
+
+    const questionnaireEngineResult =
+      questionnaireComparison.success && questionnaireComparison.data
+        ? evaluateQuestionnaireCompatibility(questionnaireComparison.data)
+        : null;
+
+    if (questionnaireEngineResult) {
+      liveAlignmentPresentation = toAlignmentPresentation(
+        questionnaireEngineResult
       );
-      liveAlignmentPresentation = toAlignmentPresentation(engineResult);
+    } else if (viewer.success) {
+      liveAlignmentPresentation = toAlignmentPresentation(
+        evaluateCompatibility(
+          viewer.person,
+          personFromPublicDiscoveryProfile(result.profile)
+        )
+      );
     }
     if (connectionResult.success) {
       mutualConnectionId = connectionResult.data ?? null;

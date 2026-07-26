@@ -15,6 +15,11 @@ import { toSeedPublicDiscoveryProfile } from '@/lib/seed/adapters';
 import { getSeedProfileById } from '@/lib/seed/catalog';
 import { toDiscoveryFeedCard } from '@/lib/discovery/presentation';
 import { createEmptyActionState } from '@/lib/discovery-actions-types';
+import {
+  evaluateQuestionnaireCompatibility,
+  toFeedAlignmentFields,
+} from '@/lib/compatibility';
+import { loadQuestionnaireAlignmentComparisons } from '@/lib/data/questionnaire-alignment';
 
 export async function fetchDiscoveryFeedAction() {
   const result = await listDiscoveryFeedProfiles();
@@ -24,9 +29,26 @@ export async function fetchDiscoveryFeedAction() {
 
   // Keep this action free of seed injection so Supabase results stay untouched.
   // Preview injection happens in app/discovery/page.tsx.
-  const cards = result.data.map(toDiscoveryFeedCard);
-  const realIds = cards.map((c) => c.id).filter((id) => !isSeedProfileId(id));
-  const actionState = await loadActionStateForProfiles(realIds);
+  const realIds = result.data
+    .map((profile) => profile.id)
+    .filter((id) => !isSeedProfileId(id));
+  const [actionState, questionnaireComparisons] = await Promise.all([
+    loadActionStateForProfiles(realIds),
+    loadQuestionnaireAlignmentComparisons(realIds),
+  ]);
+
+  const cards = result.data.map((profile) => {
+    const card = toDiscoveryFeedCard(profile);
+    const comparison = questionnaireComparisons.success
+      ? questionnaireComparisons.data[profile.id]
+      : null;
+    const engineResult = comparison
+      ? evaluateQuestionnaireCompatibility(comparison)
+      : null;
+    return engineResult
+      ? { ...card, ...toFeedAlignmentFields(engineResult) }
+      : card;
+  });
 
   return {
     success: true as const,

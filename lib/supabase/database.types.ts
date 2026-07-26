@@ -1599,6 +1599,14 @@ export type Database = {
         Args: { p_question_id: string; p_user_id: string }
         Returns: boolean
       }
+      forge_questionnaire_alignment_pair: {
+        Args: {
+          p_partner_id: string
+          p_version_key?: string
+          p_viewer_id: string
+        }
+        Returns: Json
+      }
       forge_questionnaire_resolve_operation: {
         Args: {
           p_fingerprint: string
@@ -1728,6 +1736,14 @@ export type Database = {
       list_my_notifications: { Args: { p_limit?: number }; Returns: Json }
       load_my_questionnaire_state: {
         Args: { p_version_key?: string }
+        Returns: Json
+      }
+      load_questionnaire_alignment_comparison: {
+        Args: { p_partner_id: string; p_version_key?: string }
+        Returns: Json
+      }
+      load_questionnaire_alignment_comparisons: {
+        Args: { p_partner_ids: string[]; p_version_key?: string }
         Returns: Json
       }
       mark_all_notifications_read: { Args: never; Returns: Json }

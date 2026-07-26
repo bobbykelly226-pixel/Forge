@@ -1,6 +1,10 @@
 import { PREFER_NOT_TO_SAY } from '@/lib/profile/structured-options';
 
-import type { CategoryEvaluation, CompatibilityCategoryKey, FactorStatus } from './types';
+import type {
+  CategoryEvaluation,
+  FactorStatus,
+  LegacyCompatibilityCategoryKey,
+} from './types';
 import { CATEGORY_WEIGHTS } from './weights';
 
 export function isAnswered(value: string | null | undefined): boolean {
@@ -15,7 +19,7 @@ export function normalizeSlug(value: string | null | undefined): string | null {
 }
 
 export function insufficient(
-  categoryKey: CompatibilityCategoryKey,
+  categoryKey: LegacyCompatibilityCategoryKey,
   categoryLabel: string,
   explanation: string,
   options?: { isHighImpact?: boolean }
@@ -36,7 +40,7 @@ export function insufficient(
 }
 
 export function evaluation(input: {
-  categoryKey: CompatibilityCategoryKey;
+  categoryKey: LegacyCompatibilityCategoryKey;
   categoryLabel: string;
   status: Exclude<FactorStatus, 'insufficient_information'>;
   explanation: string;

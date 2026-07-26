@@ -74,7 +74,7 @@ describe('Important Alignment Factors answer attribution', () => {
 
   it('ProfileAlignmentSections keeps Review my answer available', () => {
     const source = read('components/discovery/ProfileAlignmentSections.tsx');
-    assert.match(source, /reviewAnswerHref="\/onboarding"/);
+    assert.match(source, /reviewAnswerHref="\/compatibility-profile"/);
     assert.doesNotMatch(source, /hideReviewAnswerLink/);
   });
 });
