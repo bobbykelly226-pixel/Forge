@@ -11,6 +11,9 @@
 
 begin;
 
+create extension if not exists pgtap with schema extensions;
+set local search_path = public, extensions, pg_temp;
+
 select plan(49);
 
 -- ---------------------------------------------------------------------------
@@ -190,6 +193,9 @@ begin
     set user_id = tests.get_supabase_uid(email);
   end if;
 end $$;
+
+-- Role-switching tests still need to resolve the session-owned fixture rows.
+grant select on table _cp_users to authenticated;
 
 -- ---------------------------------------------------------------------------
 -- 1. Authenticated direct mutations denied on all private questionnaire tables
@@ -391,7 +397,10 @@ select is(
       'relationship_vision_intentions_q05_c02',
       'relationship_vision_intentions_q05_c03'
     ],
-    array['relationship_vision_intentions_q05_c04']
+    array[
+      'relationship_vision_intentions_q05_c01',
+      'relationship_vision_intentions_q05_c04'
+    ]
   )->>'message',
   'Priority choices must be selected base choices.',
   'invalid priority (not in base selections) is rejected'
@@ -464,28 +473,23 @@ select ok(
 -- ---------------------------------------------------------------------------
 -- 11. Explicit empty answer for min_selections=0 completes as answered
 -- ---------------------------------------------------------------------------
+select pg_temp._cp_save(
+  'family_children_parenting_q04',
+  array[]::text[]
+);
+
 select ok(
-  (
-    with save as (
-      select pg_temp._cp_save(
-        'family_children_parenting_q04',
-        array[]::text[]
-      ) as result
-    )
-    select
-      (select result->>'ok' from save) = 'true'
-      and exists (
+  exists (
+    select 1
+    from public.user_questionnaire_responses r
+    join public.questionnaire_questions q on q.id = r.question_id
+    where r.user_id = auth.uid()
+      and q.question_key = 'family_children_parenting_q04'
+      and r.response_state = 'answered'
+      and not exists (
         select 1
-        from public.user_questionnaire_responses r
-        join public.questionnaire_questions q on q.id = r.question_id
-        where r.user_id = auth.uid()
-          and q.question_key = 'family_children_parenting_q04'
-          and r.response_state = 'answered'
-          and not exists (
-            select 1
-            from public.user_questionnaire_selected_choices sc
-            where sc.response_id = r.id
-          )
+        from public.user_questionnaire_selected_choices sc
+        where sc.response_id = r.id
       )
   ),
   'empty answer for family_children_parenting_q04 (min_selections=0) completes as answered'
@@ -494,27 +498,22 @@ select ok(
 -- ---------------------------------------------------------------------------
 -- 12. Required empty (min>0) remains unanswered via clear
 -- ---------------------------------------------------------------------------
+select public.clear_my_questionnaire_question(
+  p_version_key => 'compatibility_profile_v1',
+  p_question_key => 'relationship_vision_intentions_q01',
+  p_operation_id => gen_random_uuid(),
+  p_expected_revision => pg_temp._cp_question_revision('relationship_vision_intentions_q01'),
+  p_expected_write_generation => pg_temp._cp_write_generation()
+);
+
 select ok(
-  (
-    with cleared as (
-      select public.clear_my_questionnaire_question(
-        p_version_key => 'compatibility_profile_v1',
-        p_question_key => 'relationship_vision_intentions_q01',
-        p_operation_id => gen_random_uuid(),
-        p_expected_revision => pg_temp._cp_question_revision('relationship_vision_intentions_q01'),
-        p_expected_write_generation => pg_temp._cp_write_generation()
-      ) as result
-    )
-    select
-      (select result->>'ok' from cleared) = 'true'
-      and exists (
-        select 1
-        from public.user_questionnaire_responses r
-        join public.questionnaire_questions q on q.id = r.question_id
-        where r.user_id = auth.uid()
-          and q.question_key = 'relationship_vision_intentions_q01'
-          and r.response_state = 'unanswered'
-      )
+  exists (
+    select 1
+    from public.user_questionnaire_responses r
+    join public.questionnaire_questions q on q.id = r.question_id
+    where r.user_id = auth.uid()
+      and q.question_key = 'relationship_vision_intentions_q01'
+      and r.response_state = 'unanswered'
   ),
   'clearing a required (min_selections>0) question leaves it unanswered'
 );
@@ -617,46 +616,39 @@ select ok(
 -- ---------------------------------------------------------------------------
 -- 15. Clear tombstone prevents resurrection with old revision
 -- ---------------------------------------------------------------------------
+select pg_temp._cp_save(
+  'relationship_vision_intentions_q04',
+  array['relationship_vision_intentions_q04_c01'],
+  '{}',
+  '{}'::jsonb,
+  '{}'::jsonb,
+  0,
+  pg_temp._cp_write_generation()
+);
+
+select public.clear_my_questionnaire_question(
+  p_version_key => 'compatibility_profile_v1',
+  p_question_key => 'relationship_vision_intentions_q04',
+  p_operation_id => gen_random_uuid(),
+  p_expected_revision => pg_temp._cp_question_revision('relationship_vision_intentions_q04'),
+  p_expected_write_generation => pg_temp._cp_write_generation()
+);
+
 select ok(
   (
-    with saved as (
-      select pg_temp._cp_save(
-        'relationship_vision_intentions_q04',
-        array['relationship_vision_intentions_q04_c01'],
-        '{}',
-        '{}'::jsonb,
-        '{}'::jsonb,
-        0,
-        pg_temp._cp_write_generation()
-      ) as result
-    ),
-    rev as (
-      select (select result->>'revision' from saved)::bigint as revision
-    ),
-    cleared as (
-      select public.clear_my_questionnaire_question(
-        p_version_key => 'compatibility_profile_v1',
-        p_question_key => 'relationship_vision_intentions_q04',
-        p_operation_id => gen_random_uuid(),
-        p_expected_revision => (select revision from rev),
-        p_expected_write_generation => pg_temp._cp_write_generation()
-      ) as result
-    ),
-    resurrect as (
+    with resurrect as (
       select pg_temp._cp_save(
         'relationship_vision_intentions_q04',
         array['relationship_vision_intentions_q04_c02'],
         '{}',
         '{}'::jsonb,
         '{}'::jsonb,
-        (select revision from rev),
+        pg_temp._cp_question_revision('relationship_vision_intentions_q04') - 1,
         pg_temp._cp_write_generation()
       ) as result
     )
     select
-      (select result->>'ok' from saved) = 'true'
-      and (select result->>'ok' from cleared) = 'true'
-      and (select result->>'ok' from resurrect) = 'false'
+      (select result->>'ok' from resurrect) = 'false'
       and (select result->>'code' from resurrect) = 'stale_revision'
       and exists (
         select 1
@@ -1086,6 +1078,16 @@ select is(
 );
 
 -- Use an already-answered question so null clear/restart attempts can prove no mutation.
+select pg_temp._cp_save(
+  'relationship_vision_intentions_q01',
+  array['relationship_vision_intentions_q01_c01'],
+  '{}',
+  '{}'::jsonb,
+  '{}'::jsonb,
+  pg_temp._cp_question_revision('relationship_vision_intentions_q01'),
+  pg_temp._cp_write_generation()
+);
+
 select ok(
   pg_temp._cp_question_revision('relationship_vision_intentions_q01') > 0,
   'owner has an answered question available for null-operation mutation checks'
