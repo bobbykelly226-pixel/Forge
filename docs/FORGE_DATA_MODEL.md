@@ -2,28 +2,36 @@
 
 Authoritative documentation for the Forge Backend Foundation persistence layer.
 
-**Remote migration status (re-diagnosed 2026-07-25 during Persistence V1 legacy-overload / mandatory operation_id / structured-error correction pass):**
+**Remote migration status (verified live 2026-07-25 through the connected Supabase project):**
 
 | Layer | Result |
 |---|---|
-| Supabase CLI | 2.109.1 present |
-| `supabase/.temp/project-ref` | Absent |
-| Explicit `supabase link --project-ref uwgjdqzwcgbaaudbrvgx` | Failed: management auth required |
-| `SUPABASE_ACCESS_TOKEN` | Absent |
-| `SUPABASE_DB_PASSWORD` / DB URLs | Absent |
-| `npx supabase projects list` | Failed: `LegacyPlatformAuthRequiredError` (access token not provided) |
-| `supabase migration list --linked` | Not run — link unavailable |
-| Docker / `supabase test db` | Unavailable in this environment |
-| Network to `api.supabase.com` / project host | Reachable |
-| Classification | **Supabase management authentication is missing.** Linked history cannot be inspected and migrations cannot be applied until a token is provided. App env vars (`NEXT_PUBLIC_SUPABASE_*`) are not substitutes. |
+| Supabase project | `uwgjdqzwcgbaaudbrvgx` (`Forge`) |
+| Project health | `ACTIVE_HEALTHY` |
+| Source migration `20260723000000_questionnaire_foundation.sql` | Applied through the connector as remote ledger entry `20260726021004 questionnaire_foundation` |
+| Source migration `20260725000000_compatibility_profile_persistence_v1.sql` | Applied through the connector as remote ledger entry `20260726021051 compatibility_profile_persistence_v1` |
+| Active catalog | `compatibility_profile_categories_1_10_v10` |
+| Live catalog counts | 10 categories, 100 questions, 856 answer choices |
+| RLS | Enabled on all 10 questionnaire catalog, response, progress, and operation tables |
+| Mutation grants | Authenticated direct writes revoked; hardened owner RPCs require `operation_id` |
+| Live pgTAP | 49 of 49 assertions pass inside a rollback transaction |
+| Linked TypeScript types | Regenerated from the resulting live schema |
 
-Migrations `20260723000000_questionnaire_foundation.sql` and corrected-in-place `20260725000000_compatibility_profile_persistence_v1.sql` (including section 10: revoke direct writes, operation idempotency, explicit empty answers) remain in the repository and are **not claimed applied**. Linked history has never been successfully inspected in this environment, so “unapplied everywhere” is **not** asserted.
+The Supabase connector records migrations using the application timestamp rather
+than the repository filename timestamp. Preserve the two remote ledger entries
+above; do not rewrite or repair applied history.
 
-Executable pgTAP contracts live at `supabase/tests/compatibility_profile_persistence_v1.test.sql` and require a local/linked Supabase database to run.
+Executable pgTAP contracts live at
+`supabase/tests/compatibility_profile_persistence_v1.test.sql`. The committed
+harness installs pgTAP transactionally, includes the `extensions` schema in the
+local search path, and grants the switched authenticated test role access only
+to its session-owned fixture table.
 
 **Earlier documented status (pre-questionnaire foundation):** Linked history previously recorded `20260714000000` (`forge_backend_foundation`), `20260714060000` (`migrate_compatibility_to_profile_answers`), `20260714180000` (`discovery_connections_persistence`), `20260714190000` (`discovery_without_completion_gate`), `20260714200000` (`fix_discovery_visibility_status_write`), and `20260714210000` (`structured_profile_fields_and_location`).
 
-**Types status:** `lib/supabase/database.types.ts` was previously generated from the linked schema after `20260714210000`. For Compatibility Profile Persistence V1, questionnaire tables/enums/RPCs (including `p_operation_id`) were **hand-extended from the migration SQL** because linked type generation could not run in this environment. Regenerate with `npm run supabase:types` after the questionnaire migrations are applied on the linked project. Do not treat hand-extended types as linked-schema confirmation.
+**Types status:** `lib/supabase/database.types.ts` is generated from the linked
+schema after both questionnaire migrations. It is no longer a hand-extended
+placeholder.
 
 ---
 
