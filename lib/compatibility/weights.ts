@@ -8,9 +8,9 @@
  * - No numeric percentage is exposed to the UI.
  */
 
-import type { CompatibilityCategoryKey, FactorStatus } from './types';
+import type { FactorStatus, LegacyCompatibilityCategoryKey } from './types';
 
-export const CATEGORY_WEIGHTS: Record<CompatibilityCategoryKey, number> = {
+export const CATEGORY_WEIGHTS: Record<LegacyCompatibilityCategoryKey, number> = {
   relationship_intention: 1.4,
   children_family: 1.35,
   faith: 1.15,
@@ -37,7 +37,7 @@ export const ALIGNMENT_SCORE_THRESHOLDS = {
   promising: 0.58,
 } as const;
 
-export const HIGH_IMPACT_CATEGORIES: ReadonlySet<CompatibilityCategoryKey> = new Set([
+export const HIGH_IMPACT_CATEGORIES: ReadonlySet<LegacyCompatibilityCategoryKey> = new Set([
   'relationship_intention',
   'children_family',
   'faith',

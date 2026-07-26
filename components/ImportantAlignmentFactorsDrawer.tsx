@@ -20,6 +20,7 @@ export type ImportantAlignmentFactorDetail = {
   explanation: string;
   viewerAnswer?: string;
   partnerAnswer?: string;
+  answerContextMode?: 'private_comparison';
   conversationPrompt?: string;
 };
 
@@ -242,7 +243,18 @@ export default function ImportantAlignmentFactorsDrawer({
                       {factor.title}
                     </h3>
 
-                    {(factor.viewerAnswer || factor.partnerAnswer) && (
+                    {factor.answerContextMode === 'private_comparison' ? (
+                      <div className="mt-4 rounded-2xl bg-white/80 px-4 py-3">
+                        <p className="text-xs font-semibold uppercase tracking-[0.12em] text-[#7A8494]">
+                          Answer privacy
+                        </p>
+                        <p className="mt-2 text-[15px] leading-relaxed text-[#3D4654]">
+                          Your Compatibility Profile answer and their answer were compared
+                          privately. Forge shows the topic and context here—not either
+                          person&apos;s raw response.
+                        </p>
+                      </div>
+                    ) : (factor.viewerAnswer || factor.partnerAnswer) ? (
                       <div className="mt-4">
                         <p className="text-xs font-semibold uppercase tracking-[0.12em] text-[#7A8494]">
                           Answer context
@@ -270,7 +282,7 @@ export default function ImportantAlignmentFactorsDrawer({
                           ) : null}
                         </dl>
                       </div>
-                    )}
+                    ) : null}
 
                     <div className="mt-4">
                       <p className="text-xs font-semibold uppercase tracking-[0.12em] text-[#7A8494]">

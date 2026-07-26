@@ -33,6 +33,7 @@ export function toAlignmentPresentation(
       summary: item.copy,
       explanation: item.copy,
       isPotentialDealbreaker: true,
+      answerContextMode: item.answerContextMode,
       ...toFactorAnswers(item),
     })),
     ...result.worthDiscussing.map((item, index) => ({
@@ -42,6 +43,7 @@ export function toAlignmentPresentation(
       summary: item.copy,
       explanation: item.copy,
       isPotentialDealbreaker: false,
+      answerContextMode: item.answerContextMode,
       ...toFactorAnswers(item),
     })),
   ];

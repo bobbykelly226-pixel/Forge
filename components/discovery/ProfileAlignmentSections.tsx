@@ -80,6 +80,7 @@ function toFactorDetails(
     explanation: factor.explanation,
     viewerAnswer: factor.viewerAnswer,
     partnerAnswer: factor.partnerAnswer,
+    answerContextMode: factor.answerContextMode,
   }));
 }
 
@@ -287,7 +288,7 @@ export default function ProfileAlignmentSections({
         onClose={closeFactors}
         profileName={profileName}
         factors={toFactorDetails(importantFactors)}
-        reviewAnswerHref="/onboarding"
+        reviewAnswerHref="/compatibility-profile"
       />
     </>
   );

@@ -1,5 +1,13 @@
 export { evaluateCompatibility } from './engine';
 export {
+  evaluateQuestionnaireCompatibility,
+  QUESTIONNAIRE_ALIGNMENT_COVERAGE,
+} from './questionnaire-engine';
+export {
+  parseQuestionnaireAlignmentComparison,
+  parseQuestionnaireAlignmentComparisonMap,
+} from './questionnaire-payload';
+export {
   humanizeFactorAnswer,
   partnerSaidLabel,
   viewerSaidLabel,
@@ -19,6 +27,12 @@ export type {
   CompatibilityEvaluator,
   CompatibilityPersonInput,
   FactorStatus,
+  LegacyCompatibilityCategoryKey,
   RelationshipAlignmentKey,
 } from './types';
+export type {
+  QuestionnaireAlignmentComparison,
+  QuestionnaireComparisonQuestion,
+  QuestionnaireCompatibilityCategoryKey,
+} from './questionnaire-types';
 export { RELATIONSHIP_ALIGNMENT_LABELS, RELATIONSHIP_ALIGNMENT_KEYS } from './types';

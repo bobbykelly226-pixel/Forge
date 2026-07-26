@@ -1,3 +1,5 @@
+import type { QuestionnaireCompatibilityCategoryKey } from './questionnaire-types';
+
 /**
  * Compatibility Engine V1 — shared types.
  *
@@ -32,7 +34,7 @@ export const FACTOR_STATUSES = [
 
 export type FactorStatus = (typeof FACTOR_STATUSES)[number];
 
-export type CompatibilityCategoryKey =
+export type LegacyCompatibilityCategoryKey =
   | 'relationship_intention'
   | 'children_family'
   | 'faith'
@@ -41,8 +43,12 @@ export type CompatibilityCategoryKey =
   | 'pets'
   | 'core_values';
 
+export type CompatibilityCategoryKey =
+  | LegacyCompatibilityCategoryKey
+  | QuestionnaireCompatibilityCategoryKey;
+
 export type CategoryEvaluation = {
-  categoryKey: CompatibilityCategoryKey;
+  categoryKey: LegacyCompatibilityCategoryKey;
   categoryLabel: string;
   /** False when either side lacks enough answers to compare. */
   hasEnoughInformation: boolean;
@@ -65,6 +71,8 @@ export type AlignmentExplanationItem = {
   categoryKey: CompatibilityCategoryKey;
   title: string;
   copy: string;
+  /** Private questionnaire comparisons never expose either raw answer. */
+  answerContextMode?: 'private_comparison';
   /** Signed-in user's human-readable answer for this factor (when available). */
   viewerAnswer?: string;
   /** Viewed profile's human-readable answer for this factor (when available). */
@@ -117,7 +125,7 @@ export type CompatibilityPersonInput = {
 };
 
 export type CompatibilityEvaluator = {
-  key: CompatibilityCategoryKey;
+  key: LegacyCompatibilityCategoryKey;
   label: string;
   evaluate: (
     viewer: CompatibilityPersonInput,
