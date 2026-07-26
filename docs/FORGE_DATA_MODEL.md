@@ -2,9 +2,36 @@
 
 Authoritative documentation for the Forge Backend Foundation persistence layer.
 
-**Remote migration status:** Applied to the linked Forge Supabase project via `supabase migration up --linked`. Remote migration history records `20260714000000` (`forge_backend_foundation`), `20260714060000` (`migrate_compatibility_to_profile_answers`), `20260714180000` (`discovery_connections_persistence`), `20260714190000` (`discovery_without_completion_gate`), `20260714200000` (`fix_discovery_visibility_status_write`), and `20260714210000` (`structured_profile_fields_and_location`).
+**Remote migration status (verified live 2026-07-25 through the connected Supabase project):**
 
-**Types status:** `lib/supabase/database.types.ts` was **generated from the linked, applied Forge Supabase schema** via `npx supabase gen types typescript --linked --schema public` after migration `20260714210000` was recorded remotely.
+| Layer | Result |
+|---|---|
+| Supabase project | `uwgjdqzwcgbaaudbrvgx` (`Forge`) |
+| Project health | `ACTIVE_HEALTHY` |
+| Source migration `20260723000000_questionnaire_foundation.sql` | Applied through the connector as remote ledger entry `20260726021004 questionnaire_foundation` |
+| Source migration `20260725000000_compatibility_profile_persistence_v1.sql` | Applied through the connector as remote ledger entry `20260726021051 compatibility_profile_persistence_v1` |
+| Active catalog | `compatibility_profile_categories_1_10_v10` |
+| Live catalog counts | 10 categories, 100 questions, 856 answer choices |
+| RLS | Enabled on all 10 questionnaire catalog, response, progress, and operation tables |
+| Mutation grants | Authenticated direct writes revoked; hardened owner RPCs require `operation_id` |
+| Live pgTAP | 49 of 49 assertions pass inside a rollback transaction |
+| Linked TypeScript types | Regenerated from the resulting live schema |
+
+The Supabase connector records migrations using the application timestamp rather
+than the repository filename timestamp. Preserve the two remote ledger entries
+above; do not rewrite or repair applied history.
+
+Executable pgTAP contracts live at
+`supabase/tests/compatibility_profile_persistence_v1.test.sql`. The committed
+harness installs pgTAP transactionally, includes the `extensions` schema in the
+local search path, and grants the switched authenticated test role access only
+to its session-owned fixture table.
+
+**Earlier documented status (pre-questionnaire foundation):** Linked history previously recorded `20260714000000` (`forge_backend_foundation`), `20260714060000` (`migrate_compatibility_to_profile_answers`), `20260714180000` (`discovery_connections_persistence`), `20260714190000` (`discovery_without_completion_gate`), `20260714200000` (`fix_discovery_visibility_status_write`), and `20260714210000` (`structured_profile_fields_and_location`).
+
+**Types status:** `lib/supabase/database.types.ts` is generated from the linked
+schema after both questionnaire migrations. It is no longer a hand-extended
+placeholder.
 
 ---
 
@@ -52,7 +79,7 @@ Other users must **not** query `profiles` with `select *`. Peer reads go through
 | Phone number | Not stored in Forge app tables |
 | Profile status / discoverability flags | Filtered in the view; not selected for peers |
 | Onboarding / completion / last-active / created / updated timestamps | Owner-only on base `profiles` |
-| Private compatibility / questionnaire answers | `compatibility_answers` and `profile_answers` are owner-only |
+| Private compatibility / questionnaire answers | Essential Profile answers use owner-only `profile_answers`; Compatibility Profile (100 questions) uses owner-only `user_questionnaire_*` tables; legacy `compatibility_answers` remains read-only |
 | Preferences | `profile_preferences` owner-only |
 | Photo moderation status | Excluded from `discoverable_profile_photos` |
 | Who saved or passed them | `saved_profiles` / `passed_profiles` actor-only |
@@ -110,7 +137,7 @@ See migration SQL for full DDL. High level:
 1. **`profiles`** — owner full row; peers use `discoverable_profiles`
 2. **`profile_private_details`** — DOB, postal, coords; owner-only
 3. **`profile_preferences`** — owner-only discovery prefs
-4. **`profile_answers`** — future questionnaire authority; owner-only
+4. **`profile_answers`** — Essential Profile / onboarding answers; owner-only
 5. **`profile_photos`** — owner metadata; peers use `discoverable_profile_photos`
 6. **`user_app_state`** — onboarding flags; owner-only
 7. **`saved_profiles` / `passed_profiles`** — private actor-only
@@ -118,8 +145,23 @@ See migration SQL for full DDL. High level:
 9. **`connections`** — participants select; no client writes
 10. **`user_blocks`** — blocker-only
 11. **`character_signals`** — positive-only; giver create; receiver approve/decline
+12. **Questionnaire catalog** — `questionnaire_versions`, `questionnaire_categories`, `questionnaire_eligibility_rules`, `questionnaire_questions`, `questionnaire_answer_choices` (readable catalog; not user-editable)
+13. **Compatibility Profile responses** — `user_questionnaire_progress`, `user_questionnaire_responses`, `user_questionnaire_selected_choices`, `user_questionnaire_priority_selections` (owner-only RLS; never public)
 
-Untouched: `compatibility_answers`, `waitlist`, `feedback`.
+Untouched by Compatibility Profile persistence: Essential Profile `/onboarding`, legacy `compatibility_answers` (read-only), `waitlist`, `feedback`, Compatibility Engine V1.
+
+### Compatibility Profile persistence (repository migrations)
+
+- `20260723000000_questionnaire_foundation.sql` — catalog + response tables, RLS, 100-question seed (`compatibility_profile_categories_1_10_v10`)
+- `20260725000000_compatibility_profile_persistence_v1.sql` — resume fields, server `revision`/`write_generation`, mandatory-`operation_id` mutation RPCs only:
+  - `save_my_questionnaire_response(text, text, text[], uuid, text[], jsonb, jsonb, bigint, bigint)`
+  - `clear_my_questionnaire_question(text, text, uuid, bigint, bigint)`
+  - `clear_my_questionnaire_category(text, text, uuid, bigint)`
+  - `clear_my_questionnaire_profile(text, uuid, bigint)`
+  - plus `save_my_questionnaire_progress_position` and `load_my_questionnaire_state`
+  - Legacy operation-id-free mutation overloads are dropped. Direct table writes are revoked.
+
+Application code must not dual-write Compatibility Profile answers into `profile_answers`, `compatibility_answers`, `profiles`, or `user_app_state`.
 
 ---
 

@@ -8,6 +8,9 @@ import DiscoveryDesktopTopBar from '@/components/DiscoveryDesktopTopBar';
 import ForgeAppBottomNav from '@/components/ForgeAppBottomNav';
 import ForgeAuthenticatedTwoColumnShell from '@/components/ForgeAuthenticatedTwoColumnShell';
 import ForgeDesktopAppNav from '@/components/ForgeDesktopAppNav';
+import ProfileCompatibilityCard, {
+  type ProfileCompatibilityCardProps,
+} from '@/components/compatibility-profile/ProfileCompatibilityCard';
 import DiscoveryVisibilityToggle from '@/components/profile/DiscoveryVisibilityToggle';
 import ProfileWorkspace from '@/components/profile/ProfileWorkspace';
 import type { ManagedProfilePhoto } from '@/lib/profile-photo';
@@ -39,6 +42,7 @@ export type MyProfileHubProps = {
   hasImportantAlignmentFactors: boolean;
   photos: ManagedProfilePhoto[];
   initialSection?: string | null;
+  compatibilityCard: ProfileCompatibilityCardProps;
 };
 
 function CompletionRing({ percent }: { percent: number }) {
@@ -90,6 +94,7 @@ export default function MyProfileHub({
   hasImportantAlignmentFactors,
   photos,
   initialSection,
+  compatibilityCard,
 }: MyProfileHubProps) {
   const [photoUrl, setPhotoUrl] = useState(initialPhotoUrl);
   const [completionPercent, setCompletionPercent] = useState(initialCompletionPercent);
@@ -220,6 +225,8 @@ export default function MyProfileHub({
                   </p>
                 </div>
               </section>
+
+              <ProfileCompatibilityCard {...compatibilityCard} />
 
               <DiscoveryVisibilityToggle
                 enabled={discoveryVisibility.enabled}

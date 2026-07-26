@@ -51,10 +51,16 @@ export default async function AppPage() {
               Start Onboarding
             </Link>
             <Link
-              href="/onboarding-v2-preview"
+              href="/compatibility-profile"
               className="inline-flex w-full items-center justify-center bg-[#0B2D5C] hover:bg-[#0A2540] text-white px-8 py-4 rounded-2xl font-semibold text-lg transition"
             >
-              Preview Onboarding 2.0
+              Open Compatibility Profile
+            </Link>
+            <Link
+              href="/onboarding-v2-preview"
+              className="inline-flex w-full items-center justify-center border border-[#0B2D5C]/20 bg-white hover:bg-[#F8F6F2] text-[#0B2D5C] px-8 py-4 rounded-2xl font-semibold text-lg transition"
+            >
+              Compatibility Profile Preview
             </Link>
             <Link
               href="/profile/edit"
