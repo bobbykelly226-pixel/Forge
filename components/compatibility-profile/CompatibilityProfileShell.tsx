@@ -129,6 +129,10 @@ export default function CompatibilityProfileShell({
     questionKey?: string | null;
     phase?: 'intro' | 'base' | 'priority' | 'complete' | null;
   } | null>(null);
+  // Event handlers can fire several times before React commits the next render.
+  // Keep an eagerly updated snapshot so rapid multi-select taps always build on
+  // the latest local answer instead of replacing one another from a stale render.
+  const answersByCategoryRef = useRef(initialAnswersByCategory);
   const saveWorkerRef = useRef(new QuestionSaveWorker());
   const pendingAnswerRef = useRef<{
     questionKey: string;
@@ -145,6 +149,10 @@ export default function CompatibilityProfileShell({
   useEffect(() => {
     writeGenerationRef.current = writeGeneration;
   }, [writeGeneration]);
+
+  useEffect(() => {
+    answersByCategoryRef.current = answersByCategory;
+  }, [answersByCategory]);
 
   useEffect(() => {
     // Seed per-question revisions so the first save uses the loaded CAS values.
@@ -356,7 +364,7 @@ export default function CompatibilityProfileShell({
         ? pendingAnswerRef.current.answer
         : sanitized;
 
-    setAnswersByCategory((prev) => {
+    commitAnswersByCategory((prev) => {
       const category = categories.find((item) =>
         item.questions.some((q) => q.id === question.id)
       );
@@ -392,13 +400,23 @@ export default function CompatibilityProfileShell({
     questionId: string,
     answer: PersistedQuestionAnswer
   ) {
-    setAnswersByCategory((prev) => ({
+    commitAnswersByCategory((prev) => ({
       ...prev,
       [categoryNumber]: {
         ...(prev[categoryNumber] ?? {}),
         [questionId]: answer,
       },
     }));
+  }
+
+  function commitAnswersByCategory(
+    update: (
+      current: Record<number, Record<string, PersistedQuestionAnswer>>
+    ) => Record<number, Record<string, PersistedQuestionAnswer>>
+  ) {
+    const next = update(answersByCategoryRef.current);
+    answersByCategoryRef.current = next;
+    setAnswersByCategory(next);
   }
 
   async function openCategory(categoryNumber: number) {
@@ -504,7 +522,8 @@ export default function CompatibilityProfileShell({
     const question = category.questions.find((item) => item.id === questionId);
     if (!question) return;
     const current =
-      answersByCategory[category.number]?.[questionId] ?? emptyPersistedAnswer();
+      answersByCategoryRef.current[category.number]?.[questionId] ??
+      emptyPersistedAnswer();
     const result = toggleBaseSelection(
       question,
       {
@@ -532,7 +551,8 @@ export default function CompatibilityProfileShell({
     const question = category.questions.find((item) => item.id === questionId);
     if (!question) return;
     const current =
-      answersByCategory[category.number]?.[questionId] ?? emptyPersistedAnswer();
+      answersByCategoryRef.current[category.number]?.[questionId] ??
+      emptyPersistedAnswer();
     const toggled = togglePrioritySelection(
       question,
       {
@@ -559,7 +579,8 @@ export default function CompatibilityProfileShell({
     const question = category.questions.find((item) => item.id === questionId);
     if (!question) return;
     const current =
-      answersByCategory[category.number]?.[questionId] ?? emptyPersistedAnswer();
+      answersByCategoryRef.current[category.number]?.[questionId] ??
+      emptyPersistedAnswer();
     const next = sanitizeAnswerAgainstCatalog(question, {
       ...current,
       identity,
@@ -580,7 +601,8 @@ export default function CompatibilityProfileShell({
     const question = category.questions.find((item) => item.id === questionId);
     if (!question) return;
     const current =
-      answersByCategory[category.number]?.[questionId] ?? emptyPersistedAnswer();
+      answersByCategoryRef.current[category.number]?.[questionId] ??
+      emptyPersistedAnswer();
     const next = sanitizeAnswerAgainstCatalog(question, {
       ...current,
       choiceContexts: {
@@ -756,7 +778,7 @@ export default function CompatibilityProfileShell({
       ) {
         pendingAnswerRef.current = null;
       }
-      setAnswersByCategory((prev) => ({
+      commitAnswersByCategory((prev) => ({
         ...prev,
         [category.number]: {},
       }));
@@ -818,6 +840,7 @@ export default function CompatibilityProfileShell({
       saveWorkerRef.current.bumpGeneration();
       saveWorkerRef.current.resetAllQuestions();
       pendingAnswerRef.current = null;
+      answersByCategoryRef.current = {};
       setAnswersByCategory({});
       setSavedProgress({
         status: 'not_started',
@@ -880,7 +903,7 @@ export default function CompatibilityProfileShell({
         )
         .find((item) => item.question.id === pending.questionKey);
       if (located) {
-        setAnswersByCategory((prev) => ({
+        commitAnswersByCategory((prev) => ({
           ...prev,
           [located.category.number]: {
             ...(prev[located.category.number] ?? {}),
