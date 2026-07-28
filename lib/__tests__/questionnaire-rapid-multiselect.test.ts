@@ -69,7 +69,7 @@ describe('rapid capped multi-select answers', () => {
     );
     const toggleHandler = shell.slice(
       shell.indexOf('async function handleToggleBase'),
-      shell.indexOf('async function handleTogglePriority')
+      shell.indexOf('async function handleIdentityChange')
     );
 
     assert.match(shell, /const answersByCategoryRef = useRef\(initialAnswersByCategory\)/);

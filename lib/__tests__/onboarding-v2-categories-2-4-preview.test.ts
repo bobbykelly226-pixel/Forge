@@ -202,7 +202,7 @@ describe('multi-category preview session behavior', () => {
       [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
     );
     assert.equal(getQuestionnaireCatalog().specificationVersion, SPECIFICATION_VERSION);
-    assert.equal(SPECIFICATION_VERSION, 'compatibility_profile_categories_1_10_v10');
+    assert.equal(SPECIFICATION_VERSION, 'compatibility_profile_calibrated_80_v1');
   });
 
   it('preserves in memory answers across category switches and clears only on restart', () => {

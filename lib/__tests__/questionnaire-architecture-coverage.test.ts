@@ -84,11 +84,11 @@ describe('questionnaire architecture coverage (self-contained)', () => {
     assert.equal(live.eligibilityRules.length, 3);
     assert.equal(
       live.categories.reduce((sum, c) => sum + c.questions.length, 0),
-      100
+      80
     );
   });
 
-  it('proves all ten exact live categories match the structural manifest', () => {
+  it('preserves the 100-question architecture proof while activating the calibrated 80-question catalog', () => {
     const live = getQuestionnaireCatalog();
     const synthetic = getSyntheticCatalogFromManifest();
     const result = validateQuestionnaireCatalog(synthetic);
@@ -97,7 +97,7 @@ describe('questionnaire architecture coverage (self-contained)', () => {
     assert.equal(synthetic.categories.length, 10);
     assert.equal(
       live.categories.reduce((sum, c) => sum + c.questions.length, 0),
-      100
+      80
     );
     assert.equal(
       synthetic.categories.reduce((sum, c) => sum + c.questions.length, 0),
@@ -106,21 +106,17 @@ describe('questionnaire architecture coverage (self-contained)', () => {
     for (let n = 1; n <= 10; n += 1) {
       const category = live.categories.find((c) => c.number === n);
       assert.ok(category, `missing category ${n}`);
-      assert.equal(category?.questions.length, 10);
+      assert.equal(category?.questions.length, 8);
       assert.equal(category?.status, 'locked');
+      assert.deepEqual(
+        category?.questions.map((question) => question.number),
+        [1, 2, 3, 4, 5, 6, 7, 8]
+      );
+      assert.ok(category?.questions.every((question) => !question.priorityFollowUp));
     }
 
-    // Every manifest entry maps to a validated live and synthetic question.
+    // Every historical manifest entry still maps to the synthetic architecture proof.
     for (const entry of MASTER_STRUCTURE_MANIFEST.questions) {
-      const liveCategory = live.categories.find((c) => c.number === entry.categoryNumber);
-      const liveQuestion = liveCategory?.questions.find((q) => q.number === entry.questionNumber);
-      assert.ok(liveQuestion, `missing live ${entry.categoryNumber}.${entry.questionNumber}`);
-      assert.equal(liveQuestion?.formatLabel, entry.formatLabel);
-      assert.equal(liveQuestion?.responseBehavior, entry.responseBehavior);
-      assert.equal(liveQuestion?.choices.length, entry.choiceCount);
-      assert.equal(liveQuestion?.minSelections, entry.minSelections);
-      assert.equal(liveQuestion?.maxSelections, entry.maxSelections);
-
       const category = synthetic.categories.find((c) => c.number === entry.categoryNumber);
       const question = category?.questions.find((q) => q.number === entry.questionNumber);
       assert.ok(question, `missing synth ${entry.categoryNumber}.${entry.questionNumber}`);
@@ -141,7 +137,6 @@ describe('questionnaire architecture coverage (self-contained)', () => {
       }
       if (entry.structuredIdentity) {
         assert.deepEqual(question?.structuredIdentity, entry.structuredIdentity);
-        assert.deepEqual(liveQuestion?.structuredIdentity, entry.structuredIdentity);
       }
     }
 
@@ -349,7 +344,7 @@ describe('questionnaire architecture coverage (self-contained)', () => {
     }
   });
 
-  it('enforces priority display-minimum integrity', () => {
+  it('retains priority integrity coverage without exposing priority screens in V2', () => {
     const valid = ARCHITECTURE_COVERAGE_QUESTIONS.noSpecificRequirement;
     assert.equal(valid.priorityFollowUp?.selectionCount, 2);
     assert.equal(valid.priorityFollowUp?.minEligibleSelectionsBeforeDisplay, 2);
@@ -358,26 +353,34 @@ describe('questionnaire architecture coverage (self-contained)', () => {
     ]);
 
     const live = getQuestionnaireCatalog();
+    assert.equal(
+      live.categories
+        .flatMap((category) => category.questions)
+        .filter((question) => question.priorityFollowUp).length,
+      0
+    );
+
+    const coverage = getArchitectureCoverageCatalog();
+    const coverageQuestion = coverage.categories
+      .flatMap((category) => category.questions)
+      .find((question) => question.priorityFollowUp);
+    assert.ok(coverageQuestion?.priorityFollowUp);
     const brokenMin: QuestionnaireCatalog = {
-      ...live,
-      categories: [
-        {
-          ...live.categories[0],
-          questions: live.categories[0].questions.map((q) =>
-            q.number === 5
-              ? {
-                  ...q,
-                  priorityFollowUp: {
-                    prompt: q.priorityFollowUp!.prompt,
-                    selectionCount: 2,
-                    unordered: true,
-                    minEligibleSelectionsBeforeDisplay: 1,
-                  },
-                }
-              : q
-          ),
-        },
-      ],
+      ...coverage,
+      categories: coverage.categories.map((category) => ({
+        ...category,
+        questions: category.questions.map((question) =>
+          question.id === coverageQuestion.id
+            ? {
+                ...question,
+                priorityFollowUp: {
+                  ...question.priorityFollowUp!,
+                  minEligibleSelectionsBeforeDisplay: 1,
+                },
+              }
+            : question
+        ),
+      })),
     };
     const minResult = validateQuestionnaireCatalog(brokenMin);
     assert.equal(minResult.ok, false);
@@ -388,26 +391,24 @@ describe('questionnaire architecture coverage (self-contained)', () => {
     }
 
     const exceedsAvailable: QuestionnaireCatalog = {
-      ...live,
-      categories: [
-        {
-          ...live.categories[0],
-          questions: live.categories[0].questions.map((q) =>
-            q.number === 5
-              ? {
-                  ...q,
-                  priorityFollowUp: {
-                    prompt: q.priorityFollowUp!.prompt,
-                    selectionCount: 2,
-                    unordered: true,
-                    eligibleChoiceIds: [q.choices[0].id, q.choices[1].id],
-                    minEligibleSelectionsBeforeDisplay: 3,
-                  },
-                }
-              : q
-          ),
-        },
-      ],
+      ...coverage,
+      categories: coverage.categories.map((category) => ({
+        ...category,
+        questions: category.questions.map((question) =>
+          question.id === coverageQuestion.id
+            ? {
+                ...question,
+                priorityFollowUp: {
+                  prompt: question.priorityFollowUp!.prompt,
+                  selectionCount: 2,
+                  unordered: true,
+                  eligibleChoiceIds: [question.choices[0].id, question.choices[1].id],
+                  minEligibleSelectionsBeforeDisplay: 3,
+                },
+              }
+            : question
+        ),
+      })),
     };
     const exceedsResult = validateQuestionnaireCatalog(exceedsAvailable);
     assert.equal(exceedsResult.ok, false);
@@ -418,27 +419,29 @@ describe('questionnaire architecture coverage (self-contained)', () => {
     }
 
     const conflict: QuestionnaireCatalog = {
-      ...live,
-      categories: [
-        {
-          ...live.categories[0],
-          questions: live.categories[0].questions.map((q) =>
-            q.number === 5
-              ? {
-                  ...q,
-                  priorityFollowUp: {
-                    prompt: q.priorityFollowUp!.prompt,
-                    selectionCount: 2,
-                    unordered: true,
-                    eligibleChoiceIds: [q.choices[0].id, q.choices[1].id, q.choices[2].id],
-                    excludedChoiceIds: [q.choices[0].id],
-                    minEligibleSelectionsBeforeDisplay: 2,
-                  },
-                }
-              : q
-          ),
-        },
-      ],
+      ...coverage,
+      categories: coverage.categories.map((category) => ({
+        ...category,
+        questions: category.questions.map((question) =>
+          question.id === coverageQuestion.id
+            ? {
+                ...question,
+                priorityFollowUp: {
+                  prompt: question.priorityFollowUp!.prompt,
+                  selectionCount: 2,
+                  unordered: true,
+                  eligibleChoiceIds: [
+                    question.choices[0].id,
+                    question.choices[1].id,
+                    question.choices[2].id,
+                  ],
+                  excludedChoiceIds: [question.choices[0].id],
+                  minEligibleSelectionsBeforeDisplay: 2,
+                },
+              }
+            : question
+        ),
+      })),
     };
     const conflictResult = validateQuestionnaireCatalog(conflict);
     assert.equal(conflictResult.ok, false);
@@ -454,16 +457,10 @@ describe('questionnaire architecture coverage (self-contained)', () => {
     assert.deepEqual(manifestPriority?.priorityFollowUp?.excludedChoiceIndexes, [14, 15]);
   });
 
-  it('keeps Category 1 priority follow-ups on Q5, Q8, and Q10 only', () => {
+  it('keeps Category 1 at eight questions with no priority follow-ups', () => {
     const live = getQuestionnaireCatalog();
-    assert.equal(live.categories[0].questions.length, 10);
-    const byNumber = Object.fromEntries(live.categories[0].questions.map((q) => [q.number, q]));
-    assert.equal(byNumber[5].priorityFollowUp?.selectionCount, 2);
-    assert.equal(byNumber[8].priorityFollowUp?.selectionCount, 2);
-    assert.equal(byNumber[10].priorityFollowUp?.selectionCount, 2);
-    for (const n of [1, 2, 3, 4, 6, 7, 9]) {
-      assert.equal(byNumber[n].priorityFollowUp, undefined);
-    }
+    assert.equal(live.categories[0].questions.length, 8);
+    assert.ok(live.categories[0].questions.every((question) => !question.priorityFollowUp));
   });
 
   it('encodes row-lock serialization and extended storage in the migration', () => {

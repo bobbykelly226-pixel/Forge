@@ -47,7 +47,7 @@ export default function CategoryPreviewIntro({
           {intro.supporting}
         </p>
         <p className="mt-6 text-sm font-medium text-[var(--forge-navy)]">
-          {intro.metadata || `${questionCount} questions`}
+          {questionCount} questions
         </p>
         <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:items-center">
           <button

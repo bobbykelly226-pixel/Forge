@@ -7,7 +7,6 @@ import PreviewNotice from '@/components/questionnaire-preview/PreviewNotice';
 type CategoryPreviewCompleteProps = {
   categoryTitle: string;
   totalQuestions: number;
-  priorityFollowUpsCompleted: number;
   completeEyebrow: string;
   completeBody: string;
   onReview: () => void;
@@ -18,7 +17,6 @@ type CategoryPreviewCompleteProps = {
 export default function CategoryPreviewComplete({
   categoryTitle,
   totalQuestions,
-  priorityFollowUpsCompleted,
   completeEyebrow,
   completeBody,
   onReview,
@@ -47,10 +45,6 @@ export default function CategoryPreviewComplete({
         <ul className="mt-8 space-y-2 rounded-2xl border border-[color-mix(in_srgb,var(--forge-silver)_45%,transparent)] bg-[var(--forge-surface-soft)] px-5 py-4 text-sm text-[var(--forge-navy)]">
           <li>
             {totalQuestions} of {totalQuestions} questions answered
-          </li>
-          <li>
-            {priorityFollowUpsCompleted} priority follow up
-            {priorityFollowUpsCompleted === 1 ? '' : 's'} completed
           </li>
           <li>Preview answers were not saved</li>
         </ul>

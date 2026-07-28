@@ -378,7 +378,7 @@ describe('Categories 5 through 7 preview session behavior', () => {
       [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
     );
     assert.equal(getQuestionnaireCatalog().specificationVersion, SPECIFICATION_VERSION);
-    assert.equal(SPECIFICATION_VERSION, 'compatibility_profile_categories_1_10_v10');
+    assert.equal(SPECIFICATION_VERSION, 'compatibility_profile_calibrated_80_v1');
     assert.equal(getQuestionnaireCatalog().eligibilityRules.length, 3);
     assert.match(DIRECTORY_COPY.body, /all ten/);
     assert.match(DIRECTORY_COPY.metadata, /1 through 10/);

@@ -449,7 +449,8 @@ function validateQuestion(
 function validateCategory(
   category: CategoryDefinition,
   eligibilityById: Map<string, EligibilityRuleDefinition>,
-  issues: CatalogValidationIssue[]
+  issues: CatalogValidationIssue[],
+  expectedQuestionCount: number
 ): void {
   const path = `categories[${category.number}]`;
 
@@ -473,12 +474,26 @@ function validateCategory(
     issues.push(issue('empty_category_questions', 'Category must include questions', path));
   }
 
+  if (
+    category.number >= 8 &&
+    category.number <= 10 &&
+    category.questions.length !== expectedQuestionCount
+  ) {
+    issues.push(
+      issue(
+        `category_${category.number}_question_count`,
+        `Category ${category.number} must contain exactly ${expectedQuestionCount} questions (found ${category.questions.length})`,
+        path
+      )
+    );
+  }
+
   if (category.number === 1) {
-    if (category.questions.length !== 10) {
+    if (category.questions.length !== expectedQuestionCount) {
       issues.push(
         issue(
           'category_1_question_count',
-          `Category 1 must contain exactly 10 questions (found ${category.questions.length})`,
+          `Category 1 must contain exactly ${expectedQuestionCount} questions (found ${category.questions.length})`,
           path
         )
       );
@@ -495,11 +510,11 @@ function validateCategory(
   }
 
   if (category.number === 2) {
-    if (category.questions.length !== 10) {
+    if (category.questions.length !== expectedQuestionCount) {
       issues.push(
         issue(
           'category_2_question_count',
-          `Category 2 must contain exactly 10 questions (found ${category.questions.length})`,
+          `Category 2 must contain exactly ${expectedQuestionCount} questions (found ${category.questions.length})`,
           path
         )
       );
@@ -516,11 +531,11 @@ function validateCategory(
   }
 
   if (category.number === 3) {
-    if (category.questions.length !== 10) {
+    if (category.questions.length !== expectedQuestionCount) {
       issues.push(
         issue(
           'category_3_question_count',
-          `Category 3 must contain exactly 10 questions (found ${category.questions.length})`,
+          `Category 3 must contain exactly ${expectedQuestionCount} questions (found ${category.questions.length})`,
           path
         )
       );
@@ -537,11 +552,11 @@ function validateCategory(
   }
 
   if (category.number === 4) {
-    if (category.questions.length !== 10) {
+    if (category.questions.length !== expectedQuestionCount) {
       issues.push(
         issue(
           'category_4_question_count',
-          `Category 4 must contain exactly 10 questions (found ${category.questions.length})`,
+          `Category 4 must contain exactly ${expectedQuestionCount} questions (found ${category.questions.length})`,
           path
         )
       );
@@ -558,11 +573,11 @@ function validateCategory(
   }
 
   if (category.number === 5) {
-    if (category.questions.length !== 10) {
+    if (category.questions.length !== expectedQuestionCount) {
       issues.push(
         issue(
           'category_5_question_count',
-          `Category 5 must contain exactly 10 questions (found ${category.questions.length})`,
+          `Category 5 must contain exactly ${expectedQuestionCount} questions (found ${category.questions.length})`,
           path
         )
       );
@@ -579,11 +594,11 @@ function validateCategory(
   }
 
   if (category.number === 6) {
-    if (category.questions.length !== 10) {
+    if (category.questions.length !== expectedQuestionCount) {
       issues.push(
         issue(
           'category_6_question_count',
-          `Category 6 must contain exactly 10 questions (found ${category.questions.length})`,
+          `Category 6 must contain exactly ${expectedQuestionCount} questions (found ${category.questions.length})`,
           path
         )
       );
@@ -600,11 +615,11 @@ function validateCategory(
   }
 
   if (category.number === 7) {
-    if (category.questions.length !== 10) {
+    if (category.questions.length !== expectedQuestionCount) {
       issues.push(
         issue(
           'category_7_question_count',
-          `Category 7 must contain exactly 10 questions (found ${category.questions.length})`,
+          `Category 7 must contain exactly ${expectedQuestionCount} questions (found ${category.questions.length})`,
           path
         )
       );
@@ -701,6 +716,8 @@ export function validateQuestionnaireCatalog(
   const categoryNumbers = new Set<number>();
   const allQuestionIds = new Set<string>();
   const allOptionIds = new Set<string>();
+  const expectedQuestionCount =
+    catalog.questionnaireVersion === 'compatibility_profile_v2' ? 8 : 10;
 
   for (const category of catalog.categories ?? []) {
     if (category.id && categoryIds.has(category.id)) {
@@ -717,7 +734,7 @@ export function validateQuestionnaireCatalog(
       categoryNumbers.add(category.number);
     }
 
-    validateCategory(category, eligibilityById, issues);
+    validateCategory(category, eligibilityById, issues, expectedQuestionCount);
 
     for (const question of category.questions ?? []) {
       if (question.id && allQuestionIds.has(question.id)) {

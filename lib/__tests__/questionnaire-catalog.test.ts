@@ -60,7 +60,7 @@ describe('questionnaire catalog foundation', () => {
     assert.equal(catalog.categories.length, 10);
     assert.equal(catalog.categories[0].title, 'Relationship Vision & Intentions');
     assert.equal(catalog.categories[0].status, 'locked');
-    assert.equal(catalog.categories[0].questions.length, 10);
+    assert.equal(catalog.categories[0].questions.length, 8);
     assert.equal(catalog.categories[1].title, 'Values & Character');
     assert.equal(catalog.categories[2].title, 'Communication & Emotional Connection');
     assert.equal(catalog.categories[3].title, 'Conflict & Repair');
@@ -73,12 +73,14 @@ describe('questionnaire catalog foundation', () => {
     assert.equal(catalog.eligibilityRules.length, 3);
     assert.equal(
       catalog.categories.reduce((sum, category) => sum + category.questions.length, 0),
-      100
+      80
     );
     for (const category of catalog.categories) {
-      assert.equal(category.questions.length, 10);
+      assert.equal(category.questions.length, 8);
       assert.equal(category.status, 'locked');
     }
+    assert.equal(QUESTIONNAIRE_VERSION, 'compatibility_profile_v2');
+    assert.equal(SPECIFICATION_VERSION, 'compatibility_profile_calibrated_80_v1');
   });
 
   it('contains exactly 10 sequential Category 1 questions in the required order', () => {
@@ -198,7 +200,7 @@ describe('questionnaire catalog foundation', () => {
         {
           ...base.categories[0],
           status: 'draft',
-          questions: base.categories[0].questions.slice(0, 9),
+          questions: base.categories[0].questions.slice(0, 7),
         },
       ],
     };
