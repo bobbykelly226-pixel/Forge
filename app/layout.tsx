@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import './globals.css';
 
 export const metadata: Metadata = {
-  metadataBase: new URL('https://forgedinlife.com'),
+  metadataBase: new URL('https://forge.forgedinlife.com'),
   title: 'Forge - Strong Values. Strong Connections.',
   description: 'A dating platform built for meaningful relationships rooted in faith, family, and commitment.',
   icons: {
@@ -11,7 +11,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: 'Forge - Strong Values. Strong Connections.',
     description: 'A dating platform built for meaningful relationships rooted in faith, family, and commitment.',
-    url: 'https://forgedinlife.com',
+    url: 'https://forge.forgedinlife.com',
     siteName: 'Forged In Life',
     images: [
       {
@@ -31,7 +31,7 @@ export const metadata: Metadata = {
     images: ['/Logos/forgedinlife-full-dark.png'],
   },
   alternates: {
-    canonical: 'https://forgedinlife.com',
+    canonical: 'https://forge.forgedinlife.com',
   },
 };
 
