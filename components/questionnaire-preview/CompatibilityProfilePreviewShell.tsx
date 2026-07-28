@@ -7,7 +7,6 @@ import CategoryPreviewDirectory from '@/components/questionnaire-preview/Categor
 import CategoryPreviewIntro from '@/components/questionnaire-preview/CategoryPreviewIntro';
 import PreviewContextPanel from '@/components/questionnaire-preview/PreviewContextPanel';
 import PreviewOverallComplete from '@/components/questionnaire-preview/PreviewOverallComplete';
-import PriorityFollowUp from '@/components/questionnaire-preview/PriorityFollowUp';
 import QuestionnaireQuestion from '@/components/questionnaire-preview/QuestionnaireQuestion';
 import type { CategoryDefinition } from '@/lib/questionnaire/types';
 import {
@@ -16,9 +15,6 @@ import {
   canContinueFromStep,
   clearAllPreviewAnswers,
   clearCategoryAnswers,
-  countAllCompletedPriorityFollowUps,
-  countCompletedPriorityFollowUps,
-  eligibleSelectedChoiceIds,
   fromCategoryFlowStep,
   getAnswer,
   getCategoryAnswers,
@@ -30,7 +26,6 @@ import {
   selectionLimitGuidance,
   toCategoryFlowStep,
   toggleBaseSelection,
-  togglePrioritySelection,
   type PreviewAnswersByCategory,
   type PreviewStep,
 } from '@/lib/questionnaire/preview/category-01-preview-flow';
@@ -74,11 +69,6 @@ export default function CompatibilityProfilePreviewShell({
 
   const allCategoriesComplete = useMemo(
     () => areAllCategoriesSessionComplete(categories, answersByCategory),
-    [answersByCategory, categories]
-  );
-
-  const totalPriorityFollowUpsCompleted = useMemo(
-    () => countAllCompletedPriorityFollowUps(categories, answersByCategory),
     [answersByCategory, categories]
   );
 
@@ -161,19 +151,6 @@ export default function CompatibilityProfilePreviewShell({
     updateCategoryAnswer(category.number, questionId, result.answer);
   }
 
-  function handleTogglePriority(
-    category: CategoryDefinition,
-    questionId: string,
-    choiceId: string
-  ) {
-    const question = category.questions.find((q) => q.id === questionId);
-    if (!question) return;
-    const answers = getCategoryAnswers(answersByCategory, category.number);
-    const current = getAnswer(answers, questionId);
-    const next = togglePrioritySelection(question, current, choiceId);
-    updateCategoryAnswer(category.number, questionId, next);
-  }
-
   function handleContinue(category: CategoryDefinition) {
     const flowStep = toCategoryFlowStep(step);
     if (!flowStep) return;
@@ -214,7 +191,10 @@ export default function CompatibilityProfilePreviewShell({
   if (step.kind === 'all_complete') {
     return (
       <PreviewOverallComplete
-        priorityFollowUpsCompleted={totalPriorityFollowUpsCompleted}
+        totalQuestions={categories.reduce(
+          (sum, category) => sum + category.questions.length,
+          0
+        )}
         onReviewCategories={backToDirectory}
         onRestartFullPreview={handleRestartFullPreview}
       />
@@ -253,7 +233,6 @@ export default function CompatibilityProfilePreviewShell({
       <CategoryPreviewComplete
         categoryTitle={category.title}
         totalQuestions={category.questions.length}
-        priorityFollowUpsCompleted={countCompletedPriorityFollowUps(category, answers)}
         completeEyebrow={complete.eyebrow}
         completeBody={complete.body}
         onReview={() => handleReview(category.number)}
@@ -273,10 +252,8 @@ export default function CompatibilityProfilePreviewShell({
     : false;
   const question = category.questions[step.questionIndex];
   const answer = getAnswer(answers, question.id);
-  const eligibleIds = eligibleSelectedChoiceIds(question, answer.selectedChoiceIds);
-  const eligibleChoices = question.choices.filter((c) => eligibleIds.includes(c.id));
   const progress = flowStep ? progressFraction(category, flowStep) : 0;
-  const phaseLabel = step.phase === 'priority' ? 'Priority follow up' : undefined;
+  const phaseLabel = undefined;
   const limitMessage =
     step.phase === 'base'
       ? selectionLimitGuidance(question, answer.selectedChoiceIds.length)
@@ -300,25 +277,14 @@ export default function CompatibilityProfilePreviewShell({
       <section className="rounded-3xl border border-[color-mix(in_srgb,var(--forge-silver)_50%,transparent)] bg-[var(--forge-surface)] p-5 shadow-sm sm:p-8">
         <PreviewContextPanel variant="mobile" {...contextProps} />
 
-        {step.phase === 'base' ? (
-          <QuestionnaireQuestion
-            question={question}
-            answer={answer}
-            atMaxMessage={limitMessage}
-            onToggleChoice={(choiceId) =>
-              handleToggleBase(category, question.id, choiceId)
-            }
-          />
-        ) : (
-          <PriorityFollowUp
-            question={question}
-            answer={answer}
-            eligibleChoices={eligibleChoices}
-            onToggleChoice={(choiceId) =>
-              handleTogglePriority(category, question.id, choiceId)
-            }
-          />
-        )}
+        <QuestionnaireQuestion
+          question={question}
+          answer={answer}
+          atMaxMessage={limitMessage}
+          onToggleChoice={(choiceId) =>
+            handleToggleBase(category, question.id, choiceId)
+          }
+        />
 
         <div className="mt-8 flex flex-col-reverse gap-3 sm:flex-row sm:items-center sm:justify-between">
           <button

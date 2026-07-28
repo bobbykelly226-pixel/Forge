@@ -11,7 +11,6 @@ import {
 type CategoryCompletePanelProps = {
   categoryTitle: string;
   eligibleQuestionsCompleted: number;
-  priorityFollowUpsCompleted: number;
   showRestartConfirm: boolean;
   restartBusy?: boolean;
   onReview: () => void;
@@ -24,7 +23,6 @@ type CategoryCompletePanelProps = {
 export default function CategoryCompletePanel({
   categoryTitle,
   eligibleQuestionsCompleted,
-  priorityFollowUpsCompleted,
   showRestartConfirm,
   restartBusy = false,
   onReview,
@@ -52,7 +50,6 @@ export default function CategoryCompletePanel({
         </p>
         <ul className="mt-6 space-y-2 text-sm text-[var(--forge-navy)]">
           <li>{eligibleQuestionsCompleted} eligible questions completed</li>
-          <li>{priorityFollowUpsCompleted} priority follow ups completed</li>
         </ul>
 
         {showRestartConfirm ? (

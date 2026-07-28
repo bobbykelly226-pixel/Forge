@@ -10,7 +10,6 @@ import {
 
 type OverallCompletePanelProps = {
   eligibleQuestionsCompleted: number;
-  priorityFollowUpsCompleted: number;
   showRestartConfirm: boolean;
   restartBusy?: boolean;
   onReviewCategories: () => void;
@@ -21,7 +20,6 @@ type OverallCompletePanelProps = {
 
 export default function OverallCompletePanel({
   eligibleQuestionsCompleted,
-  priorityFollowUpsCompleted,
   showRestartConfirm,
   restartBusy = false,
   onReviewCategories,
@@ -49,7 +47,6 @@ export default function OverallCompletePanel({
         <ul className="mt-6 space-y-2 text-sm text-[var(--forge-navy)]">
           <li>{eligibleQuestionsCompleted} eligible questions completed</li>
           <li>Ten of ten categories completed</li>
-          <li>{priorityFollowUpsCompleted} priority follow ups completed</li>
           <li>{OVERALL_COMPLETE_COPY.summarySaved}</li>
         </ul>
 

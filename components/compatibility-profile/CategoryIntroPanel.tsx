@@ -38,7 +38,7 @@ export default function CategoryIntroPanel({
           {intro.supporting}
         </p>
         <p className="mt-6 text-sm font-medium text-[var(--forge-navy)]">
-          {intro.metadata || `${questionCount} questions`}
+          {questionCount} questions
         </p>
         <p className="mt-2 text-sm text-[var(--forge-graphite)]">
           Your answers are saved privately as you go.

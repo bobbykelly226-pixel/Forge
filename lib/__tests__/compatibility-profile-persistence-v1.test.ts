@@ -35,7 +35,6 @@ import {
 import { QuestionSaveWorker } from '@/lib/questionnaire/persistence/save-worker';
 import {
   shouldShowPriorityFollowUp,
-  syncAnswerAfterBaseChange,
   toggleBaseSelection,
 } from '@/lib/questionnaire/preview/category-01-preview-flow';
 import { PREVIEW_NOTICE } from '@/lib/questionnaire/preview/category-01-preview-flow';
@@ -65,16 +64,16 @@ function assertNoDashPunctuation(label: string, value: string) {
   );
 }
 
-describe('Compatibility Profile Persistence V1', () => {
+describe('Compatibility Profile Persistence', () => {
   const catalog = getQuestionnaireCatalog();
 
-  it('keeps exactly 10 categories and 100 questions', () => {
+  it('keeps exactly 10 categories and 80 calibrated questions', () => {
     assert.equal(catalog.categories.length, 10);
     assert.equal(
       catalog.categories.reduce((sum, category) => sum + category.questions.length, 0),
-      100
+      80
     );
-    assert.equal(QUESTIONNAIRE_VERSION, 'compatibility_profile_v1');
+    assert.equal(QUESTIONNAIRE_VERSION, 'compatibility_profile_v2');
   });
 
   it('protects /compatibility-profile and redirects unauthenticated users', () => {
@@ -202,34 +201,18 @@ describe('Compatibility Profile Persistence V1', () => {
     }
   });
 
-  it('keeps priority choices as selected eligible base choices and clears invalid ones', () => {
-    const question = catalog.categories
-      .flatMap((category) => category.questions)
-      .find((item) => item.priorityFollowUp);
-    assert.ok(question);
-    const selected = question.choices
-      .slice(0, question.priorityFollowUp?.selectionCount ?? 2)
-      .map((choice) => choice.id);
-    while (
-      selected.length <
-      (question.priorityFollowUp?.minEligibleSelectionsBeforeDisplay ??
-        question.priorityFollowUp?.selectionCount ??
-        2)
-    ) {
-      const next = question.choices.find((choice) => !selected.includes(choice.id));
-      if (!next) break;
-      selected.push(next.id);
-    }
-    assert.ok(shouldShowPriorityFollowUp(question, selected));
-    const synced = syncAnswerAfterBaseChange(question, selected, [
-      selected[0],
-      'not-a-real-choice',
-    ]);
-    assert.ok(synced.priorityChoiceIds.every((id) => selected.includes(id)));
-    assert.ok(!synced.priorityChoiceIds.includes('not-a-real-choice'));
-
-    const reduced = syncAnswerAfterBaseChange(question, [selected[0]], synced.priorityChoiceIds);
-    assert.ok(reduced.priorityChoiceIds.every((id) => id === selected[0]));
+  it('removes every priority follow-up from the active catalog and UI', () => {
+    assert.equal(
+      catalog.categories
+        .flatMap((category) => category.questions)
+        .filter((question) => question.priorityFollowUp).length,
+      0
+    );
+    const shell = read(
+      'components/compatibility-profile/CompatibilityProfileShell.tsx'
+    );
+    assert.doesNotMatch(shell, /PriorityFollowUp/);
+    assert.doesNotMatch(shell, /handleTogglePriority/);
   });
 
   it('stores optional context only for configured selected choices', () => {
@@ -334,35 +317,37 @@ describe('Compatibility Profile Persistence V1', () => {
       true
     );
 
-    for (const categoryNumber of [7, 8, 9]) {
-      const category = catalog.categories[categoryNumber - 1];
-      const q9 = category.questions.find((question) => question.number === 9);
-      assert.ok(q9?.eligibilityRuleId);
-      assert.equal(
-        isQuestionCurrentlyEligible(q9.eligibilityRuleId, {
-          has_children: 'no',
-          children: 'no',
-          open_to_partner_with_children: 'no',
-        }),
-        false
-      );
-      const ineligible = getEligibleQuestions(category, {
+    const category = catalog.categories[6];
+    const parentingQuestion = category.questions.find(
+      (question) => question.id === 'faith_spirituality_worldview_q09'
+    );
+    assert.ok(parentingQuestion?.eligibilityRuleId);
+    assert.equal(
+      isQuestionCurrentlyEligible(parentingQuestion.eligibilityRuleId, {
         has_children: 'no',
         children: 'no',
         open_to_partner_with_children: 'no',
-      });
-      assert.equal(ineligible.length, 9);
-      assert.ok(!ineligible.some((question) => question.id === q9.id));
-    }
+      }),
+      false
+    );
+    const ineligible = getEligibleQuestions(category, {
+      has_children: 'no',
+      children: 'no',
+      open_to_partner_with_children: 'no',
+    });
+    assert.equal(ineligible.length, 7);
+    assert.ok(!ineligible.some((question) => question.id === parentingQuestion.id));
   });
 
   it('excludes hidden conditional answers from completion while preserving stored answers', () => {
     const category = catalog.categories[6];
-    const q9 = category.questions.find((question) => question.number === 9);
-    assert.ok(q9);
+    const parentingQuestion = category.questions.find(
+      (question) => question.id === 'faith_spirituality_worldview_q09'
+    );
+    assert.ok(parentingQuestion);
     const answers: Record<string, ReturnType<typeof emptyPersistedAnswer>> = {};
     for (const question of category.questions) {
-      if (question.number === 9) continue;
+      if (question.id === parentingQuestion.id) continue;
       answers[question.id] = sanitizeAnswerAgainstCatalog(question, {
         ...emptyPersistedAnswer(),
         selectedChoiceIds: question.choices
@@ -380,9 +365,9 @@ describe('Compatibility Profile Persistence V1', () => {
         answers[question.id] = sanitizeAnswerAgainstCatalog(question, answers[question.id]);
       }
     }
-    answers[q9.id] = sanitizeAnswerAgainstCatalog(q9, {
+    answers[parentingQuestion.id] = sanitizeAnswerAgainstCatalog(parentingQuestion, {
       ...emptyPersistedAnswer(),
-      selectedChoiceIds: [q9.choices[0].id],
+      selectedChoiceIds: [parentingQuestion.choices[0].id],
       revision: 1,
     });
 
@@ -392,14 +377,14 @@ describe('Compatibility Profile Persistence V1', () => {
       open_to_partner_with_children: 'no',
     };
     assert.equal(isCategoryComplete(category, answers, ineligibleProfile), true);
-    assert.ok(answers[q9.id].selectedChoiceIds.length > 0);
+    assert.ok(answers[parentingQuestion.id].selectedChoiceIds.length > 0);
 
     const eligibleProfile = {
       has_children: 'yes',
       children: 'yes',
       open_to_partner_with_children: 'yes',
     };
-    delete answers[q9.id];
+    delete answers[parentingQuestion.id];
     assert.equal(isCategoryComplete(category, answers, eligibleProfile), false);
   });
 
@@ -453,7 +438,7 @@ describe('Compatibility Profile Persistence V1', () => {
 
     assert.equal(countCompletedCategories(catalog.categories, answersByCategory, profile), 10);
     assert.equal(areAllCategoriesComplete(catalog.categories, answersByCategory, profile), true);
-    assert.equal(countAllEligibleQuestions(catalog.categories, profile), 100);
+    assert.equal(countAllEligibleQuestions(catalog.categories, profile), 80);
   });
 
   it('coalesces in-flight saves and sends the newest answer with the returned revision', async () => {
@@ -510,7 +495,7 @@ describe('Compatibility Profile Persistence V1', () => {
         question.id,
       ]),
       [
-        [6, 4, 'family_children_parenting_q04'],
+        [6, 2, 'family_children_parenting_q04'],
         [7, 3, 'faith_spirituality_worldview_q03'],
         [8, 3, 'politics_civic_life_social_issues_q03'],
         [9, 2, 'service_community_contribution_q02'],

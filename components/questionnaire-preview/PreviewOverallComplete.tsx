@@ -7,13 +7,13 @@ import PreviewNotice from '@/components/questionnaire-preview/PreviewNotice';
 import { OVERALL_COMPLETE_COPY } from '@/lib/questionnaire/preview/category-01-preview-flow';
 
 type PreviewOverallCompleteProps = {
-  priorityFollowUpsCompleted: number;
+  totalQuestions: number;
   onReviewCategories: () => void;
   onRestartFullPreview: () => void;
 };
 
 export default function PreviewOverallComplete({
-  priorityFollowUpsCompleted,
+  totalQuestions,
   onReviewCategories,
   onRestartFullPreview,
 }: PreviewOverallCompleteProps) {
@@ -39,12 +39,10 @@ export default function PreviewOverallComplete({
         </p>
 
         <ul className="mt-8 space-y-2 rounded-2xl border border-[color-mix(in_srgb,var(--forge-silver)_45%,transparent)] bg-[var(--forge-surface-soft)] px-5 py-4 text-sm text-[var(--forge-navy)]">
-          <li>{OVERALL_COMPLETE_COPY.summaryQuestions}</li>
-          <li>{OVERALL_COMPLETE_COPY.summaryCategories}</li>
           <li>
-            {priorityFollowUpsCompleted} priority follow up
-            {priorityFollowUpsCompleted === 1 ? '' : 's'} completed
+            {totalQuestions} of {totalQuestions} questions answered
           </li>
+          <li>{OVERALL_COMPLETE_COPY.summaryCategories}</li>
           <li>{OVERALL_COMPLETE_COPY.summaryNotSaved}</li>
         </ul>
 

@@ -14,7 +14,6 @@ import SaveStatus, {
 } from '@/components/compatibility-profile/SaveStatus';
 import StructuredIdentityFields from '@/components/compatibility-profile/StructuredIdentityFields';
 import PreviewContextPanel from '@/components/questionnaire-preview/PreviewContextPanel';
-import PriorityFollowUp from '@/components/questionnaire-preview/PriorityFollowUp';
 import QuestionnaireQuestion from '@/components/questionnaire-preview/QuestionnaireQuestion';
 import {
   restartCompatibilityCategoryAction,
@@ -31,10 +30,8 @@ import {
 import {
   areAllCategoriesComplete,
   countAllCompletedEligibleQuestions,
-  countAllCompletedPriorities,
   countAllEligibleQuestions,
   countCompletedEligibleQuestions,
-  countCompletedPrioritiesInCategory,
   getEligibleQuestions,
   isCategoryComplete,
 } from '@/lib/questionnaire/persistence/completion';
@@ -59,13 +56,11 @@ import { QuestionSaveWorker } from '@/lib/questionnaire/persistence/save-worker'
 import type { LoadedQuestionnaireProgress } from '@/lib/data/questionnaire';
 import type { CategoryDefinition } from '@/lib/questionnaire/types';
 import {
-  eligibleSelectedChoiceIds,
   fromCategoryFlowStep,
   getIntroCopy,
   selectionLimitGuidance,
   toCategoryFlowStep,
   toggleBaseSelection,
-  togglePrioritySelection,
   type PreviewStep,
 } from '@/lib/questionnaire/preview/category-01-preview-flow';
 
@@ -203,12 +198,6 @@ export default function CompatibilityProfileShell({
         answersByCategory,
         parentingProfile
       ),
-    [answersByCategory, categories, parentingProfile]
-  );
-
-  const totalPriorities = useMemo(
-    () =>
-      countAllCompletedPriorities(categories, answersByCategory, parentingProfile),
     [answersByCategory, categories, parentingProfile]
   );
 
@@ -465,7 +454,11 @@ export default function CompatibilityProfileShell({
       );
       if (resumed >= 0) {
         questionIndex = resumed;
-        phase = savedProgress.phase;
+        phase =
+          savedProgress.phase === 'priority' &&
+          eligible.questions[resumed]?.priorityFollowUp
+            ? 'priority'
+            : 'base';
       }
     }
 
@@ -537,34 +530,6 @@ export default function CompatibilityProfileShell({
       ...current,
       selectedChoiceIds: result.answer.selectedChoiceIds,
       priorityChoiceIds: result.answer.priorityChoiceIds,
-      revision: current.revision,
-    });
-    updateLocalAnswer(category.number, questionId, next);
-    await persistAnswer(question, next);
-  }
-
-  async function handleTogglePriority(
-    category: CategoryDefinition,
-    questionId: string,
-    choiceId: string
-  ) {
-    const question = category.questions.find((item) => item.id === questionId);
-    if (!question) return;
-    const current =
-      answersByCategoryRef.current[category.number]?.[questionId] ??
-      emptyPersistedAnswer();
-    const toggled = togglePrioritySelection(
-      question,
-      {
-        selectedChoiceIds: current.selectedChoiceIds,
-        priorityChoiceIds: current.priorityChoiceIds,
-      },
-      choiceId
-    );
-    const next = sanitizeAnswerAgainstCatalog(question, {
-      ...current,
-      selectedChoiceIds: toggled.selectedChoiceIds,
-      priorityChoiceIds: toggled.priorityChoiceIds,
       revision: current.revision,
     });
     updateLocalAnswer(category.number, questionId, next);
@@ -946,7 +911,6 @@ export default function CompatibilityProfileShell({
     return (
       <OverallCompletePanel
         eligibleQuestionsCompleted={totalCompleted}
-        priorityFollowUpsCompleted={totalPriorities}
         showRestartConfirm={showFullRestart}
         restartBusy={restartBusy}
         onReviewCategories={() => void backToDirectory()}
@@ -988,11 +952,6 @@ export default function CompatibilityProfileShell({
       <CategoryCompletePanel
         categoryTitle={category.title}
         eligibleQuestionsCompleted={countCompletedEligibleQuestions(
-          category,
-          answers,
-          parentingProfile
-        )}
-        priorityFollowUpsCompleted={countCompletedPrioritiesInCategory(
           category,
           answers,
           parentingProfile
@@ -1052,14 +1011,10 @@ export default function CompatibilityProfileShell({
     );
   }
   const answer = answers[question.id] ?? emptyPersistedAnswer();
-  const eligibleIds = eligibleSelectedChoiceIds(question, answer.selectedChoiceIds);
-  const eligibleChoices = question.choices.filter((choice) =>
-    eligibleIds.includes(choice.id)
-  );
   const progress = flowStep
     ? eligibleProgressFraction(category, flowStep, parentingProfile)
     : 0;
-  const phaseLabel = step.phase === 'priority' ? 'Priority follow up' : undefined;
+  const phaseLabel = undefined;
   const limitMessage =
     step.phase === 'base'
       ? selectionLimitGuidance(question, answer.selectedChoiceIds.length)
@@ -1083,42 +1038,31 @@ export default function CompatibilityProfileShell({
       <section className="rounded-3xl border border-[color-mix(in_srgb,var(--forge-silver)_50%,transparent)] bg-[var(--forge-surface)] p-5 shadow-sm sm:p-8">
         <PreviewContextPanel variant="mobile" {...contextProps} />
 
-        {step.phase === 'base' ? (
-          <>
-            <QuestionnaireQuestion
-              question={question}
-              answer={answer}
-              atMaxMessage={limitMessage}
-              onToggleChoice={(choiceId) =>
-                void handleToggleBase(category, question.id, choiceId)
-              }
-            />
-            <OptionalContextFields
-              question={question}
-              selectedChoiceIds={answer.selectedChoiceIds}
-              choiceContexts={answer.choiceContexts}
-              onChange={(choiceId, text) =>
-                void handleContextChange(category, question.id, choiceId, text)
-              }
-            />
-            <StructuredIdentityFields
-              question={question}
-              identity={answer.identity}
-              onChange={(identity) =>
-                void handleIdentityChange(category, question.id, identity)
-              }
-            />
-          </>
-        ) : (
-          <PriorityFollowUp
+        <>
+          <QuestionnaireQuestion
             question={question}
             answer={answer}
-            eligibleChoices={eligibleChoices}
+            atMaxMessage={limitMessage}
             onToggleChoice={(choiceId) =>
-              void handleTogglePriority(category, question.id, choiceId)
+              void handleToggleBase(category, question.id, choiceId)
             }
           />
-        )}
+          <OptionalContextFields
+            question={question}
+            selectedChoiceIds={answer.selectedChoiceIds}
+            choiceContexts={answer.choiceContexts}
+            onChange={(choiceId, text) =>
+              void handleContextChange(category, question.id, choiceId, text)
+            }
+          />
+          <StructuredIdentityFields
+            question={question}
+            identity={answer.identity}
+            onChange={(identity) =>
+              void handleIdentityChange(category, question.id, identity)
+            }
+          />
+        </>
 
         <SaveStatus
           status={saveStatus}
