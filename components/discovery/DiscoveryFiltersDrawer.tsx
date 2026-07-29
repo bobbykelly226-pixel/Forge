@@ -1,12 +1,15 @@
 'use client';
 
 import { useEffect, useMemo } from 'react';
-import { SlidersHorizontal, X } from 'lucide-react';
+import { ChevronDown, SlidersHorizontal, X } from 'lucide-react';
 
 import {
+  DISCOVERY_CATEGORICAL_FILTER_OPTIONS,
+  discoveryThingsIEnjoyOptions,
+  type DiscoveryFilterOption,
+} from '@/lib/discovery/filter-options';
+import {
   EMPTY_DISCOVERY_FILTERS,
-  discoveryFilterValues,
-  humanizeDiscoveryFilterValue,
   type DiscoveryFilters,
 } from '@/lib/discovery/filters';
 import type { DiscoveryFeedCardModel } from '@/lib/discovery/presentation';
@@ -15,51 +18,75 @@ type StringArrayKey = {
   [K in keyof DiscoveryFilters]: DiscoveryFilters[K] extends string[] ? K : never;
 }[keyof DiscoveryFilters];
 
-function Checklist({
+function FilterChecklist({
   legend,
-  values,
+  options,
   selected,
   onChange,
 }: {
   legend: string;
-  values: string[];
+  options: ReadonlyArray<DiscoveryFilterOption>;
   selected: string[];
   onChange: (values: string[]) => void;
 }) {
-  if (values.length === 0) return null;
+  if (options.length === 0) return null;
+
   return (
-    <fieldset className="space-y-3">
-      <legend className="text-sm font-semibold text-[#0B2D5C]">{legend}</legend>
-      <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
-        {values.map((value) => {
-          const checked = selected.includes(value);
-          return (
-            <label
-              key={value}
-              className={`flex cursor-pointer items-center gap-3 rounded-2xl border px-3 py-2.5 text-sm transition ${
-                checked
-                  ? 'border-[#0B2D5C] bg-[#E8EEF6] text-[#0B2D5C]'
-                  : 'border-[#0B2D5C]/12 bg-white text-[#5A6575]'
-              }`}
-            >
-              <input
-                type="checkbox"
-                checked={checked}
-                onChange={() =>
-                  onChange(
-                    checked
-                      ? selected.filter((item) => item !== value)
-                      : [...selected, value]
-                  )
-                }
-                className="h-4 w-4 rounded border-[#0B2D5C]/30 accent-[#0B2D5C]"
-              />
-              <span>{humanizeDiscoveryFilterValue(value)}</span>
-            </label>
-          );
-        })}
-      </div>
-    </fieldset>
+    <details
+      className={`group overflow-hidden rounded-2xl border bg-white transition ${
+        selected.length > 0
+          ? 'border-[#0B2D5C]/35 shadow-[0_6px_18px_rgba(11,45,92,0.06)]'
+          : 'border-[#0B2D5C]/12'
+      }`}
+    >
+      <summary className="flex cursor-pointer list-none items-center justify-between gap-4 px-4 py-3.5 [&::-webkit-details-marker]:hidden">
+        <span className="min-w-0">
+          <span className="block text-sm font-semibold text-[#0B2D5C]">{legend}</span>
+          <span className="mt-0.5 block text-xs text-[#6B7585]">
+            {selected.length > 0
+              ? `${selected.length} selected`
+              : 'Any option'}
+          </span>
+        </span>
+        <ChevronDown
+          className="h-4 w-4 shrink-0 text-[#0B2D5C] transition-transform group-open:rotate-180"
+          aria-hidden="true"
+        />
+      </summary>
+
+      <fieldset className="border-t border-[#0B2D5C]/08 px-4 py-4">
+        <legend className="sr-only">{legend}</legend>
+        <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+          {options.map((option) => {
+            const checked = selected.includes(option.value);
+            return (
+              <label
+                key={option.value}
+                className={`flex cursor-pointer items-center gap-3 rounded-2xl border px-3 py-2.5 text-sm transition ${
+                  checked
+                    ? 'border-[#0B2D5C] bg-[#E8EEF6] text-[#0B2D5C]'
+                    : 'border-[#0B2D5C]/12 bg-white text-[#5A6575]'
+                }`}
+              >
+                <input
+                  type="checkbox"
+                  checked={checked}
+                  onChange={() =>
+                    onChange(
+                      checked
+                        ? selected.filter((item) => item !== option.value)
+                        : [...selected, option.value]
+                    )
+                  }
+                  className="h-4 w-4 rounded border-[#0B2D5C]/30 accent-[#0B2D5C]"
+                />
+                <span>{option.label}</span>
+              </label>
+            );
+          })}
+        </div>
+      </fieldset>
+    </details>
   );
 }
 
@@ -85,19 +112,8 @@ export default function DiscoveryFiltersDrawer({
     return () => document.removeEventListener('keydown', onKeyDown);
   }, [onClose, open]);
 
-  const options = useMemo(
-    () => ({
-      alignment: [...new Set(profiles.map((profile) => profile.alignmentLabel))].sort(),
-      relationshipGoals: discoveryFilterValues(profiles, 'relationshipGoals'),
-      faithIdentity: discoveryFilterValues(profiles, 'faithIdentity'),
-      faithImportance: discoveryFilterValues(profiles, 'faithImportance'),
-      hasChildren: discoveryFilterValues(profiles, 'hasChildren'),
-      wantsChildren: discoveryFilterValues(profiles, 'children'),
-      smoking: discoveryFilterValues(profiles, 'smoking'),
-      drinking: discoveryFilterValues(profiles, 'drinking'),
-      pets: discoveryFilterValues(profiles, 'pets'),
-      thingsIEnjoy: discoveryFilterValues(profiles, 'thingsIEnjoy'),
-    }),
+  const thingsIEnjoyOptions = useMemo(
+    () => discoveryThingsIEnjoyOptions(profiles),
     [profiles]
   );
 
@@ -194,16 +210,68 @@ export default function DiscoveryFiltersDrawer({
             />
           </label>
 
-          <Checklist legend="Relationship Alignment" values={options.alignment} selected={filters.alignment} onChange={(value) => updateArray('alignment', value)} />
-          <Checklist legend="Relationship goals" values={options.relationshipGoals} selected={filters.relationshipGoals} onChange={(value) => updateArray('relationshipGoals', value)} />
-          <Checklist legend="Faith identity" values={options.faithIdentity} selected={filters.faithIdentity} onChange={(value) => updateArray('faithIdentity', value)} />
-          <Checklist legend="Importance of faith" values={options.faithImportance} selected={filters.faithImportance} onChange={(value) => updateArray('faithImportance', value)} />
-          <Checklist legend="Has children" values={options.hasChildren} selected={filters.hasChildren} onChange={(value) => updateArray('hasChildren', value)} />
-          <Checklist legend="Wants children" values={options.wantsChildren} selected={filters.wantsChildren} onChange={(value) => updateArray('wantsChildren', value)} />
-          <Checklist legend="Smoking" values={options.smoking} selected={filters.smoking} onChange={(value) => updateArray('smoking', value)} />
-          <Checklist legend="Drinking" values={options.drinking} selected={filters.drinking} onChange={(value) => updateArray('drinking', value)} />
-          <Checklist legend="Pets" values={options.pets} selected={filters.pets} onChange={(value) => updateArray('pets', value)} />
-          <Checklist legend="Things they enjoy" values={options.thingsIEnjoy} selected={filters.thingsIEnjoy} onChange={(value) => updateArray('thingsIEnjoy', value)} />
+          <div className="space-y-3">
+            <FilterChecklist
+              legend="Relationship Alignment"
+              options={DISCOVERY_CATEGORICAL_FILTER_OPTIONS.alignment}
+              selected={filters.alignment}
+              onChange={(value) => updateArray('alignment', value)}
+            />
+            <FilterChecklist
+              legend="Relationship goals"
+              options={DISCOVERY_CATEGORICAL_FILTER_OPTIONS.relationshipGoals}
+              selected={filters.relationshipGoals}
+              onChange={(value) => updateArray('relationshipGoals', value)}
+            />
+            <FilterChecklist
+              legend="Faith identity"
+              options={DISCOVERY_CATEGORICAL_FILTER_OPTIONS.faithIdentity}
+              selected={filters.faithIdentity}
+              onChange={(value) => updateArray('faithIdentity', value)}
+            />
+            <FilterChecklist
+              legend="Importance of faith"
+              options={DISCOVERY_CATEGORICAL_FILTER_OPTIONS.faithImportance}
+              selected={filters.faithImportance}
+              onChange={(value) => updateArray('faithImportance', value)}
+            />
+            <FilterChecklist
+              legend="Has children"
+              options={DISCOVERY_CATEGORICAL_FILTER_OPTIONS.hasChildren}
+              selected={filters.hasChildren}
+              onChange={(value) => updateArray('hasChildren', value)}
+            />
+            <FilterChecklist
+              legend="Wants children"
+              options={DISCOVERY_CATEGORICAL_FILTER_OPTIONS.wantsChildren}
+              selected={filters.wantsChildren}
+              onChange={(value) => updateArray('wantsChildren', value)}
+            />
+            <FilterChecklist
+              legend="Smoking"
+              options={DISCOVERY_CATEGORICAL_FILTER_OPTIONS.smoking}
+              selected={filters.smoking}
+              onChange={(value) => updateArray('smoking', value)}
+            />
+            <FilterChecklist
+              legend="Drinking"
+              options={DISCOVERY_CATEGORICAL_FILTER_OPTIONS.drinking}
+              selected={filters.drinking}
+              onChange={(value) => updateArray('drinking', value)}
+            />
+            <FilterChecklist
+              legend="Pets"
+              options={DISCOVERY_CATEGORICAL_FILTER_OPTIONS.pets}
+              selected={filters.pets}
+              onChange={(value) => updateArray('pets', value)}
+            />
+            <FilterChecklist
+              legend="Things they enjoy"
+              options={thingsIEnjoyOptions}
+              selected={filters.thingsIEnjoy}
+              onChange={(value) => updateArray('thingsIEnjoy', value)}
+            />
+          </div>
         </div>
 
         <footer className="sticky bottom-0 flex gap-3 border-t border-[#0B2D5C]/08 bg-[#FBF9F6]/95 px-5 py-4 backdrop-blur sm:px-7">
