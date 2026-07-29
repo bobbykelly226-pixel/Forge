@@ -2,7 +2,7 @@
 
 Authoritative documentation for the Forge Backend Foundation persistence layer.
 
-**Remote migration status (verified live 2026-07-25 through the connected Supabase project):**
+**Remote migration status (verified live 2026-07-29 through the connected Supabase project):**
 
 | Layer | Result |
 |---|---|
@@ -10,8 +10,9 @@ Authoritative documentation for the Forge Backend Foundation persistence layer.
 | Project health | `ACTIVE_HEALTHY` |
 | Source migration `20260723000000_questionnaire_foundation.sql` | Applied through the connector as remote ledger entry `20260726021004 questionnaire_foundation` |
 | Source migration `20260725000000_compatibility_profile_persistence_v1.sql` | Applied through the connector as remote ledger entry `20260726021051 compatibility_profile_persistence_v1` |
-| Active catalog | `compatibility_profile_categories_1_10_v10` |
-| Live catalog counts | 10 categories, 100 questions, 856 answer choices |
+| Source migration `20260728195226_profile_discovery_connections_stabilization.sql` | Applied as remote ledger entry `20260728195226 profile_discovery_connections_stabilization` |
+| Active catalog | Compatibility Profile V2 |
+| Live catalog counts | 10 categories, 80 questions, zero priority follow-up screens |
 | RLS | Enabled on all 10 questionnaire catalog, response, progress, and operation tables |
 | Mutation grants | Authenticated direct writes revoked; hardened owner RPCs require `operation_id` |
 | Live pgTAP | 49 of 49 assertions pass inside a rollback transaction |
@@ -47,7 +48,11 @@ placeholder.
 
 ## What another authenticated Forge user may see
 
-Other users must **not** query `profiles` with `select *`. Peer reads go through `discoverable_profiles` (and `discoverable_profile_photos` for photo metadata).
+Other users must **not** query `profiles` with `select *`. Discovery peer reads go
+through its guarded server path. Connections and pending relationship surfaces
+resolve only requested, relationship-authorized members through
+`load_connection_hub_profiles(uuid[])`. Photo metadata continues through
+`discoverable_profile_photos`.
 
 ### Allowed (intentional public profile presentation)
 
@@ -57,7 +62,7 @@ Other users must **not** query `profiles` with `select *`. Peer reads go through
 | Display name | `full_name` |
 | Public age | `age` (not date of birth) |
 | City / region text | `location` |
-| Relationship goal | `relationship_goal` |
+| Relationship goals | `relationship_goals` (plural); `relationship_goal` remains a primary-value compatibility field |
 | Faith | `faith_importance` |
 | Service background | `service_background` |
 | About | `short_bio` (canonical); `more_about` is a legacy fallback merged into About for display and cleared when About is saved |
@@ -97,7 +102,8 @@ Canonical allow-list in code: `lib/data-model-rules.ts` → `DISCOVERABLE_PROFIL
 | Display name | `profiles.full_name` | V1 name retained |
 | About | `profiles.short_bio` | Canonical public biography. Legacy `more_about` is merged for display and normalized into `short_bio` on About save. |
 | Faith | `profiles.faith_importance` | V1 name retained |
-| Relationship goal | `profiles.relationship_goal` | Shared |
+| Relationship goals | `profiles.relationship_goals` | Canonical multi-select field |
+| Primary relationship goal | `profiles.relationship_goal` | Legacy compatibility field synchronized to the first plural selection |
 | Service background | `profiles.service_background` | Shared |
 | Location (city/region) | `profiles.location` | Public-safe text only |
 | Age (public) | `profiles.age` | Exact DOB is private |
@@ -147,6 +153,7 @@ See migration SQL for full DDL. High level:
 11. **`character_signals`** — positive-only; giver create; receiver approve/decline
 12. **Questionnaire catalog** — `questionnaire_versions`, `questionnaire_categories`, `questionnaire_eligibility_rules`, `questionnaire_questions`, `questionnaire_answer_choices` (readable catalog; not user-editable)
 13. **Compatibility Profile responses** — `user_questionnaire_progress`, `user_questionnaire_responses`, `user_questionnaire_selected_choices`, `user_questionnaire_priority_selections` (owner-only RLS; never public)
+14. **Connections public projection** — `load_connection_hub_profiles(uuid[])`; signed-in only, relationship-authorized, blocked-user-aware, and limited to the public allowlist
 
 Untouched by Compatibility Profile persistence: Essential Profile `/onboarding`, legacy `compatibility_answers` (read-only), `waitlist`, `feedback`, Compatibility Engine V1.
 
@@ -219,6 +226,7 @@ Path convention remains `{user_id}/{filename}`.
 | Private / prefs / answers / app state | Owner only |
 | `profile_photos` | Owner only |
 | `discoverable_profile_photos` | Authenticated select of approved metadata |
+| `load_connection_hub_profiles(uuid[])` | Authenticated execution; returns public fields only for a relationship participant or saved discoverable profile |
 | Saved / passed / blocks | Actor only |
 | Interests / O2C / signals | Participants; restricted writes |
 | Connections | Participants select only |

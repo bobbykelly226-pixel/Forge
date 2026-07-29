@@ -19,6 +19,7 @@ function toPublicProfile(profile: SelfProfilePreview): PublicDiscoveryProfile {
     location_region: profile.location_region,
     location_country: profile.location_country,
     relationship_goal: profile.relationship_goal,
+    relationship_goals: profile.relationship_goals,
     faith_identity: profile.faith_identity,
     faith_tradition: profile.faith_tradition,
     faith_other: profile.faith_other,

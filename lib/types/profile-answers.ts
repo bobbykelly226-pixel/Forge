@@ -93,7 +93,7 @@ export function isOnboardingContentComplete(answers: ProfileAnswersMap): boolean
   return hasIntention && hasValues;
 }
 
-/** Things I Enjoy labels used by Profile V2 (ordered catalog). */
+/** Legacy Things I Enjoy suggestions retained for existing profiles and QA fixtures. */
 export const THINGS_I_ENJOY_OPTIONS = [
   'Broncos',
   'Camping',
@@ -106,6 +106,9 @@ export const THINGS_I_ENJOY_OPTIONS = [
 ] as const;
 
 export type ThingsIEnjoyLabel = (typeof THINGS_I_ENJOY_OPTIONS)[number];
+
+export const MAX_THINGS_I_ENJOY = 30;
+export const MAX_THING_I_ENJOY_LENGTH = 80;
 
 /** Important Alignment Factors / core values catalog (onboarding + My Profile). */
 export const CORE_VALUES_OPTIONS = [

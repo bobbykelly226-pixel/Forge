@@ -105,6 +105,7 @@ export type CompatibilityPersonInput = {
   id: string;
   displayName: string;
   relationshipGoal: string | null;
+  relationshipGoals?: string[];
   faithIdentity: string | null;
   faithImportance: string | null;
   children: string | null;

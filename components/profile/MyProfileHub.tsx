@@ -8,6 +8,7 @@ import DiscoveryDesktopTopBar from '@/components/DiscoveryDesktopTopBar';
 import ForgeAppBottomNav from '@/components/ForgeAppBottomNav';
 import ForgeAuthenticatedTwoColumnShell from '@/components/ForgeAuthenticatedTwoColumnShell';
 import ForgeDesktopAppNav from '@/components/ForgeDesktopAppNav';
+import LogoutButton from '@/components/LogoutButton';
 import ProfileCompatibilityCard, {
   type ProfileCompatibilityCardProps,
 } from '@/components/compatibility-profile/ProfileCompatibilityCard';
@@ -129,6 +130,9 @@ export default function MyProfileHub({
               Review and update your profile in one place.
             </p>
             <ForgeDesktopAppNav active="profile" />
+            <div className="mt-8 border-t border-[#0B2D5C]/08 pt-6">
+              <LogoutButton className="w-full" />
+            </div>
           </div>
         }
       >
@@ -149,6 +153,7 @@ export default function MyProfileHub({
             >
               Preview
             </Link>
+            <LogoutButton className="!rounded-full !bg-white/70 !px-3 !py-1 !text-[10px] !uppercase !tracking-[0.14em] !text-[#0B2D5C] ring-1 ring-[#0B2D5C]/12 hover:!bg-white" />
           </div>
 
           <div

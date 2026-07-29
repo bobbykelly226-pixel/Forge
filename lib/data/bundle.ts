@@ -110,6 +110,7 @@ export type SelfProfilePreview = {
   short_bio: string | null;
   more_about: string | null;
   relationship_goal: string | null;
+  relationship_goals: string[];
   faith_identity: string | null;
   faith_tradition: string | null;
   faith_other: string | null;
@@ -170,6 +171,7 @@ export async function loadSelfProfilePreview(): Promise<
       short_bio: profile.short_bio,
       more_about: profile.more_about,
       relationship_goal: profile.relationship_goal,
+      relationship_goals: profile.relationship_goals ?? [],
       faith_identity: profile.faith_identity,
       faith_tradition: profile.faith_tradition,
       faith_other: profile.faith_other,

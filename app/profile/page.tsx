@@ -106,10 +106,11 @@ export default async function MyProfileHubPage({ searchParams }: PageProps) {
     : [];
 
   const hasRelationshipAlignment =
-    typeof answers[PROFILE_ANSWER_KEYS.relationshipIntention] === 'string' &&
-    Boolean(
-      (answers[PROFILE_ANSWER_KEYS.relationshipIntention] as string).trim().length
-    );
+    (Array.isArray(profile.relationship_goals) && profile.relationship_goals.length > 0) ||
+    (typeof answers[PROFILE_ANSWER_KEYS.relationshipIntention] === 'string' &&
+      Boolean(
+        (answers[PROFILE_ANSWER_KEYS.relationshipIntention] as string).trim().length
+      ));
   const hasImportantAlignmentFactors = coreValues.length > 0;
 
   const discoveryCanEnable =

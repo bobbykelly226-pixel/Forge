@@ -27,6 +27,15 @@ export const RELATIONSHIP_GOAL_OPTIONS: StructuredOption<RelationshipGoalValue>[
   { value: 'getting_to_know_someone', label: 'Getting to know someone' },
 ];
 
+export function normalizeRelationshipGoalSelection(
+  values: string[]
+): RelationshipGoalValue[] {
+  const allowed = new Set<string>(RELATIONSHIP_GOAL_VALUES);
+  return [
+    ...new Set(values.map((value) => value.trim()).filter((value) => allowed.has(value))),
+  ] as RelationshipGoalValue[];
+}
+
 export const HAS_CHILDREN_VALUES = ['no', 'yes', PREFER_NOT_TO_SAY] as const;
 export type HasChildrenValue = (typeof HAS_CHILDREN_VALUES)[number];
 

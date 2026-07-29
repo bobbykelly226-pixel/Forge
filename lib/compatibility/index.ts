@@ -18,6 +18,7 @@ export {
   personFromSeedCompatibilityFields,
 } from './inputs';
 export { toAlignmentPresentation, toFeedAlignmentFields } from './presentation';
+export { constrainProfileFallbackAlignment } from './profile-fallback';
 export { DEFAULT_COMPATIBILITY_EVALUATORS } from './evaluators';
 export { CATEGORY_WEIGHTS, MIN_SCOREABLE_CATEGORIES } from './weights';
 export type {

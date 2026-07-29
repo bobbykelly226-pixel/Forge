@@ -23,8 +23,33 @@ export const relationshipIntentionEvaluator: CompatibilityEvaluator = {
   key: 'relationship_intention',
   label: 'Relationship intentions',
   evaluate(viewer, partner) {
-    const a = normalizeSlug(viewer.relationshipGoal);
-    const b = normalizeSlug(partner.relationshipGoal);
+    const viewerGoals = [
+      ...new Set(
+        (viewer.relationshipGoals?.length
+          ? viewer.relationshipGoals
+          : viewer.relationshipGoal
+            ? [viewer.relationshipGoal]
+            : []
+        )
+          .map(normalizeSlug)
+          .filter((value): value is string => Boolean(value))
+      ),
+    ];
+    const partnerGoals = [
+      ...new Set(
+        (partner.relationshipGoals?.length
+          ? partner.relationshipGoals
+          : partner.relationshipGoal
+            ? [partner.relationshipGoal]
+            : []
+        )
+          .map(normalizeSlug)
+          .filter((value): value is string => Boolean(value))
+      ),
+    ];
+    const shared = viewerGoals.filter((goal) => partnerGoals.includes(goal));
+    const a = viewerGoals[0] ?? null;
+    const b = partnerGoals[0] ?? null;
     if (!a || !b) {
       return insufficient(
         'relationship_intention',
@@ -34,15 +59,15 @@ export const relationshipIntentionEvaluator: CompatibilityEvaluator = {
       );
     }
 
-    if (a === b) {
+    if (shared.length > 0) {
       return evaluation({
         categoryKey: 'relationship_intention',
         categoryLabel: this.label,
         status: 'strong_alignment',
-        explanation: `You are both looking for ${labelFor(a)}.`,
+        explanation: `You are both open to ${shared.map(labelFor).join(' or ')}.`,
         isHighImpact: true,
-        viewerSummary: labelFor(a),
-        partnerSummary: labelFor(b),
+        viewerSummary: viewerGoals.map(labelFor).join(', '),
+        partnerSummary: partnerGoals.map(labelFor).join(', '),
       });
     }
 

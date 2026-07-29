@@ -54,6 +54,7 @@ const EMPTY_HUB: ConnectionsHubData = {
   tabCounts: {
     forYou: 0,
     openToChat: 0,
+    interestedInYou: 0,
     mutual: 0,
     conversations: 0,
     saved: 0,
@@ -64,6 +65,7 @@ const EMPTY_HUB: ConnectionsHubData = {
 const VALID_TABS: ConnectionsTabId[] = [
   'forYou',
   'openToChat',
+  'interestedInYou',
   'mutual',
   'conversations',
   'saved',

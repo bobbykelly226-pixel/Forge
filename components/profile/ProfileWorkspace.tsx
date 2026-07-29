@@ -59,10 +59,7 @@ import {
   type ProfileCompletionSectionId,
 } from '@/lib/profile-completion';
 import type { Profile } from '@/lib/types/profile';
-import {
-  CORE_VALUES_OPTIONS,
-  THINGS_I_ENJOY_OPTIONS,
-} from '@/lib/types/profile-answers';
+import { CORE_VALUES_OPTIONS } from '@/lib/types/profile-answers';
 
 type PrivateLocationSeed = {
   postal_code: string | null;
@@ -153,7 +150,9 @@ export default function ProfileWorkspace({
     profile,
     photoCount,
     hasRelationshipAlignment:
-      hasRelationshipAlignment || Boolean(profile.relationship_goal),
+      hasRelationshipAlignment ||
+      Boolean(profile.relationship_goals?.length) ||
+      Boolean(profile.relationship_goal),
     hasImportantAlignmentFactors:
       hasImportantAlignmentFactors || coreValues.length > 0,
   });
@@ -518,7 +517,16 @@ function SectionEditor({
       ) : null}
 
       {sectionId === 'relationship' ? (
-        <RelationshipFields defaultValue={profile.relationship_goal ?? ''} disabled={saving} />
+        <RelationshipFields
+          defaultValues={
+            profile.relationship_goals?.length
+              ? profile.relationship_goals
+              : profile.relationship_goal
+                ? [profile.relationship_goal]
+                : []
+          }
+          disabled={saving}
+        />
       ) : null}
 
       {sectionId === 'children' ? (
@@ -570,21 +578,22 @@ function SectionEditor({
       ) : null}
 
       {sectionId === 'enjoy' ? (
-        <fieldset className="space-y-3" disabled={saving}>
-          <legend className="text-sm font-medium text-[#0B2D5C]">Things I Enjoy</legend>
-          {THINGS_I_ENJOY_OPTIONS.map((label) => (
-            <label key={label} className="flex items-center gap-3 text-[#222222]">
-              <input
-                type="checkbox"
-                name="things_i_enjoy"
-                value={label}
-                defaultChecked={profile.things_i_enjoy?.includes(label) ?? false}
-                className="h-5 w-5 rounded border-[#0B2D5C]/30"
-              />
-              <span>{label}</span>
-            </label>
-          ))}
-        </fieldset>
+        <label className="block text-sm font-medium text-[#0B2D5C]">
+          Things I Enjoy
+          <textarea
+            name="things_i_enjoy"
+            rows={8}
+            maxLength={2500}
+            defaultValue={(profile.things_i_enjoy ?? []).join('\n')}
+            placeholder={'Hiking\nCooking\nLive music\nWeekend road trips'}
+            className={`${inputClassName} mt-2 resize-y`}
+            disabled={saving}
+          />
+          <span className="mt-2 block text-xs leading-relaxed text-[#888888]">
+            Add your own hobbies and interests, one per line. This is about what you
+            genuinely enjoy, not politics.
+          </span>
+        </label>
       ) : null}
 
       {sectionId === 'music' ? (
@@ -689,22 +698,27 @@ function SingleChoiceFields({
 }
 
 function RelationshipFields({
-  defaultValue,
+  defaultValues,
   disabled,
 }: {
-  defaultValue: string;
+  defaultValues: string[];
   disabled?: boolean;
 }) {
-  const [value, setValue] = useState(defaultValue);
+  const [values, setValues] = useState(defaultValues);
   return (
-    <ChoiceChips
-      name="relationship_goal"
-      legend="Relationship goal"
-      options={RELATIONSHIP_GOAL_OPTIONS}
-      value={value}
-      onChange={setValue}
-      disabled={disabled}
-    />
+    <>
+      <input type="hidden" name="relationship_goal" value={values[0] ?? ''} />
+      <MultiChoiceChips
+        name="relationship_goals"
+        legend="Relationship goals"
+        options={RELATIONSHIP_GOAL_OPTIONS}
+        values={values}
+        onChange={setValues}
+        exclusiveValues={[]}
+        optionalNote="Optional — select every relationship goal that honestly fits."
+        disabled={disabled}
+      />
+    </>
   );
 }
 

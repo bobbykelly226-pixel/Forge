@@ -545,6 +545,7 @@ export type Database = {
           profile_completed_at: string | null
           profile_photo_url: string | null
           relationship_goal: string | null
+          relationship_goals: string[]
           relocation: string | null
           service_background: string | null
           service_backgrounds: string[]
@@ -593,6 +594,7 @@ export type Database = {
           profile_completed_at?: string | null
           profile_photo_url?: string | null
           relationship_goal?: string | null
+          relationship_goals?: string[]
           relocation?: string | null
           service_background?: string | null
           service_backgrounds?: string[]
@@ -641,6 +643,7 @@ export type Database = {
           profile_completed_at?: string | null
           profile_photo_url?: string | null
           relationship_goal?: string | null
+          relationship_goals?: string[]
           relocation?: string | null
           service_background?: string | null
           service_backgrounds?: string[]
@@ -1375,6 +1378,7 @@ export type Database = {
           pets_types: string[] | null
           profile_photo_url: string | null
           relationship_goal: string | null
+          relationship_goals: string[] | null
           relocation: string | null
           service_background: string | null
           service_backgrounds: string[] | null
@@ -1408,6 +1412,7 @@ export type Database = {
           pets_types?: string[] | null
           profile_photo_url?: string | null
           relationship_goal?: string | null
+          relationship_goals?: string[] | null
           relocation?: string | null
           service_background?: string | null
           service_backgrounds?: string[] | null
@@ -1441,6 +1446,7 @@ export type Database = {
           pets_types?: string[] | null
           profile_photo_url?: string | null
           relationship_goal?: string | null
+          relationship_goals?: string[] | null
           relocation?: string | null
           service_background?: string | null
           service_backgrounds?: string[] | null
@@ -1563,6 +1569,7 @@ export type Database = {
           profile_completed_at: string | null
           profile_photo_url: string | null
           relationship_goal: string | null
+          relationship_goals: string[]
           relocation: string | null
           service_background: string | null
           service_backgrounds: string[]
@@ -1667,6 +1674,7 @@ export type Database = {
           pets_types: string[] | null
           profile_photo_url: string | null
           relationship_goal: string | null
+          relationship_goals: string[] | null
           relocation: string | null
           service_background: string | null
           service_backgrounds: string[] | null
@@ -1718,6 +1726,7 @@ export type Database = {
           pets_types: string[] | null
           profile_photo_url: string | null
           relationship_goal: string | null
+          relationship_goals: string[] | null
           relocation: string | null
           service_background: string | null
           service_backgrounds: string[] | null
@@ -1734,6 +1743,49 @@ export type Database = {
       }
       list_my_conversations: { Args: never; Returns: Json }
       list_my_notifications: { Args: { p_limit?: number }; Returns: Json }
+      load_connection_hub_profiles: {
+        Args: { p_profile_ids: string[] }
+        Returns: {
+          age: number | null
+          career: string | null
+          children: string | null
+          children_count: string | null
+          drinking: string | null
+          education: string | null
+          faith_identity: string | null
+          faith_importance: string | null
+          faith_other: string | null
+          faith_tradition: string | null
+          favorite_music_artists: string[] | null
+          favorite_music_songs: string[] | null
+          full_name: string | null
+          has_children: string | null
+          id: string | null
+          location: string | null
+          location_city: string | null
+          location_country: string | null
+          location_region: string | null
+          more_about: string | null
+          open_to_partner_with_children: string | null
+          pets: string | null
+          pets_types: string[] | null
+          profile_photo_url: string | null
+          relationship_goal: string | null
+          relationship_goals: string[] | null
+          relocation: string | null
+          service_background: string | null
+          service_backgrounds: string[] | null
+          short_bio: string | null
+          smoking: string | null
+          things_i_enjoy: string[] | null
+        }[]
+        SetofOptions: {
+          from: "*"
+          to: "discoverable_profiles"
+          isOneToOne: false
+          isSetofReturn: true
+        }
+      }
       load_my_questionnaire_state: {
         Args: { p_version_key?: string }
         Returns: Json

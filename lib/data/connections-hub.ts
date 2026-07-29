@@ -8,6 +8,12 @@ import {
 } from '@/lib/discovery/presentation';
 import { DISCOVERY_NEUTRAL_ALIGNMENT_LABEL, DISCOVERY_NEUTRAL_CONFIDENCE } from '@/lib/discovery/config';
 import { resolveAboutPreview } from '@/lib/profile/unified-about';
+import {
+  evaluateQuestionnaireCompatibility,
+  toFeedAlignmentFields,
+  type CompatibilityEngineResult,
+} from '@/lib/compatibility';
+import { loadQuestionnaireAlignmentComparisons } from '@/lib/data/questionnaire-alignment';
 
 async function requireUser() {
   const supabase = await createClient();
@@ -87,6 +93,7 @@ export type ConnectionsHubData = {
   tabCounts: {
     forYou: number;
     openToChat: number;
+    interestedInYou?: number;
     mutual: number;
     conversations: number;
     saved: number;
@@ -94,7 +101,11 @@ export type ConnectionsHubData = {
   };
 };
 
-function toHubCard(profile: PublicDiscoveryProfile | null, id: string): HubProfileCard {
+function toHubCard(
+  profile: PublicDiscoveryProfile | null,
+  id: string,
+  alignment?: CompatibilityEngineResult | null
+): HubProfileCard {
   if (!profile) {
     return {
       id,
@@ -110,14 +121,17 @@ function toHubCard(profile: PublicDiscoveryProfile | null, id: string): HubProfi
       photoUrl: null,
     };
   }
+  const alignmentFields = alignment ? toFeedAlignmentFields(alignment) : null;
   return {
     id: profile.id,
     firstName: firstNameFromFullName(profile.full_name),
     age: profile.age,
     location: profile.location?.trim() || null,
-    alignmentLabel: DISCOVERY_NEUTRAL_ALIGNMENT_LABEL,
+    alignmentLabel:
+      alignmentFields?.alignmentLabel ?? DISCOVERY_NEUTRAL_ALIGNMENT_LABEL,
     confidence: DISCOVERY_NEUTRAL_CONFIDENCE,
-    hasImportantFactors: false,
+    hasImportantFactors: alignmentFields?.hasImportantFactors ?? false,
+    importantFactorsSummary: alignmentFields?.importantFactorsSummary,
     aboutPreview: resolveAboutPreview(profile.short_bio, profile.more_about),
     characterSignals: [],
     portraitGradient: stablePortraitGradient(profile.id),
@@ -133,11 +147,14 @@ async function loadPublicProfilesByIds(
   const map = new Map<string, PublicDiscoveryProfile>();
   if (unique.length === 0) return map;
 
-  // Prefer public view; fall back silently when unavailable.
-  const { data } = await supabase
-    .from('discoverable_profiles')
-    .select('*')
-    .in('id', unique);
+  const { data, error } = await supabase.rpc('load_connection_hub_profiles', {
+    p_profile_ids: unique,
+  });
+
+  if (error) {
+    console.error('loadPublicProfilesByIds:', error.message);
+    return map;
+  }
 
   for (const row of data ?? []) {
     if (row.id) {
@@ -218,9 +235,25 @@ export async function loadConnectionsHub(): Promise<DataAccessResult<Connections
   ];
 
   const profiles = await loadPublicProfilesByIds(supabase, relatedIds);
+  const questionnaireComparisons = await loadQuestionnaireAlignmentComparisons(
+    [...profiles.keys()]
+  );
+  const alignments = new Map<string, CompatibilityEngineResult>();
+  if (questionnaireComparisons.success) {
+    for (const [profileId, comparison] of Object.entries(
+      questionnaireComparisons.data
+    )) {
+      const result = evaluateQuestionnaireCompatibility(comparison);
+      if (result) alignments.set(profileId, result);
+    }
+  }
 
   const openToChat: IncomingOpenToChatItem[] = (incomingOtcRes.data ?? []).map((row) => {
-    const card = toHubCard(profiles.get(row.sender_id) ?? null, row.sender_id);
+    const card = toHubCard(
+      profiles.get(row.sender_id) ?? null,
+      row.sender_id,
+      alignments.get(row.sender_id)
+    );
     return {
       ...card,
       requestId: row.id,
@@ -232,7 +265,11 @@ export async function loadConnectionsHub(): Promise<DataAccessResult<Connections
 
   const interestReceived: IncomingInterestItem[] = (incomingInterestRes.data ?? []).map(
     (row) => {
-      const card = toHubCard(profiles.get(row.sender_id) ?? null, row.sender_id);
+      const card = toHubCard(
+        profiles.get(row.sender_id) ?? null,
+        row.sender_id,
+        alignments.get(row.sender_id)
+      );
       return {
         ...card,
         interestId: row.id,
@@ -243,7 +280,11 @@ export async function loadConnectionsHub(): Promise<DataAccessResult<Connections
 
   const mutual: MutualConnectionItem[] = (connectionsRes.data ?? []).map((row) => {
     const otherId = row.user_a_id === user.id ? row.user_b_id : row.user_a_id;
-    const card = toHubCard(profiles.get(otherId) ?? null, otherId);
+    const card = toHubCard(
+      profiles.get(otherId) ?? null,
+      otherId,
+      alignments.get(otherId)
+    );
     return {
       ...card,
       connectionId: row.id,
@@ -255,7 +296,7 @@ export async function loadConnectionsHub(): Promise<DataAccessResult<Connections
   const saved: SavedHubItem[] = (savedRes.data ?? []).map((row) => {
     const profile = profiles.get(row.saved_id) ?? null;
     return {
-      ...toHubCard(profile, row.saved_id),
+      ...toHubCard(profile, row.saved_id, alignments.get(row.saved_id)),
       relativeTime: relativeTimeLabel(row.created_at),
       unavailable: !profile,
     };
@@ -271,7 +312,9 @@ export async function loadConnectionsHub(): Promise<DataAccessResult<Connections
       relativeTime: relativeTimeLabel(row.created_at),
       canWithdraw: row.status === 'pending',
       note: null,
-      profile: profile ? toHubCard(profile, row.recipient_id) : null,
+      profile: profile
+        ? toHubCard(profile, row.recipient_id, alignments.get(row.recipient_id))
+        : null,
       unavailable: !profile,
     };
   });
@@ -292,7 +335,9 @@ export async function loadConnectionsHub(): Promise<DataAccessResult<Connections
       relativeTime: relativeTimeLabel(row.created_at),
       canWithdraw: false,
       note,
-      profile: profile ? toHubCard(profile, row.recipient_id) : null,
+      profile: profile
+        ? toHubCard(profile, row.recipient_id, alignments.get(row.recipient_id))
+        : null,
       unavailable: !profile,
     };
   });
@@ -320,6 +365,7 @@ export async function loadConnectionsHub(): Promise<DataAccessResult<Connections
       tabCounts: {
         forYou: forYouCount,
         openToChat: openToChat.length,
+        interestedInYou: interestReceived.length,
         mutual: mutual.length,
         conversations: 0,
         saved: saved.length,

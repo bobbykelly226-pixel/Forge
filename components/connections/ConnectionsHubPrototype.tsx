@@ -9,6 +9,7 @@ import ForgeDesktopAppNav from '@/components/ForgeDesktopAppNav';
 import {
   EmptyState,
   ForYouOverviewCard,
+  InterestReceivedCard,
   MutualConnectionCard,
   OpenToChatRequestCard,
   SavedProfileCard,
@@ -181,6 +182,22 @@ export default function ConnectionsHubPrototype({
         ) : (
           visibleOpenToChat.map((profile) => (
             <OpenToChatRequestCard key={profile.id} profile={profile} />
+          ))
+        )}
+      </div>
+    ),
+    interestedInYou: (
+      <div className="flex flex-col gap-4 lg:grid lg:grid-cols-2 lg:gap-6 xl:gap-8">
+        {visibleInterest.length === 0 ? (
+          <div className="lg:col-span-2">
+            <EmptyState
+              title="No new interest yet."
+              description="When someone selects Interested on your profile, they will appear here so you can decide whether the feeling is mutual."
+            />
+          </div>
+        ) : (
+          visibleInterest.map((profile) => (
+            <InterestReceivedCard key={profile.id} profile={profile} />
           ))
         )}
       </div>

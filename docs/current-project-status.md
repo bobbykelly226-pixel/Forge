@@ -1,7 +1,7 @@
 # Current Project Status
 
-Status: Internal handoff
-Last updated: 2026-07-09
+Status: Founding-user beta stabilization
+Last updated: 2026-07-29
 
 This document captures the current state of Forge after tonight’s work so the founder can restart tomorrow with a clear status and next-step plan.
 
@@ -24,7 +24,13 @@ This document captures the current state of Forge after tonight’s work so the 
 - User profiles exist.
 - Profile photo upload exists.
 - Profile edit/save works.
+- Relationship goals support multiple selections.
+- Things I Enjoy accepts a flexible, user-authored hobby list.
 - Profile Preview has been polished.
+- Discovery has real profile filters instead of placeholder shortcuts.
+- Connections includes an Interested in You route and relationship-authorized identity cards.
+- Profile-only alignment is confidence-capped until both members have sufficient questionnaire coverage.
+- Logout is available directly from the Profile workspace.
 - Onboarding shell exists at `/onboarding`.
 - `/app` has onboarding entry point.
 - Mobile onboarding button order has been fixed after PR #12 merge.
@@ -88,29 +94,24 @@ Related docs:
 
 ## 5. Next Priority
 
-The next real product priority is:
+Complete two-user signed-in beta QA against the stabilized production flow:
 
-Begin turning the Compatibility Profile V1 blueprint into a minimal saved onboarding answer system.
-
-Do not build that yet in this handoff task. This section is planning only.
+- Confirm inbound Interested appears in Interested in You.
+- Confirm accepting reciprocal interest creates a mutual connection.
+- Confirm Connection cards show the member's public name, photo, location, and current alignment.
+- Exercise the full Discovery filter drawer in combination.
+- Confirm insufficient questionnaire coverage never receives a confident Strong label.
+- Confirm neither member can read the other's private questionnaire answers.
 
 ---
 
-## 6. Next Suggested Build Step
+## 6. Current Stabilization Release
 
-Recommended next build:
-
-Create a minimal `compatibility_answers` database plan and implementation prompt.
-
-That future step should:
-
-- create a simple `compatibility_answers` table
-- save onboarding answers
-- avoid scoring at first
-- avoid matching at first
-- keep it MVP-simple
-
-Reference the approved MVP question set in `docs/compatibility-profile-v1.md` before writing schema or UI changes.
+Migration `20260728195226_profile_discovery_connections_stabilization.sql`
+adds the plural relationship-goal contract and the guarded public-profile
+projection used by relationship participants. The application release adds the
+corresponding profile controls, Discovery filters, Interested in You tab,
+Connections identity hydration, and conservative fallback alignment behavior.
 
 ---
 

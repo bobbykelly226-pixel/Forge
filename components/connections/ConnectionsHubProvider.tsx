@@ -53,6 +53,7 @@ export type InterestReceivedStatus = 'pending' | 'mutual' | 'declined';
 export type ConnectionsTabId =
   | 'forYou'
   | 'openToChat'
+  | 'interestedInYou'
   | 'mutual'
   | 'conversations'
   | 'saved'
@@ -199,6 +200,7 @@ function computeTabCounts(
   return {
     forYou: pendingOtc.slice(0, 2).length + visibleInterest.length + mutualCount,
     openToChat: visibleOtc.length,
+    interestedInYou: visibleInterest.length,
     mutual: mutualCount,
     conversations: conversationCount,
     saved: savedCount,
