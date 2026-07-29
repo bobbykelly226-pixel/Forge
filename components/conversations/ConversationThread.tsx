@@ -104,6 +104,7 @@ export default function ConversationThread({
   const shouldStickToBottomRef = useRef(true);
   const composerTextRef = useRef('');
   const refreshingMessagesRef = useRef(false);
+  const refreshQueuedRef = useRef(false);
 
   const [messages, setMessages] = useState<ConversationMessage[]>(() =>
     sortMessagesChronologically(initialMessages)
@@ -192,13 +193,20 @@ export default function ConversationThread({
   };
 
   const refreshMessages = useCallback(async () => {
-    if (isSeed || refreshingMessagesRef.current) return;
+    if (isSeed) return;
+    if (refreshingMessagesRef.current) {
+      refreshQueuedRef.current = true;
+      return;
+    }
     refreshingMessagesRef.current = true;
     try {
-      const result = await listConversationMessagesAction(meta.conversationId);
-      if (result.success && result.data) {
-        setMessages((current) => mergeMessages(current, result.data!.messages));
-      }
+      do {
+        refreshQueuedRef.current = false;
+        const result = await listConversationMessagesAction(meta.conversationId);
+        if (result.success && result.data) {
+          setMessages((current) => mergeMessages(current, result.data!.messages));
+        }
+      } while (refreshQueuedRef.current);
     } finally {
       refreshingMessagesRef.current = false;
     }
@@ -207,11 +215,28 @@ export default function ConversationThread({
   useEffect(() => {
     if (isSeed) return;
 
+    const supabase = createClient();
+    const channel = supabase
+      .channel(`conversation:${meta.conversationId}`)
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'messages',
+          filter: `conversation_id=eq.${meta.conversationId}`,
+        },
+        () => {
+          void refreshMessages();
+        }
+      )
+      .subscribe();
+
     const interval = window.setInterval(() => {
       if (document.visibilityState === 'visible') {
         void refreshMessages();
       }
-    }, 1500);
+    }, 5000);
     const handleVisibilityChange = () => {
       if (document.visibilityState === 'visible') {
         void refreshMessages();
@@ -225,8 +250,9 @@ export default function ConversationThread({
       window.clearInterval(interval);
       document.removeEventListener('visibilitychange', handleVisibilityChange);
       window.removeEventListener('focus', handleFocus);
+      void supabase.removeChannel(channel);
     };
-  }, [isSeed, refreshMessages]);
+  }, [isSeed, meta.conversationId, refreshMessages]);
 
   const sendMessage = async (
     body: string,
@@ -463,7 +489,7 @@ export default function ConversationThread({
   const remainingChars = MESSAGE_MAX_LENGTH - composerText.length;
 
   return (
-    <div className="flex min-h-[100dvh] flex-col bg-[#FBF9F6]">
+    <div className="flex h-[calc(100dvh-9rem)] min-h-0 flex-col overflow-hidden rounded-[1.5rem] border border-[#0B2D5C]/08 bg-[#FBF9F6] shadow-sm lg:h-[calc(100dvh-5rem)]">
       <header className="sticky top-0 z-30 border-b border-[#0B2D5C]/10 bg-[#FBF9F6]/95 backdrop-blur-md">
         <div className="mx-auto flex max-w-2xl items-center justify-between gap-3 px-4 py-3 sm:px-5">
           <div className="min-w-0 flex-1">

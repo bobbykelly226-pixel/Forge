@@ -107,10 +107,18 @@ describe('conversation attachment security and UI wiring', () => {
 
   it('keeps open threads current and never sends a stale composer value', () => {
     const thread = read('components/conversations/ConversationThread.tsx');
+    const realtimeMigration = read(
+      'supabase/migrations/20260729230000_conversation_realtime_delivery.sql'
+    );
     assert.match(thread, /composerTextRef\.current = next/);
     assert.match(thread, /sendMessage\(event\.currentTarget\.value\)/);
-    assert.match(thread, /setInterval\(\(\) =>/);
+    assert.match(thread, /\.channel\(`conversation:/);
+    assert.match(thread, /event: 'INSERT'/);
+    assert.match(thread, /refreshQueuedRef\.current = true/);
     assert.match(thread, /void refreshMessages\(\)/);
     assert.match(thread, /!hasTwoWayExchange/);
+    assert.match(thread, /h-\[calc\(100dvh-9rem\)\]/);
+    assert.match(thread, /overflow-y-auto overscroll-contain/);
+    assert.match(realtimeMigration, /alter publication supabase_realtime add table public\.messages/);
   });
 });
