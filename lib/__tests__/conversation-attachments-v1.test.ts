@@ -104,4 +104,14 @@ describe('conversation attachment security and UI wiring', () => {
     assert.match(attachment, /target="_blank"/);
     assert.match(attachment, /download=\{name\}/);
   });
+
+  it('keeps open threads current and never sends a stale composer value', () => {
+    const thread = read('components/conversations/ConversationThread.tsx');
+    assert.match(thread, /composerTextRef\.current = next/);
+    assert.match(thread, /sendMessage\(event\.currentTarget\.value\)/);
+    assert.match(thread, /setInterval\(\(\) =>/);
+    assert.match(thread, /void refreshMessages\(\)/);
+    assert.match(thread, /!hasTwoWayExchange/);
+    assert.doesNotMatch(thread, /Forge connection context/i);
+  });
 });
