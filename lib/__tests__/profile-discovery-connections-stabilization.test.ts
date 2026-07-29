@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 
+import { childrenFamilyEvaluator } from '@/lib/compatibility/evaluators/children-family';
 import { coreValuesEvaluator } from '@/lib/compatibility/evaluators/core-values';
 import { relationshipIntentionEvaluator } from '@/lib/compatibility/evaluators/relationship-intention';
 import { constrainProfileFallbackAlignment } from '@/lib/compatibility/profile-fallback';
@@ -8,6 +9,7 @@ import type {
   CompatibilityEngineResult,
   CompatibilityPersonInput,
 } from '@/lib/compatibility/types';
+import { DISCOVERY_CATEGORICAL_FILTER_OPTIONS } from '@/lib/discovery/filter-options';
 import {
   EMPTY_DISCOVERY_FILTERS,
   countActiveDiscoveryFilters,
@@ -129,6 +131,54 @@ test('Discovery reports active filter selections for the filter button', () => {
     }),
     4
   );
+});
+
+test('Discovery categorical filters expose every canonical option regardless of the loaded profiles', () => {
+  assert.deepEqual(
+    DISCOVERY_CATEGORICAL_FILTER_OPTIONS.alignment.map((option) => option.label),
+    [
+      'Strong Alignment',
+      'Promising Alignment',
+      'More to Discover',
+      'Not Enough Information',
+    ]
+  );
+  assert.deepEqual(
+    DISCOVERY_CATEGORICAL_FILTER_OPTIONS.relationshipGoals.map(
+      (option) => option.value
+    ),
+    [
+      'marriage',
+      'serious_relationship',
+      'intentional_dating',
+      'getting_to_know_someone',
+    ]
+  );
+  assert.equal(DISCOVERY_CATEGORICAL_FILTER_OPTIONS.faithIdentity.length, 12);
+  assert.equal(DISCOVERY_CATEGORICAL_FILTER_OPTIONS.faithImportance.length, 5);
+  assert.equal(DISCOVERY_CATEGORICAL_FILTER_OPTIONS.hasChildren.length, 3);
+  assert.equal(DISCOVERY_CATEGORICAL_FILTER_OPTIONS.wantsChildren.length, 5);
+  assert.equal(DISCOVERY_CATEGORICAL_FILTER_OPTIONS.smoking.length, 5);
+  assert.equal(DISCOVERY_CATEGORICAL_FILTER_OPTIONS.drinking.length, 6);
+  assert.equal(DISCOVERY_CATEGORICAL_FILTER_OPTIONS.pets.length, 3);
+});
+
+test('children alignment factors say which direction each public answer points', () => {
+  const viewerWantsChildren = childrenFamilyEvaluator.evaluate(
+    person('viewer', { children: 'yes' }),
+    person('partner', { children: 'no' })
+  );
+  assert.match(viewerWantsChildren.explanation, /You want children, while they do not/);
+  assert.equal(viewerWantsChildren.viewerSummary, 'Wants children');
+  assert.equal(viewerWantsChildren.partnerSummary, 'Does not want children');
+
+  const partnerWantsChildren = childrenFamilyEvaluator.evaluate(
+    person('viewer', { children: 'no' }),
+    person('partner', { children: 'yes' })
+  );
+  assert.match(partnerWantsChildren.explanation, /You do not want children, while they do/);
+  assert.equal(partnerWantsChildren.viewerSummary, 'Does not want children');
+  assert.equal(partnerWantsChildren.partnerSummary, 'Wants children');
 });
 
 test('subset overlap uses the full combined value set instead of treating one match as 100 percent', () => {

@@ -42,7 +42,7 @@ export const childrenFamilyEvaluator: CompatibilityEvaluator = {
         categoryLabel: this.label,
         status: 'important_difference',
         explanation:
-          'One of you wants children and the other does not. This is an important difference to understand with care — not a judgment of either person.',
+          'You want children, while they do not. This is an important difference to understand with care — not a judgment of either person.',
         isHighImpact: true,
         viewerSummary: 'Wants children',
         partnerSummary: 'Does not want children',
@@ -54,7 +54,7 @@ export const childrenFamilyEvaluator: CompatibilityEvaluator = {
         categoryLabel: this.label,
         status: 'important_difference',
         explanation:
-          'One of you wants children and the other does not. This is an important difference to understand with care — not a judgment of either person.',
+          'You do not want children, while they do. This is an important difference to understand with care — not a judgment of either person.',
         isHighImpact: true,
         viewerSummary: 'Does not want children',
         partnerSummary: 'Wants children',
