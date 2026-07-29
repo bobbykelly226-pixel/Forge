@@ -11,7 +11,7 @@ import {
   reportUser,
   sendConversationMessage,
 } from '@/lib/data/conversations';
-import type { ReportPayload } from '@/lib/conversations/types';
+import type { ConversationAttachmentInput, ReportPayload } from '@/lib/conversations/types';
 
 export async function ensureConversationAction(connectionId: string) {
   return ensureConversationForConnection(connectionId);
@@ -36,6 +36,7 @@ export async function sendConversationMessageAction(input: {
   conversationId: string;
   body: string;
   clientMessageId?: string;
+  attachment?: ConversationAttachmentInput;
 }) {
   return sendConversationMessage(input);
 }

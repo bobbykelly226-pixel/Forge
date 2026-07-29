@@ -260,6 +260,69 @@ export type Database = {
           },
         ]
       }
+      message_attachments: {
+        Row: {
+          attachment_kind: string
+          conversation_id: string
+          created_at: string
+          file_name: string
+          file_size: number
+          height: number | null
+          id: string
+          message_id: string
+          mime_type: string
+          position: number
+          sender_id: string
+          storage_path: string
+          width: number | null
+        }
+        Insert: {
+          attachment_kind: string
+          conversation_id: string
+          created_at?: string
+          file_name: string
+          file_size: number
+          height?: number | null
+          id?: string
+          message_id: string
+          mime_type: string
+          position?: number
+          sender_id: string
+          storage_path: string
+          width?: number | null
+        }
+        Update: {
+          attachment_kind?: string
+          conversation_id?: string
+          created_at?: string
+          file_name?: string
+          file_size?: number
+          height?: number | null
+          id?: string
+          message_id?: string
+          mime_type?: string
+          position?: number
+          sender_id?: string
+          storage_path?: string
+          width?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "message_attachments_conversation_id_fkey"
+            columns: ["conversation_id"]
+            isOneToOne: false
+            referencedRelation: "conversations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "message_attachments_message_id_fkey"
+            columns: ["message_id"]
+            isOneToOne: false
+            referencedRelation: "messages"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       notifications: {
         Row: {
           actor_user_id: string | null
@@ -1854,6 +1917,15 @@ export type Database = {
       save_profile_for_later: { Args: { p_profile_id: string }; Returns: Json }
       send_conversation_message: {
         Args: {
+          p_body: string
+          p_client_message_id?: string
+          p_conversation_id: string
+        }
+        Returns: Json
+      }
+      send_conversation_message_with_attachments: {
+        Args: {
+          p_attachments?: Json
           p_body: string
           p_client_message_id?: string
           p_conversation_id: string

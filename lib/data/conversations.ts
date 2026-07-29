@@ -2,6 +2,7 @@ import { createClient } from '@/lib/supabase/server';
 import { ensureFoundationalRecords, type DataAccessResult } from '@/lib/data/profile';
 import { MESSAGE_MAX_LENGTH, MESSAGE_PAGE_SIZE } from '@/lib/conversations/constants';
 import type {
+  ConversationAttachmentInput,
   ConversationListItem,
   ConversationMessage,
   ConversationThreadMeta,
@@ -55,6 +56,27 @@ function asString(value: unknown): string | null {
   return typeof value === 'string' && value.trim() ? value : null;
 }
 
+function mapAttachment(raw: unknown): ConversationMessage['attachments'][number] | null {
+  const row = asRecord(raw);
+  if (!row) return null;
+  const storagePath = asString(row.storage_path);
+  const fileName = asString(row.file_name);
+  const mimeType = asString(row.mime_type);
+  const fileSize = typeof row.file_size === 'number' ? row.file_size : null;
+  if (!storagePath || !fileName || !mimeType || !fileSize) return null;
+  return {
+    id: asString(row.id),
+    storagePath,
+    fileName,
+    mimeType,
+    fileSize,
+    attachmentKind: row.attachment_kind === 'photo' ? 'photo' : 'file',
+    width: typeof row.width === 'number' ? row.width : null,
+    height: typeof row.height === 'number' ? row.height : null,
+    position: typeof row.position === 'number' ? row.position : 0,
+  };
+}
+
 function mapListItem(raw: unknown): ConversationListItem | null {
   const row = asRecord(raw);
   if (!row) return null;
@@ -91,14 +113,17 @@ function mapMessage(raw: unknown): ConversationMessage | null {
   const id = asString(row.id);
   const conversationId = asString(row.conversation_id);
   const senderId = asString(row.sender_id);
-  const body = asString(row.body);
+  const body = typeof row.body === 'string' ? row.body : '';
   const createdAt = asString(row.created_at);
-  if (!id || !conversationId || !senderId || !body || !createdAt) return null;
+  if (!id || !conversationId || !senderId || !createdAt) return null;
   return {
     id,
     conversationId,
     senderId,
     body,
+    attachments: (Array.isArray(row.attachments) ? row.attachments : [])
+      .map(mapAttachment)
+      .filter((item): item is ConversationMessage['attachments'][number] => Boolean(item)),
     clientMessageId: asString(row.client_message_id),
     createdAt,
     localStatus: 'sent',
@@ -235,20 +260,24 @@ export async function sendConversationMessage(input: {
   conversationId: string;
   body: string;
   clientMessageId?: string;
+  attachment?: ConversationAttachmentInput;
 }): Promise<DataAccessResult<ConversationMessage>> {
   const { supabase, user } = await requireUser();
   if (!user) return { success: false, message: 'You must be signed in.' };
 
   const body = input.body.trim();
-  if (!body) return { success: false, message: 'Message cannot be empty.' };
+  if (!body && !input.attachment) {
+    return { success: false, message: 'Add a message or attachment.' };
+  }
   if (body.length > MESSAGE_MAX_LENGTH) {
     return { success: false, message: `Messages can be up to ${MESSAGE_MAX_LENGTH} characters.` };
   }
 
-  const { data, error } = await supabase.rpc('send_conversation_message', {
+  const { data, error } = await supabase.rpc('send_conversation_message_with_attachments', {
     p_conversation_id: input.conversationId,
     p_body: body,
     p_client_message_id: input.clientMessageId,
+    p_attachments: input.attachment ? [input.attachment] : [],
   });
   const result = rpcResult(data, error, 'Could not send your message.');
   if (!result.success) return { success: false, message: result.message };
@@ -267,6 +296,9 @@ export async function sendConversationMessage(input: {
       conversationId: input.conversationId,
       senderId: user.id,
       body: asString(result.data.body) ?? body,
+      attachments: (Array.isArray(result.data.attachments) ? result.data.attachments : [])
+        .map(mapAttachment)
+        .filter((item): item is ConversationMessage['attachments'][number] => Boolean(item)),
       clientMessageId: input.clientMessageId ?? null,
       createdAt,
       localStatus: 'sent',

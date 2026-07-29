@@ -23,10 +23,32 @@ export type ConversationMessage = {
   conversationId: string;
   senderId: string;
   body: string;
+  attachments: ConversationAttachment[];
   clientMessageId: string | null;
   createdAt: string;
   /** Optimistic UI only */
   localStatus?: 'pending' | 'failed' | 'sent';
+};
+
+export type ConversationAttachment = {
+  id: string | null;
+  storagePath: string;
+  fileName: string;
+  mimeType: string;
+  fileSize: number;
+  attachmentKind: 'photo' | 'file';
+  width: number | null;
+  height: number | null;
+  position: number;
+};
+
+export type ConversationAttachmentInput = {
+  storage_path: string;
+  file_name: string;
+  mime_type: string;
+  file_size: number;
+  width: number | null;
+  height: number | null;
 };
 
 export type ConversationThreadMeta = {

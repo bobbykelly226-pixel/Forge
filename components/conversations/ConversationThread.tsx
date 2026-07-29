@@ -7,29 +7,43 @@ import {
   useId,
   useRef,
   useState,
+  type ChangeEvent,
   type KeyboardEvent as ReactKeyboardEvent,
 } from 'react';
-import { ChevronDown, ChevronUp } from 'lucide-react';
+import { ChevronDown, ChevronUp, FileUp, Paperclip, Smile, X } from 'lucide-react';
 
 import {
   listConversationMessagesAction,
   sendConversationMessageAction,
 } from '@/app/actions/conversations';
 import ConversationSafetyMenu from '@/components/conversations/ConversationSafetyMenu';
+import MessageAttachment from '@/components/conversations/MessageAttachment';
 import ConversationStarters from '@/components/conversations/ConversationStarters';
 import { partnerSaidLabel, viewerSaidLabel } from '@/lib/compatibility/answer-labels';
+import {
+  createAttachmentPath,
+  readImageDimensions,
+  sanitizeAttachmentName,
+  validateMessageAttachment,
+} from '@/lib/conversations/attachments';
 import {
   normalizeComposerOutboundText,
   shouldSubmitComposerOnKeyDown,
 } from '@/lib/conversations/composer';
-import { MESSAGE_MAX_LENGTH } from '@/lib/conversations/constants';
+import {
+  MESSAGE_ATTACHMENT_BUCKET,
+  MESSAGE_EMOJI_OPTIONS,
+  MESSAGE_MAX_LENGTH,
+} from '@/lib/conversations/constants';
 import { formatConversationTimestamp } from '@/lib/conversations/format';
 import type {
   ConversationAlignmentContext,
+  ConversationAttachmentInput,
   ConversationMessage,
   ConversationStarter,
   ConversationThreadMeta,
 } from '@/lib/conversations/types';
+import { createClient } from '@/lib/supabase/client';
 
 type ConversationThreadProps = {
   meta: ConversationThreadMeta;
@@ -86,6 +100,7 @@ export default function ConversationThread({
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const shouldStickToBottomRef = useRef(true);
 
   const [messages, setMessages] = useState<ConversationMessage[]>(() =>
@@ -94,13 +109,16 @@ export default function ConversationThread({
   const [hasMore, setHasMore] = useState(hasMoreInitial);
   const [loadingOlder, setLoadingOlder] = useState(false);
   const [composerText, setComposerText] = useState('');
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [emojiOpen, setEmojiOpen] = useState(false);
+  const [uploading, setUploading] = useState(false);
   const [sending, setSending] = useState(false);
   const [contextExpanded, setContextExpanded] = useState(false);
   const [threadStatus, setThreadStatus] = useState(meta.status);
   const [liveMessage, setLiveMessage] = useState('');
 
   const profileHref = `/discovery/profile/${meta.peerUserId}`;
-  const composerDisabled = threadStatus === 'ended' || meta.isBlocked || sending;
+  const composerDisabled = threadStatus === 'ended' || meta.isBlocked || sending || uploading;
   const youSaid = viewerSaidLabel();
   const theySaid = partnerSaidLabel(meta.peerFirstName);
 
@@ -168,16 +186,88 @@ export default function ConversationThread({
     }
   };
 
-  const sendMessage = async (body: string, existingClientMessageId?: string) => {
+  const sendMessage = async (
+    body: string,
+    existingClientMessageId?: string,
+    existingAttachment?: ConversationAttachmentInput
+  ) => {
     const outbound = normalizeComposerOutboundText(body);
-    if (!outbound || sending || composerDisabled) return false;
+    const pendingFile = existingAttachment ? null : selectedFile;
+    if ((!outbound && !pendingFile && !existingAttachment) || sending || composerDisabled) {
+      return false;
+    }
 
     const clientMessageId = existingClientMessageId ?? createClientMessageId();
+    let attachment = existingAttachment;
+
+    if (pendingFile && !isSeed) {
+      const validationMessage = validateMessageAttachment(pendingFile);
+      if (validationMessage) {
+        setLiveMessage(validationMessage);
+        return false;
+      }
+
+      setUploading(true);
+      const objectId = createClientMessageId();
+      const path = createAttachmentPath(
+        meta.conversationId,
+        viewerUserId,
+        pendingFile.name,
+        objectId
+      );
+      const supabase = createClient();
+      const { error } = await supabase.storage
+        .from(MESSAGE_ATTACHMENT_BUCKET)
+        .upload(path, pendingFile, {
+          cacheControl: '3600',
+          contentType: pendingFile.type,
+          upsert: false,
+        });
+      setUploading(false);
+      if (error) {
+        setLiveMessage('That attachment could not be uploaded. Please try again.');
+        return false;
+      }
+      attachment = {
+        storage_path: path,
+        file_name: sanitizeAttachmentName(pendingFile.name),
+        mime_type: pendingFile.type,
+        file_size: pendingFile.size,
+        width: null,
+        height: null,
+      };
+      if (pendingFile.type.startsWith('image/')) {
+        const dimensions = await readImageDimensions(pendingFile).catch(() => null);
+        if (!dimensions) {
+          await supabase.storage.from(MESSAGE_ATTACHMENT_BUCKET).remove([path]);
+          setLiveMessage('That image could not be read. Choose another photo.');
+          return false;
+        }
+        attachment.width = dimensions.width;
+        attachment.height = dimensions.height;
+      }
+    }
+
     const optimisticMessage: ConversationMessage = {
       id: `optimistic-${clientMessageId}`,
       conversationId: meta.conversationId,
       senderId: viewerUserId,
-      body: outbound,
+      body: outbound ?? '',
+      attachments: attachment
+        ? [
+            {
+              id: null,
+              storagePath: attachment.storage_path,
+              fileName: attachment.file_name,
+              mimeType: attachment.mime_type,
+              fileSize: attachment.file_size,
+              attachmentKind: attachment.mime_type.startsWith('image/') ? 'photo' : 'file',
+              width: attachment.width,
+              height: attachment.height,
+              position: 0,
+            },
+          ]
+        : [],
       clientMessageId,
       createdAt: new Date().toISOString(),
       localStatus: 'pending',
@@ -185,6 +275,8 @@ export default function ConversationThread({
 
     setSending(true);
     setComposerText('');
+    setSelectedFile(null);
+    setEmojiOpen(false);
     setMessages((current) => mergeMessages(current, [optimisticMessage]));
 
     try {
@@ -206,8 +298,9 @@ export default function ConversationThread({
 
       const result = await sendConversationMessageAction({
         conversationId: meta.conversationId,
-        body: outbound,
+        body: outbound ?? '',
         clientMessageId,
+        attachment,
       });
 
       if (!result.success) {
@@ -265,6 +358,35 @@ export default function ConversationThread({
 
   const handleSendClick = () => {
     void sendMessage(composerText);
+  };
+
+  const handleFileSelect = (event: ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0] ?? null;
+    event.target.value = '';
+    if (!file) return;
+    const validationMessage = validateMessageAttachment(file);
+    if (validationMessage) {
+      setLiveMessage(validationMessage);
+      return;
+    }
+    setSelectedFile(file);
+    setLiveMessage(`${file.name} ready to send.`);
+  };
+
+  const insertEmoji = (emoji: string) => {
+    const textarea = textareaRef.current;
+    const start = textarea?.selectionStart ?? composerText.length;
+    const end = textarea?.selectionEnd ?? composerText.length;
+    const next = `${composerText.slice(0, start)}${emoji}${composerText.slice(end)}`.slice(
+      0,
+      MESSAGE_MAX_LENGTH
+    );
+    setComposerText(next);
+    requestAnimationFrame(() => {
+      textarea?.focus();
+      const cursor = Math.min(start + emoji.length, next.length);
+      textarea?.setSelectionRange(cursor, cursor);
+    });
   };
 
   const handleStarterSelect = (text: string) => {
@@ -478,7 +600,18 @@ export default function ConversationThread({
                         : 'rounded-bl-md border border-[#0B2D5C]/08 bg-white text-[#0B2D5C]'
                     } ${isPending ? 'opacity-80' : ''}`}
                   >
-                    <p className="whitespace-pre-wrap break-words">{message.body}</p>
+                    {message.attachments.map((attachment) => (
+                      <MessageAttachment
+                        key={attachment.id ?? attachment.storagePath}
+                        attachment={attachment}
+                        isSent={isSent}
+                      />
+                    ))}
+                    {message.body ? (
+                      <p className={`${message.attachments.length ? 'mt-2' : ''} whitespace-pre-wrap break-words`}>
+                        {message.body}
+                      </p>
+                    ) : null}
                   </div>
                   <div className="mt-1 flex items-center gap-2 px-1">
                     <time
@@ -491,7 +624,22 @@ export default function ConversationThread({
                     {isFailed ? (
                       <button
                         type="button"
-                        onClick={() => void sendMessage(message.body, message.clientMessageId ?? undefined)}
+                        onClick={() =>
+                          void sendMessage(
+                            message.body,
+                            message.clientMessageId ?? undefined,
+                            message.attachments[0]
+                              ? {
+                                  storage_path: message.attachments[0].storagePath,
+                                  file_name: message.attachments[0].fileName,
+                                  mime_type: message.attachments[0].mimeType,
+                                  file_size: message.attachments[0].fileSize,
+                                  width: message.attachments[0].width,
+                                  height: message.attachments[0].height,
+                                }
+                              : undefined
+                          )
+                        }
                         className="text-[11px] font-semibold text-[#D62828] underline-offset-2 hover:underline"
                       >
                         Retry
@@ -516,6 +664,30 @@ export default function ConversationThread({
           ) : null}
 
           <div className="rounded-[1.25rem] border border-[#0B2D5C]/12 bg-white p-3 shadow-sm">
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept=".jpg,.jpeg,.png,.webp,.pdf,.txt,.docx"
+              onChange={handleFileSelect}
+              className="sr-only"
+              tabIndex={-1}
+            />
+            {selectedFile ? (
+              <div className="mb-3 flex items-center gap-3 rounded-xl border border-[#0B2D5C]/10 bg-[#F8F6F2] px-3 py-2.5">
+                <FileUp className="h-5 w-5 shrink-0 text-[#0B2D5C]" aria-hidden="true" />
+                <span className="min-w-0 flex-1 truncate text-sm font-medium text-[#0B2D5C]">
+                  {selectedFile.name}
+                </span>
+                <button
+                  type="button"
+                  onClick={() => setSelectedFile(null)}
+                  className="rounded-full p-1 text-[#7A8494] transition hover:bg-white hover:text-[#0B2D5C]"
+                  aria-label={`Remove ${selectedFile.name}`}
+                >
+                  <X className="h-4 w-4" aria-hidden="true" />
+                </button>
+              </div>
+            ) : null}
             <label htmlFor={composerId} className="sr-only">
               Message {meta.peerFirstName}
             </label>
@@ -542,22 +714,63 @@ export default function ConversationThread({
               }
               className="w-full resize-none bg-transparent text-[15px] leading-relaxed text-[#0B2D5C] outline-none placeholder:text-[#8A93A0] disabled:opacity-60"
             />
-            <div className="mt-2 flex items-center justify-between gap-3">
-              <span
-                className={`text-xs ${remainingChars < 100 ? 'text-[#D62828]' : 'text-[#8A93A0]'}`}
-                aria-live="polite"
+            {emojiOpen ? (
+              <div
+                className="mt-2 grid grid-cols-10 gap-1 rounded-xl border border-[#0B2D5C]/10 bg-[#F8F6F2] p-2"
+                aria-label="Choose an emoji"
               >
-                {remainingChars} characters left
-              </span>
+                {MESSAGE_EMOJI_OPTIONS.map((emoji) => (
+                  <button
+                    key={emoji}
+                    type="button"
+                    onClick={() => insertEmoji(emoji)}
+                    className="flex h-8 w-8 items-center justify-center rounded-lg text-lg transition hover:bg-white"
+                    aria-label={`Insert ${emoji}`}
+                  >
+                    {emoji}
+                  </button>
+                ))}
+              </div>
+            ) : null}
+            <div className="mt-2 flex items-center justify-between gap-3">
+              <div className="flex items-center gap-1">
+                <button
+                  type="button"
+                  onClick={() => fileInputRef.current?.click()}
+                  disabled={composerDisabled}
+                  className="rounded-full p-2 text-[#0B2D5C] transition hover:bg-[#F8F6F2] disabled:opacity-50"
+                  aria-label="Attach a photo or file"
+                >
+                  <Paperclip className="h-5 w-5" aria-hidden="true" />
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setEmojiOpen((open) => !open)}
+                  disabled={composerDisabled}
+                  className="rounded-full p-2 text-[#0B2D5C] transition hover:bg-[#F8F6F2] disabled:opacity-50"
+                  aria-label={emojiOpen ? 'Close emoji picker' : 'Choose an emoji'}
+                  aria-expanded={emojiOpen}
+                >
+                  <Smile className="h-5 w-5" aria-hidden="true" />
+                </button>
+                <span
+                  className={`ml-1 text-xs ${remainingChars < 100 ? 'text-[#D62828]' : 'text-[#8A93A0]'}`}
+                  aria-live="polite"
+                >
+                  {remainingChars}
+                </span>
+              </div>
               <button
                 type="button"
                 onClick={handleSendClick}
                 disabled={
-                  composerDisabled || composerText.trim().length === 0 || composerText.length > MESSAGE_MAX_LENGTH
+                  composerDisabled ||
+                  (composerText.trim().length === 0 && !selectedFile) ||
+                  composerText.length > MESSAGE_MAX_LENGTH
                 }
                 className="inline-flex items-center justify-center rounded-2xl bg-[#0B2D5C] px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-[#0A2540] disabled:cursor-not-allowed disabled:opacity-50"
               >
-                Send
+                {uploading ? 'Uploading…' : sending ? 'Sending…' : 'Send'}
               </button>
             </div>
           </div>
