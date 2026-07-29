@@ -18,6 +18,7 @@ function emptyPerson(id: string, displayName: string): CompatibilityPersonInput 
     id,
     displayName,
     relationshipGoal: null,
+    relationshipGoals: [],
     faithIdentity: null,
     faithImportance: null,
     children: null,
@@ -48,6 +49,12 @@ export function personFromOwnerProfile(
     displayName:
       options?.displayName ?? firstNameFromFullName(profile.full_name) ?? 'You',
     relationshipGoal: profile.relationship_goal,
+    relationshipGoals:
+      profile.relationship_goals?.length
+        ? profile.relationship_goals
+        : profile.relationship_goal
+          ? [profile.relationship_goal]
+          : [],
     faithIdentity: profile.faith_identity,
     faithImportance: profile.faith_importance,
     children: profile.children,
@@ -87,6 +94,12 @@ export function personFromPublicDiscoveryProfile(
   return {
     ...base,
     relationshipGoal: profile.relationship_goal,
+    relationshipGoals:
+      profile.relationship_goals?.length
+        ? profile.relationship_goals
+        : profile.relationship_goal
+          ? [profile.relationship_goal]
+          : [],
     faithIdentity: profile.faith_identity ?? null,
     faithImportance: profile.faith_importance,
     children: profile.children,
@@ -107,6 +120,7 @@ export type SeedCompatibilityFields = {
   id: string;
   firstName: string;
   relationshipGoal: string | null;
+  relationshipGoals?: string[];
   faithImportance: string | null;
   faithIdentity?: string | null;
   children: string | null;
@@ -133,6 +147,12 @@ export function personFromSeedCompatibilityFields(
     id: profile.id,
     displayName: profile.firstName,
     relationshipGoal: profile.relationshipGoal,
+    relationshipGoals:
+      profile.relationshipGoals?.length
+        ? profile.relationshipGoals
+        : profile.relationshipGoal
+          ? [profile.relationshipGoal]
+          : [],
     faithIdentity: profile.faithIdentity ?? null,
     faithImportance: profile.faithImportance,
     children: profile.children,

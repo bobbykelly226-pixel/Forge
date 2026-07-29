@@ -4,7 +4,11 @@ import { useState } from 'react';
 
 import { createClient } from '@/lib/supabase/client';
 
-export default function LogoutButton() {
+export default function LogoutButton({
+  className = '',
+}: {
+  className?: string;
+}) {
   const [pending, setPending] = useState(false);
 
   const handleLogout = async () => {
@@ -32,7 +36,7 @@ export default function LogoutButton() {
       type="button"
       onClick={handleLogout}
       disabled={pending}
-      className="bg-[#0B2D5C] hover:bg-[#0A2540] disabled:bg-gray-400 text-white font-semibold px-8 py-4 rounded-2xl text-lg transition"
+      className={`rounded-2xl bg-[#0B2D5C] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#0A2540] disabled:bg-gray-400 ${className}`}
     >
       {pending ? 'Signing out...' : 'Log out'}
     </button>

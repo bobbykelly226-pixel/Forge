@@ -7,7 +7,7 @@ import {
   upsertCurrentUserProfile,
 } from '@/lib/data/profile';
 import { createClient } from '@/lib/supabase/server';
-import { CORE_VALUES_OPTIONS, THINGS_I_ENJOY_OPTIONS } from '@/lib/types/profile-answers';
+import { CORE_VALUES_OPTIONS } from '@/lib/types/profile-answers';
 import {
   MAX_PROFILE_PHOTOS,
   MAX_PROFILE_PHOTOS_MESSAGE,
@@ -32,10 +32,12 @@ import {
 } from '@/lib/profile/lifestyle-compatibility';
 import {
   isValidStructuredValue,
+  normalizeRelationshipGoalSelection,
   normalizeServiceBackgroundSelection,
   serviceBackgroundDisplayLabel,
   type StructuredFieldKey,
 } from '@/lib/profile/structured-options';
+import { normalizeThingsIEnjoy } from '@/lib/profile/things-i-enjoy';
 import type { Json } from '@/lib/supabase/database.types';
 
 type ProfileActionResult = {
@@ -53,11 +55,17 @@ function parseLineList(raw: string | null): string[] {
 }
 
 function parseEnjoySelection(formData: FormData): string[] {
-  const selected = formData.getAll('things_i_enjoy').map(String);
-  const allowed = new Set<string>(THINGS_I_ENJOY_OPTIONS);
-  return THINGS_I_ENJOY_OPTIONS.filter((label) => selected.includes(label)).filter((label) =>
-    allowed.has(label)
+  return normalizeThingsIEnjoy(formData.getAll('things_i_enjoy').map(String));
+}
+
+function readRelationshipGoals(formData: FormData): string[] {
+  const selected = normalizeRelationshipGoalSelection(
+    formData.getAll('relationship_goals').map(String)
   );
+  if (selected.length > 0) return selected;
+
+  const legacy = readOptionalString(formData, 'relationship_goal');
+  return normalizeRelationshipGoalSelection(legacy ? [legacy] : []);
 }
 
 function readMultiField(formData: FormData, key: string): string[] {
@@ -222,11 +230,13 @@ export async function saveProfile(formData: FormData): Promise<ProfileActionResu
     age = parsedAge;
   }
 
+  const relationshipGoals = readRelationshipGoals(formData);
+  const primaryRelationshipGoal = relationshipGoals[0] ?? null;
+
   const structuredReads: Array<{
     key: string;
     field: StructuredFieldKey;
   }> = [
-    { key: 'relationship_goal', field: 'relationship_goal' },
     { key: 'has_children', field: 'has_children' },
     { key: 'children_count', field: 'children_count' },
     { key: 'children', field: 'children' },
@@ -401,6 +411,10 @@ export async function saveProfile(formData: FormData): Promise<ProfileActionResu
   ] as const;
 
   for (const key of clearUnmappedKeys) {
+    if (key === 'relationship_goal') {
+      if (relationshipGoals.length > 0) delete previousUnmapped.relationship_goal;
+      continue;
+    }
     if (key === 'service_background') {
       if (serviceBackgrounds.length > 0) delete previousUnmapped.service_background;
       continue;
@@ -417,7 +431,8 @@ export async function saveProfile(formData: FormData): Promise<ProfileActionResu
     location_city: publicLocation.location_city,
     location_region: publicLocation.location_region,
     location_country: publicLocation.location_country,
-    relationship_goal: structuredValues.relationship_goal,
+    relationship_goal: primaryRelationshipGoal,
+    relationship_goals: relationshipGoals,
     has_children: structuredValues.has_children,
     children_count: structuredValues.children_count,
     children: structuredValues.children,
@@ -458,12 +473,12 @@ export async function saveProfile(formData: FormData): Promise<ProfileActionResu
   }
 
   // Keep onboarding/alignment answer in sync with the public relationship goal.
-  if (structuredValues.relationship_goal) {
+  if (primaryRelationshipGoal) {
     const { error: intentionError } = await supabase.from('profile_answers').upsert(
       {
         user_id: user.id,
         question_key: 'relationship_intention',
-        answer: structuredValues.relationship_goal,
+        answer: primaryRelationshipGoal,
         visibility: 'private',
         is_non_negotiable: false,
       },
@@ -818,10 +833,10 @@ export async function saveProfileSection(
   }
 
   if (sectionId === 'relationship') {
-    const parsed = readStructuredField(formData, 'relationship_goal', 'relationship_goal');
-    if (!parsed.ok) return { success: false, message: parsed.message };
-    fields.relationship_goal = parsed.value;
-    if (parsed.value) answeredUnmapped.push('relationship_goal');
+    const relationshipGoals = readRelationshipGoals(formData);
+    fields.relationship_goals = relationshipGoals;
+    fields.relationship_goal = relationshipGoals[0] ?? null;
+    if (relationshipGoals.length > 0) answeredUnmapped.push('relationship_goal');
   }
 
   if (sectionId === 'children') {
@@ -1516,4 +1531,3 @@ export async function replaceProfilePhoto(input: {
     primaryPhotoUrl,
   };
 }
-

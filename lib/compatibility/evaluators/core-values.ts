@@ -19,8 +19,8 @@ export const coreValuesEvaluator: CompatibilityEvaluator = {
     }
 
     const shared = viewerValues.filter((value) => partnerValues.includes(value));
-    const overlapRatio =
-      shared.length / Math.min(viewerValues.length, partnerValues.length);
+    const combined = new Set([...viewerValues, ...partnerValues]);
+    const overlapRatio = combined.size > 0 ? shared.length / combined.size : 0;
 
     if (shared.length === 0) {
       return evaluation({

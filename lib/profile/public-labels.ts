@@ -14,6 +14,7 @@ import { formatPublicLocation } from './location-format';
 
 export type PublicProfileLabelSource = {
   relationship_goal?: string | null;
+  relationship_goals?: string[] | null;
   faith_identity?: string | null;
   faith_tradition?: string | null;
   faith_other?: string | null;
@@ -169,10 +170,20 @@ function faithImportancePublicLabel(value: string | null | undefined): string | 
 export function collectStructuredPublicProfileDetails(
   profile: PublicProfileLabelSource
 ): Array<{ label: string; value: string }> {
+  const relationshipGoals = (
+    profile.relationship_goals?.length
+      ? profile.relationship_goals
+      : profile.relationship_goal
+        ? [profile.relationship_goal]
+        : []
+  )
+    .map((goal) => visibleStructuredLabel('relationship_goal', goal))
+    .filter((goal): goal is string => Boolean(goal));
+
   const rows: Array<{ label: string; value: string | null }> = [
     {
-      label: 'Relationship goal',
-      value: visibleStructuredLabel('relationship_goal', profile.relationship_goal),
+      label: relationshipGoals.length === 1 ? 'Relationship goal' : 'Relationship goals',
+      value: relationshipGoals.length > 0 ? relationshipGoals.join(', ') : null,
     },
     { label: 'Faith', value: faithPublicLabel(profile) },
     {

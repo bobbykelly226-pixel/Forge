@@ -54,7 +54,9 @@ export type ProfileCompletionInput = {
     | 'profile_photo_url'
     | 'location'
     | 'location_city'
-  > | null;
+  > & {
+    relationship_goals?: Tables<'profiles'>['relationship_goals'];
+  } | null;
   photoCount: number;
   /** True when Relationship Alignment answers exist (e.g. relationship_intention). */
   hasRelationshipAlignment: boolean;
@@ -78,7 +80,9 @@ function hasCoreDetails(
   profile: NonNullable<ProfileCompletionInput['profile']>
 ): boolean {
   const fields = [
-    profile.relationship_goal,
+    hasNonEmptyArray(profile.relationship_goals)
+      ? 'set'
+      : profile.relationship_goal,
     profile.children,
     profile.has_children,
     profile.faith_identity ?? profile.faith_importance,

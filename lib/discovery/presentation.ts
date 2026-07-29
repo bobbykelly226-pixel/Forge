@@ -21,6 +21,7 @@ export type PublicDiscoveryProfile = {
   location_region?: string | null;
   location_country?: string | null;
   relationship_goal: string | null;
+  relationship_goals?: string[] | null;
   faith_identity?: string | null;
   faith_tradition?: string | null;
   faith_other?: string | null;
@@ -69,6 +70,17 @@ export type DiscoveryFeedCardModel = {
   characterSignals: string[];
   portraitGradient: string;
   photoUrl: string | null;
+  filterData?: {
+    relationshipGoals: string[];
+    faithIdentity: string | null;
+    faithImportance: string | null;
+    children: string | null;
+    hasChildren: string | null;
+    smoking: string | null;
+    drinking: string | null;
+    pets: string | null;
+    thingsIEnjoy: string[];
+  };
 };
 
 export type PublicProfileDetail = {
@@ -126,6 +138,19 @@ export function toDiscoveryFeedCard(profile: PublicDiscoveryProfile): DiscoveryF
     characterSignals: [],
     portraitGradient: stablePortraitGradient(profile.id),
     photoUrl: profile.profile_photo_url,
+    filterData: {
+      relationshipGoals:
+        profile.relationship_goals?.filter(Boolean) ??
+        (profile.relationship_goal ? [profile.relationship_goal] : []),
+      faithIdentity: profile.faith_identity ?? null,
+      faithImportance: profile.faith_importance,
+      children: profile.children,
+      hasChildren: profile.has_children,
+      smoking: profile.smoking,
+      drinking: profile.drinking,
+      pets: profile.pets,
+      thingsIEnjoy: nonEmptyStringList(profile.things_i_enjoy),
+    },
   };
 }
 
