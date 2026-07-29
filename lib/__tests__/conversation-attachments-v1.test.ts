@@ -112,6 +112,5 @@ describe('conversation attachment security and UI wiring', () => {
     assert.match(thread, /setInterval\(\(\) =>/);
     assert.match(thread, /void refreshMessages\(\)/);
     assert.match(thread, /!hasTwoWayExchange/);
-    assert.doesNotMatch(thread, /Forge connection context/i);
   });
 });

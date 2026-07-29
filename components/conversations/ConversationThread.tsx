@@ -10,7 +10,7 @@ import {
   type ChangeEvent,
   type KeyboardEvent as ReactKeyboardEvent,
 } from 'react';
-import { FileUp, Paperclip, Smile, X } from 'lucide-react';
+import { ChevronDown, ChevronUp, FileUp, Paperclip, Smile, X } from 'lucide-react';
 
 import {
   listConversationMessagesAction,
@@ -19,6 +19,7 @@ import {
 import ConversationSafetyMenu from '@/components/conversations/ConversationSafetyMenu';
 import MessageAttachment from '@/components/conversations/MessageAttachment';
 import ConversationStarters from '@/components/conversations/ConversationStarters';
+import { partnerSaidLabel, viewerSaidLabel } from '@/lib/compatibility/answer-labels';
 import {
   createAttachmentPath,
   readImageDimensions,
@@ -36,6 +37,7 @@ import {
 } from '@/lib/conversations/constants';
 import { formatConversationTimestamp } from '@/lib/conversations/format';
 import type {
+  ConversationAlignmentContext,
   ConversationAttachmentInput,
   ConversationMessage,
   ConversationStarter,
@@ -48,6 +50,7 @@ type ConversationThreadProps = {
   initialMessages: ConversationMessage[];
   hasMoreInitial?: boolean;
   viewerUserId: string;
+  alignmentContext: ConversationAlignmentContext | null;
   starters: ConversationStarter[];
   isSeed?: boolean;
 };
@@ -88,6 +91,7 @@ export default function ConversationThread({
   initialMessages,
   hasMoreInitial = false,
   viewerUserId,
+  alignmentContext,
   starters,
   isSeed = false,
 }: ConversationThreadProps) {
@@ -111,11 +115,14 @@ export default function ConversationThread({
   const [emojiOpen, setEmojiOpen] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [sending, setSending] = useState(false);
+  const [contextExpanded, setContextExpanded] = useState(false);
   const [threadStatus, setThreadStatus] = useState(meta.status);
   const [liveMessage, setLiveMessage] = useState('');
 
   const profileHref = `/discovery/profile/${meta.peerUserId}`;
   const composerDisabled = threadStatus === 'ended' || meta.isBlocked || sending || uploading;
+  const youSaid = viewerSaidLabel();
+  const theySaid = partnerSaidLabel(meta.peerFirstName);
   const hasTwoWayExchange =
     messages.some((message) => message.senderId === viewerUserId) &&
     messages.some((message) => message.senderId !== viewerUserId);
@@ -487,6 +494,117 @@ export default function ConversationThread({
           />
         </div>
       </header>
+
+      {alignmentContext ? (
+        <section className="border-b border-[#0B2D5C]/08 bg-white/70">
+          <div className="mx-auto max-w-2xl px-4 sm:px-5">
+            <button
+              type="button"
+              onClick={() => setContextExpanded((open) => !open)}
+              className="flex w-full items-center justify-between gap-3 py-4 text-left"
+              aria-expanded={contextExpanded}
+            >
+              <span
+                className="text-base font-semibold text-[#0B2D5C]"
+                style={{ fontFamily: 'var(--font-discovery-display), Georgia, serif' }}
+              >
+                Forge connection context
+              </span>
+              {contextExpanded ? (
+                <ChevronUp className="h-5 w-5 shrink-0 text-[#7A8494]" strokeWidth={1.75} aria-hidden="true" />
+              ) : (
+                <ChevronDown className="h-5 w-5 shrink-0 text-[#7A8494]" strokeWidth={1.75} aria-hidden="true" />
+              )}
+            </button>
+            {contextExpanded ? (
+              <div className="space-y-6 pb-5">
+                {alignmentContext.whyIntroduced.length > 0 ? (
+                  <div>
+                    <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[#7A8494]">
+                      Why Forge introduced you
+                    </p>
+                    <ul className="mt-3 list-disc space-y-2 pl-5 text-[15px] leading-relaxed text-[#3D4654]">
+                      {alignmentContext.whyIntroduced.map((item) => (
+                        <li key={item}>{item}</li>
+                      ))}
+                    </ul>
+                  </div>
+                ) : null}
+
+                <div>
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[#D62828]">
+                    Relationship Alignment
+                  </p>
+                  <p
+                    className="mt-1.5 text-base font-semibold text-[#0B2D5C]"
+                    style={{ fontFamily: 'var(--font-discovery-display), Georgia, serif' }}
+                  >
+                    {alignmentContext.alignmentLabel}
+                  </p>
+                </div>
+
+                {alignmentContext.importantFactors.length > 0 ? (
+                  <div>
+                    <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[#7A8494]">
+                      Important Alignment Factors
+                    </p>
+                    <ul className="mt-3 space-y-4">
+                      {alignmentContext.importantFactors.map((factor) => (
+                        <li
+                          key={factor.title}
+                          className="rounded-2xl border border-[#0B2D5C]/08 bg-[#F8F6F2] p-4"
+                        >
+                          <h3 className="text-base font-semibold text-[#0B2D5C]">{factor.title}</h3>
+                          <p className="mt-2 text-sm leading-relaxed text-[#5A6575]">
+                            {factor.explanation}
+                          </p>
+                          {(factor.viewerAnswer || factor.partnerAnswer) && (
+                            <dl className="mt-4 space-y-3">
+                              {factor.viewerAnswer ? (
+                                <div className="rounded-xl bg-white px-3 py-2.5">
+                                  <dt className="text-[11px] font-semibold uppercase tracking-[0.12em] text-[#8A93A0]">
+                                    {youSaid}
+                                  </dt>
+                                  <dd className="mt-1 text-sm font-medium text-[#0B2D5C]">
+                                    “{factor.viewerAnswer}”
+                                  </dd>
+                                </div>
+                              ) : null}
+                              {factor.partnerAnswer ? (
+                                <div className="rounded-xl bg-white px-3 py-2.5">
+                                  <dt className="text-[11px] font-semibold uppercase tracking-[0.12em] text-[#8A93A0]">
+                                    {theySaid}
+                                  </dt>
+                                  <dd className="mt-1 text-sm font-medium text-[#0B2D5C]">
+                                    “{factor.partnerAnswer}”
+                                  </dd>
+                                </div>
+                              ) : null}
+                            </dl>
+                          )}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                ) : null}
+
+                {alignmentContext.incompleteAssessmentCopy ? (
+                  <p className="text-sm leading-relaxed text-[#7A8494]">
+                    {alignmentContext.incompleteAssessmentCopy}
+                  </p>
+                ) : null}
+
+                <Link
+                  href={profileHref}
+                  className="inline-flex text-sm font-semibold text-[#0B2D5C] underline-offset-2 hover:underline"
+                >
+                  View profile
+                </Link>
+              </div>
+            ) : null}
+          </div>
+        </section>
+      ) : null}
 
       {threadStatus === 'ended' ? (
         <div
