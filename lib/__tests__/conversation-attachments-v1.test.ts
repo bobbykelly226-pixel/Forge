@@ -14,6 +14,10 @@ import {
   MESSAGE_ATTACHMENT_MAX_BYTES,
   MESSAGE_EMOJI_OPTIONS,
 } from '@/lib/conversations/constants';
+import {
+  calculateVisibleConversationHeight,
+  isLikelyMobileKeyboardOpen,
+} from '@/lib/conversations/mobile-viewport';
 
 function read(path: string) {
   return readFileSync(join(process.cwd(), path), 'utf8');
@@ -118,7 +122,31 @@ describe('conversation attachment security and UI wiring', () => {
     assert.match(thread, /void refreshMessages\(\)/);
     assert.match(thread, /!hasTwoWayExchange/);
     assert.match(thread, /h-\[calc\(100dvh-9rem\)\]/);
-    assert.match(thread, /overflow-y-auto overscroll-contain/);
+    assert.match(thread, /touch-pan-y overflow-y-auto overscroll-contain/);
     assert.match(realtimeMigration, /alter publication supabase_realtime add table public\.messages/);
+  });
+
+  it('keeps the mobile composer above the keyboard and removes completed intro context', () => {
+    const thread = read('components/conversations/ConversationThread.tsx');
+    assert.equal(isLikelyMobileKeyboardOpen(844, 510), true);
+    assert.equal(isLikelyMobileKeyboardOpen(844, 780), false);
+    assert.equal(
+      calculateVisibleConversationHeight({
+        visualViewportHeight: 510,
+        visualViewportOffsetTop: 0,
+        threadTop: 140,
+      }),
+      370
+    );
+    assert.match(thread, /window\.visualViewport/);
+    assert.match(thread, /mobileViewportHeight/);
+    assert.match(thread, /showConnectionContext/);
+    assert.match(thread, /!composerFocused/);
+    assert.match(thread, /!keyboardOpen/);
+    assert.match(thread, /shrink-0 border-t/);
+
+    const conversationPage = read('app/connections/c/[conversationId]/page.tsx');
+    assert.match(conversationPage, /interactiveWidget: 'resizes-content'/);
+    assert.match(conversationPage, /viewportFit: 'cover'/);
   });
 });

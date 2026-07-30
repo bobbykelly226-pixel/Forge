@@ -1,3 +1,4 @@
+import type { Viewport } from 'next';
 import { Fraunces, Manrope } from 'next/font/google';
 import Link from 'next/link';
 import { notFound, redirect } from 'next/navigation';
@@ -40,6 +41,13 @@ const sans = Manrope({
 export const metadata = {
   title: 'Conversation | Forge',
   robots: { index: false, follow: false },
+};
+
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  viewportFit: 'cover',
+  interactiveWidget: 'resizes-content',
 };
 
 export default async function ConversationThreadPage({
