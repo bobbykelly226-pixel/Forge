@@ -1,5 +1,7 @@
 'use server';
 
+import { Resend } from 'resend';
+
 import {
   blockUser,
   endConnection,
@@ -54,5 +56,60 @@ export async function blockUserAction(blockedUserId: string) {
 }
 
 export async function reportUserAction(payload: ReportPayload) {
-  return reportUser(payload);
+  const result = await reportUser(payload);
+  if (!result.success || !result.data?.reportId) return result;
+
+  const resendKey = process.env.RESEND_API_KEY;
+  if (!resendKey) {
+    console.error('Safety report saved but review notification is not configured.', {
+      reportId: result.data.reportId,
+    });
+    return result;
+  }
+
+  const escapeHtml = (value: string) =>
+    value.replace(
+      /[&<>"']/g,
+      (character) =>
+        ({
+          '&': '&amp;',
+          '<': '&lt;',
+          '>': '&gt;',
+          '"': '&quot;',
+          "'": '&#39;',
+        })[character] ?? character
+    );
+
+  try {
+    const resend = new Resend(resendKey);
+    const details = payload.details?.trim();
+    const notification = await resend.emails.send({
+      from: 'Forge Safety <hello@forgedinlife.com>',
+      to: 'admin@forgedinlife.com',
+      subject: `Forge safety report: ${payload.reason}`,
+      html: `
+        <h2>New Forge safety report</h2>
+        <p><strong>Report ID:</strong> ${escapeHtml(result.data.reportId)}</p>
+        <p><strong>Reason:</strong> ${escapeHtml(payload.reason)}</p>
+        <p><strong>Reported member ID:</strong> ${escapeHtml(payload.reportedUserId)}</p>
+        <p><strong>Conversation ID:</strong> ${escapeHtml(payload.conversationId ?? 'Not provided')}</p>
+        <p><strong>Details:</strong> ${escapeHtml(details || 'No additional details provided.')}</p>
+        <p><strong>Submitted:</strong> ${escapeHtml(new Date().toISOString())}</p>
+      `,
+    });
+
+    if (notification.error) {
+      console.error('Safety report saved but review notification failed.', {
+        reportId: result.data.reportId,
+        error: notification.error.message,
+      });
+    }
+  } catch (error) {
+    console.error('Safety report saved but review notification failed.', {
+      reportId: result.data.reportId,
+      error: error instanceof Error ? error.message : 'Unknown notification error',
+    });
+  }
+
+  return result;
 }

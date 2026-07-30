@@ -35,4 +35,16 @@ describe('messaging safety lifecycle', () => {
     assert.match(menu, /existing messages, photos, and files/);
     assert.match(menu, /keep the history for reporting or documentation/);
   });
+
+  it('keeps safety dialogs visible and makes report submission intentional', () => {
+    const menu = read('components/conversations/ConversationSafetyMenu.tsx');
+    const actions = read('app/actions/conversations.ts');
+    assert.match(menu, /createPortal/);
+    assert.match(menu, /max-h-\[calc\(100dvh-1\.5rem\)\]/);
+    assert.match(menu, /focusConfirm=\{false\}/);
+    assert.match(menu, /<textarea[\s\S]*autoFocus/);
+    assert.match(actions, /Forge Safety <hello@forgedinlife\.com>/);
+    assert.match(actions, /admin@forgedinlife\.com/);
+    assert.match(actions, /Safety report saved but review notification failed/);
+  });
 });

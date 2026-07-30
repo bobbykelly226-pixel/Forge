@@ -9,6 +9,7 @@ import {
   useState,
   type KeyboardEvent as ReactKeyboardEvent,
 } from 'react';
+import { createPortal } from 'react-dom';
 import { ChevronDown, MoreVertical } from 'lucide-react';
 
 import {
@@ -50,6 +51,7 @@ function SafetyDialog({
   busy,
   onClose,
   onConfirm,
+  focusConfirm = true,
   children,
 }: {
   open: boolean;
@@ -60,6 +62,7 @@ function SafetyDialog({
   busy?: boolean;
   onClose: () => void;
   onConfirm: () => void;
+  focusConfirm?: boolean;
   children?: React.ReactNode;
 }) {
   const titleId = useId();
@@ -106,7 +109,13 @@ function SafetyDialog({
     const previousOverflow = document.body.style.overflow;
     document.body.style.overflow = 'hidden';
 
-    const focusTimer = window.setTimeout(() => primaryRef.current?.focus(), 30);
+    const focusTimer = window.setTimeout(() => {
+      if (focusConfirm) {
+        primaryRef.current?.focus();
+      } else {
+        panelRef.current?.querySelector<HTMLTextAreaElement>('textarea')?.focus();
+      }
+    }, 30);
 
     const onDocumentKeyDown = (event: KeyboardEvent) => {
       if (event.key === 'Escape') onClose();
@@ -118,7 +127,7 @@ function SafetyDialog({
       window.clearTimeout(focusTimer);
       document.removeEventListener('keydown', onDocumentKeyDown);
     };
-  }, [open, onClose]);
+  }, [focusConfirm, open, onClose]);
 
   if (!open) return null;
 
@@ -127,9 +136,9 @@ function SafetyDialog({
       ? 'bg-[#D62828] hover:bg-[#B82222]'
       : 'bg-[#0B2D5C] hover:bg-[#0A2540]';
 
-  return (
+  return createPortal(
     <div
-      className="fixed inset-0 z-[90] flex items-end justify-center sm:items-center sm:p-6"
+      className="fixed inset-0 z-[90] flex items-center justify-center overflow-y-auto overscroll-contain p-3 sm:p-6"
       role="presentation"
     >
       <div
@@ -145,9 +154,9 @@ function SafetyDialog({
         aria-describedby={descriptionId}
         tabIndex={-1}
         onKeyDown={handleKeyDown}
-        className="relative z-[91] w-full max-w-md overflow-hidden rounded-t-[1.75rem] bg-[#F8F6F2] shadow-[0_-18px_60px_rgba(11,45,92,0.22)] outline-none sm:rounded-[1.75rem]"
+        className="relative z-[91] my-auto w-full max-w-md overflow-hidden rounded-[1.75rem] bg-[#F8F6F2] shadow-[0_18px_60px_rgba(11,45,92,0.22)] outline-none"
       >
-        <div className="max-h-[88vh] overflow-y-auto px-5 py-6 sm:px-7 sm:py-7">
+        <div className="max-h-[calc(100dvh-1.5rem)] overflow-y-auto overscroll-contain px-5 py-6 sm:max-h-[calc(100dvh-3rem)] sm:px-7 sm:py-7">
           <h2
             id={titleId}
             className="text-[1.35rem] leading-tight tracking-[-0.02em] text-[#0B2D5C]"
@@ -180,7 +189,8 @@ function SafetyDialog({
           </div>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }
 
@@ -403,6 +413,7 @@ export default function ConversationSafetyMenu({
         busy={busy}
         onClose={closeDialog}
         onConfirm={handleReport}
+        focusConfirm={false}
       >
         <div className="mt-5 space-y-4">
           <label className="block">
@@ -431,6 +442,7 @@ export default function ConversationSafetyMenu({
               Additional details <span className="font-normal text-[#8A93A0]">(optional)</span>
             </span>
             <textarea
+              autoFocus
               value={reportDetails}
               onChange={(event) => setReportDetails(event.target.value)}
               rows={3}
