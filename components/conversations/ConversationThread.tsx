@@ -609,6 +609,7 @@ export default function ConversationThread({
             connectionId={meta.connectionId}
             conversationId={meta.conversationId}
             profileHref={profileHref}
+            blockedByViewer={blockedByViewer}
             isSeed={isSeed}
             onEnded={() => {
               setThreadStatus('ended');
@@ -618,6 +619,9 @@ export default function ConversationThread({
               setThreadStatus('ended');
               setEndedByViewer(true);
               setBlockedByViewer(true);
+            }}
+            onUnblocked={() => {
+              setBlockedByViewer(false);
             }}
           />
         </div>

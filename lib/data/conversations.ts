@@ -358,9 +358,25 @@ export async function blockUser(
   return { success: true, data: { blocked: true } };
 }
 
+export async function unblockUser(
+  blockedUserId: string
+): Promise<DataAccessResult<{ unblocked: boolean }>> {
+  const { supabase, user } = await requireUser();
+  if (!user) return { success: false, message: 'You must be signed in.' };
+
+  const { data, error } = await supabase.rpc('unblock_user', {
+    p_blocked_user_id: blockedUserId,
+  });
+  const result = rpcResult(data, error, 'Could not unblock this person.');
+  if (!result.success) return { success: false, message: result.message };
+  return { success: true, data: { unblocked: Boolean(result.data?.unblocked) } };
+}
+
 export async function reportUser(
   payload: ReportPayload
-): Promise<DataAccessResult<{ reportId: string }>> {
+): Promise<
+  DataAccessResult<{ reportId: string; duplicate: boolean; evidenceCount: number }>
+> {
   const { supabase, user } = await requireUser();
   if (!user) return { success: false, message: 'You must be signed in.' };
 
@@ -369,11 +385,20 @@ export async function reportUser(
     p_reason: payload.reason,
     p_details: payload.details,
     p_conversation_id: payload.conversationId,
+    p_evidence: payload.evidence ?? [],
   });
   const result = rpcResult(data, error, 'Could not submit your report.');
   if (!result.success) return { success: false, message: result.message };
   if (!result.data) return { success: false, message: 'Unexpected empty response.' };
   const reportId = asString(result.data.report_id);
   if (!reportId) return { success: false, message: 'Could not submit your report.' };
-  return { success: true, data: { reportId } };
+  return {
+    success: true,
+    data: {
+      reportId,
+      duplicate: Boolean(result.data.duplicate),
+      evidenceCount:
+        typeof result.data.evidence_count === 'number' ? result.data.evidence_count : 0,
+    },
+  };
 }

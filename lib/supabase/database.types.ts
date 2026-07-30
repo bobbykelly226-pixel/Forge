@@ -1349,6 +1349,132 @@ export type Database = {
           },
         ]
       }
+      report_evidence: {
+        Row: {
+          created_at: string
+          file_name: string
+          file_size: number
+          id: string
+          mime_type: string
+          report_id: string
+          reporter_id: string
+          storage_path: string
+        }
+        Insert: {
+          created_at?: string
+          file_name: string
+          file_size: number
+          id?: string
+          mime_type: string
+          report_id: string
+          reporter_id: string
+          storage_path: string
+        }
+        Update: {
+          created_at?: string
+          file_name?: string
+          file_size?: number
+          id?: string
+          mime_type?: string
+          report_id?: string
+          reporter_id?: string
+          storage_path?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "report_evidence_report_id_fkey"
+            columns: ["report_id"]
+            isOneToOne: false
+            referencedRelation: "user_reports"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      safety_action_audit: {
+        Row: {
+          action: string
+          actor_user_id: string | null
+          conversation_id: string | null
+          created_at: string
+          id: string
+          target_user_id: string | null
+        }
+        Insert: {
+          action: string
+          actor_user_id?: string | null
+          conversation_id?: string | null
+          created_at?: string
+          id?: string
+          target_user_id?: string | null
+        }
+        Update: {
+          action?: string
+          actor_user_id?: string | null
+          conversation_id?: string | null
+          created_at?: string
+          id?: string
+          target_user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "safety_action_audit_conversation_id_fkey"
+            columns: ["conversation_id"]
+            isOneToOne: false
+            referencedRelation: "conversations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      safety_report_notifications: {
+        Row: {
+          accepted_at: string | null
+          attempt_count: number
+          attempted_at: string | null
+          created_at: string
+          failed_at: string | null
+          last_error: string | null
+          provider: string
+          provider_message_id: string | null
+          report_id: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          accepted_at?: string | null
+          attempt_count?: number
+          attempted_at?: string | null
+          created_at?: string
+          failed_at?: string | null
+          last_error?: string | null
+          provider?: string
+          provider_message_id?: string | null
+          report_id: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          accepted_at?: string | null
+          attempt_count?: number
+          attempted_at?: string | null
+          created_at?: string
+          failed_at?: string | null
+          last_error?: string | null
+          provider?: string
+          provider_message_id?: string | null
+          report_id?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "safety_report_notifications_report_id_fkey"
+            columns: ["report_id"]
+            isOneToOne: true
+            referencedRelation: "user_reports"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_reports: {
         Row: {
           conversation_id: string | null
@@ -1899,6 +2025,7 @@ export type Database = {
         Args: {
           p_conversation_id?: string
           p_details?: string
+          p_evidence?: Json
           p_reason: Database["public"]["Enums"]["report_reason"]
           p_reported_user_id: string
         }
@@ -1906,6 +2033,10 @@ export type Database = {
       }
       respond_open_to_chat: {
         Args: { p_action: string; p_request_id: string }
+        Returns: Json
+      }
+      unblock_user: {
+        Args: { p_blocked_user_id: string }
         Returns: Json
       }
       save_my_questionnaire_progress_position: {
@@ -2219,4 +2350,3 @@ export const Constants = {
     },
   },
 } as const
-

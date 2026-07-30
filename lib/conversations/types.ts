@@ -95,4 +95,12 @@ export type ReportPayload = {
   reason: ReportReasonValue;
   details?: string;
   conversationId?: string;
+  evidence?: ReportEvidenceInput[];
+};
+
+export type ReportEvidenceInput = {
+  storage_path: string;
+  file_name: string;
+  mime_type: string;
+  file_size: number;
 };
