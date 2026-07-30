@@ -36,6 +36,10 @@ import {
   MESSAGE_MAX_LENGTH,
 } from '@/lib/conversations/constants';
 import { formatConversationTimestamp } from '@/lib/conversations/format';
+import {
+  calculateVisibleConversationHeight,
+  isLikelyMobileKeyboardOpen,
+} from '@/lib/conversations/mobile-viewport';
 import type {
   ConversationAlignmentContext,
   ConversationAttachmentInput,
@@ -97,6 +101,7 @@ export default function ConversationThread({
 }: ConversationThreadProps) {
   const composerId = useId();
   const liveRegionId = useId();
+  const threadRootRef = useRef<HTMLDivElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -117,6 +122,9 @@ export default function ConversationThread({
   const [uploading, setUploading] = useState(false);
   const [sending, setSending] = useState(false);
   const [contextExpanded, setContextExpanded] = useState(false);
+  const [composerFocused, setComposerFocused] = useState(false);
+  const [keyboardOpen, setKeyboardOpen] = useState(false);
+  const [mobileViewportHeight, setMobileViewportHeight] = useState<number | null>(null);
   const [threadStatus, setThreadStatus] = useState(meta.status);
   const [liveMessage, setLiveMessage] = useState('');
 
@@ -131,6 +139,59 @@ export default function ConversationThread({
   const scrollToBottom = useCallback((behavior: ScrollBehavior = 'smooth') => {
     messagesEndRef.current?.scrollIntoView({ behavior, block: 'end' });
   }, []);
+
+  const syncMobileViewport = useCallback(() => {
+    const viewport = window.visualViewport;
+    const isDesktop = window.matchMedia('(min-width: 1024px)').matches;
+
+    if (!viewport || isDesktop) {
+      setKeyboardOpen(false);
+      setMobileViewportHeight(null);
+      return;
+    }
+
+    const nextKeyboardOpen = isLikelyMobileKeyboardOpen(
+      window.innerHeight,
+      viewport.height
+    );
+    setKeyboardOpen(nextKeyboardOpen);
+
+    if (!nextKeyboardOpen) {
+      setMobileViewportHeight(null);
+      return;
+    }
+
+    const threadTop =
+      threadRootRef.current?.getBoundingClientRect().top ?? viewport.offsetTop;
+    setMobileViewportHeight(
+      calculateVisibleConversationHeight({
+        visualViewportHeight: viewport.height,
+        visualViewportOffsetTop: viewport.offsetTop,
+        threadTop,
+      })
+    );
+
+    if (document.activeElement === textareaRef.current) {
+      requestAnimationFrame(() => scrollToBottom('auto'));
+    }
+  }, [scrollToBottom]);
+
+  useEffect(() => {
+    const viewport = window.visualViewport;
+    if (!viewport) return;
+
+    const initialFrame = requestAnimationFrame(syncMobileViewport);
+    viewport.addEventListener('resize', syncMobileViewport);
+    viewport.addEventListener('scroll', syncMobileViewport, { passive: true });
+    window.addEventListener('resize', syncMobileViewport);
+
+    return () => {
+      cancelAnimationFrame(initialFrame);
+      viewport.removeEventListener('resize', syncMobileViewport);
+      viewport.removeEventListener('scroll', syncMobileViewport);
+      window.removeEventListener('resize', syncMobileViewport);
+    };
+  }, [syncMobileViewport]);
 
   useEffect(() => {
     if (shouldStickToBottomRef.current) {
@@ -487,9 +548,22 @@ export default function ConversationThread({
   };
 
   const remainingChars = MESSAGE_MAX_LENGTH - composerText.length;
+  const showConnectionContext =
+    Boolean(alignmentContext) &&
+    !hasTwoWayExchange &&
+    !composerFocused &&
+    !keyboardOpen;
 
   return (
-    <div className="flex h-[calc(100dvh-9rem)] min-h-0 flex-col overflow-hidden rounded-[1.5rem] border border-[#0B2D5C]/08 bg-[#FBF9F6] shadow-sm lg:h-[calc(100dvh-5rem)]">
+    <div
+      ref={threadRootRef}
+      className="flex h-[calc(100dvh-9rem)] min-h-0 flex-col overflow-hidden rounded-[1.5rem] border border-[#0B2D5C]/08 bg-[#FBF9F6] shadow-sm lg:h-[calc(100dvh-5rem)]"
+      style={
+        mobileViewportHeight === null
+          ? undefined
+          : { height: `${mobileViewportHeight}px` }
+      }
+    >
       <header className="sticky top-0 z-30 border-b border-[#0B2D5C]/10 bg-[#FBF9F6]/95 backdrop-blur-md">
         <div className="mx-auto flex max-w-2xl items-center justify-between gap-3 px-4 py-3 sm:px-5">
           <div className="min-w-0 flex-1">
@@ -521,7 +595,7 @@ export default function ConversationThread({
         </div>
       </header>
 
-      {alignmentContext ? (
+      {showConnectionContext && alignmentContext ? (
         <section className="border-b border-[#0B2D5C]/08 bg-white/70">
           <div className="mx-auto max-w-2xl px-4 sm:px-5">
             <button
@@ -644,7 +718,7 @@ export default function ConversationThread({
       <div
         ref={scrollContainerRef}
         onScroll={handleScroll}
-        className="flex-1 overflow-y-auto overscroll-contain"
+        className="min-h-0 flex-1 touch-pan-y overflow-y-auto overscroll-contain"
       >
         <div className="mx-auto flex max-w-2xl flex-col px-4 py-4 sm:px-5">
           {hasMore ? (
@@ -731,7 +805,7 @@ export default function ConversationThread({
       </div>
 
       <div
-        className="sticky bottom-0 border-t border-[#0B2D5C]/10 bg-[#FBF9F6]/95 backdrop-blur-md"
+        className="sticky bottom-0 shrink-0 border-t border-[#0B2D5C]/10 bg-[#FBF9F6]/95 backdrop-blur-md"
         style={{ paddingBottom: 'max(0.75rem, env(safe-area-inset-bottom))' }}
       >
         <div className="mx-auto max-w-2xl space-y-3 px-4 py-3 sm:px-5">
@@ -777,6 +851,20 @@ export default function ConversationThread({
                 setComposerText(next);
               }}
               onKeyDown={handleComposerKeyDown}
+              onFocus={() => {
+                setComposerFocused(true);
+                setContextExpanded(false);
+                requestAnimationFrame(() => {
+                  syncMobileViewport();
+                  scrollToBottom('auto');
+                });
+              }}
+              onBlur={() => {
+                requestAnimationFrame(() => {
+                  setComposerFocused(document.activeElement === textareaRef.current);
+                  syncMobileViewport();
+                });
+              }}
               disabled={composerDisabled}
               rows={2}
               spellCheck={true}
