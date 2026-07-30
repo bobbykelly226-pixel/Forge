@@ -73,6 +73,9 @@ export function buildSeedConversationList(): ConversationListItem[] {
         latestMessageAt: null,
         latestMessageSenderId: null,
         unread: false,
+        endedAt: kind === 'ended' ? '2026-07-18T18:20:00.000Z' : null,
+        endedByViewer: false,
+        blockedByViewer: false,
         isSeed: true,
       };
 
@@ -125,6 +128,9 @@ export function buildSeedThreadMeta(
     peerAge: profile.age,
     peerPhotoUrl: photoFor(peerId),
     isBlocked: false,
+    endedAt: kind === 'ended' ? '2026-07-18T18:20:00.000Z' : null,
+    endedByViewer: false,
+    blockedByViewer: false,
     isSeed: true,
   };
 }

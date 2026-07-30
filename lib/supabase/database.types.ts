@@ -146,6 +146,8 @@ export type Database = {
         Row: {
           connection_id: string
           created_at: string
+          ended_at: string | null
+          ended_by_user_id: string | null
           id: string
           last_message_at: string | null
           status: Database["public"]["Enums"]["conversation_status"]
@@ -154,6 +156,8 @@ export type Database = {
         Insert: {
           connection_id: string
           created_at?: string
+          ended_at?: string | null
+          ended_by_user_id?: string | null
           id?: string
           last_message_at?: string | null
           status?: Database["public"]["Enums"]["conversation_status"]
@@ -162,6 +166,8 @@ export type Database = {
         Update: {
           connection_id?: string
           created_at?: string
+          ended_at?: string | null
+          ended_by_user_id?: string | null
           id?: string
           last_message_at?: string | null
           status?: Database["public"]["Enums"]["conversation_status"]
@@ -225,41 +231,6 @@ export type Database = {
         }
         Relationships: []
       }
-      messages: {
-        Row: {
-          body: string
-          client_message_id: string | null
-          conversation_id: string
-          created_at: string
-          id: string
-          sender_id: string
-        }
-        Insert: {
-          body: string
-          client_message_id?: string | null
-          conversation_id: string
-          created_at?: string
-          id?: string
-          sender_id: string
-        }
-        Update: {
-          body?: string
-          client_message_id?: string | null
-          conversation_id?: string
-          created_at?: string
-          id?: string
-          sender_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "messages_conversation_id_fkey"
-            columns: ["conversation_id"]
-            isOneToOne: false
-            referencedRelation: "conversations"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       message_attachments: {
         Row: {
           attachment_kind: string
@@ -319,6 +290,41 @@ export type Database = {
             columns: ["message_id"]
             isOneToOne: false
             referencedRelation: "messages"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      messages: {
+        Row: {
+          body: string
+          client_message_id: string | null
+          conversation_id: string
+          created_at: string
+          id: string
+          sender_id: string
+        }
+        Insert: {
+          body: string
+          client_message_id?: string | null
+          conversation_id: string
+          created_at?: string
+          id?: string
+          sender_id: string
+        }
+        Update: {
+          body?: string
+          client_message_id?: string | null
+          conversation_id?: string
+          created_at?: string
+          id?: string
+          sender_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "messages_conversation_id_fkey"
+            columns: ["conversation_id"]
+            isOneToOne: false
+            referencedRelation: "conversations"
             referencedColumns: ["id"]
           },
         ]
@@ -1567,6 +1573,14 @@ export type Database = {
         Returns: Json
       }
       forge_active_questionnaire_version_id: { Args: never; Returns: string }
+      forge_can_access_conversation_attachments: {
+        Args: { p_conversation_id: string; p_user_id: string }
+        Returns: boolean
+      }
+      forge_can_access_conversation_history: {
+        Args: { p_conversation_id: string; p_user_id: string }
+        Returns: boolean
+      }
       forge_create_notification: {
         Args: {
           p_actor_user_id: string
@@ -1704,6 +1718,10 @@ export type Database = {
       forge_users_blocked: {
         Args: { p_user_a: string; p_user_b: string }
         Returns: boolean
+      }
+      get_conversation_attachment_access: {
+        Args: { p_attachment_id: string }
+        Returns: Json
       }
       get_conversation_thread_meta: {
         Args: { p_conversation_id: string }
@@ -2201,3 +2219,4 @@ export const Constants = {
     },
   },
 } as const
+

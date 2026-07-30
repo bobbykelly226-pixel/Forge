@@ -104,6 +104,9 @@ function mapListItem(raw: unknown): ConversationListItem | null {
     latestMessageAt: asString(row.latest_message_at),
     latestMessageSenderId: asString(row.latest_message_sender_id),
     unread: Boolean(row.unread),
+    endedAt: asString(row.ended_at),
+    endedByViewer: Boolean(row.ended_by_viewer),
+    blockedByViewer: Boolean(row.blocked_by_viewer),
   };
 }
 
@@ -220,6 +223,9 @@ export async function getConversationThreadMeta(
       peerAge: typeof row.peer_age === 'number' ? row.peer_age : null,
       peerPhotoUrl: asString(row.peer_photo_url),
       isBlocked: Boolean(row.is_blocked),
+      endedAt: asString(row.ended_at),
+      endedByViewer: Boolean(row.ended_by_viewer),
+      blockedByViewer: Boolean(row.blocked_by_viewer),
     },
   };
 }

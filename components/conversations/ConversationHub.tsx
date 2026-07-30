@@ -70,6 +70,58 @@ function ConversationHubSkeleton() {
   );
 }
 
+function ConversationRows({ items }: { items: ConversationListItem[] }) {
+  return (
+    <ul className="divide-y divide-[#0B2D5C]/08">
+      {items.map((item) => {
+        const preview = item.latestMessageBody?.trim() || 'No messages yet';
+        const timestampSource =
+          item.latestMessageAt ?? item.endedAt ?? item.lastMessageAt ?? item.createdAt;
+
+        return (
+          <li key={item.conversationId}>
+            <Link
+              href={`/connections/c/${item.conversationId}`}
+              className="flex items-center gap-4 px-4 py-4 transition hover:bg-[#0B2D5C]/[0.03] sm:px-5"
+            >
+              <ConversationRowAvatar item={item} />
+              <div className="min-w-0 flex-1">
+                <div className="flex items-baseline justify-between gap-3">
+                  <p
+                    className={`truncate text-base tracking-[-0.01em] text-[#0B2D5C] ${
+                      item.unread ? 'font-semibold' : 'font-medium'
+                    }`}
+                    style={{ fontFamily: 'var(--font-discovery-display), Georgia, serif' }}
+                  >
+                    {item.peerFirstName}
+                  </p>
+                  <time dateTime={timestampSource} className="shrink-0 text-xs text-[#8A93A0]">
+                    {formatConversationTimestamp(timestampSource)}
+                  </time>
+                </div>
+                <p className={`mt-1 truncate text-sm leading-relaxed ${
+                  item.unread ? 'font-medium text-[#3D4654]' : 'text-[#7A8494]'
+                }`}>
+                  {preview}
+                </p>
+                {item.status === 'ended' ? (
+                  <p className="mt-1 text-xs font-medium text-[#8A93A0]">
+                    {item.blockedByViewer
+                      ? 'You blocked this member'
+                      : item.endedByViewer
+                        ? 'You ended this connection'
+                        : 'This connection was ended'}
+                  </p>
+                ) : null}
+              </div>
+            </Link>
+          </li>
+        );
+      })}
+    </ul>
+  );
+}
+
 export default function ConversationHub({
   initialItems,
   loading = false,
@@ -118,53 +170,29 @@ export default function ConversationHub({
     );
   }
 
-  return (
-    <section className="mx-auto w-full max-w-2xl">
-      <ul className="divide-y divide-[#0B2D5C]/08">
-        {initialItems.map((item) => {
-          const preview = item.latestMessageBody?.trim() || 'No messages yet';
-          const timestampSource = item.latestMessageAt ?? item.lastMessageAt ?? item.createdAt;
+  const current = initialItems.filter((item) => item.status === 'active');
+  const past = initialItems.filter((item) => item.status === 'ended');
 
-          return (
-            <li key={item.conversationId}>
-              <Link
-                href={`/connections/c/${item.conversationId}`}
-                className="flex items-center gap-4 px-4 py-4 transition hover:bg-[#0B2D5C]/[0.03] sm:px-5"
-              >
-                <ConversationRowAvatar item={item} />
-                <div className="min-w-0 flex-1">
-                  <div className="flex items-baseline justify-between gap-3">
-                    <p
-                      className={`truncate text-base tracking-[-0.01em] text-[#0B2D5C] ${
-                        item.unread ? 'font-semibold' : 'font-medium'
-                      }`}
-                      style={{ fontFamily: 'var(--font-discovery-display), Georgia, serif' }}
-                    >
-                      {item.peerFirstName}
-                    </p>
-                    <time
-                      dateTime={timestampSource}
-                      className="shrink-0 text-xs text-[#8A93A0]"
-                    >
-                      {formatConversationTimestamp(timestampSource)}
-                    </time>
-                  </div>
-                  <p
-                    className={`mt-1 truncate text-sm leading-relaxed ${
-                      item.unread ? 'font-medium text-[#3D4654]' : 'text-[#7A8494]'
-                    }`}
-                  >
-                    {preview}
-                  </p>
-                  {item.status === 'ended' ? (
-                    <p className="mt-1 text-xs font-medium text-[#8A93A0]">Connection ended</p>
-                  ) : null}
-                </div>
-              </Link>
-            </li>
-          );
-        })}
-      </ul>
+  return (
+    <section className="mx-auto w-full max-w-2xl space-y-8">
+      <div>
+        <h2 className="px-4 pb-2 text-xs font-semibold uppercase tracking-[0.14em] text-[#7A8494] sm:px-5">
+          Current conversations
+        </h2>
+        {current.length ? (
+          <ConversationRows items={current} />
+        ) : (
+          <p className="px-4 py-6 text-sm text-[#7A8494] sm:px-5">No current conversations.</p>
+        )}
+      </div>
+      {past.length ? (
+        <div>
+          <h2 className="px-4 pb-2 text-xs font-semibold uppercase tracking-[0.14em] text-[#7A8494] sm:px-5">
+            Past connections
+          </h2>
+          <ConversationRows items={past} />
+        </div>
+      ) : null}
     </section>
   );
 }

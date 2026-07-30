@@ -375,7 +375,7 @@ export default function ConversationSafetyMenu({
       <SafetyDialog
         open={dialog === 'end'}
         title="End connection?"
-        description={`Ending your connection with ${peerFirstName} closes messaging between you. Your profiles remain visible in Forge, but you will no longer be able to message each other.`}
+        description={`Ending your connection with ${peerFirstName} makes this conversation read-only for both of you. You will both keep the existing messages, photos, and files, but neither person can send anything new.`}
         confirmLabel="End connection"
         confirmTone="danger"
         busy={busy}
@@ -386,7 +386,7 @@ export default function ConversationSafetyMenu({
       <SafetyDialog
         open={dialog === 'block'}
         title={`Block ${peerFirstName}?`}
-        description={`Blocking ends your connection and prevents future contact. ${peerFirstName} will not be able to message you or appear in your Discovery results.`}
+        description={`Blocking ends the connection immediately. ${peerFirstName} will lose access to your profile, this conversation, its photos and files, and related notifications. You will keep the history for reporting or documentation.`}
         confirmLabel="Block"
         confirmTone="danger"
         busy={busy}

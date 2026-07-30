@@ -14,6 +14,9 @@ export type ConversationListItem = {
   latestMessageAt: string | null;
   latestMessageSenderId: string | null;
   unread: boolean;
+  endedAt?: string | null;
+  endedByViewer?: boolean;
+  blockedByViewer?: boolean;
   /** True for client-only seed fixtures */
   isSeed?: boolean;
 };
@@ -63,6 +66,9 @@ export type ConversationThreadMeta = {
   peerAge: number | null;
   peerPhotoUrl: string | null;
   isBlocked: boolean;
+  endedAt: string | null;
+  endedByViewer: boolean;
+  blockedByViewer: boolean;
   isSeed?: boolean;
 };
 

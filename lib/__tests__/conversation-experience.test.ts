@@ -318,7 +318,7 @@ describe('navigation and mutual conversation integration', () => {
     assert.match(hub, /latestMessageBody/);
     assert.match(hub, /formatConversationTimestamp/);
     assert.match(hub, /item\.unread/);
-    assert.match(hub, /Connection ended/);
+    assert.match(hub, /Past connections/);
     assert.match(hub, /\/connections\/c\/\$\{item\.conversationId\}/);
   });
 
@@ -337,4 +337,3 @@ describe('navigation and mutual conversation integration', () => {
     );
   });
 });
-
