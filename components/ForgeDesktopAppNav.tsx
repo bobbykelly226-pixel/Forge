@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { Compass, Link2, MessageCircle, UserRound } from 'lucide-react';
+import { Compass, Link2, MessageCircle, MessageSquarePlus, UserRound } from 'lucide-react';
 
 import { useNotificationsOptional } from '@/components/notifications/NotificationsProvider';
 
@@ -15,10 +15,17 @@ const NAV_ITEMS = [
     icon: MessageCircle,
   },
   { id: 'profile', label: 'Profile', href: '/profile', icon: UserRound },
+  { id: 'feedback', label: 'Beta Feedback', href: '/feedback', icon: MessageSquarePlus },
 ] as const;
 
 type ForgeDesktopAppNavProps = {
-  active: 'discovery' | 'connections' | 'messages' | 'profile' | 'character-signals';
+  active:
+    | 'discovery'
+    | 'connections'
+    | 'messages'
+    | 'profile'
+    | 'character-signals'
+    | 'feedback';
   messagesUnread?: boolean;
 };
 

@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { Bell, MessageCircle, UserRound } from 'lucide-react';
+import { Bell, MessageCircle, MessageSquarePlus, UserRound } from 'lucide-react';
 
 import { useNotificationsOptional } from '@/components/notifications/NotificationsProvider';
 
@@ -65,6 +65,15 @@ export default function DiscoveryDesktopTopBar({
         </span>
         <span className="hidden xl:inline">Notifications</span>
       </button>
+
+      <Link
+        href="/feedback"
+        className="relative inline-flex items-center gap-2 rounded-full border border-[#0B2D5C]/10 bg-white/75 px-3.5 py-2 text-sm font-medium text-[#0B2D5C] transition hover:border-[#0B2D5C]/22 hover:bg-white"
+        aria-label="Send Beta Feedback"
+      >
+        <MessageSquarePlus className="h-[18px] w-[18px]" strokeWidth={1.75} aria-hidden="true" />
+        <span className="hidden xl:inline">Feedback</span>
+      </Link>
 
       <Link
         href="/profile"

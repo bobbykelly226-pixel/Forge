@@ -14,6 +14,54 @@ export type Database = {
   }
   public: {
     Tables: {
+      beta_feedback_submissions: {
+        Row: {
+          area: Database["public"]["Enums"]["beta_feedback_area"]
+          category: Database["public"]["Enums"]["beta_feedback_category"]
+          contact_requested: boolean
+          created_at: string
+          id: string
+          message: string
+          notification_attempted_at: string | null
+          notification_error: string | null
+          notification_status: string
+          provider_message_id: string | null
+          submitter_id: string
+          triage_status: string
+          updated_at: string
+        }
+        Insert: {
+          area: Database["public"]["Enums"]["beta_feedback_area"]
+          category: Database["public"]["Enums"]["beta_feedback_category"]
+          contact_requested?: boolean
+          created_at?: string
+          id: string
+          message: string
+          notification_attempted_at?: string | null
+          notification_error?: string | null
+          notification_status?: string
+          provider_message_id?: string | null
+          submitter_id: string
+          triage_status?: string
+          updated_at?: string
+        }
+        Update: {
+          area?: Database["public"]["Enums"]["beta_feedback_area"]
+          category?: Database["public"]["Enums"]["beta_feedback_category"]
+          contact_requested?: boolean
+          created_at?: string
+          id?: string
+          message?: string
+          notification_attempted_at?: string | null
+          notification_error?: string | null
+          notification_status?: string
+          provider_message_id?: string | null
+          submitter_id?: string
+          triage_status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       character_signals: {
         Row: {
           created_at: string
@@ -2100,6 +2148,14 @@ export type Database = {
     }
     Enums: {
       answer_visibility: "private" | "shared_with_matches" | "public_summary"
+      beta_feedback_area:
+        | "discovery"
+        | "profile"
+        | "compatibility_profile"
+        | "connections_messaging"
+        | "account_access"
+        | "other"
+      beta_feedback_category: "broken" | "confusing" | "support" | "idea"
       character_signal_interaction: "in_app" | "in_person"
       character_signal_status: "pending" | "approved" | "declined"
       connection_source: "mutual_interest" | "open_to_chat"
@@ -2285,6 +2341,15 @@ export const Constants = {
   public: {
     Enums: {
       answer_visibility: ["private", "shared_with_matches", "public_summary"],
+      beta_feedback_area: [
+        "discovery",
+        "profile",
+        "compatibility_profile",
+        "connections_messaging",
+        "account_access",
+        "other",
+      ],
+      beta_feedback_category: ["broken", "confusing", "support", "idea"],
       character_signal_interaction: ["in_app", "in_person"],
       character_signal_status: ["pending", "approved", "declined"],
       connection_source: ["mutual_interest", "open_to_chat"],
