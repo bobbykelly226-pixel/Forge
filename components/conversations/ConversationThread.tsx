@@ -126,10 +126,13 @@ export default function ConversationThread({
   const [keyboardOpen, setKeyboardOpen] = useState(false);
   const [mobileViewportHeight, setMobileViewportHeight] = useState<number | null>(null);
   const [threadStatus, setThreadStatus] = useState(meta.status);
+  const [endedByViewer, setEndedByViewer] = useState(meta.endedByViewer);
+  const [blockedByViewer, setBlockedByViewer] = useState(meta.blockedByViewer);
+  const [isBlocked, setIsBlocked] = useState(meta.isBlocked);
   const [liveMessage, setLiveMessage] = useState('');
 
   const profileHref = `/discovery/profile/${meta.peerUserId}`;
-  const composerDisabled = threadStatus === 'ended' || meta.isBlocked || sending || uploading;
+  const composerDisabled = threadStatus === 'ended' || isBlocked || sending || uploading;
   const youSaid = viewerSaidLabel();
   const theySaid = partnerSaidLabel(meta.peerFirstName);
   const hasTwoWayExchange =
@@ -291,6 +294,29 @@ export default function ConversationThread({
           void refreshMessages();
         }
       )
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'conversations',
+          filter: `id=eq.${meta.conversationId}`,
+        },
+        (payload) => {
+          const next = payload.new as {
+            status?: string;
+            ended_by_user_id?: string | null;
+          };
+          if (next.status === 'ended') {
+            setThreadStatus('ended');
+            setEndedByViewer(next.ended_by_user_id === viewerUserId);
+          } else if (next.status === 'active') {
+            setThreadStatus('active');
+            setEndedByViewer(false);
+            setIsBlocked(false);
+          }
+        }
+      )
       .subscribe();
 
     const interval = window.setInterval(() => {
@@ -313,7 +339,7 @@ export default function ConversationThread({
       window.removeEventListener('focus', handleFocus);
       void supabase.removeChannel(channel);
     };
-  }, [isSeed, meta.conversationId, refreshMessages]);
+  }, [isSeed, meta.conversationId, refreshMessages, viewerUserId]);
 
   const sendMessage = async (
     body: string,
@@ -588,9 +614,26 @@ export default function ConversationThread({
             connectionId={meta.connectionId}
             conversationId={meta.conversationId}
             profileHref={profileHref}
+            blockedByViewer={blockedByViewer}
             isSeed={isSeed}
-            onEnded={() => setThreadStatus('ended')}
-            onBlocked={() => setThreadStatus('ended')}
+            onEnded={() => {
+              setThreadStatus('ended');
+              setEndedByViewer(true);
+            }}
+            onBlocked={() => {
+              setThreadStatus('ended');
+              setEndedByViewer(true);
+              setBlockedByViewer(true);
+              setIsBlocked(true);
+            }}
+            onUnblocked={(messagingReopened) => {
+              setBlockedByViewer(false);
+              setIsBlocked(false);
+              if (messagingReopened) {
+                setThreadStatus('active');
+                setEndedByViewer(false);
+              }
+            }}
           />
         </div>
       </header>
@@ -711,7 +754,11 @@ export default function ConversationThread({
           className="border-b border-[#0B2D5C]/08 bg-[#F8F6F2] px-4 py-3 text-center text-sm text-[#5A6575] sm:px-5"
           role="status"
         >
-          This connection has ended. Messaging is no longer available.
+          {blockedByViewer
+            ? `You blocked ${meta.peerFirstName}. You can keep this history for your records, but messaging is closed.`
+            : endedByViewer
+              ? 'You ended this connection. Your shared history remains available, but messaging is closed.'
+              : 'This connection was ended. Your shared history remains available, but messaging is closed.'}
         </div>
       ) : null}
 

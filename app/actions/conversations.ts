@@ -1,5 +1,7 @@
 'use server';
 
+import { revalidatePath } from 'next/cache';
+
 import {
   blockUser,
   endConnection,
@@ -10,8 +12,10 @@ import {
   markConversationRead,
   reportUser,
   sendConversationMessage,
+  unblockUser,
 } from '@/lib/data/conversations';
 import type { ConversationAttachmentInput, ReportPayload } from '@/lib/conversations/types';
+import { sendSafetyReportNotification } from '@/lib/safety/report-notification';
 
 export async function ensureConversationAction(connectionId: string) {
   return ensureConversationForConnection(connectionId);
@@ -53,6 +57,25 @@ export async function blockUserAction(blockedUserId: string) {
   return blockUser(blockedUserId);
 }
 
+export async function unblockUserAction(blockedUserId: string) {
+  const result = await unblockUser(blockedUserId);
+  if (result.success) {
+    revalidatePath('/connections');
+    revalidatePath('/connections/c/[conversationId]', 'page');
+  }
+  return result;
+}
+
 export async function reportUserAction(payload: ReportPayload) {
-  return reportUser(payload);
+  const result = await reportUser(payload);
+  if (!result.success || !result.data?.reportId) return result;
+
+  if (!result.data.duplicate) {
+    await sendSafetyReportNotification({
+      reportId: result.data.reportId,
+      payload,
+    });
+  }
+
+  return result;
 }

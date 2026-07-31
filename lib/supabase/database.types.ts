@@ -146,6 +146,8 @@ export type Database = {
         Row: {
           connection_id: string
           created_at: string
+          ended_at: string | null
+          ended_by_user_id: string | null
           id: string
           last_message_at: string | null
           status: Database["public"]["Enums"]["conversation_status"]
@@ -154,6 +156,8 @@ export type Database = {
         Insert: {
           connection_id: string
           created_at?: string
+          ended_at?: string | null
+          ended_by_user_id?: string | null
           id?: string
           last_message_at?: string | null
           status?: Database["public"]["Enums"]["conversation_status"]
@@ -162,6 +166,8 @@ export type Database = {
         Update: {
           connection_id?: string
           created_at?: string
+          ended_at?: string | null
+          ended_by_user_id?: string | null
           id?: string
           last_message_at?: string | null
           status?: Database["public"]["Enums"]["conversation_status"]
@@ -225,41 +231,6 @@ export type Database = {
         }
         Relationships: []
       }
-      messages: {
-        Row: {
-          body: string
-          client_message_id: string | null
-          conversation_id: string
-          created_at: string
-          id: string
-          sender_id: string
-        }
-        Insert: {
-          body: string
-          client_message_id?: string | null
-          conversation_id: string
-          created_at?: string
-          id?: string
-          sender_id: string
-        }
-        Update: {
-          body?: string
-          client_message_id?: string | null
-          conversation_id?: string
-          created_at?: string
-          id?: string
-          sender_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "messages_conversation_id_fkey"
-            columns: ["conversation_id"]
-            isOneToOne: false
-            referencedRelation: "conversations"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       message_attachments: {
         Row: {
           attachment_kind: string
@@ -319,6 +290,41 @@ export type Database = {
             columns: ["message_id"]
             isOneToOne: false
             referencedRelation: "messages"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      messages: {
+        Row: {
+          body: string
+          client_message_id: string | null
+          conversation_id: string
+          created_at: string
+          id: string
+          sender_id: string
+        }
+        Insert: {
+          body: string
+          client_message_id?: string | null
+          conversation_id: string
+          created_at?: string
+          id?: string
+          sender_id: string
+        }
+        Update: {
+          body?: string
+          client_message_id?: string | null
+          conversation_id?: string
+          created_at?: string
+          id?: string
+          sender_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "messages_conversation_id_fkey"
+            columns: ["conversation_id"]
+            isOneToOne: false
+            referencedRelation: "conversations"
             referencedColumns: ["id"]
           },
         ]
@@ -1343,6 +1349,138 @@ export type Database = {
           },
         ]
       }
+      report_evidence: {
+        Row: {
+          created_at: string
+          file_name: string
+          file_size: number
+          id: string
+          mime_type: string
+          report_id: string
+          reporter_id: string
+          storage_path: string
+        }
+        Insert: {
+          created_at?: string
+          file_name: string
+          file_size: number
+          id?: string
+          mime_type: string
+          report_id: string
+          reporter_id: string
+          storage_path: string
+        }
+        Update: {
+          created_at?: string
+          file_name?: string
+          file_size?: number
+          id?: string
+          mime_type?: string
+          report_id?: string
+          reporter_id?: string
+          storage_path?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "report_evidence_report_id_fkey"
+            columns: ["report_id"]
+            isOneToOne: false
+            referencedRelation: "user_reports"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      safety_action_audit: {
+        Row: {
+          action: string
+          actor_user_id: string | null
+          connection_was_active: boolean
+          conversation_id: string | null
+          created_at: string
+          id: string
+          messaging_reopened: boolean
+          target_user_id: string | null
+        }
+        Insert: {
+          action: string
+          actor_user_id?: string | null
+          connection_was_active?: boolean
+          conversation_id?: string | null
+          created_at?: string
+          id?: string
+          messaging_reopened?: boolean
+          target_user_id?: string | null
+        }
+        Update: {
+          action?: string
+          actor_user_id?: string | null
+          connection_was_active?: boolean
+          conversation_id?: string | null
+          created_at?: string
+          id?: string
+          messaging_reopened?: boolean
+          target_user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "safety_action_audit_conversation_id_fkey"
+            columns: ["conversation_id"]
+            isOneToOne: false
+            referencedRelation: "conversations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      safety_report_notifications: {
+        Row: {
+          accepted_at: string | null
+          attempt_count: number
+          attempted_at: string | null
+          created_at: string
+          failed_at: string | null
+          last_error: string | null
+          provider: string
+          provider_message_id: string | null
+          report_id: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          accepted_at?: string | null
+          attempt_count?: number
+          attempted_at?: string | null
+          created_at?: string
+          failed_at?: string | null
+          last_error?: string | null
+          provider?: string
+          provider_message_id?: string | null
+          report_id: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          accepted_at?: string | null
+          attempt_count?: number
+          attempted_at?: string | null
+          created_at?: string
+          failed_at?: string | null
+          last_error?: string | null
+          provider?: string
+          provider_message_id?: string | null
+          report_id?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "safety_report_notifications_report_id_fkey"
+            columns: ["report_id"]
+            isOneToOne: true
+            referencedRelation: "user_reports"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_reports: {
         Row: {
           conversation_id: string | null
@@ -1567,6 +1705,14 @@ export type Database = {
         Returns: Json
       }
       forge_active_questionnaire_version_id: { Args: never; Returns: string }
+      forge_can_access_conversation_attachments: {
+        Args: { p_conversation_id: string; p_user_id: string }
+        Returns: boolean
+      }
+      forge_can_access_conversation_history: {
+        Args: { p_conversation_id: string; p_user_id: string }
+        Returns: boolean
+      }
       forge_create_notification: {
         Args: {
           p_actor_user_id: string
@@ -1704,6 +1850,10 @@ export type Database = {
       forge_users_blocked: {
         Args: { p_user_a: string; p_user_b: string }
         Returns: boolean
+      }
+      get_conversation_attachment_access: {
+        Args: { p_attachment_id: string }
+        Returns: Json
       }
       get_conversation_thread_meta: {
         Args: { p_conversation_id: string }
@@ -1881,6 +2031,7 @@ export type Database = {
         Args: {
           p_conversation_id?: string
           p_details?: string
+          p_evidence?: Json
           p_reason: Database["public"]["Enums"]["report_reason"]
           p_reported_user_id: string
         }
@@ -1888,6 +2039,10 @@ export type Database = {
       }
       respond_open_to_chat: {
         Args: { p_action: string; p_request_id: string }
+        Returns: Json
+      }
+      unblock_user: {
+        Args: { p_blocked_user_id: string }
         Returns: Json
       }
       save_my_questionnaire_progress_position: {

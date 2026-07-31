@@ -9,15 +9,29 @@ import {
   useState,
   type KeyboardEvent as ReactKeyboardEvent,
 } from 'react';
-import { ChevronDown, MoreVertical } from 'lucide-react';
+import { createPortal } from 'react-dom';
+import { ChevronDown, ImagePlus, MoreVertical, X } from 'lucide-react';
 
 import {
   blockUserAction,
   endConnectionAction,
   reportUserAction,
+  unblockUserAction,
 } from '@/app/actions/conversations';
-import { REPORT_REASON_OPTIONS } from '@/lib/conversations/constants';
+import {
+  REPORT_EVIDENCE_BUCKET,
+  REPORT_EVIDENCE_MAX_FILES,
+  REPORT_REASON_OPTIONS,
+} from '@/lib/conversations/constants';
 import type { ReportReasonValue } from '@/lib/conversations/constants';
+import type { ReportEvidenceInput } from '@/lib/conversations/types';
+import {
+  createReportEvidencePath,
+  getReportEvidenceMimeType,
+  sanitizeReportEvidenceName,
+  validateReportEvidenceFiles,
+} from '@/lib/safety/report-evidence';
+import { createClient } from '@/lib/supabase/client';
 
 type ConversationSafetyMenuProps = {
   peerUserId: string;
@@ -25,12 +39,14 @@ type ConversationSafetyMenuProps = {
   connectionId: string;
   conversationId: string;
   profileHref: string;
+  blockedByViewer?: boolean;
   isSeed?: boolean;
   onEnded?: () => void;
   onBlocked?: () => void;
+  onUnblocked?: (messagingReopened: boolean) => void;
 };
 
-type DialogKind = 'end' | 'block' | 'report' | null;
+type DialogKind = 'end' | 'block' | 'unblock' | 'report' | null;
 
 function getFocusableElements(container: HTMLElement): HTMLElement[] {
   const nodes = container.querySelectorAll<HTMLElement>(
@@ -48,8 +64,11 @@ function SafetyDialog({
   confirmLabel,
   confirmTone = 'primary',
   busy,
+  busyLabel,
+  errorMessage,
   onClose,
   onConfirm,
+  focusConfirm = true,
   children,
 }: {
   open: boolean;
@@ -58,8 +77,11 @@ function SafetyDialog({
   confirmLabel: string;
   confirmTone?: 'primary' | 'danger';
   busy?: boolean;
+  busyLabel?: string;
+  errorMessage?: string | null;
   onClose: () => void;
   onConfirm: () => void;
+  focusConfirm?: boolean;
   children?: React.ReactNode;
 }) {
   const titleId = useId();
@@ -106,7 +128,13 @@ function SafetyDialog({
     const previousOverflow = document.body.style.overflow;
     document.body.style.overflow = 'hidden';
 
-    const focusTimer = window.setTimeout(() => primaryRef.current?.focus(), 30);
+    const focusTimer = window.setTimeout(() => {
+      if (focusConfirm) {
+        primaryRef.current?.focus();
+      } else {
+        panelRef.current?.querySelector<HTMLTextAreaElement>('textarea')?.focus();
+      }
+    }, 30);
 
     const onDocumentKeyDown = (event: KeyboardEvent) => {
       if (event.key === 'Escape') onClose();
@@ -118,7 +146,7 @@ function SafetyDialog({
       window.clearTimeout(focusTimer);
       document.removeEventListener('keydown', onDocumentKeyDown);
     };
-  }, [open, onClose]);
+  }, [focusConfirm, open, onClose]);
 
   if (!open) return null;
 
@@ -127,9 +155,9 @@ function SafetyDialog({
       ? 'bg-[#D62828] hover:bg-[#B82222]'
       : 'bg-[#0B2D5C] hover:bg-[#0A2540]';
 
-  return (
+  return createPortal(
     <div
-      className="fixed inset-0 z-[90] flex items-end justify-center sm:items-center sm:p-6"
+      className="fixed inset-0 z-[90] flex items-center justify-center overflow-y-auto overscroll-contain p-3 sm:p-6"
       role="presentation"
     >
       <div
@@ -145,9 +173,9 @@ function SafetyDialog({
         aria-describedby={descriptionId}
         tabIndex={-1}
         onKeyDown={handleKeyDown}
-        className="relative z-[91] w-full max-w-md overflow-hidden rounded-t-[1.75rem] bg-[#F8F6F2] shadow-[0_-18px_60px_rgba(11,45,92,0.22)] outline-none sm:rounded-[1.75rem]"
+        className="relative z-[91] my-auto w-full max-w-md overflow-hidden rounded-[1.75rem] bg-[#F8F6F2] shadow-[0_18px_60px_rgba(11,45,92,0.22)] outline-none"
       >
-        <div className="max-h-[88vh] overflow-y-auto px-5 py-6 sm:px-7 sm:py-7">
+        <div className="max-h-[calc(100dvh-1.5rem)] overflow-y-auto overscroll-contain px-5 py-6 sm:max-h-[calc(100dvh-3rem)] sm:px-7 sm:py-7">
           <h2
             id={titleId}
             className="text-[1.35rem] leading-tight tracking-[-0.02em] text-[#0B2D5C]"
@@ -159,15 +187,24 @@ function SafetyDialog({
             {description}
           </p>
           {children}
+          {errorMessage ? (
+            <p
+              className="mt-4 rounded-2xl border border-[#D62828]/20 bg-[#D62828]/[0.06] px-4 py-3 text-sm leading-relaxed text-[#A51F1F]"
+              role="alert"
+            >
+              {errorMessage}
+            </p>
+          ) : null}
           <div className="mt-6 flex flex-col gap-3">
             <button
               ref={primaryRef}
               type="button"
               disabled={busy}
+              aria-busy={busy}
               onClick={onConfirm}
               className={`inline-flex w-full items-center justify-center rounded-2xl px-6 py-3.5 text-base font-semibold text-white transition disabled:opacity-60 ${confirmClasses}`}
             >
-              {confirmLabel}
+              {busy ? (busyLabel ?? 'Please wait…') : confirmLabel}
             </button>
             <button
               type="button"
@@ -180,7 +217,8 @@ function SafetyDialog({
           </div>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }
 
@@ -190,9 +228,11 @@ export default function ConversationSafetyMenu({
   connectionId,
   conversationId,
   profileHref,
+  blockedByViewer = false,
   isSeed = false,
   onEnded,
   onBlocked,
+  onUnblocked,
 }: ConversationSafetyMenuProps) {
   const menuId = useId();
   const [menuOpen, setMenuOpen] = useState(false);
@@ -201,6 +241,8 @@ export default function ConversationSafetyMenu({
   const [feedback, setFeedback] = useState<string | null>(null);
   const [reportReason, setReportReason] = useState<ReportReasonValue>('unwanted_behavior');
   const [reportDetails, setReportDetails] = useState('');
+  const [reportEvidence, setReportEvidence] = useState<File[]>([]);
+  const [reportError, setReportError] = useState<string | null>(null);
   const menuRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -221,6 +263,8 @@ export default function ConversationSafetyMenu({
     setDialog(null);
     setReportDetails('');
     setReportReason('unwanted_behavior');
+    setReportEvidence([]);
+    setReportError(null);
   };
 
   const showFeedback = (message: string) => {
@@ -272,29 +316,143 @@ export default function ConversationSafetyMenu({
     }
   };
 
+  const handleUnblock = async () => {
+    setBusy(true);
+    try {
+      if (isSeed) {
+        showFeedback(`${peerFirstName} has been unblocked. Messaging is available again.`);
+        onUnblocked?.(true);
+        setDialog(null);
+        return;
+      }
+      const result = await unblockUserAction(peerUserId);
+      if (!result.success) {
+        showFeedback(result.message ?? 'Could not unblock this person.');
+        return;
+      }
+      const messagingReopened = Boolean(result.data?.messagingReopened);
+      showFeedback(
+        messagingReopened
+          ? `${peerFirstName} has been unblocked. Messaging is available again.`
+          : `${peerFirstName} has been unblocked. This conversation remains closed.`
+      );
+      onUnblocked?.(messagingReopened);
+      setDialog(null);
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const removeUploadedEvidence = async (paths: string[]) => {
+    if (!paths.length) return;
+    const supabase = createClient();
+    await supabase.storage.from(REPORT_EVIDENCE_BUCKET).remove(paths);
+  };
+
   const handleReport = async () => {
     setBusy(true);
+    setReportError(null);
+    const uploadedPaths: string[] = [];
     try {
       if (isSeed) {
         showFeedback('Report submitted. Thank you for helping keep Forge safe.');
         setDialog(null);
         return;
       }
+
+      const validationMessage = validateReportEvidenceFiles(reportEvidence);
+      if (validationMessage) {
+        setReportError(validationMessage);
+        return;
+      }
+
+      const supabase = createClient();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      if (!user) {
+        setReportError('You must be signed in to submit a report.');
+        return;
+      }
+
+      const submissionId = crypto.randomUUID();
+      const evidence: ReportEvidenceInput[] = [];
+      for (const file of reportEvidence) {
+        const mimeType = getReportEvidenceMimeType(file);
+        if (!mimeType) {
+          setReportError('Choose a JPG, PNG, WebP, HEIC, or HEIF image.');
+          await removeUploadedEvidence(uploadedPaths);
+          return;
+        }
+        const storagePath = createReportEvidencePath(
+          user.id,
+          submissionId,
+          crypto.randomUUID(),
+          file.name
+        );
+        const { error } = await supabase.storage
+          .from(REPORT_EVIDENCE_BUCKET)
+          .upload(storagePath, file, {
+            cacheControl: '0',
+            contentType: mimeType,
+            upsert: false,
+          });
+        if (error) {
+          console.error('Report evidence upload failed.', error);
+          await removeUploadedEvidence(uploadedPaths);
+          setReportError('A screenshot could not be uploaded. Please try again.');
+          return;
+        }
+        uploadedPaths.push(storagePath);
+        evidence.push({
+          storage_path: storagePath,
+          file_name: sanitizeReportEvidenceName(file.name),
+          mime_type: mimeType,
+          file_size: file.size,
+        });
+      }
+
       const result = await reportUserAction({
         reportedUserId: peerUserId,
         reason: reportReason,
         details: reportDetails.trim() || undefined,
         conversationId,
+        evidence,
       });
       if (!result.success) {
-        showFeedback(result.message ?? 'Could not submit your report.');
+        await removeUploadedEvidence(uploadedPaths);
+        setReportError(result.message ?? 'Could not submit your report.');
+        return;
+      }
+      if (result.data?.duplicate) {
+        await removeUploadedEvidence(uploadedPaths);
+        showFeedback('You already submitted this report. The original remains on file.');
+        setDialog(null);
         return;
       }
       showFeedback('Report submitted. Thank you for helping keep Forge safe.');
+      setReportEvidence([]);
       setDialog(null);
+    } catch {
+      await removeUploadedEvidence(uploadedPaths);
+      setReportError('Could not submit your report. Please try again.');
     } finally {
       setBusy(false);
     }
+  };
+
+  const handleEvidenceSelection = (files: File[]) => {
+    const next = [...reportEvidence, ...files].slice(0, REPORT_EVIDENCE_MAX_FILES);
+    const validationMessage = validateReportEvidenceFiles(next);
+    if (validationMessage) {
+      setReportError(validationMessage);
+      return;
+    }
+    if (reportEvidence.length + files.length > REPORT_EVIDENCE_MAX_FILES) {
+      showFeedback(`You can attach up to ${REPORT_EVIDENCE_MAX_FILES} screenshots.`);
+    }
+    setReportEvidence(next);
+    setReportError(null);
   };
 
   return (
@@ -318,36 +476,52 @@ export default function ConversationSafetyMenu({
             role="menu"
             className="absolute right-0 top-full z-20 mt-2 w-56 overflow-hidden rounded-2xl border border-[#0B2D5C]/10 bg-white py-1 shadow-[0_12px_40px_rgba(11,45,92,0.12)]"
           >
-            <Link
-              href={profileHref}
-              role="menuitem"
-              className="block px-4 py-3 text-sm font-medium text-[#0B2D5C] transition hover:bg-[#F8F6F2]"
-              onClick={() => setMenuOpen(false)}
-            >
-              View profile
-            </Link>
-            <button
-              type="button"
-              role="menuitem"
-              className="block w-full px-4 py-3 text-left text-sm font-medium text-[#0B2D5C] transition hover:bg-[#F8F6F2]"
-              onClick={() => {
-                setMenuOpen(false);
-                setDialog('end');
-              }}
-            >
-              End connection
-            </button>
-            <button
-              type="button"
-              role="menuitem"
-              className="block w-full px-4 py-3 text-left text-sm font-medium text-[#0B2D5C] transition hover:bg-[#F8F6F2]"
-              onClick={() => {
-                setMenuOpen(false);
-                setDialog('block');
-              }}
-            >
-              Block
-            </button>
+            {!blockedByViewer ? (
+              <>
+                <Link
+                  href={profileHref}
+                  role="menuitem"
+                  className="block px-4 py-3 text-sm font-medium text-[#0B2D5C] transition hover:bg-[#F8F6F2]"
+                  onClick={() => setMenuOpen(false)}
+                >
+                  View profile
+                </Link>
+                <button
+                  type="button"
+                  role="menuitem"
+                  className="block w-full px-4 py-3 text-left text-sm font-medium text-[#0B2D5C] transition hover:bg-[#F8F6F2]"
+                  onClick={() => {
+                    setMenuOpen(false);
+                    setDialog('end');
+                  }}
+                >
+                  End connection
+                </button>
+                <button
+                  type="button"
+                  role="menuitem"
+                  className="block w-full px-4 py-3 text-left text-sm font-medium text-[#0B2D5C] transition hover:bg-[#F8F6F2]"
+                  onClick={() => {
+                    setMenuOpen(false);
+                    setDialog('block');
+                  }}
+                >
+                  Block
+                </button>
+              </>
+            ) : (
+              <button
+                type="button"
+                role="menuitem"
+                className="block w-full px-4 py-3 text-left text-sm font-medium text-[#0B2D5C] transition hover:bg-[#F8F6F2]"
+                onClick={() => {
+                  setMenuOpen(false);
+                  setDialog('unblock');
+                }}
+              >
+                Unblock
+              </button>
+            )}
             <button
               type="button"
               role="menuitem"
@@ -375,7 +549,7 @@ export default function ConversationSafetyMenu({
       <SafetyDialog
         open={dialog === 'end'}
         title="End connection?"
-        description={`Ending your connection with ${peerFirstName} closes messaging between you. Your profiles remain visible in Forge, but you will no longer be able to message each other.`}
+        description={`Ending your connection with ${peerFirstName} makes this conversation read-only for both of you. You will both keep the existing messages, photos, and files, but neither person can send anything new.`}
         confirmLabel="End connection"
         confirmTone="danger"
         busy={busy}
@@ -386,7 +560,7 @@ export default function ConversationSafetyMenu({
       <SafetyDialog
         open={dialog === 'block'}
         title={`Block ${peerFirstName}?`}
-        description={`Blocking ends your connection and prevents future contact. ${peerFirstName} will not be able to message you or appear in your Discovery results.`}
+        description={`Blocking ends the connection immediately. ${peerFirstName} will lose access to your profile, this conversation, its photos and files, and related notifications. You will keep the history for reporting or documentation.`}
         confirmLabel="Block"
         confirmTone="danger"
         busy={busy}
@@ -395,14 +569,27 @@ export default function ConversationSafetyMenu({
       />
 
       <SafetyDialog
+        open={dialog === 'unblock'}
+        title={`Unblock ${peerFirstName}?`}
+        description={`Unblocking restores this conversation and reopens messaging when this block ended an active connection. If another block is still in place, the conversation remains closed.`}
+        confirmLabel="Unblock"
+        busy={busy}
+        onClose={closeDialog}
+        onConfirm={handleUnblock}
+      />
+
+      <SafetyDialog
         open={dialog === 'report'}
         title={`Report ${peerFirstName}`}
         description="Reports are reviewed by Forge. Reporting does not automatically block this person — you can block separately if you need to."
         confirmLabel="Submit report"
+        busyLabel="Submitting report…"
         confirmTone="danger"
         busy={busy}
+        errorMessage={reportError}
         onClose={closeDialog}
         onConfirm={handleReport}
+        focusConfirm={false}
       >
         <div className="mt-5 space-y-4">
           <label className="block">
@@ -431,6 +618,7 @@ export default function ConversationSafetyMenu({
               Additional details <span className="font-normal text-[#8A93A0]">(optional)</span>
             </span>
             <textarea
+              autoFocus
               value={reportDetails}
               onChange={(event) => setReportDetails(event.target.value)}
               rows={3}
@@ -438,6 +626,59 @@ export default function ConversationSafetyMenu({
               placeholder="Share any context that may help our review."
             />
           </label>
+          <div>
+            <div className="flex items-center justify-between gap-3">
+              <span className="text-sm font-semibold text-[#0B2D5C]">
+                Screenshots <span className="font-normal text-[#8A93A0]">(optional)</span>
+              </span>
+              <span className="text-xs text-[#8A93A0]">
+                {reportEvidence.length}/{REPORT_EVIDENCE_MAX_FILES}
+              </span>
+            </div>
+            <label className="mt-2 inline-flex w-full cursor-pointer items-center justify-center gap-2 rounded-2xl border border-dashed border-[#0B2D5C]/25 bg-white px-4 py-3 text-sm font-semibold text-[#0B2D5C] transition hover:border-[#0B2D5C]/40 hover:bg-[#F8F6F2]">
+              <ImagePlus className="h-4 w-4" strokeWidth={1.75} aria-hidden="true" />
+              Add screenshots
+              <input
+                type="file"
+                multiple
+                accept=".jpg,.jpeg,.png,.webp,.heic,.heif,image/jpeg,image/png,image/webp,image/heic,image/heif"
+                className="sr-only"
+                disabled={busy || reportEvidence.length >= REPORT_EVIDENCE_MAX_FILES}
+                onChange={(event) => {
+                  handleEvidenceSelection(Array.from(event.target.files ?? []));
+                  event.target.value = '';
+                }}
+              />
+            </label>
+            {reportEvidence.length ? (
+              <ul className="mt-3 space-y-2">
+                {reportEvidence.map((file, index) => (
+                  <li
+                    key={`${file.name}-${file.size}-${index}`}
+                    className="flex items-center justify-between gap-3 rounded-xl border border-[#0B2D5C]/10 bg-white px-3 py-2"
+                  >
+                    <span className="min-w-0 truncate text-xs text-[#5A6575]">{file.name}</span>
+                    <button
+                      type="button"
+                      className="shrink-0 rounded-full p-1 text-[#7A8494] transition hover:bg-[#F8F6F2] hover:text-[#D62828]"
+                      aria-label={`Remove ${file.name}`}
+                      onClick={() =>
+                        setReportEvidence((current) =>
+                          current.filter((_, currentIndex) => currentIndex !== index)
+                        )
+                      }
+                    >
+                      <X className="h-4 w-4" strokeWidth={1.75} aria-hidden="true" />
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            ) : null}
+            <p className="mt-2 text-xs leading-relaxed text-[#7A8494]">
+              Up to three images, 5 MB each. Evidence is private and available only to Forge
+              safety reviewers.
+            </p>
+          </div>
         </div>
       </SafetyDialog>
     </>
