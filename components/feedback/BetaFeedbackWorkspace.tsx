@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import Image from 'next/image';
-import { useActionState } from 'react';
+import { useActionState, useEffect, useRef } from 'react';
 import {
   ArrowLeft,
   Bug,
@@ -20,6 +20,7 @@ import ForgeAppBottomNav from '@/components/ForgeAppBottomNav';
 import ForgeAuthenticatedTwoColumnShell from '@/components/ForgeAuthenticatedTwoColumnShell';
 import ForgeDesktopAppNav from '@/components/ForgeDesktopAppNav';
 import { INITIAL_BETA_FEEDBACK_STATE } from '@/lib/feedback/action-state';
+import { trackLaunchEvent } from '@/lib/analytics/launch-events';
 import {
   BETA_FEEDBACK_AREAS,
   BETA_FEEDBACK_CATEGORIES,
@@ -38,6 +39,15 @@ export default function BetaFeedbackWorkspace() {
     submitBetaFeedbackAction,
     INITIAL_BETA_FEEDBACK_STATE
   );
+  const trackedReference = useRef<string | null>(null);
+
+  useEffect(() => {
+    if (!state.success || !state.reference || trackedReference.current === state.reference) {
+      return;
+    }
+    trackedReference.current = state.reference;
+    trackLaunchEvent('Beta Feedback Submitted');
+  }, [state.reference, state.success]);
 
   return (
     <>

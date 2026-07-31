@@ -14,7 +14,7 @@ export default function Privacy() {
         </h1>
 
         <p className="text-sm text-[#666666] mb-8">
-          Last updated: July 2026
+          Last updated: July 31, 2026
         </p>
 
         <div className="prose prose-lg max-w-none text-[#444444] leading-8">
@@ -162,6 +162,10 @@ export default function Privacy() {
 
           <p className="mb-8">
             These tools may collect general technical information such as browser type, device type, pages visited, referral source, and general usage patterns.
+          </p>
+
+          <p className="mb-8">
+            Forge uses Vercel Web Analytics and Speed Insights to measure aggregate product usage and performance. Before analytics events are sent, Forge removes query strings, URL fragments, profile identifiers, conversation identifiers, and authentication tokens. Forge does not send names, email addresses, profile answers, exact locations, profile text, message content, feedback text, report details, photos, or file names to these analytics tools. Preview and testing traffic is excluded from launch analytics.
           </p>
 
           <h2 className="text-3xl font-semibold text-[#0B2D5C] mt-8 mb-3">

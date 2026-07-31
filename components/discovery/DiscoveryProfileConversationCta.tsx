@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 
 import { ensureConversationAction } from '@/app/actions/conversations';
+import { trackLaunchEvent } from '@/lib/analytics/launch-events';
 import {
   logStartMutualConversationTrace,
   planStartMutualConversation,
@@ -111,6 +112,9 @@ export default function DiscoveryProfileConversationCta({
       return;
     }
 
+    if (result.data.created) {
+      trackLaunchEvent('Conversation Started');
+    }
     logStartMutualConversationTrace({
       componentName: 'DiscoveryProfileConversationCta',
       connection_id: plan.connectionId,
