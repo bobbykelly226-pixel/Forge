@@ -15,7 +15,7 @@ const NAV_ITEMS = [
 export type ForgeAppNavId = (typeof NAV_ITEMS)[number]['id'];
 
 type ForgeAppBottomNavProps = {
-  active?: ForgeAppNavId;
+  active?: ForgeAppNavId | null;
   /** Optional override when provider is unavailable. */
   messagesUnread?: boolean;
 };
@@ -35,7 +35,7 @@ export default function ForgeAppBottomNav({
     >
       <div className="mx-auto flex max-w-lg items-stretch justify-between px-2 pt-1.5">
         {NAV_ITEMS.map((item) => {
-          const isActive = item.id === active;
+          const isActive = active !== null && item.id === active;
           const Icon = item.icon;
           const showUnread = item.id === 'messages' && messagesUnread;
           const className = `flex min-w-0 flex-1 flex-col items-center gap-1 rounded-2xl px-2 py-2.5 text-[11px] font-semibold tracking-wide transition ${
