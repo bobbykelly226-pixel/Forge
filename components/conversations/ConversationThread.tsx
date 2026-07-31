@@ -128,10 +128,11 @@ export default function ConversationThread({
   const [threadStatus, setThreadStatus] = useState(meta.status);
   const [endedByViewer, setEndedByViewer] = useState(meta.endedByViewer);
   const [blockedByViewer, setBlockedByViewer] = useState(meta.blockedByViewer);
+  const [isBlocked, setIsBlocked] = useState(meta.isBlocked);
   const [liveMessage, setLiveMessage] = useState('');
 
   const profileHref = `/discovery/profile/${meta.peerUserId}`;
-  const composerDisabled = threadStatus === 'ended' || meta.isBlocked || sending || uploading;
+  const composerDisabled = threadStatus === 'ended' || isBlocked || sending || uploading;
   const youSaid = viewerSaidLabel();
   const theySaid = partnerSaidLabel(meta.peerFirstName);
   const hasTwoWayExchange =
@@ -309,6 +310,10 @@ export default function ConversationThread({
           if (next.status === 'ended') {
             setThreadStatus('ended');
             setEndedByViewer(next.ended_by_user_id === viewerUserId);
+          } else if (next.status === 'active') {
+            setThreadStatus('active');
+            setEndedByViewer(false);
+            setIsBlocked(false);
           }
         }
       )
@@ -619,9 +624,15 @@ export default function ConversationThread({
               setThreadStatus('ended');
               setEndedByViewer(true);
               setBlockedByViewer(true);
+              setIsBlocked(true);
             }}
-            onUnblocked={() => {
+            onUnblocked={(messagingReopened) => {
               setBlockedByViewer(false);
+              setIsBlocked(false);
+              if (messagingReopened) {
+                setThreadStatus('active');
+                setEndedByViewer(false);
+              }
             }}
           />
         </div>

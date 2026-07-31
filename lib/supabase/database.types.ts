@@ -1394,25 +1394,31 @@ export type Database = {
         Row: {
           action: string
           actor_user_id: string | null
+          connection_was_active: boolean
           conversation_id: string | null
           created_at: string
           id: string
+          messaging_reopened: boolean
           target_user_id: string | null
         }
         Insert: {
           action: string
           actor_user_id?: string | null
+          connection_was_active?: boolean
           conversation_id?: string | null
           created_at?: string
           id?: string
+          messaging_reopened?: boolean
           target_user_id?: string | null
         }
         Update: {
           action?: string
           actor_user_id?: string | null
+          connection_was_active?: boolean
           conversation_id?: string | null
           created_at?: string
           id?: string
+          messaging_reopened?: boolean
           target_user_id?: string | null
         }
         Relationships: [

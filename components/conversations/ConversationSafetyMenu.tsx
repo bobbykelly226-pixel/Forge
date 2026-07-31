@@ -43,7 +43,7 @@ type ConversationSafetyMenuProps = {
   isSeed?: boolean;
   onEnded?: () => void;
   onBlocked?: () => void;
-  onUnblocked?: () => void;
+  onUnblocked?: (messagingReopened: boolean) => void;
 };
 
 type DialogKind = 'end' | 'block' | 'unblock' | 'report' | null;
@@ -64,6 +64,8 @@ function SafetyDialog({
   confirmLabel,
   confirmTone = 'primary',
   busy,
+  busyLabel,
+  errorMessage,
   onClose,
   onConfirm,
   focusConfirm = true,
@@ -75,6 +77,8 @@ function SafetyDialog({
   confirmLabel: string;
   confirmTone?: 'primary' | 'danger';
   busy?: boolean;
+  busyLabel?: string;
+  errorMessage?: string | null;
   onClose: () => void;
   onConfirm: () => void;
   focusConfirm?: boolean;
@@ -183,15 +187,24 @@ function SafetyDialog({
             {description}
           </p>
           {children}
+          {errorMessage ? (
+            <p
+              className="mt-4 rounded-2xl border border-[#D62828]/20 bg-[#D62828]/[0.06] px-4 py-3 text-sm leading-relaxed text-[#A51F1F]"
+              role="alert"
+            >
+              {errorMessage}
+            </p>
+          ) : null}
           <div className="mt-6 flex flex-col gap-3">
             <button
               ref={primaryRef}
               type="button"
               disabled={busy}
+              aria-busy={busy}
               onClick={onConfirm}
               className={`inline-flex w-full items-center justify-center rounded-2xl px-6 py-3.5 text-base font-semibold text-white transition disabled:opacity-60 ${confirmClasses}`}
             >
-              {confirmLabel}
+              {busy ? (busyLabel ?? 'Please wait…') : confirmLabel}
             </button>
             <button
               type="button"
@@ -229,6 +242,7 @@ export default function ConversationSafetyMenu({
   const [reportReason, setReportReason] = useState<ReportReasonValue>('unwanted_behavior');
   const [reportDetails, setReportDetails] = useState('');
   const [reportEvidence, setReportEvidence] = useState<File[]>([]);
+  const [reportError, setReportError] = useState<string | null>(null);
   const menuRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -250,6 +264,7 @@ export default function ConversationSafetyMenu({
     setReportDetails('');
     setReportReason('unwanted_behavior');
     setReportEvidence([]);
+    setReportError(null);
   };
 
   const showFeedback = (message: string) => {
@@ -305,8 +320,8 @@ export default function ConversationSafetyMenu({
     setBusy(true);
     try {
       if (isSeed) {
-        showFeedback(`${peerFirstName} has been unblocked. Messaging remains closed.`);
-        onUnblocked?.();
+        showFeedback(`${peerFirstName} has been unblocked. Messaging is available again.`);
+        onUnblocked?.(true);
         setDialog(null);
         return;
       }
@@ -315,8 +330,13 @@ export default function ConversationSafetyMenu({
         showFeedback(result.message ?? 'Could not unblock this person.');
         return;
       }
-      showFeedback(`${peerFirstName} has been unblocked. Messaging remains closed.`);
-      onUnblocked?.();
+      const messagingReopened = Boolean(result.data?.messagingReopened);
+      showFeedback(
+        messagingReopened
+          ? `${peerFirstName} has been unblocked. Messaging is available again.`
+          : `${peerFirstName} has been unblocked. This conversation remains closed.`
+      );
+      onUnblocked?.(messagingReopened);
       setDialog(null);
     } finally {
       setBusy(false);
@@ -331,6 +351,7 @@ export default function ConversationSafetyMenu({
 
   const handleReport = async () => {
     setBusy(true);
+    setReportError(null);
     const uploadedPaths: string[] = [];
     try {
       if (isSeed) {
@@ -341,7 +362,7 @@ export default function ConversationSafetyMenu({
 
       const validationMessage = validateReportEvidenceFiles(reportEvidence);
       if (validationMessage) {
-        showFeedback(validationMessage);
+        setReportError(validationMessage);
         return;
       }
 
@@ -350,7 +371,7 @@ export default function ConversationSafetyMenu({
         data: { user },
       } = await supabase.auth.getUser();
       if (!user) {
-        showFeedback('You must be signed in to submit a report.');
+        setReportError('You must be signed in to submit a report.');
         return;
       }
 
@@ -359,7 +380,7 @@ export default function ConversationSafetyMenu({
       for (const file of reportEvidence) {
         const mimeType = getReportEvidenceMimeType(file);
         if (!mimeType) {
-          showFeedback('Choose a JPG, PNG, WebP, HEIC, or HEIF image.');
+          setReportError('Choose a JPG, PNG, WebP, HEIC, or HEIF image.');
           await removeUploadedEvidence(uploadedPaths);
           return;
         }
@@ -377,8 +398,9 @@ export default function ConversationSafetyMenu({
             upsert: false,
           });
         if (error) {
+          console.error('Report evidence upload failed.', error);
           await removeUploadedEvidence(uploadedPaths);
-          showFeedback('A screenshot could not be uploaded. Please try again.');
+          setReportError('A screenshot could not be uploaded. Please try again.');
           return;
         }
         uploadedPaths.push(storagePath);
@@ -399,7 +421,7 @@ export default function ConversationSafetyMenu({
       });
       if (!result.success) {
         await removeUploadedEvidence(uploadedPaths);
-        showFeedback(result.message ?? 'Could not submit your report.');
+        setReportError(result.message ?? 'Could not submit your report.');
         return;
       }
       if (result.data?.duplicate) {
@@ -413,7 +435,7 @@ export default function ConversationSafetyMenu({
       setDialog(null);
     } catch {
       await removeUploadedEvidence(uploadedPaths);
-      showFeedback('Could not submit your report. Please try again.');
+      setReportError('Could not submit your report. Please try again.');
     } finally {
       setBusy(false);
     }
@@ -423,13 +445,14 @@ export default function ConversationSafetyMenu({
     const next = [...reportEvidence, ...files].slice(0, REPORT_EVIDENCE_MAX_FILES);
     const validationMessage = validateReportEvidenceFiles(next);
     if (validationMessage) {
-      showFeedback(validationMessage);
+      setReportError(validationMessage);
       return;
     }
     if (reportEvidence.length + files.length > REPORT_EVIDENCE_MAX_FILES) {
       showFeedback(`You can attach up to ${REPORT_EVIDENCE_MAX_FILES} screenshots.`);
     }
     setReportEvidence(next);
+    setReportError(null);
   };
 
   return (
@@ -548,7 +571,7 @@ export default function ConversationSafetyMenu({
       <SafetyDialog
         open={dialog === 'unblock'}
         title={`Unblock ${peerFirstName}?`}
-        description={`Unblocking restores access to the existing history and profile when otherwise available. It does not reconnect you or reopen messaging.`}
+        description={`Unblocking restores this conversation and reopens messaging when this block ended an active connection. If another block is still in place, the conversation remains closed.`}
         confirmLabel="Unblock"
         busy={busy}
         onClose={closeDialog}
@@ -560,8 +583,10 @@ export default function ConversationSafetyMenu({
         title={`Report ${peerFirstName}`}
         description="Reports are reviewed by Forge. Reporting does not automatically block this person — you can block separately if you need to."
         confirmLabel="Submit report"
+        busyLabel="Submitting report…"
         confirmTone="danger"
         busy={busy}
+        errorMessage={reportError}
         onClose={closeDialog}
         onConfirm={handleReport}
         focusConfirm={false}

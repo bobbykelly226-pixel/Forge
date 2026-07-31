@@ -360,7 +360,7 @@ export async function blockUser(
 
 export async function unblockUser(
   blockedUserId: string
-): Promise<DataAccessResult<{ unblocked: boolean }>> {
+): Promise<DataAccessResult<{ unblocked: boolean; messagingReopened: boolean }>> {
   const { supabase, user } = await requireUser();
   if (!user) return { success: false, message: 'You must be signed in.' };
 
@@ -369,7 +369,13 @@ export async function unblockUser(
   });
   const result = rpcResult(data, error, 'Could not unblock this person.');
   if (!result.success) return { success: false, message: result.message };
-  return { success: true, data: { unblocked: Boolean(result.data?.unblocked) } };
+  return {
+    success: true,
+    data: {
+      unblocked: Boolean(result.data?.unblocked),
+      messagingReopened: Boolean(result.data?.messaging_reopened),
+    },
+  };
 }
 
 export async function reportUser(

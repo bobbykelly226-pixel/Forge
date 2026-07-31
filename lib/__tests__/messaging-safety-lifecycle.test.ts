@@ -90,20 +90,45 @@ describe('messaging safety lifecycle', () => {
     assert.match(notification, /status: 'not_configured'/);
   });
 
-  it('adds audited unblock without reconnecting or reopening messaging', () => {
-    const migration = read(
+  it('adds audited unblock that restores the connection ended by the block', () => {
+    const evidenceMigration = read(
       'supabase/migrations/20260730191714_safety_reporting_evidence_unblock.sql'
     );
+    const restoreMigration = read(
+      'supabase/migrations/20260731012452_restore_unblock_and_report_evidence_uploads.sql'
+    );
     const menu = read('components/conversations/ConversationSafetyMenu.tsx');
+    const thread = read('components/conversations/ConversationThread.tsx');
     const actions = read('app/actions/conversations.ts');
 
-    assert.match(migration, /create table if not exists public\.safety_action_audit/);
-    assert.match(migration, /action in \('block', 'unblock'\)/);
-    assert.match(migration, /create or replace function public\.unblock_user/);
-    assert.match(migration, /'connection_restored', false/);
-    assert.match(migration, /'messaging_reopened', false/);
+    assert.match(evidenceMigration, /create table if not exists public\.safety_action_audit/);
+    assert.match(evidenceMigration, /action in \('block', 'unblock'\)/);
+    assert.match(restoreMigration, /connection_was_active/);
+    assert.match(restoreMigration, /messaging_reopened/);
+    assert.match(restoreMigration, /status = 'active'/);
+    assert.match(restoreMigration, /not public\.forge_users_blocked/);
     assert.match(menu, /Unblock/);
-    assert.match(menu, /does not reconnect you or reopen messaging/);
+    assert.match(menu, /reopens messaging/);
+    assert.match(thread, /onUnblocked=\{\(messagingReopened\)/);
     assert.match(actions, /unblockUserAction/);
+  });
+
+  it('allows the documented reporter/submission/file evidence path', () => {
+    const migration = read(
+      'supabase/migrations/20260731012452_restore_unblock_and_report_evidence_uploads.sql'
+    );
+    const evidence = read('lib/safety/report-evidence.ts');
+
+    assert.match(evidence, /userId[\s\S]*submissionId[\s\S]*objectId/);
+    assert.match(migration, /array_length\(storage\.foldername\(name\), 1\) = 2/);
+    assert.doesNotMatch(migration, /array_length\(storage\.foldername\(name\), 1\) = 3/);
+  });
+
+  it('keeps report failures visible in the dialog and shows submission progress', () => {
+    const menu = read('components/conversations/ConversationSafetyMenu.tsx');
+    assert.match(menu, /Submitting report…/);
+    assert.match(menu, /errorMessage=\{reportError\}/);
+    assert.match(menu, /role="alert"/);
+    assert.match(menu, /Report evidence upload failed/);
   });
 });

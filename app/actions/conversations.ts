@@ -1,5 +1,7 @@
 'use server';
 
+import { revalidatePath } from 'next/cache';
+
 import {
   blockUser,
   endConnection,
@@ -56,7 +58,12 @@ export async function blockUserAction(blockedUserId: string) {
 }
 
 export async function unblockUserAction(blockedUserId: string) {
-  return unblockUser(blockedUserId);
+  const result = await unblockUser(blockedUserId);
+  if (result.success) {
+    revalidatePath('/connections');
+    revalidatePath('/connections/c/[conversationId]', 'page');
+  }
+  return result;
 }
 
 export async function reportUserAction(payload: ReportPayload) {
