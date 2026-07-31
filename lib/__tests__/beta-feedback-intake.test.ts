@@ -94,6 +94,16 @@ describe('beta feedback intake', () => {
     assert.match(notification, /provider_message_id/);
   });
 
+  it('keeps the use-server module limited to async runtime exports', () => {
+    const action = read('app/actions/feedback.ts');
+    const actionState = read('lib/feedback/action-state.ts');
+
+    assert.match(action, /^'use server';/);
+    assert.doesNotMatch(action, /export const INITIAL_BETA_FEEDBACK_STATE/);
+    assert.match(action, /export async function submitBetaFeedbackAction/);
+    assert.match(actionState, /export const INITIAL_BETA_FEEDBACK_STATE/);
+  });
+
   it('exposes feedback across the authenticated shell without changing primary mobile nav', () => {
     const desktopNav = read('components/ForgeDesktopAppNav.tsx');
     const utilityBar = read('components/DiscoveryDesktopTopBar.tsx');

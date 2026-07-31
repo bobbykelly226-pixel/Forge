@@ -14,14 +14,12 @@ import {
   ShieldCheck,
 } from 'lucide-react';
 
-import {
-  INITIAL_BETA_FEEDBACK_STATE,
-  submitBetaFeedbackAction,
-} from '@/app/actions/feedback';
+import { submitBetaFeedbackAction } from '@/app/actions/feedback';
 import DiscoveryDesktopTopBar from '@/components/DiscoveryDesktopTopBar';
 import ForgeAppBottomNav from '@/components/ForgeAppBottomNav';
 import ForgeAuthenticatedTwoColumnShell from '@/components/ForgeAuthenticatedTwoColumnShell';
 import ForgeDesktopAppNav from '@/components/ForgeDesktopAppNav';
+import { INITIAL_BETA_FEEDBACK_STATE } from '@/lib/feedback/action-state';
 import {
   BETA_FEEDBACK_AREAS,
   BETA_FEEDBACK_CATEGORIES,

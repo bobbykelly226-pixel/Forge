@@ -2,23 +2,11 @@
 
 import { after } from 'next/server';
 
+import type { SubmitBetaFeedbackState } from '@/lib/feedback/action-state';
 import { sendBetaFeedbackNotification } from '@/lib/feedback/notification';
 import { getBetaFeedbackCategory } from '@/lib/feedback/constants';
 import { validateBetaFeedbackFormData } from '@/lib/feedback/validation';
 import { createClient } from '@/lib/supabase/server';
-
-export type SubmitBetaFeedbackState = {
-  success: boolean;
-  message: string;
-  reference?: string;
-  responseExpectation?: string;
-  fieldErrors?: Partial<Record<'category' | 'area' | 'message', string>>;
-};
-
-export const INITIAL_BETA_FEEDBACK_STATE: SubmitBetaFeedbackState = {
-  success: false,
-  message: '',
-};
 
 export async function submitBetaFeedbackAction(
   _previousState: SubmitBetaFeedbackState,
