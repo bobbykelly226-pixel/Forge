@@ -54,6 +54,7 @@ export async function giveCharacterSignalAction(input: {
     return { success: false, message: rpcMessage(data, 'This recognition is not available.') };
   }
   revalidatePath('/character-signals');
+  revalidatePath('/profile');
   revalidatePath('/discovery/profile/[profileId]', 'page');
   return { success: true, message: 'Recognition submitted privately.' };
 }
@@ -73,6 +74,7 @@ export async function respondToCharacterSignalAction(input: {
     return { success: false, message: 'Could not save your choice. Please try again.' };
   }
   revalidatePath('/character-signals');
+  revalidatePath('/profile');
   revalidatePath('/discovery/profile/[profileId]', 'page');
   return {
     success: rpcSucceeded(data),
@@ -98,6 +100,7 @@ export async function setCharacterSignalVisibilityAction(input: {
     return { success: false, message: 'Could not save your visibility choice. Please try again.' };
   }
   revalidatePath('/character-signals');
+  revalidatePath('/profile');
   revalidatePath('/discovery/profile/[profileId]', 'page');
   return {
     success: rpcSucceeded(data),
