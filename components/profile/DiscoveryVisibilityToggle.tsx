@@ -4,6 +4,7 @@ import { useRouter } from 'next/navigation';
 import { useState, useTransition } from 'react';
 
 import { setDiscoveryVisibilityAction } from '@/app/actions/discovery';
+import { trackLaunchEvent } from '@/lib/analytics/launch-events';
 
 type Props = {
   enabled: boolean;
@@ -40,6 +41,9 @@ export default function DiscoveryVisibilityToggle({
         return;
       }
       setEnabled(result.data.enabled);
+      if (result.data.enabled) {
+        trackLaunchEvent('Discovery Visibility Enabled');
+      }
       router.refresh();
     });
   };

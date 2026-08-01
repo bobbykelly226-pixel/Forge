@@ -46,6 +46,7 @@ import type {
   OpenToChatPrompt,
 } from '@/lib/discovery-actions-types';
 import { isSeedProfileId } from '@/lib/seed/access';
+import { trackLaunchEvent } from '@/lib/analytics/launch-events';
 
 export type OpenToChatRequestStatus = 'pending' | 'saved_later' | 'accepted' | 'declined';
 export type InterestReceivedStatus = 'pending' | 'mutual' | 'declined';
@@ -355,6 +356,8 @@ export function ConnectionsHubProvider({
       return;
     }
 
+    trackLaunchEvent('Open To Chat Response Completed', { response: 'accepted' });
+    trackLaunchEvent('Connection Created', { method: 'open_to_chat' });
     const connectionId = connectionIdFromRpcData(result.data);
     setOpenToChatStatus((prev) => ({ ...prev, [profileId]: 'accepted' }));
 
@@ -437,6 +440,9 @@ export function ConnectionsHubProvider({
         return;
       }
 
+      trackLaunchEvent('Open To Chat Response Completed', {
+        response: 'saved_for_later',
+      });
       announce(`${profileName}'s request saved for later.`);
     },
     [announce, findOpenToChatRequest, getOpenToChatStatus, pending]
@@ -466,6 +472,7 @@ export function ConnectionsHubProvider({
         return;
       }
 
+      trackLaunchEvent('Open To Chat Response Completed', { response: 'declined' });
       setOpenToChat((prev) => prev.filter((item) => item.id !== profileId));
       announce(`Request from ${profileName} removed.`);
     },
@@ -488,6 +495,10 @@ export function ConnectionsHubProvider({
         return;
       }
 
+      trackLaunchEvent('Discovery Action Completed', { action: 'interested' });
+      if (result.data?.mutual) {
+        trackLaunchEvent('Connection Created', { method: 'mutual_interest' });
+      }
       const interestItem = interestReceived.find((item) => item.id === profileId);
       const connectionId = connectionIdFromRpcData(result.data);
       if (interestItem && result.data?.mutual && connectionId) {
@@ -538,6 +549,7 @@ export function ConnectionsHubProvider({
         return;
       }
 
+      trackLaunchEvent('Discovery Action Completed', { action: 'not_for_me' });
       setInterestReceived((prev) => prev.filter((item) => item.id !== profileId));
       announce(`Introduction from ${profileName} passed.`);
     },
@@ -637,6 +649,9 @@ export function ConnectionsHubProvider({
       }
 
       const conversationId = result.data.conversationId;
+      if (result.data.created) {
+        trackLaunchEvent('Conversation Started');
+      }
       logStartMutualConversationTrace({
         componentName,
         connection_id: plan.connectionId,
@@ -776,6 +791,10 @@ export function ConnectionsHubProvider({
         return;
       }
 
+      trackLaunchEvent('Discovery Action Completed', { action: 'interested' });
+      if (result.data.mutual) {
+        trackLaunchEvent('Connection Created', { method: 'mutual_interest' });
+      }
       announce(
         `You've expressed interest in ${profileName}.`,
         result.data.mutual
@@ -885,6 +904,7 @@ export function ConnectionsHubProvider({
         return false;
       }
 
+      trackLaunchEvent('Discovery Action Completed', { action: 'open_to_chat' });
       patchSavedAction(openToChatPrompt.profileId, {
         openToChatSent: true,
         interested: false,

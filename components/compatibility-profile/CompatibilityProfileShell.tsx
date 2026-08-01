@@ -21,6 +21,7 @@ import {
   saveCompatibilityAnswerAction,
   saveCompatibilityProgressAction,
 } from '@/app/actions/questionnaire';
+import { trackLaunchEvent } from '@/lib/analytics/launch-events';
 import type { ParentingEligibilityProfile } from '@/lib/questionnaire/eligibility';
 import {
   emptyPersistedAnswer,
@@ -625,6 +626,12 @@ export default function CompatibilityProfileShell({
           phase: 'complete',
         });
         if (!progressSaved) return;
+        trackLaunchEvent('Compatibility Category Completed', {
+          category: String(category.number),
+        });
+        if (allDone) {
+          trackLaunchEvent('Compatibility Profile Completed');
+        }
         setStep(allDone ? { kind: 'all_complete' } : nextStep);
         return;
       }

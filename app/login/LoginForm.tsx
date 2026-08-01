@@ -3,6 +3,7 @@
 import { requestPasswordReset, resendConfirmationEmail } from '@/app/actions/auth';
 import PasswordInput from '@/components/auth/PasswordInput';
 import Header from '@/components/Header';
+import { trackLaunchEvent } from '@/lib/analytics/launch-events';
 import { AUTH_RESEND_COOLDOWN_MS, mapAuthErrorMessage } from '@/lib/auth/messages';
 import { createClient } from '@/lib/supabase/client';
 import Link from 'next/link';
@@ -53,6 +54,7 @@ export default function LoginForm() {
         return;
       }
 
+      trackLaunchEvent('Sign In Completed');
       router.push(redirectTo.startsWith('/') ? redirectTo : '/app');
       router.refresh();
     } catch {

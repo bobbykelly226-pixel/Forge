@@ -8,6 +8,7 @@ import {
   saveOnboardingStep,
   saveProfileAnswer,
 } from '@/app/actions/onboarding';
+import { trackLaunchEvent } from '@/lib/analytics/launch-events';
 import {
   PROFILE_ANSWER_KEYS,
   CORE_VALUES_OPTIONS,
@@ -249,6 +250,7 @@ export default function OnboardingShell({
       return;
     }
 
+    trackLaunchEvent('Onboarding Completed');
     window.location.href = href;
   };
 

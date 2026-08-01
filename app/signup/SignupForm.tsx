@@ -3,6 +3,7 @@
 import { signUpWithEmail } from '@/app/actions/auth';
 import PasswordInput from '@/components/auth/PasswordInput';
 import Header from '@/components/Header';
+import { trackLaunchEvent } from '@/lib/analytics/launch-events';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
@@ -37,6 +38,7 @@ export default function SignupForm() {
       });
 
       if (result.status === 'session') {
+        trackLaunchEvent('Account Signup Accepted', { flow: 'instant_session' });
         router.push('/onboarding');
         router.refresh();
         return;
@@ -48,6 +50,9 @@ export default function SignupForm() {
       }
 
       // confirmation_sent or already_registered — calm guidance, never a false delivery claim for errors
+      if (result.status === 'confirmation_sent') {
+        trackLaunchEvent('Account Signup Accepted', { flow: 'email_confirmation' });
+      }
       setMessage(result.message);
     } catch {
       setError('Something went wrong. Please try again.');

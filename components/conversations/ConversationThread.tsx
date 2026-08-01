@@ -19,6 +19,7 @@ import {
 import ConversationSafetyMenu from '@/components/conversations/ConversationSafetyMenu';
 import MessageAttachment from '@/components/conversations/MessageAttachment';
 import ConversationStarters from '@/components/conversations/ConversationStarters';
+import { trackLaunchEvent } from '@/lib/analytics/launch-events';
 import { partnerSaidLabel, viewerSaidLabel } from '@/lib/compatibility/answer-labels';
 import {
   createAttachmentPath,
@@ -489,6 +490,13 @@ export default function ConversationThread({
       );
       void refreshMessages();
       setLiveMessage('Message sent.');
+      trackLaunchEvent('Message Sent', {
+        attachment: attachment
+          ? attachment.mime_type.startsWith('image/')
+            ? 'photo'
+            : 'file'
+          : 'none',
+      });
       return true;
     } catch {
       setMessages((current) =>

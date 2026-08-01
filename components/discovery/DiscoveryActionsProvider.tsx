@@ -42,6 +42,7 @@ import {
   type NotForMePrompt,
   type OpenToChatPrompt,
 } from '@/lib/discovery-actions-types';
+import { trackLaunchEvent } from '@/lib/analytics/launch-events';
 
 type StatusMessage = {
   text: string;
@@ -231,6 +232,10 @@ export function DiscoveryActionsProvider({
         announce(result.message);
         return;
       }
+      trackLaunchEvent('Discovery Action Completed', { action: 'interested' });
+      if (result.data.mutual) {
+        trackLaunchEvent('Connection Created', { method: 'mutual_interest' });
+      }
       announce(
         `You've expressed interest in ${profileName}.`,
         result.data.mutual
@@ -350,6 +355,7 @@ export function DiscoveryActionsProvider({
         announce(result.message);
         return;
       }
+      trackLaunchEvent('Discovery Action Completed', { action: 'save_for_later' });
       announce(`${profileName} was saved for later.`, 'Only you can see saved profiles.');
     },
     [announce, getState, patchState, pending]
@@ -391,6 +397,7 @@ export function DiscoveryActionsProvider({
       announce(result.message);
       return;
     }
+    trackLaunchEvent('Discovery Action Completed', { action: 'not_for_me' });
     setNotForMePrompt(null);
     announce('Introduction passed.');
   }, [announce, getState, notForMePrompt, patchState, pending]);
@@ -440,6 +447,7 @@ export function DiscoveryActionsProvider({
         announce(result.message);
         return false;
       }
+      trackLaunchEvent('Discovery Action Completed', { action: 'open_to_chat' });
       patchState(openToChatPrompt.profileId, {
         openToChatSent: true,
         openToChatNote: note,
