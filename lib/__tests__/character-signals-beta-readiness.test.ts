@@ -88,4 +88,20 @@ describe('Character Signals beta readiness', () => {
     assert.match(signals, /giveCharacterSignalAction/);
     assert.match(actions, /revalidatePath\('\/discovery\/profile\/\[profileId\]', 'page'\)/);
   });
+  it('integrates receiving and visibility management into My Profile', () => {
+    const page = read('app/profile/page.tsx');
+    const hub = read('components/profile/MyProfileHub.tsx');
+    const profileSignals = read('components/profile/CharacterSignalsProfileSection.tsx');
+    const actions = read('app/actions/character-signals.ts');
+
+    assert.match(page, /loadMyCharacterSignals/);
+    assert.match(page, /CharacterSignalsProvider initialData=\{characterSignalsDashboard\}/);
+    assert.match(hub, /CharacterSignalsProfileSection/);
+    assert.match(profileSignals, /NewRecognitionSection/);
+    assert.match(profileSignals, /PrivateSignalsSection/);
+    assert.match(profileSignals, /VisibleOnProfileSection/);
+    assert.match(profileSignals, /View Recognition History/);
+    assert.match(actions, /revalidatePath\('\/profile'\)/);
+  });
+
 });
