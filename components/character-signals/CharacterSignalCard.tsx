@@ -4,7 +4,7 @@ import CharacterSignalIcon from '@/components/character-signals/CharacterSignalI
 import {
   getSignalDefinition,
   type CharacterSignalId,
-} from '@/lib/character-signals-mock';
+} from '@/lib/character-signals/catalog';
 
 type CharacterSignalCardProps = {
   signalId: CharacterSignalId;

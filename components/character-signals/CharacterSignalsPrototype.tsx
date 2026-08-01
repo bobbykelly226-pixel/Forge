@@ -8,15 +8,17 @@ import ForgeAuthenticatedTwoColumnShell from '@/components/ForgeAuthenticatedTwo
 import ForgeDesktopAppNav from '@/components/ForgeDesktopAppNav';
 import HowCharacterSignalsWorkDrawer from '@/components/character-signals/HowCharacterSignalsWorkDrawer';
 import {
+  EligibleRecipientsSection,
   LearnMoreSection,
   NewRecognitionSection,
+  PrivateSignalsSection,
   RecognitionHistorySection,
   VisibleOnProfileSection,
 } from '@/components/character-signals/CharacterSignalsSections';
 import { useCharacterSignals } from '@/components/character-signals/CharacterSignalsProvider';
 
-export default function CharacterSignalsPrototype() {
-  const { signals, history } = useCharacterSignals();
+export default function CharacterSignalsWorkspace() {
+  const { signals, history, recipients } = useCharacterSignals();
   const [learnMoreOpen, setLearnMoreOpen] = useState(false);
   const learnMoreTriggerRef = useRef<HTMLButtonElement | null>(null);
 
@@ -86,9 +88,7 @@ export default function CharacterSignalsPrototype() {
                 alt="Forge"
                 className="h-12 w-auto sm:h-14"
               />
-              <p className="rounded-full border border-[#0B2D5C]/12 bg-white/70 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.16em] text-[#0B2D5C]/65">
-                Prototype
-              </p>
+              <p className="rounded-full border border-[#0B2D5C]/12 bg-white/70 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.16em] text-[#0B2D5C]/65">Private by default</p>
             </div>
 
             <h1
@@ -111,7 +111,9 @@ export default function CharacterSignalsPrototype() {
             }}
           >
             <VisibleOnProfileSection signals={signals} />
+            <PrivateSignalsSection signals={signals} />
             <NewRecognitionSection signals={signals} />
+            <EligibleRecipientsSection recipients={recipients} />
             <RecognitionHistorySection history={history} />
             <LearnMoreSection
               onLearnMore={openLearnMore}
@@ -120,9 +122,7 @@ export default function CharacterSignalsPrototype() {
           </div>
 
           <p className="mt-10 text-xs leading-relaxed text-[#8A93A0] lg:mt-12">
-            Forge Character Signals — profile management prototype.
-            <br />
-            Supports Discovery Profiles. No reviews, ratings, or persistent data.
+            Positive recognition only. Negative or unsafe behavior belongs in Forge&apos;s separate Report and Block tools.
           </p>
         </div>
       </ForgeAuthenticatedTwoColumnShell>

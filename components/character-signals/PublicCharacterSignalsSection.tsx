@@ -8,19 +8,16 @@ import CharacterSignalDetailDrawer from '@/components/character-signals/Characte
 import WhatAreCharacterSignalsDrawer from '@/components/character-signals/WhatAreCharacterSignalsDrawer';
 import {
   DISCOVERY_PROFILE_PUBLIC_SIGNALS,
-  getSignalDefinition,
-  type CharacterSignalId,
 } from '@/lib/character-signals-mock';
+import { getSignalDefinition, type CharacterSignalId } from '@/lib/character-signals/catalog';
+import type { PublicCharacterSignal } from '@/lib/character-signals/types';
 
 /**
  * Public Character Signals display for /discovery/profile.
  * Compact secondary treatment — valuable, not visually dominant.
- * Prototype only — no live confirmations or persistence.
+ * Production callers provide privacy-filtered aggregate confirmations.
  */
-export type PublicCharacterSignalEntry = {
-  signalId: CharacterSignalId;
-  confirmationCount: number;
-};
+export type PublicCharacterSignalEntry = PublicCharacterSignal;
 
 export default function PublicCharacterSignalsSection({
   cardClassName,
@@ -29,7 +26,7 @@ export default function PublicCharacterSignalsSection({
 }: {
   /** Kept for call-site compatibility; compact section uses its own denser card shell. */
   cardClassName: string;
-  /** When omitted, uses the prototype Discovery public signals list. */
+  /** Seed-only callers may omit this and use the demo fixture list. */
   signals?: PublicCharacterSignalEntry[];
   emptyCopy?: string;
 }) {

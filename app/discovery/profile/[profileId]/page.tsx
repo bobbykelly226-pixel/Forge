@@ -18,6 +18,7 @@ import {
 import { loadViewerCompatibilityPerson } from '@/lib/compatibility/load-viewer';
 import { findConversationForPeer } from '@/lib/conversations/resolve';
 import { getActiveConnectionIdWithPeer } from '@/lib/data/active-connection';
+import { loadPublicCharacterSignals } from '@/lib/data/character-signals';
 import { loadQuestionnaireAlignmentComparison } from '@/lib/data/questionnaire-alignment';
 import { createEmptyActionState } from '@/lib/discovery-actions-types';
 import { isSeedProfileId } from '@/lib/seed/access';
@@ -138,11 +139,13 @@ export default async function DiscoveryProfilePage({
       questionnaireComparison,
       connectionResult,
       conversationsResult,
+      publicSignalsByProfile,
     ] = await Promise.all([
       loadViewerCompatibilityPerson(),
       loadQuestionnaireAlignmentComparison(profileId),
       getActiveConnectionIdWithPeer(profileId),
       listMyConversationsAction(),
+      loadPublicCharacterSignals([profileId]),
     ]);
 
     const questionnaireEngineResult =
@@ -163,6 +166,12 @@ export default async function DiscoveryProfilePage({
           )
         )
       );
+    }
+    if (liveAlignmentPresentation) {
+      liveAlignmentPresentation = {
+        ...liveAlignmentPresentation,
+        characterSignals: publicSignalsByProfile.get(profileId) ?? [],
+      };
     }
     if (connectionResult.success) {
       mutualConnectionId = connectionResult.data ?? null;
