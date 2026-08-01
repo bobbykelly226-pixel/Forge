@@ -9,6 +9,7 @@ import ForgeAppBottomNav from '@/components/ForgeAppBottomNav';
 import ForgeAuthenticatedTwoColumnShell from '@/components/ForgeAuthenticatedTwoColumnShell';
 import ForgeDesktopAppNav from '@/components/ForgeDesktopAppNav';
 import LogoutButton from '@/components/LogoutButton';
+import CharacterSignalsProfileSection from '@/components/profile/CharacterSignalsProfileSection';
 import ProfileCompatibilityCard, {
   type ProfileCompatibilityCardProps,
 } from '@/components/compatibility-profile/ProfileCompatibilityCard';
@@ -255,7 +256,8 @@ export default function MyProfileHub({
               </Link>
             </div>
 
-            <div className="mt-8 min-w-0 lg:mt-0">
+            <div className="mt-8 min-w-0 space-y-5 lg:mt-0">
+              <CharacterSignalsProfileSection />
               <ProfileWorkspace
                 initialProfile={profile}
                 privateDetails={privateDetails}
