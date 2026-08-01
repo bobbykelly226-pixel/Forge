@@ -3,9 +3,11 @@ import { redirect } from 'next/navigation';
 
 import ForgeAppCanvas from '@/components/ForgeAppCanvas';
 import NotificationsProvider from '@/components/notifications/NotificationsProvider';
+import { CharacterSignalsProvider } from '@/components/character-signals/CharacterSignalsProvider';
 import MyProfileHub from '@/components/profile/MyProfileHub';
 import { loadCompatibilityProfileStateAction } from '@/app/actions/questionnaire';
 import { loadCurrentUserProfileBundle } from '@/lib/data/bundle';
+import { loadMyCharacterSignals } from '@/lib/data/character-signals';
 import { getQuestionnaireCatalog } from '@/lib/questionnaire/catalog';
 import {
   areAllCategoriesComplete,
@@ -56,7 +58,7 @@ export default async function MyProfileHubPage({ searchParams }: PageProps) {
   const resolvedParams = searchParams ? await searchParams : {};
   const initialSection = resolvedParams.section ?? null;
 
-  const [bundle, privateDetailsResult, compatibilityState] = await Promise.all([
+  const [bundle, privateDetailsResult, compatibilityState, characterSignalsDashboard] = await Promise.all([
     loadCurrentUserProfileBundle(),
     supabase
       .from('profile_private_details')
@@ -66,6 +68,7 @@ export default async function MyProfileHubPage({ searchParams }: PageProps) {
       .eq('user_id', user.id)
       .maybeSingle(),
     loadCompatibilityProfileStateAction(),
+    loadMyCharacterSignals(),
   ]);
 
   if (!bundle.success) {
@@ -163,7 +166,8 @@ export default async function MyProfileHubPage({ searchParams }: PageProps) {
       }}
     >
       <NotificationsProvider>
-        <MyProfileHub
+        <CharacterSignalsProvider initialData={characterSignalsDashboard}>
+          <MyProfileHub
           displayName={displayName}
           location={profile.location ?? null}
           photoUrl={photoUrl}
@@ -183,14 +187,15 @@ export default async function MyProfileHubPage({ searchParams }: PageProps) {
           hasImportantAlignmentFactors={hasImportantAlignmentFactors}
           photos={photos.map(toManagedProfilePhoto)}
           initialSection={initialSection}
-          compatibilityCard={{
-            completedCategories,
-            totalCategories: 10,
-            completedQuestions,
-            totalEligibleQuestions,
-            action: compatibilityAction,
-          }}
-        />
+            compatibilityCard={{
+              completedCategories,
+              totalCategories: 10,
+              completedQuestions,
+              totalEligibleQuestions,
+              action: compatibilityAction,
+            }}
+          />
+        </CharacterSignalsProvider>
       </NotificationsProvider>
     </ForgeAppCanvas>
   );
