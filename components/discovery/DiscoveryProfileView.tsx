@@ -19,6 +19,7 @@ import {
   firstNameFromFullName,
   type PublicDiscoveryProfile,
 } from '@/lib/discovery/presentation';
+import type { RecognitionRecipient } from '@/lib/character-signals/types';
 
 type Props = {
   profile: PublicDiscoveryProfile;
@@ -30,6 +31,8 @@ type Props = {
   existingConversationId?: string | null;
   /** Signed-in viewer id for Start Conversation QA logging. */
   viewerUserId?: string | null;
+  /** Eligible Character Signal recipient for this signed-in viewer, when available. */
+  recognitionRecipient?: RecognitionRecipient | null;
 };
 
 export default function DiscoveryProfileView({
@@ -38,6 +41,7 @@ export default function DiscoveryProfileView({
   mutualConnectionId = null,
   existingConversationId = null,
   viewerUserId = null,
+  recognitionRecipient = null,
 }: Props) {
   const profileId = profile.id;
   const firstName = firstNameFromFullName(profile.full_name);
@@ -100,6 +104,7 @@ export default function DiscoveryProfileView({
         showAlignmentCard
         showSurfacedReason={!isSeed && !alignmentPresentation}
         alignmentPresentation={alignmentPresentation}
+        recognitionRecipient={recognitionRecipient}
         header={
           <div className="flex flex-wrap items-center justify-between gap-3">
             <PublicProfileBackLink href={backHref} label={backLabel} />

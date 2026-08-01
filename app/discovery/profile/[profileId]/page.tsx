@@ -18,7 +18,11 @@ import {
 import { loadViewerCompatibilityPerson } from '@/lib/compatibility/load-viewer';
 import { findConversationForPeer } from '@/lib/conversations/resolve';
 import { getActiveConnectionIdWithPeer } from '@/lib/data/active-connection';
-import { loadPublicCharacterSignals } from '@/lib/data/character-signals';
+import {
+  loadCharacterSignalRecognitionRecipient,
+  loadPublicCharacterSignals,
+} from '@/lib/data/character-signals';
+import type { RecognitionRecipient } from '@/lib/character-signals/types';
 import { loadQuestionnaireAlignmentComparison } from '@/lib/data/questionnaire-alignment';
 import { createEmptyActionState } from '@/lib/discovery-actions-types';
 import { isSeedProfileId } from '@/lib/seed/access';
@@ -132,6 +136,7 @@ export default async function DiscoveryProfilePage({
   let liveAlignmentPresentation = null;
   let mutualConnectionId: string | null = null;
   let existingConversationId: string | null = null;
+  let recognitionRecipient: RecognitionRecipient | null = null;
 
   if (!isSeedProfileId(profileId)) {
     const [
@@ -140,12 +145,14 @@ export default async function DiscoveryProfilePage({
       connectionResult,
       conversationsResult,
       publicSignalsByProfile,
+      eligibleRecognitionRecipient,
     ] = await Promise.all([
       loadViewerCompatibilityPerson(),
       loadQuestionnaireAlignmentComparison(profileId),
       getActiveConnectionIdWithPeer(profileId),
       listMyConversationsAction(),
       loadPublicCharacterSignals([profileId]),
+      loadCharacterSignalRecognitionRecipient(profileId),
     ]);
 
     const questionnaireEngineResult =
@@ -180,6 +187,7 @@ export default async function DiscoveryProfilePage({
       existingConversationId =
         findConversationForPeer(conversationsResult.data, profileId)?.conversationId ?? null;
     }
+    recognitionRecipient = eligibleRecognitionRecipient;
   }
 
   return (
@@ -199,6 +207,7 @@ export default async function DiscoveryProfilePage({
           mutualConnectionId={mutualConnectionId}
           existingConversationId={existingConversationId}
           viewerUserId={user.id}
+          recognitionRecipient={recognitionRecipient}
         />
       </DiscoveryActionsProvider>
     </ForgeAppCanvas>

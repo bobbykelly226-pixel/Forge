@@ -109,6 +109,26 @@ export async function loadMyCharacterSignals(): Promise<CharacterSignalsDashboar
   };
 }
 
+export async function loadCharacterSignalRecognitionRecipient(
+  receiverId: string
+): Promise<RecognitionRecipient | null> {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user || user.id === receiverId) return null;
+
+  const { data, error } = await supabase.rpc('list_my_character_signals');
+  if (error) {
+    console.error('Could not load Character Signal recognition eligibility.', {
+      code: error.code,
+      message: error.message,
+    });
+    return null;
+  }
+  const payload = record(data);
+  if (!payload || payload.ok !== true) return null;
+  return parseRecipients(payload.recipients).find((recipient) => recipient.id === receiverId) ?? null;
+}
+
 export async function loadPublicCharacterSignals(
   receiverIds: string[]
 ): Promise<Map<string, PublicCharacterSignal[]>> {

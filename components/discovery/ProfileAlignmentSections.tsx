@@ -10,7 +10,10 @@ import ImportantAlignmentFactorsDrawer, {
   type ImportantAlignmentFactorDetail,
 } from '@/components/ImportantAlignmentFactorsDrawer';
 import type { CharacterSignalId } from '@/lib/character-signals/catalog';
-import type { PublicCharacterSignal } from '@/lib/character-signals/types';
+import type {
+  PublicCharacterSignal,
+  RecognitionRecipient,
+} from '@/lib/character-signals/types';
 import {
   seedFactorSeverityLabel,
   type SeedAlignmentFactor,
@@ -25,6 +28,7 @@ export type ProfileAlignmentSectionsProps = {
   importantFactorsSummary: string | null;
   characterSignalIds: CharacterSignalId[];
   characterSignals?: PublicCharacterSignal[];
+  recognitionRecipient?: RecognitionRecipient | null;
   incompleteAssessmentCopy?: string;
   noFactorsCopy?: string;
   /** Optional paragraph when list reasons are not available (e.g. incomplete assessment). */
@@ -99,6 +103,7 @@ export default function ProfileAlignmentSections({
   importantFactorsSummary,
   characterSignalIds,
   characterSignals,
+  recognitionRecipient,
   incompleteAssessmentCopy,
   noFactorsCopy,
   whySurfacedCopy,
@@ -273,6 +278,7 @@ export default function ProfileAlignmentSections({
 
       <PublicCharacterSignalsSection
         cardClassName={cardClassName}
+        recognitionRecipient={recognitionRecipient}
         signals={characterSignals ?? characterSignalIds.map((signalId) => ({
           signalId,
           confirmationCount: 3,

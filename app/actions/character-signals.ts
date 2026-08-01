@@ -54,6 +54,7 @@ export async function giveCharacterSignalAction(input: {
     return { success: false, message: rpcMessage(data, 'This recognition is not available.') };
   }
   revalidatePath('/character-signals');
+  revalidatePath('/discovery/profile/[profileId]', 'page');
   return { success: true, message: 'Recognition submitted privately.' };
 }
 

@@ -70,4 +70,22 @@ describe('Character Signals beta readiness', () => {
     assert.match(contact, /Send Beta Feedback/);
     assert.match(contact, /Report or Block/);
   });
+
+  it('lets eligible viewers recognize a positive quality from the viewed profile', () => {
+    const page = read('app/discovery/profile/[profileId]/page.tsx');
+    const view = read('components/discovery/DiscoveryProfileView.tsx');
+    const presentation = read('components/discovery/PublicProfilePresentation.tsx');
+    const sections = read('components/discovery/ProfileAlignmentSections.tsx');
+    const signals = read('components/character-signals/PublicCharacterSignalsSection.tsx');
+    const actions = read('app/actions/character-signals.ts');
+
+    assert.match(page, /loadCharacterSignalRecognitionRecipient\(profileId\)/);
+    assert.match(view, /recognitionRecipient=\{recognitionRecipient\}/);
+    assert.match(presentation, /recognitionRecipient=\{recognitionRecipient\}/);
+    assert.match(sections, /recognitionRecipient=\{recognitionRecipient\}/);
+    assert.match(signals, /Recognize a Positive Quality/);
+    assert.match(signals, /RecognitionFlowDrawer/);
+    assert.match(signals, /giveCharacterSignalAction/);
+    assert.match(actions, /revalidatePath\('\/discovery\/profile\/\[profileId\]', 'page'\)/);
+  });
 });
