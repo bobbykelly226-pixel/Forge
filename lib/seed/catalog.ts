@@ -6,7 +6,7 @@
 import {
   CHARACTER_SIGNAL_DEFINITIONS,
   type CharacterSignalId,
-} from '@/lib/character-signals-mock';
+} from '@/lib/character-signals/catalog';
 
 export type SeedFactorSeverity =
   | 'informational'

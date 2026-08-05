@@ -14,12 +14,15 @@ import {
   getSignalsForInteractionType,
   type CharacterSignalId,
   type InteractionType,
-  type RecognitionRecipient,
-} from '@/lib/character-signals-mock';
+} from '@/lib/character-signals/catalog';
 import {
   getRecognitionFlowInitialState,
   type RecognitionFlowStep,
 } from '@/lib/character-signals/recognition-flow-state';
+import type {
+  CharacterSignalActionResult,
+  RecognitionRecipient,
+} from '@/lib/character-signals/types';
 
 type RecognitionFlowDrawerProps = {
   open: boolean;
@@ -30,7 +33,7 @@ type RecognitionFlowDrawerProps = {
     recipientName: string;
     signalId: CharacterSignalId;
     interactionType: InteractionType;
-  }) => void;
+  }) => Promise<CharacterSignalActionResult>;
   successReturnLabel?: string;
 };
 
@@ -66,6 +69,8 @@ function RecognitionFlowDrawerInner({
   const [selectedSignalId, setSelectedSignalId] = useState<CharacterSignalId | null>(
     initial.selectedSignalId
   );
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   const handleKeyDown = useCallback(
     (event: ReactKeyboardEvent<HTMLDivElement>) => {
@@ -122,15 +127,28 @@ function RecognitionFlowDrawerInner({
   const interactionLabel =
     interactionType === 'in_app' ? 'In-app conversation' : 'Met in person';
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (!selectedSignalId) return;
-    onSubmitted?.({
-      recipientId: recipient.id,
-      recipientName: recipient.firstName,
-      signalId: selectedSignalId,
-      interactionType,
-    });
-    setStep('success');
+    if (!onSubmitted) {
+      setErrorMessage('This recognition path is not available. Open Character Signals from My Profile.');
+      return;
+    }
+    setIsSubmitting(true);
+    setErrorMessage(null);
+    try {
+      const result = await onSubmitted({
+        recipientId: recipient.id,
+        recipientName: recipient.firstName,
+        signalId: selectedSignalId,
+        interactionType,
+      });
+      if (result.success) setStep('success');
+      else setErrorMessage(result.message);
+    } catch {
+      setErrorMessage('Forge could not save this recognition. Please try again.');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -211,8 +229,8 @@ function RecognitionFlowDrawerInner({
               </fieldset>
 
               <p className="mt-5 text-xs leading-relaxed text-[#8A93A0]">
-                One signal may be submitted per completed interaction. Recognition should be based
-                on genuine interaction — not exchanged as a favor.
+                During beta, you may recognize each eligible connection once. Recognition should be
+                based on genuine interaction — not exchanged as a favor.
               </p>
 
               <div className="mt-6 flex flex-col gap-3">
@@ -322,23 +340,30 @@ function RecognitionFlowDrawerInner({
               </h2>
               <div id={descriptionId} className="mt-3 space-y-3 text-[15px] leading-relaxed text-[#5A6575]">
                 <p>
-                  {recipient.firstName} will be notified privately. The signal will not automatically
-                  appear on their profile.
+                  The recognition will appear privately in {recipient.firstName}&apos;s Character
+                  Signals. It will not automatically appear on their profile.
                 </p>
                 <p>
-                  Forge may wait for additional independent confirmations before the signal becomes
+                  Three independent confirmations are required before the same quality becomes
                   eligible for public display.
                 </p>
               </div>
+
+              {errorMessage && (
+                <p role="alert" className="mt-4 rounded-2xl border border-[#D62828]/20 bg-[#D62828]/5 px-4 py-3 text-sm text-[#A61F1F]">
+                  {errorMessage}
+                </p>
+              )}
 
               <div className="mt-6 flex flex-col gap-3">
                 <button
                   ref={primaryRef}
                   type="button"
+                  disabled={isSubmitting}
                   onClick={handleSubmit}
-                  className="inline-flex w-full items-center justify-center rounded-2xl bg-[#0B2D5C] px-6 py-3.5 text-base font-semibold text-white transition hover:bg-[#0A2540]"
+                  className="inline-flex w-full items-center justify-center rounded-2xl bg-[#0B2D5C] px-6 py-3.5 text-base font-semibold text-white transition hover:bg-[#0A2540] disabled:cursor-wait disabled:opacity-65"
                 >
-                  Submit Recognition
+                  {isSubmitting ? 'Saving…' : 'Submit Recognition'}
                 </button>
                 <button
                   type="button"
@@ -365,9 +390,7 @@ function RecognitionFlowDrawerInner({
                 <p>
                   {recipient.firstName} controls whether eligible Character Signals appear publicly.
                 </p>
-                <p className="text-sm text-[#8A93A0]">
-                  Prototype only — no real notification was sent.
-                </p>
+                <p className="text-sm text-[#8A93A0]">Your recognition is saved privately.</p>
               </div>
               <button
                 ref={primaryRef}

@@ -11,7 +11,8 @@ import {
   toFeedAlignmentFields,
 } from '@/lib/compatibility';
 import { SEED_DEMO_VIEWER } from '@/lib/compatibility/seed-viewer';
-import type { CharacterSignalId } from '@/lib/character-signals-mock';
+import type { CharacterSignalId } from '@/lib/character-signals/catalog';
+import type { PublicCharacterSignal } from '@/lib/character-signals/types';
 import type { HubProfileCard, MutualConnectionItem } from '@/lib/data/connections-hub';
 import { DISCOVERY_NEUTRAL_CONFIDENCE } from '@/lib/discovery/config';
 import {
@@ -42,6 +43,7 @@ export type SeedProfileAlignmentPresentation = {
   importantFactors: SeedAlignmentFactor[];
   importantFactorsSummary: string | null;
   characterSignalIds: CharacterSignalId[];
+  characterSignals?: PublicCharacterSignal[];
   incompleteAssessmentCopy?: string;
   noFactorsCopy?: string;
   /** Optional paragraph under “Why Forge Introduced You”. */

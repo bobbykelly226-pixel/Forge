@@ -1,10 +1,9 @@
 'use client';
 
 import Link from 'next/link';
-import { Bookmark, Check, Heart, MessageCircle, RotateCcw, Send, Sparkles } from 'lucide-react';
+import { Bookmark, Check, Heart, MessageCircle, RotateCcw, Send } from 'lucide-react';
 import { useRef, useState } from 'react';
 
-import RecognitionFlowDrawer from '@/components/character-signals/RecognitionFlowDrawer';
 import {
   ConnectionAlignment,
   ConnectionIdentity,
@@ -13,7 +12,6 @@ import {
 } from '@/components/connections/ConnectionPortrait';
 import { useConnectionsHub } from '@/components/connections/ConnectionsHubProvider';
 import ViewOpenToChatNoteDrawer from '@/components/connections/ViewOpenToChatNoteDrawer';
-import { RECOGNITION_RECIPIENTS } from '@/lib/character-signals-mock';
 import type {
   HubProfileCard,
   IncomingInterestItem,
@@ -250,21 +248,14 @@ export function MutualConnectionCard({
 }) {
   const { getConversationForPeer, startMutualConversation } = useConnectionsHub();
   const existingConversation = getConversationForPeer(profile.id);
-  const [recognitionOpen, setRecognitionOpen] = useState(false);
-  const recognizeTriggerRef = useRef<HTMLButtonElement>(null);
-  const isSeed = isSeedProfileId(profile.id);
 
   const relativeTime =
     'relativeTime' in profile && typeof profile.relativeTime === 'string'
       ? profile.relativeTime
       : null;
 
-  const recipient = isSeed
-    ? null
-    : (RECOGNITION_RECIPIENTS.find((entry) => entry.id === profile.id) ?? null);
-
   return (
-    <article className={cardShell}>
+    <article className={cardShell} data-seed-profile={isSeedProfileId(profile.id) || undefined}>
       <div className="flex flex-col lg:grid lg:grid-cols-[minmax(12rem,28%)_minmax(0,1fr)] lg:gap-6">
         <ConnectionPortrait profile={profile} size="lg" />
         <div className="p-5 sm:p-6 lg:p-7 lg:pl-0">
@@ -318,32 +309,9 @@ export function MutualConnectionCard({
               {existingConversation ? 'Open Conversation' : 'Start Conversation'}
             </button>
             <ViewProfileLink profileId={profile.id} />
-            {recipient && (
-              <button
-                ref={recognizeTriggerRef}
-                type="button"
-                onClick={() => setRecognitionOpen(true)}
-                className="inline-flex items-center justify-center gap-2 rounded-2xl border border-[#0B2D5C]/20 bg-white px-4 py-3 text-sm font-semibold text-[#0B2D5C] transition hover:bg-[#FBF9F6] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0B2D5C]"
-              >
-                <Sparkles className="h-4 w-4" strokeWidth={1.75} aria-hidden="true" />
-                Recognize a Positive Quality
-              </button>
-            )}
           </div>
         </div>
       </div>
-
-      {recipient && (
-        <RecognitionFlowDrawer
-          open={recognitionOpen}
-          recipient={recipient}
-          onClose={() => {
-            setRecognitionOpen(false);
-            window.requestAnimationFrame(() => recognizeTriggerRef.current?.focus());
-          }}
-          successReturnLabel="Return to Connections"
-        />
-      )}
     </article>
   );
 }

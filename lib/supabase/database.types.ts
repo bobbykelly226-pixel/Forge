@@ -62,8 +62,30 @@ export type Database = {
         }
         Relationships: []
       }
+      character_signal_display_preferences: {
+        Row: {
+          is_public: boolean
+          receiver_id: string
+          signal_key: string
+          updated_at: string
+        }
+        Insert: {
+          is_public?: boolean
+          receiver_id: string
+          signal_key: string
+          updated_at?: string
+        }
+        Update: {
+          is_public?: boolean
+          receiver_id?: string
+          signal_key?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       character_signals: {
         Row: {
+          connection_id: string | null
           created_at: string
           giver_id: string
           id: string
@@ -77,6 +99,7 @@ export type Database = {
           status: Database["public"]["Enums"]["character_signal_status"]
         }
         Insert: {
+          connection_id?: string | null
           created_at?: string
           giver_id: string
           id?: string
@@ -90,6 +113,7 @@ export type Database = {
           status?: Database["public"]["Enums"]["character_signal_status"]
         }
         Update: {
+          connection_id?: string | null
           created_at?: string
           giver_id?: string
           id?: string
@@ -102,7 +126,15 @@ export type Database = {
           signal_key?: string
           status?: Database["public"]["Enums"]["character_signal_status"]
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "character_signals_connection_id_fkey"
+            columns: ["connection_id"]
+            isOneToOne: false
+            referencedRelation: "connections"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       compatibility_answers: {
         Row: {
@@ -1899,6 +1931,14 @@ export type Database = {
         Args: { p_user_a: string; p_user_b: string }
         Returns: boolean
       }
+      give_character_signal: {
+        Args: {
+          p_interaction_type: Database["public"]["Enums"]["character_signal_interaction"]
+          p_receiver_id: string
+          p_signal_key: string
+        }
+        Returns: Json
+      }
       get_conversation_attachment_access: {
         Args: { p_attachment_id: string }
         Returns: Json
@@ -1958,6 +1998,15 @@ export type Database = {
           p_limit?: number
         }
         Returns: Json
+      }
+      list_my_character_signals: { Args: never; Returns: Json }
+      list_public_character_signals: {
+        Args: { p_receiver_ids: string[] }
+        Returns: {
+          confirmation_count: number
+          receiver_id: string
+          signal_key: string
+        }[]
       }
       list_eligible_discovery_profiles: {
         Args: { p_limit?: number }
@@ -2138,6 +2187,14 @@ export type Database = {
       send_interest: { Args: { p_recipient_id: string }; Returns: Json }
       send_open_to_chat: {
         Args: { p_note?: string; p_recipient_id: string }
+        Returns: Json
+      }
+      respond_my_character_signal: {
+        Args: { p_signal_id: string; p_visibility: string }
+        Returns: Json
+      }
+      set_my_character_signal_visibility: {
+        Args: { p_is_public: boolean; p_signal_key: string }
         Returns: Json
       }
       set_my_discovery_visibility: {

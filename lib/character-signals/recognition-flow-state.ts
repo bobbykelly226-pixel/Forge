@@ -1,8 +1,8 @@
 import type {
   CharacterSignalId,
   InteractionType,
-  RecognitionRecipient,
-} from '@/lib/character-signals-mock';
+} from '@/lib/character-signals/catalog';
+import type { RecognitionRecipient } from '@/lib/character-signals/types';
 
 export type RecognitionFlowStep = 'context' | 'select' | 'confirm' | 'success';
 

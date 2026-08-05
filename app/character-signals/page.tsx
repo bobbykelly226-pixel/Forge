@@ -1,8 +1,12 @@
 import { Fraunces, Manrope } from 'next/font/google';
+import { redirect } from 'next/navigation';
 
-import CharacterSignalsPrototype from '@/components/character-signals/CharacterSignalsPrototype';
+import CharacterSignalsWorkspace from '@/components/character-signals/CharacterSignalsPrototype';
+import { CharacterSignalsProvider } from '@/components/character-signals/CharacterSignalsProvider';
 import ForgeAppCanvas from '@/components/ForgeAppCanvas';
 import NotificationsProvider from '@/components/notifications/NotificationsProvider';
+import { loadMyCharacterSignals } from '@/lib/data/character-signals';
+import { createClient } from '@/lib/supabase/server';
 
 const display = Fraunces({
   subsets: ['latin'],
@@ -26,7 +30,12 @@ export const metadata = {
   },
 };
 
-export default function CharacterSignalsPage() {
+export default async function CharacterSignalsPage() {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) redirect('/login?redirectTo=/character-signals');
+  const dashboard = await loadMyCharacterSignals();
+
   return (
     <ForgeAppCanvas
       desktopViewportLock
@@ -36,7 +45,9 @@ export default function CharacterSignalsPage() {
       }}
     >
       <NotificationsProvider>
-        <CharacterSignalsPrototype />
+        <CharacterSignalsProvider initialData={dashboard}>
+          <CharacterSignalsWorkspace />
+        </CharacterSignalsProvider>
       </NotificationsProvider>
     </ForgeAppCanvas>
   );

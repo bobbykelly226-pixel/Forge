@@ -19,6 +19,7 @@ import {
 } from '@/lib/discovery/presentation';
 import { resolveUnifiedAbout } from '@/lib/profile/unified-about';
 import { sortPhotosByDisplayOrder } from '@/lib/profile-photo';
+import type { RecognitionRecipient } from '@/lib/character-signals/types';
 
 export type PublicProfilePresentationProps = {
   profile: PublicDiscoveryProfile;
@@ -36,7 +37,12 @@ export type PublicProfilePresentationProps = {
    * Optional qualitative alignment enrichment (enriched profiles).
    * When set, replaces the default More to Discover alignment card.
    */
-  alignmentPresentation?: Omit<ProfileAlignmentSectionsProps, 'profileName' | 'cardClassName'> | null;
+  alignmentPresentation?: Omit<
+    ProfileAlignmentSectionsProps,
+    'profileName' | 'cardClassName' | 'recognitionRecipient'
+  > | null;
+  /** Signed-in viewer's eligible recognition target for this profile. */
+  recognitionRecipient?: RecognitionRecipient | null;
 };
 
 /**
@@ -52,6 +58,7 @@ export default function PublicProfilePresentation({
   showAlignmentCard = mode === 'discovery',
   showSurfacedReason = mode === 'discovery',
   alignmentPresentation = null,
+  recognitionRecipient = null,
 }: PublicProfilePresentationProps) {
   const firstName = firstNameFromFullName(profile.full_name);
   const orderedPhotos = sortPhotosByDisplayOrder(profile.photos ?? []);
@@ -96,7 +103,11 @@ export default function PublicProfilePresentation({
 
         <div className="mt-8 space-y-6 lg:mt-0 lg:space-y-8">
           {useEnrichedAlignment && alignmentPresentation ? (
-            <ProfileAlignmentSections profileName={firstName} {...alignmentPresentation} />
+            <ProfileAlignmentSections
+              profileName={firstName}
+              {...alignmentPresentation}
+              recognitionRecipient={recognitionRecipient}
+            />
           ) : null}
 
           {showAlignmentCard && !useEnrichedAlignment ? (

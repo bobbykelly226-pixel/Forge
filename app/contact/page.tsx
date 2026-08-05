@@ -1,5 +1,3 @@
-'use client';
-
 import Header from '../../components/Header';
 import Link from 'next/link';
 
@@ -17,8 +15,21 @@ export default function Contact() {
           </p>
 
           <p>
-            Forge is currently in its pre-launch stage. Whether you have a question, want to share feedback, or are interested in what we are building, you can reach us directly by email.
+            Forge is currently in founding beta. Use the private in-app form for product help and feedback, or email us when you cannot sign in.
           </p>
+
+          <div className="rounded-2xl border border-[#0B2D5C]/10 bg-white/75 px-5 py-6">
+            <h2 className="text-3xl font-semibold text-[#0B2D5C] mb-4">Beta Product Support</h2>
+            <p className="text-lg">
+              Signed-in beta members can privately report something broken or confusing, ask for help, or share an idea.
+            </p>
+            <Link
+              href="/feedback"
+              className="mt-5 inline-flex rounded-2xl bg-[#0B2D5C] px-5 py-3 font-semibold text-white no-underline hover:bg-[#0A2540]"
+            >
+              Send Beta Feedback
+            </Link>
+          </div>
 
           <div className="pt-6 border-t border-[#0B2D5C]/10">
             <h2 className="text-3xl font-semibold text-[#0B2D5C] mb-4">General Inquiries</h2>
@@ -33,7 +44,7 @@ export default function Contact() {
           <div className="pt-6 border-t border-[#0B2D5C]/10">
             <h2 className="text-3xl font-semibold text-[#0B2D5C] mb-4">Support and Policy Questions</h2>
             <p className="text-lg">
-              For privacy, terms, support, or account-related questions, contact:
+              For privacy, terms, or account-access questions—including when you cannot sign in—contact:
             </p>
             <p className="text-xl sm:text-2xl font-semibold text-[#0B2D5C] mt-6 break-words">
               <a href="mailto:support@forgedinlife.com" className="hover:underline">support@forgedinlife.com</a>
@@ -41,7 +52,7 @@ export default function Contact() {
           </div>
 
           <p className="pt-8 text-lg">
-            We are a small team building Forge with care. Your feedback and support mean a great deal as we prepare for what comes next.
+            Member or safety concerns should use Report or Block from the relevant profile or conversation. Product feedback never replaces Forge&apos;s safety tools.
           </p>
         </div>
       </div>

@@ -12,7 +12,7 @@ import {
   type LucideIcon,
 } from 'lucide-react';
 
-import type { CharacterSignalId } from '@/lib/character-signals-mock';
+import type { CharacterSignalId } from '@/lib/character-signals/catalog';
 
 const SIGNAL_ICONS: Record<CharacterSignalId, LucideIcon> = {
   respectful_communicator: MessageCircle,
