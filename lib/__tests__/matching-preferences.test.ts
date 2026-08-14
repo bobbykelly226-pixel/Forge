@@ -19,14 +19,29 @@ describe('matching preference validation', () => {
     assert.equal(validateMatchingPreferences(valid).ok, true);
   });
 
-  it('requires a supported identity and at least one interest', () => {
+  it('requires Male or Female and one supported interest choice', () => {
     assert.equal(validateMatchingPreferences({ ...valid, genderIdentity: '' }).ok, false);
     assert.equal(validateMatchingPreferences({ ...valid, interestedIn: [] }).ok, false);
+    assert.equal(
+      validateMatchingPreferences({ ...valid, genderIdentity: 'nonbinary' }).ok,
+      false
+    );
+    assert.equal(
+      validateMatchingPreferences({ ...valid, genderIdentity: 'another_identity' }).ok,
+      false
+    );
+    assert.equal(
+      validateMatchingPreferences({ ...valid, interestedIn: ['nonbinary'] }).ok,
+      false
+    );
   });
 
-  it('does not combine everyone with narrower selections', () => {
+  it('accepts Men, Women, or Both as a single choice', () => {
+    assert.equal(validateMatchingPreferences({ ...valid, interestedIn: ['man'] }).ok, true);
+    assert.equal(validateMatchingPreferences({ ...valid, interestedIn: ['woman'] }).ok, true);
+    assert.equal(validateMatchingPreferences({ ...valid, interestedIn: ['everyone'] }).ok, true);
     assert.equal(
-      validateMatchingPreferences({ ...valid, interestedIn: ['everyone', 'man'] }).ok,
+      validateMatchingPreferences({ ...valid, interestedIn: ['man', 'woman'] }).ok,
       false
     );
   });
