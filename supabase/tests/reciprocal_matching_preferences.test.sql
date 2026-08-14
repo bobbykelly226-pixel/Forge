@@ -3,7 +3,7 @@
 begin;
 create extension if not exists pgtap with schema extensions;
 set local search_path = public, extensions, pg_temp;
-select plan(8);
+select plan(10);
 
 insert into auth.users (
   instance_id, id, aud, role, email, encrypted_password, email_confirmed_at,
@@ -36,10 +36,30 @@ select ok(public.forge_profiles_match_preferences('15151515-1515-4515-8515-15151
 select ok(public.forge_profiles_match_preferences('16161616-1616-4616-8616-161616161616', '15151515-1515-4515-8515-151515151515'),
   'reciprocal evaluation is symmetric');
 
-update public.profile_preferences set interested_in = array['nonbinary']
+select throws_ok(
+  $$
+    update public.profile_preferences set gender_identity = 'nonbinary'
+    where user_id = '16161616-1616-4616-8616-161616161616'
+  $$,
+  null,
+  null,
+  'the database rejects an unsupported sex value'
+);
+
+select throws_ok(
+  $$
+    update public.profile_preferences set interested_in = array['man', 'woman']
+    where user_id = '16161616-1616-4616-8616-161616161616'
+  $$,
+  null,
+  null,
+  'the database rejects more than one interest choice'
+);
+
+update public.profile_preferences set interested_in = array['man']
 where user_id = '16161616-1616-4616-8616-161616161616';
 select ok(not public.forge_profiles_match_preferences('15151515-1515-4515-8515-151515151515', '16161616-1616-4616-8616-161616161616'),
-  'a one-way identity mismatch is excluded');
+  'a one-way sex preference mismatch is excluded');
 
 update public.profile_preferences set interested_in = array['woman'], preferred_age_max = 34
 where user_id = '16161616-1616-4616-8616-161616161616';
