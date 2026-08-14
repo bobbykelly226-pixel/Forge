@@ -4,7 +4,7 @@ import { useState, useTransition } from 'react';
 
 import { saveOnboardingMatchingPreferences } from '@/app/actions/onboarding';
 import {
-  GENDER_IDENTITY_OPTIONS,
+  SEX_OPTIONS,
   INTERESTED_IN_OPTIONS,
   MAX_DISTANCE_MILES,
   MAX_MATCH_AGE,
@@ -45,13 +45,7 @@ export default function MatchingPreferencesCard({
   };
 
   const toggleInterest = (value: string) => {
-    setInterestedIn((current) => {
-      if (value === 'everyone') return current.includes('everyone') ? [] : ['everyone'];
-      const withoutEveryone = current.filter((item) => item !== 'everyone');
-      return withoutEveryone.includes(value)
-        ? withoutEveryone.filter((item) => item !== value)
-        : [...withoutEveryone, value];
-    });
+    setInterestedIn([value]);
   };
 
   return (
@@ -79,14 +73,14 @@ export default function MatchingPreferencesCard({
       {editing ? (
         <div className="mt-5 space-y-5">
           <label className="block text-sm font-semibold text-[#0B2D5C]">
-            I identify as
+            I am
             <select
               value={genderIdentity}
               onChange={(event) => setGenderIdentity(event.target.value)}
               className="mt-2 w-full rounded-2xl border border-[#0B2D5C]/20 bg-white px-4 py-3"
             >
               <option value="">Choose one</option>
-              {GENDER_IDENTITY_OPTIONS.map((option) => (
+              {SEX_OPTIONS.map((option) => (
                 <option key={option.value} value={option.value}>{option.label}</option>
               ))}
             </select>
