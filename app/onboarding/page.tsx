@@ -25,6 +25,7 @@ export default async function OnboardingPage() {
       <OnboardingShell
         initialAnswers={bootstrap.answers}
         initialDateOfBirth={bootstrap.dateOfBirth}
+        initialPreferences={bootstrap.preferences}
         initialStep={bootstrap.initialStep}
       />
     </main>

@@ -20,6 +20,8 @@ import { PROFILE_ANSWER_KEYS } from '@/lib/types/profile-answers';
 import type { Profile } from '@/lib/types/profile';
 import { createClient } from '@/lib/supabase/server';
 import { validateAdultDateOfBirth } from '@/lib/age';
+import { getCurrentUserPreferences } from '@/lib/data/profile';
+import { matchingPreferencesAreComplete } from '@/lib/profile/matching-preferences';
 
 const display = Fraunces({
   subsets: ['latin'],
@@ -59,7 +61,7 @@ export default async function MyProfileHubPage({ searchParams }: PageProps) {
   const resolvedParams = searchParams ? await searchParams : {};
   const initialSection = resolvedParams.section ?? null;
 
-  const [bundle, privateDetailsResult, compatibilityState, characterSignalsDashboard] = await Promise.all([
+  const [bundle, privateDetailsResult, preferencesResult, compatibilityState, characterSignalsDashboard] = await Promise.all([
     loadCurrentUserProfileBundle(),
     supabase
       .from('profile_private_details')
@@ -68,6 +70,7 @@ export default async function MyProfileHubPage({ searchParams }: PageProps) {
       )
       .eq('user_id', user.id)
       .maybeSingle(),
+    getCurrentUserPreferences(),
     loadCompatibilityProfileStateAction(),
     loadMyCharacterSignals(),
   ]);
@@ -120,7 +123,10 @@ export default async function MyProfileHubPage({ searchParams }: PageProps) {
   const discoveryCanEnable =
     profile.status !== 'deactivated' &&
     profile.status !== 'hidden' &&
-    validateAdultDateOfBirth(privateDetailsResult.data?.date_of_birth ?? '').ok;
+    validateAdultDateOfBirth(privateDetailsResult.data?.date_of_birth ?? '').ok &&
+    matchingPreferencesAreComplete(preferencesResult.success ? preferencesResult.data : null) &&
+    privateDetailsResult.data?.latitude != null &&
+    privateDetailsResult.data?.longitude != null;
 
   const profileForWorkspace = {
     ...profile,
@@ -183,10 +189,11 @@ export default async function MyProfileHubPage({ searchParams }: PageProps) {
               ? null
               : profile.status === 'deactivated' || profile.status === 'hidden'
                 ? 'Discovery visibility is unavailable for this account.'
-                : 'Add a valid adult date of birth in Basics before entering Discovery.',
+                : 'Complete adult eligibility, matching preferences, and private location before entering Discovery.',
           }}
           profile={profileForWorkspace}
           privateDetails={privateDetailsResult.data ?? null}
+          preferences={preferencesResult.success ? preferencesResult.data : null}
           coreValues={coreValues}
           hasRelationshipAlignment={hasRelationshipAlignment}
           hasImportantAlignmentFactors={hasImportantAlignmentFactors}

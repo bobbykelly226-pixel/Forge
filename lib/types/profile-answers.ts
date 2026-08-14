@@ -21,6 +21,7 @@ export type ProfileAnswersMap = Partial<
 export const ONBOARDING_STEPS = {
   welcome: 'welcome',
   eligibility: 'eligibility',
+  matching: 'matching',
   intention: 'intention',
   values: 'values',
   readiness: 'readiness',
@@ -32,18 +33,19 @@ export type OnboardingStepId =
 export const ONBOARDING_STEP_ORDER: OnboardingStepId[] = [
   ONBOARDING_STEPS.welcome,
   ONBOARDING_STEPS.eligibility,
+  ONBOARDING_STEPS.matching,
   ONBOARDING_STEPS.intention,
   ONBOARDING_STEPS.values,
   ONBOARDING_STEPS.readiness,
 ];
 
-/** Map step number (1–5) ↔ stable step id. */
+/** Map step number (1–6) ↔ stable step id. */
 export function onboardingStepNumber(stepId: OnboardingStepId): number {
   return ONBOARDING_STEP_ORDER.indexOf(stepId) + 1;
 }
 
 export function onboardingStepIdFromNumber(step: number): OnboardingStepId {
-  return ONBOARDING_STEP_ORDER[Math.max(0, Math.min(step, 5) - 1)]!;
+  return ONBOARDING_STEP_ORDER[Math.max(0, Math.min(step, 6) - 1)]!;
 }
 
 /**
@@ -55,6 +57,7 @@ export function deriveOnboardingStep(input: {
   savedStep: string | null | undefined;
   answers: ProfileAnswersMap;
   hasAdultDateOfBirth: boolean;
+  hasMatchingPreferences: boolean;
 }): OnboardingStepId {
   if (input.onboardingCompleted) {
     return ONBOARDING_STEPS.readiness;
@@ -64,6 +67,10 @@ export function deriveOnboardingStep(input: {
     return !input.savedStep || input.savedStep === ONBOARDING_STEPS.welcome
       ? ONBOARDING_STEPS.welcome
       : ONBOARDING_STEPS.eligibility;
+  }
+
+  if (!input.hasMatchingPreferences) {
+    return ONBOARDING_STEPS.matching;
   }
 
   const hasIntention =

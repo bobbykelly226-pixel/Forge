@@ -88,7 +88,12 @@ select ok(
 );
 
 update public.profile_private_details
-set date_of_birth = date '1990-08-14'
+set date_of_birth = date '1990-08-14', latitude = 39.7392, longitude = -104.9903
+where user_id = '14141414-1414-4414-8414-141414141414';
+
+update public.profile_preferences
+set gender_identity = 'woman', interested_in = array['everyone'],
+    preferred_age_min = 18, preferred_age_max = 100, max_distance_miles = 50
 where user_id = '14141414-1414-4414-8414-141414141414';
 
 select is(

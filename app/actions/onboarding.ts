@@ -6,8 +6,16 @@ import {
   saveOnboardingStepProgress,
   upsertCurrentUserProfileAnswer,
 } from '@/lib/data/onboarding';
-import { upsertCurrentUserPrivateDetails } from '@/lib/data/profile';
+import {
+  upsertCurrentUserPreferences,
+  upsertCurrentUserPrivateDetails,
+} from '@/lib/data/profile';
 import { validateAdultDateOfBirth } from '@/lib/age';
+import {
+  type MatchingPreferencesInput,
+  validateMatchingPreferences,
+} from '@/lib/profile/matching-preferences';
+import type { Tables } from '@/lib/supabase/database.types';
 import type {
   ProfileAnswerValue,
   ProfileAnswersMap,
@@ -25,20 +33,50 @@ type ActionResult = {
 export async function loadOnboardingBootstrap(): Promise<{
   answers: ProfileAnswersMap;
   dateOfBirth: string | null;
+  preferences: Tables<'profile_preferences'> | null;
   initialStep: number;
   completed: boolean;
 }> {
   const result = await loadOnboardingState();
   if (!result.success) {
-    return { answers: {}, dateOfBirth: null, initialStep: 1, completed: false };
+    return {
+      answers: {},
+      dateOfBirth: null,
+      preferences: null,
+      initialStep: 1,
+      completed: false,
+    };
   }
 
   return {
     answers: result.data.answers,
     dateOfBirth: result.data.dateOfBirth,
+    preferences: result.data.preferences,
     initialStep: result.data.initialStepNumber,
     completed: result.data.onboardingCompleted,
   };
+}
+
+export async function saveOnboardingMatchingPreferences(
+  input: MatchingPreferencesInput
+): Promise<ActionResult> {
+  const validated = validateMatchingPreferences(input);
+  if (!validated.ok) {
+    return { success: false, message: validated.message };
+  }
+
+  const value = validated.value;
+  const result = await upsertCurrentUserPreferences({
+    gender_identity: value.genderIdentity,
+    interested_in: value.interestedIn,
+    preferred_age_min: value.preferredAgeMin,
+    preferred_age_max: value.preferredAgeMax,
+    max_distance_miles: value.maxDistanceMiles,
+  });
+  if (!result.success) {
+    return { success: false, message: result.message };
+  }
+  return { success: true, message: 'Matching preferences saved privately.' };
 }
 
 export async function saveOnboardingDateOfBirth(dateOfBirth: string): Promise<ActionResult> {

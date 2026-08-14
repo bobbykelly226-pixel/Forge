@@ -6,6 +6,7 @@ import { useEffect, useRef, useState, useTransition } from 'react';
 import {
   finishOnboarding,
   saveOnboardingDateOfBirth,
+  saveOnboardingMatchingPreferences,
   saveOnboardingStep,
   saveProfileAnswer,
 } from '@/app/actions/onboarding';
@@ -21,8 +22,18 @@ import {
 } from '@/lib/profile/structured-options';
 import { mapLegacyRelationshipGoal } from '@/lib/profile/legacy-mapping';
 import { latestEligibleAdultBirthDate } from '@/lib/age';
+import {
+  GENDER_IDENTITY_OPTIONS,
+  INTERESTED_IN_OPTIONS,
+  MAX_DISTANCE_MILES,
+  MAX_MATCH_AGE,
+  MIN_DISTANCE_MILES,
+  MIN_MATCH_AGE,
+  matchingPreferencesAreComplete,
+} from '@/lib/profile/matching-preferences';
+import type { Tables } from '@/lib/supabase/database.types';
 
-const TOTAL_STEPS = 5;
+const TOTAL_STEPS = 6;
 const DESKTOP_MEDIA_QUERY = '(min-width: 640px)';
 
 const primaryButtonClassName =
@@ -113,10 +124,12 @@ function readStringArrayAnswer(
 export default function OnboardingShell({
   initialAnswers = {},
   initialDateOfBirth = null,
+  initialPreferences = null,
   initialStep = 1,
 }: {
   initialAnswers?: ProfileAnswersMap;
   initialDateOfBirth?: string | null;
+  initialPreferences?: Tables<'profile_preferences'> | null;
   initialStep?: number;
 }) {
   const [step, setStep] = useState(() =>
@@ -130,6 +143,14 @@ export default function OnboardingShell({
   );
   const [dateOfBirth, setDateOfBirth] = useState(initialDateOfBirth ?? '');
   const [dateOfBirthSaved, setDateOfBirthSaved] = useState(Boolean(initialDateOfBirth));
+  const [genderIdentity, setGenderIdentity] = useState(initialPreferences?.gender_identity ?? '');
+  const [interestedIn, setInterestedIn] = useState<string[]>(initialPreferences?.interested_in ?? []);
+  const [preferredAgeMin, setPreferredAgeMin] = useState(initialPreferences?.preferred_age_min ?? 25);
+  const [preferredAgeMax, setPreferredAgeMax] = useState(initialPreferences?.preferred_age_max ?? 55);
+  const [maxDistanceMiles, setMaxDistanceMiles] = useState(initialPreferences?.max_distance_miles ?? 50);
+  const [preferencesSaved, setPreferencesSaved] = useState(
+    matchingPreferencesAreComplete(initialPreferences)
+  );
   const [saveMessage, setSaveMessage] = useState<string | null>(null);
   const [saveError, setSaveError] = useState<string | null>(null);
   const [isDesktop, setIsDesktop] = useState(false);
@@ -230,11 +251,15 @@ export default function OnboardingShell({
       setSaveError('Save a valid date of birth to continue.');
       return;
     }
-    if (step === 3 && !intention) {
+    if (step === 3 && !preferencesSaved) {
+      setSaveError('Save your matching preferences to continue.');
+      return;
+    }
+    if (step === 4 && !intention) {
       setSaveError('Select a relationship intention to continue.');
       return;
     }
-    if (step === 4 && selectedValues.length === 0) {
+    if (step === 5 && selectedValues.length === 0) {
       setSaveError('Select at least one value to continue.');
       return;
     }
@@ -246,6 +271,26 @@ export default function OnboardingShell({
       persistStep(next);
       return next;
     });
+  };
+
+  const saveMatchingPreferences = async () => {
+    if (isPending || isFinishing) return;
+    setSaveError(null);
+    setSaveMessage(null);
+    setPreferencesSaved(false);
+    const result = await saveOnboardingMatchingPreferences({
+      genderIdentity,
+      interestedIn,
+      preferredAgeMin,
+      preferredAgeMax,
+      maxDistanceMiles,
+    });
+    if (!result.success) {
+      setSaveError(result.message);
+      return;
+    }
+    setPreferencesSaved(true);
+    setSaveMessage(result.message);
   };
 
   const saveDateOfBirth = async () => {
@@ -286,10 +331,14 @@ export default function OnboardingShell({
         ? 'Your date of birth is stored privately. Only your age is public.'
         : 'Enter and save your full date of birth to continue.'
       : step === 3
+        ? preferencesSaved
+          ? 'Your matching preferences are stored privately.'
+          : 'Complete and save these fields to continue.'
+      : step === 4
       ? intention
         ? 'Your intention is saved to your account.'
         : 'Select an option to save your answer.'
-      : step === 4
+      : step === 5
         ? selectedValues.length > 0
           ? 'Your values are saved to your account.'
           : 'Select one or more values to save your answer.'
@@ -397,6 +446,122 @@ export default function OnboardingShell({
         {step === 3 && (
           <section>
             <p className="mb-3 text-sm font-semibold uppercase tracking-[0.14em] text-[#D62828]">
+              Matching
+            </p>
+            <h1 className="mb-3 text-3xl font-bold tracking-tight text-[#0B2D5C] sm:text-4xl">
+              Who you would like to meet
+            </h1>
+            <p className="mb-6 text-base leading-relaxed text-[#555555]">
+              These settings stay private. Forge uses them in both directions so members only
+              appear when each person fits the other&apos;s preferences.
+            </p>
+
+            <fieldset>
+              <legend className="text-sm font-semibold text-[#0B2D5C]">I identify as</legend>
+              <div className="mt-2 grid grid-cols-1 gap-2 sm:grid-cols-2">
+                {GENDER_IDENTITY_OPTIONS.map((option) => (
+                  <OptionButton
+                    key={option.value}
+                    label={option.label}
+                    selected={genderIdentity === option.value}
+                    onClick={() => {
+                      setGenderIdentity(option.value);
+                      setPreferencesSaved(false);
+                    }}
+                  />
+                ))}
+              </div>
+            </fieldset>
+
+            <fieldset className="mt-6">
+              <legend className="text-sm font-semibold text-[#0B2D5C]">I am interested in</legend>
+              <div className="mt-2 grid grid-cols-1 gap-2 sm:grid-cols-2">
+                {INTERESTED_IN_OPTIONS.map((option) => (
+                  <OptionButton
+                    key={option.value}
+                    label={option.label}
+                    selected={interestedIn.includes(option.value)}
+                    onClick={() => {
+                      setInterestedIn((current) => {
+                        if (option.value === 'everyone') {
+                          return current.includes('everyone') ? [] : ['everyone'];
+                        }
+                        const withoutEveryone = current.filter((value) => value !== 'everyone');
+                        return withoutEveryone.includes(option.value)
+                          ? withoutEveryone.filter((value) => value !== option.value)
+                          : [...withoutEveryone, option.value];
+                      });
+                      setPreferencesSaved(false);
+                    }}
+                  />
+                ))}
+              </div>
+            </fieldset>
+
+            <div className="mt-6 grid grid-cols-2 gap-3">
+              <label className="text-sm font-semibold text-[#0B2D5C]">
+                Minimum age
+                <input
+                  type="number"
+                  min={MIN_MATCH_AGE}
+                  max={MAX_MATCH_AGE}
+                  value={preferredAgeMin}
+                  onChange={(event) => {
+                    setPreferredAgeMin(Number(event.target.value));
+                    setPreferencesSaved(false);
+                  }}
+                  className="mt-2 w-full rounded-2xl border border-[#0B2D5C]/20 px-4 py-3"
+                />
+              </label>
+              <label className="text-sm font-semibold text-[#0B2D5C]">
+                Maximum age
+                <input
+                  type="number"
+                  min={MIN_MATCH_AGE}
+                  max={MAX_MATCH_AGE}
+                  value={preferredAgeMax}
+                  onChange={(event) => {
+                    setPreferredAgeMax(Number(event.target.value));
+                    setPreferencesSaved(false);
+                  }}
+                  className="mt-2 w-full rounded-2xl border border-[#0B2D5C]/20 px-4 py-3"
+                />
+              </label>
+            </div>
+
+            <label className="mt-5 block text-sm font-semibold text-[#0B2D5C]">
+              Maximum distance: {maxDistanceMiles} miles
+              <input
+                type="range"
+                min={MIN_DISTANCE_MILES}
+                max={MAX_DISTANCE_MILES}
+                step="5"
+                value={maxDistanceMiles}
+                onChange={(event) => {
+                  setMaxDistanceMiles(Number(event.target.value));
+                  setPreferencesSaved(false);
+                }}
+                className="mt-3 w-full accent-[#D62828]"
+              />
+            </label>
+
+            <button
+              type="button"
+              onClick={() => void saveMatchingPreferences()}
+              disabled={isPending || isFinishing}
+              className="mt-5 inline-flex w-full items-center justify-center rounded-2xl border border-[#0B2D5C]/20 bg-white px-6 py-3 font-semibold text-[#0B2D5C] disabled:opacity-60"
+            >
+              {preferencesSaved ? 'Saved' : 'Save matching preferences'}
+            </button>
+            <p className={`mt-5 text-sm ${saveError ? 'text-[#D62828]' : 'text-[#777777]'}`}>
+              {statusMessage}
+            </p>
+          </section>
+        )}
+
+        {step === 4 && (
+          <section>
+            <p className="mb-3 text-sm font-semibold uppercase tracking-[0.14em] text-[#D62828]">
               Intention
             </p>
             <h1 className="mb-3 text-3xl font-bold tracking-tight text-[#0B2D5C] sm:text-4xl">
@@ -426,7 +591,7 @@ export default function OnboardingShell({
           </section>
         )}
 
-        {step === 4 && (
+        {step === 5 && (
           <section>
             <p className="mb-3 text-sm font-semibold uppercase tracking-[0.14em] text-[#D62828]">
               Values
@@ -458,7 +623,7 @@ export default function OnboardingShell({
           </section>
         )}
 
-        {step === 5 && (
+        {step === 6 && (
           <section>
             <p className="mb-3 text-sm font-semibold uppercase tracking-[0.14em] text-[#D62828]">
               Readiness
