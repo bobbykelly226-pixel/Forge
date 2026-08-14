@@ -250,6 +250,41 @@ export async function getCurrentUserPreferences(): Promise<
   return { success: true, data };
 }
 
+type PreferencesUpsertFields = Pick<
+  TablesUpdate<'profile_preferences'>,
+  | 'gender_identity'
+  | 'interested_in'
+  | 'preferred_age_min'
+  | 'preferred_age_max'
+  | 'max_distance_miles'
+>;
+
+/** Upsert the authenticated member's private matching preferences. */
+export async function upsertCurrentUserPreferences(
+  fields: PreferencesUpsertFields
+): Promise<DataAccessResult<Tables<'profile_preferences'>>> {
+  const ctx = await requireUserWithFoundation();
+  if (ctx.authError || !ctx.user) {
+    return { success: false, message: 'You must be signed in.' };
+  }
+  if (ctx.foundationError) {
+    return { success: false, message: ctx.foundationMessage };
+  }
+
+  const { data, error } = await ctx.supabase
+    .from('profile_preferences')
+    .upsert({ user_id: ctx.user.id, ...fields }, { onConflict: 'user_id' })
+    .select('*')
+    .single();
+
+  if (error) {
+    console.error('upsertCurrentUserPreferences:', error.message);
+    return { success: false, message: 'Could not save matching preferences.' };
+  }
+
+  return { success: true, data };
+}
+
 /** Current user's profile questionnaire answers (profile_answers). */
 export async function getCurrentUserProfileAnswers(): Promise<
   DataAccessResult<Tables<'profile_answers'>[]>

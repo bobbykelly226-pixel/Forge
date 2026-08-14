@@ -4,7 +4,7 @@
  * Outcomes:
  * - session_ready: email confirmed and a session is established
  * - confirmed_needs_signin: email confirmed, but session cookies are not usable yet
- * - already_confirmed: link was previously consumed / account already confirmed
+ * - already_confirmed: provider explicitly reports the account is confirmed
  * - invalid_or_expired: link is genuinely unusable
  */
 
@@ -64,10 +64,8 @@ export const CONFIRMATION_COPY: Record<ConfirmationOutcome, ConfirmationPresenta
 /**
  * Classify provider error text from query/hash without revealing account existence.
  *
- * Supabase reuses “Email link is invalid or has expired” / otp_expired for both
- * already-consumed confirmation links and genuinely expired ones. Prefer the
- * already-confirmed guidance for that specific phrasing so a confirmed account
- * never sees “Confirmation needed” after a successful verify.
+ * Invalid/expired provider responses do not prove that the account is confirmed.
+ * Present resend guidance unless the provider explicitly says it is confirmed.
  */
 export function classifyConfirmationProviderError(
   errorText: string | null | undefined
@@ -86,7 +84,7 @@ export function classifyConfirmationProviderError(
     return 'already_confirmed';
   }
 
-  // Standard Supabase reused/expired confirmation redirect payload.
+  // Standard Supabase invalid/expired confirmation redirect payload.
   if (
     message.includes('email link is invalid or has expired') ||
     message.includes('otp_expired') ||
@@ -94,7 +92,7 @@ export function classifyConfirmationProviderError(
     message.includes('flow state') ||
     (message.includes('token') && message.includes('expired'))
   ) {
-    return 'already_confirmed';
+    return 'invalid_or_expired';
   }
 
   if (
@@ -109,6 +107,17 @@ export function classifyConfirmationProviderError(
   }
 
   return 'invalid_or_expired';
+}
+
+/**
+ * A code on our callback URL is issued only after Supabase has accepted the
+ * email-verification link. Exchanging that code can still fail when the link
+ * is opened in a different browser/profile because the original PKCE verifier
+ * cookie is unavailable. The email is confirmed in that case; the user simply
+ * needs to sign in normally.
+ */
+export function outcomeForCodeExchangeFailure(): 'confirmed_needs_signin' {
+  return 'confirmed_needs_signin';
 }
 
 export function presentationForOutcome(

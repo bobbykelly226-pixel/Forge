@@ -14,10 +14,13 @@ import {
 } from '@/lib/types/profile-answers';
 import {
   ensureFoundationalRecords,
+  getCurrentUserPreferences,
+  getCurrentUserPrivateDetails,
   type DataAccessResult,
   updateOnboardingProgress,
 } from '@/lib/data/profile';
 import { mapLegacyRelationshipGoal } from '@/lib/profile/legacy-mapping';
+import { matchingPreferencesAreComplete } from '@/lib/profile/matching-preferences';
 
 const ALLOWED_KEYS = new Set<string>(Object.values(PROFILE_ANSWER_KEYS));
 
@@ -174,6 +177,8 @@ export async function upsertCurrentUserProfileAnswer(
 
 export type OnboardingLoadState = {
   answers: ProfileAnswersMap;
+  dateOfBirth: string | null;
+  preferences: Tables<'profile_preferences'> | null;
   onboardingCompleted: boolean;
   onboardingStep: OnboardingStepId;
   initialStepNumber: number;
@@ -183,9 +188,19 @@ export type OnboardingLoadState = {
 export async function loadOnboardingState(): Promise<
   DataAccessResult<OnboardingLoadState>
 > {
-  const answersResult = await loadCurrentUserProfileAnswersMap();
+  const [answersResult, privateDetailsResult, preferencesResult] = await Promise.all([
+    loadCurrentUserProfileAnswersMap(),
+    getCurrentUserPrivateDetails(),
+    getCurrentUserPreferences(),
+  ]);
   if (!answersResult.success) {
     return answersResult;
+  }
+  if (!privateDetailsResult.success) {
+    return privateDetailsResult;
+  }
+  if (!preferencesResult.success) {
+    return preferencesResult;
   }
 
   const supabase = await createClient();
@@ -208,16 +223,27 @@ export async function loadOnboardingState(): Promise<
   }
 
   const onboardingCompleted = Boolean(appState?.onboarding_completed);
+  const dateOfBirth = privateDetailsResult.data?.date_of_birth ?? null;
   const stepId = deriveOnboardingStep({
     onboardingCompleted,
     savedStep: appState?.onboarding_step,
     answers: answersResult.data,
+    hasAdultDateOfBirth: Boolean(dateOfBirth),
+    hasMatchingPreferences: Boolean(
+      preferencesResult.data?.gender_identity &&
+        preferencesResult.data.interested_in.length > 0 &&
+        preferencesResult.data.preferred_age_min != null &&
+        preferencesResult.data.preferred_age_max != null &&
+        preferencesResult.data.max_distance_miles != null
+    ),
   });
 
   return {
     success: true,
     data: {
       answers: answersResult.data,
+      dateOfBirth,
+      preferences: preferencesResult.data,
       onboardingCompleted,
       onboardingStep: stepId,
       initialStepNumber: onboardingStepNumber(stepId),
@@ -243,9 +269,27 @@ export async function saveOnboardingStepProgress(
 export async function completeOnboarding(): Promise<
   DataAccessResult<{ completed: true }>
 > {
-  const answersResult = await loadCurrentUserProfileAnswersMap();
-  if (!answersResult.success) {
-    return answersResult;
+  const [answersResult, privateDetailsResult, preferencesResult] = await Promise.all([
+    loadCurrentUserProfileAnswersMap(),
+    getCurrentUserPrivateDetails(),
+    getCurrentUserPreferences(),
+  ]);
+  if (!answersResult.success) return answersResult;
+  if (!privateDetailsResult.success) return privateDetailsResult;
+  if (!preferencesResult.success) return preferencesResult;
+
+  if (!privateDetailsResult.data?.date_of_birth) {
+    return {
+      success: false,
+      message: 'Add your date of birth before completing onboarding.',
+    };
+  }
+
+  if (!matchingPreferencesAreComplete(preferencesResult.data)) {
+    return {
+      success: false,
+      message: 'Add your matching preferences before completing onboarding.',
+    };
   }
 
   if (!isOnboardingContentComplete(answersResult.data)) {

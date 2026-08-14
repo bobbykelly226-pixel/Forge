@@ -5,6 +5,7 @@ import type { EmailOtpType } from '@supabase/supabase-js';
 import {
   CONFIRMATION_COPY,
   classifyConfirmationProviderError,
+  outcomeForCodeExchangeFailure,
   type ConfirmationOutcome,
 } from '@/lib/auth/confirmation';
 import { resolvePostAuthRedirect, sanitizeInternalPath } from '@/lib/auth/redirects';
@@ -45,7 +46,11 @@ export async function completeAuthWithCode(
   const { error } = await supabase.auth.exchangeCodeForSession(code);
   if (error) {
     console.error('completeAuthWithCode failed');
-    return failureResult(classifyConfirmationProviderError(error.message));
+    // Supabase has already accepted the verification link before redirecting
+    // here with a code. A missing PKCE verifier (for example, when the email is
+    // opened in another browser/profile) prevents an automatic session but does
+    // not undo the email confirmation.
+    return failureResult(outcomeForCodeExchangeFailure());
   }
   return redirectForAuthenticatedUser(nextPath);
 }

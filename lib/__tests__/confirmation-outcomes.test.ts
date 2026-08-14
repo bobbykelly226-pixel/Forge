@@ -6,6 +6,7 @@ import {
   authResultPath,
   classifyConfirmationProviderError,
   isSuccessfulConfirmationOutcome,
+  outcomeForCodeExchangeFailure,
   parseConfirmationOutcome,
   presentationForOutcome,
 } from '../auth/confirmation';
@@ -29,29 +30,34 @@ describe('confirmation outcome classification', () => {
     assert.doesNotMatch(copy.title, /confirmation needed/i);
   });
 
-  it('maps already-consumed confirmation links without Confirmation needed', () => {
+  it('treats a failed post-confirmation code exchange as confirmed but needing sign-in', () => {
+    const outcome = outcomeForCodeExchangeFailure();
+    assert.equal(outcome, 'confirmed_needs_signin');
+    assert.equal(CONFIRMATION_COPY[outcome].title, 'Email confirmed');
+    assert.doesNotMatch(CONFIRMATION_COPY[outcome].message, /invalid or has expired/i);
+  });
+
+  it('maps invalid or expired confirmation links to resend guidance', () => {
     const outcome = classifyConfirmationProviderError(
       'Email link is invalid or has expired'
     );
-    assert.equal(outcome, 'already_confirmed');
+    assert.equal(outcome, 'invalid_or_expired');
     const copy = presentationForOutcome(outcome);
-    assert.equal(
-      copy.message,
-      'Your email has already been confirmed. Sign in to continue.'
-    );
-    assert.doesNotMatch(copy.title, /confirmation needed/i);
-    assert.equal(isSuccessfulConfirmationOutcome(outcome), true);
+    assert.equal(copy.title, 'Confirmation needed');
+    assert.match(copy.message, /Request a new confirmation email/i);
+    assert.equal(copy.offerResend, true);
+    assert.equal(isSuccessfulConfirmationOutcome(outcome), false);
   });
 
-  it('maps otp_expired / flow_state to already_confirmed', () => {
-    assert.equal(classifyConfirmationProviderError('otp_expired'), 'already_confirmed');
+  it('maps otp_expired / flow_state to invalid_or_expired', () => {
+    assert.equal(classifyConfirmationProviderError('otp_expired'), 'invalid_or_expired');
     assert.equal(
       classifyConfirmationProviderError('flow_state_expired'),
-      'already_confirmed'
+      'invalid_or_expired'
     );
     assert.equal(
       classifyConfirmationProviderError('Token has expired or is invalid'),
-      'already_confirmed'
+      'invalid_or_expired'
     );
   });
 

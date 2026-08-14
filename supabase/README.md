@@ -31,6 +31,47 @@ npm run supabase:types
 
 Until types are regenerated from an applied schema, `lib/supabase/database.types.ts` is a **temporary schema-aligned hand-authored file**, not CLI output.
 
+## Founding Beta signup invitations
+
+New account creation is restricted by the Supabase Auth `before-user-created`
+hook. The invited email must be added in normalized lowercase form before the
+person signs up:
+
+```sql
+insert into public.beta_signup_invitations (email, expires_at, note)
+values (
+  lower(btrim('person@example.com')),
+  now() + interval '14 days',
+  'Founding Beta invitation'
+);
+```
+
+Each invitation is single-use. To revoke an unused invitation:
+
+```sql
+update public.beta_signup_invitations
+set revoked_at = now()
+where email = lower(btrim('person@example.com'))
+  and accepted_at is null;
+```
+
+After applying the migration, confirm **Authentication → Hooks → Before User
+Created** points to
+`public.hook_enforce_beta_signup_invitation`. The checked-in `config.toml`
+enables the same hook for local Supabase.
+
+Production rollout order:
+
+1. Apply `20260814141901_invitation_only_signup.sql`.
+2. Add at least one test invitation using the SQL above.
+3. Enable the **Before User Created** hook in the Supabase dashboard.
+4. Deploy the application changes and verify invited, uninvited, expired, and
+   replayed signup attempts.
+
+Do not enable the remote Auth hook before the migration is applied. Existing
+accounts are unaffected because this hook runs only when Auth creates a new
+user.
+
 ## Existing tables outside this app model
 
 `waitlist` and `feedback` exist in the remote project for marketing flows. Do not modify or remove them in Forge application migrations.

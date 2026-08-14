@@ -39,6 +39,7 @@ import {
 } from '@/lib/profile/structured-options';
 import { normalizeThingsIEnjoy } from '@/lib/profile/things-i-enjoy';
 import type { Json } from '@/lib/supabase/database.types';
+import { validateAdultDateOfBirth } from '@/lib/age';
 
 type ProfileActionResult = {
   success: boolean;
@@ -208,7 +209,7 @@ export async function saveProfile(formData: FormData): Promise<ProfileActionResu
   }
 
   const fullName = (formData.get('full_name') as string)?.trim();
-  const ageValue = (formData.get('age') as string)?.trim();
+  const dateOfBirthValue = (formData.get('date_of_birth') as string)?.trim();
   const shortBio = readOptionalString(formData, 'short_bio');
   const moreAbout = readOptionalString(formData, 'more_about');
   const career = readOptionalString(formData, 'career');
@@ -221,13 +222,9 @@ export async function saveProfile(formData: FormData): Promise<ProfileActionResu
     return { success: false, message: 'Full name is required.' };
   }
 
-  let age: number | null = null;
-  if (ageValue) {
-    const parsedAge = Number.parseInt(ageValue, 10);
-    if (Number.isNaN(parsedAge) || parsedAge < 18 || parsedAge > 120) {
-      return { success: false, message: 'Age must be between 18 and 120.' };
-    }
-    age = parsedAge;
+  const dateOfBirth = validateAdultDateOfBirth(dateOfBirthValue ?? '');
+  if (!dateOfBirth.ok) {
+    return { success: false, message: dateOfBirth.message };
   }
 
   const relationshipGoals = readRelationshipGoals(formData);
@@ -426,7 +423,6 @@ export async function saveProfile(formData: FormData): Promise<ProfileActionResu
 
   const profileFields = {
     full_name: fullName,
-    age,
     location: publicLocation.location,
     location_city: publicLocation.location_city,
     location_region: publicLocation.location_region,
@@ -495,6 +491,7 @@ export async function saveProfile(formData: FormData): Promise<ProfileActionResu
   }
 
   const privateResult = await upsertCurrentUserPrivateDetails({
+    date_of_birth: dateOfBirth.value,
     location_city: publicLocation.location_city,
     location_region: publicLocation.location_region,
     location_country: publicLocation.location_country,
@@ -808,17 +805,20 @@ export async function saveProfileSection(
     if (!fullName) {
       return { success: false, message: 'Full name is required.' };
     }
-    const ageValue = (formData.get('age') as string)?.trim();
-    let age: number | null = null;
-    if (ageValue) {
-      const parsedAge = Number.parseInt(ageValue, 10);
-      if (Number.isNaN(parsedAge) || parsedAge < 18 || parsedAge > 120) {
-        return { success: false, message: 'Age must be between 18 and 120.' };
-      }
-      age = parsedAge;
+    const dateOfBirth = validateAdultDateOfBirth(
+      (formData.get('date_of_birth') as string | null) ?? ''
+    );
+    if (!dateOfBirth.ok) {
+      return { success: false, message: dateOfBirth.message };
+    }
+
+    const privateResult = await upsertCurrentUserPrivateDetails({
+      date_of_birth: dateOfBirth.value,
+    });
+    if (!privateResult.success) {
+      return { success: false, message: privateResult.message };
     }
     fields.full_name = fullName;
-    fields.age = age;
   }
 
   if (sectionId === 'about') {
