@@ -109,6 +109,17 @@ export function classifyConfirmationProviderError(
   return 'invalid_or_expired';
 }
 
+/**
+ * A code on our callback URL is issued only after Supabase has accepted the
+ * email-verification link. Exchanging that code can still fail when the link
+ * is opened in a different browser/profile because the original PKCE verifier
+ * cookie is unavailable. The email is confirmed in that case; the user simply
+ * needs to sign in normally.
+ */
+export function outcomeForCodeExchangeFailure(): 'confirmed_needs_signin' {
+  return 'confirmed_needs_signin';
+}
+
 export function presentationForOutcome(
   outcome: ConfirmationOutcome
 ): ConfirmationPresentation {

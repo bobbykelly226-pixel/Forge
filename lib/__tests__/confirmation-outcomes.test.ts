@@ -6,6 +6,7 @@ import {
   authResultPath,
   classifyConfirmationProviderError,
   isSuccessfulConfirmationOutcome,
+  outcomeForCodeExchangeFailure,
   parseConfirmationOutcome,
   presentationForOutcome,
 } from '../auth/confirmation';
@@ -27,6 +28,13 @@ describe('confirmation outcome classification', () => {
     assert.equal(copy.title, 'Email confirmed');
     assert.doesNotMatch(copy.message, /invalid or has expired/i);
     assert.doesNotMatch(copy.title, /confirmation needed/i);
+  });
+
+  it('treats a failed post-confirmation code exchange as confirmed but needing sign-in', () => {
+    const outcome = outcomeForCodeExchangeFailure();
+    assert.equal(outcome, 'confirmed_needs_signin');
+    assert.equal(CONFIRMATION_COPY[outcome].title, 'Email confirmed');
+    assert.doesNotMatch(CONFIRMATION_COPY[outcome].message, /invalid or has expired/i);
   });
 
   it('maps invalid or expired confirmation links to resend guidance', () => {
