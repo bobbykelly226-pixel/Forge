@@ -5,6 +5,7 @@ import { redirect } from 'next/navigation';
 import ForgeAppCanvas from '@/components/ForgeAppCanvas';
 import SelfProfilePreviewCard from '@/components/profile/SelfProfilePreviewCard';
 import { loadSelfProfilePreview } from '@/lib/data/bundle';
+import { selfPreviewHasVisibleContent } from '@/lib/profile/self-preview';
 import { createClient } from '@/lib/supabase/server';
 
 const display = Fraunces({
@@ -45,12 +46,7 @@ export default async function ProfilePreviewPage() {
   }
 
   const profile = preview.data;
-  const hasStartedProfile = Boolean(
-    profile?.full_name?.trim() ||
-      profile?.short_bio?.trim() ||
-      profile?.profile_photo_url ||
-      (profile?.things_i_enjoy && profile.things_i_enjoy.length > 0)
-  );
+  const hasStartedProfile = selfPreviewHasVisibleContent(profile);
 
   return (
     <ForgeAppCanvas

@@ -1,13 +1,12 @@
-export const GENDER_IDENTITY_OPTIONS = [
-  { value: 'woman', label: 'Woman' },
-  { value: 'man', label: 'Man' },
-  { value: 'nonbinary', label: 'Nonbinary' },
-  { value: 'another_identity', label: 'Another identity' },
+export const SEX_OPTIONS = [
+  { value: 'man', label: 'Male' },
+  { value: 'woman', label: 'Female' },
 ] as const;
 
 export const INTERESTED_IN_OPTIONS = [
-  ...GENDER_IDENTITY_OPTIONS,
-  { value: 'everyone', label: 'Everyone' },
+  { value: 'man', label: 'Men' },
+  { value: 'woman', label: 'Women' },
+  { value: 'everyone', label: 'Both' },
 ] as const;
 
 export const MIN_MATCH_AGE = 18;
@@ -23,7 +22,7 @@ export type MatchingPreferencesInput = {
   maxDistanceMiles: number;
 };
 
-const identityValues = new Set<string>(GENDER_IDENTITY_OPTIONS.map((option) => option.value));
+const identityValues = new Set<string>(SEX_OPTIONS.map((option) => option.value));
 const interestValues = new Set<string>(INTERESTED_IN_OPTIONS.map((option) => option.value));
 
 export function validateMatchingPreferences(
@@ -33,13 +32,13 @@ export function validateMatchingPreferences(
   const interestedIn = [...new Set(input.interestedIn.map((value) => value.trim()).filter(Boolean))];
 
   if (!identityValues.has(genderIdentity)) {
-    return { ok: false, message: 'Choose the identity that best describes you.' };
+    return { ok: false, message: 'Choose Male or Female.' };
   }
   if (interestedIn.length === 0 || interestedIn.some((value) => !interestValues.has(value))) {
     return { ok: false, message: 'Choose who you would like to meet.' };
   }
-  if (interestedIn.includes('everyone') && interestedIn.length > 1) {
-    return { ok: false, message: 'Choose Everyone by itself, or select specific identities.' };
+  if (interestedIn.length !== 1) {
+    return { ok: false, message: 'Choose Men, Women, or Both.' };
   }
   if (!Number.isInteger(input.preferredAgeMin) || input.preferredAgeMin < MIN_MATCH_AGE) {
     return { ok: false, message: 'Minimum preferred age must be at least 18.' };

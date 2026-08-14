@@ -23,7 +23,7 @@ import {
 import { mapLegacyRelationshipGoal } from '@/lib/profile/legacy-mapping';
 import { latestEligibleAdultBirthDate } from '@/lib/age';
 import {
-  GENDER_IDENTITY_OPTIONS,
+  SEX_OPTIONS,
   INTERESTED_IN_OPTIONS,
   MAX_DISTANCE_MILES,
   MAX_MATCH_AGE,
@@ -457,9 +457,9 @@ export default function OnboardingShell({
             </p>
 
             <fieldset>
-              <legend className="text-sm font-semibold text-[#0B2D5C]">I identify as</legend>
+              <legend className="text-sm font-semibold text-[#0B2D5C]">I am</legend>
               <div className="mt-2 grid grid-cols-1 gap-2 sm:grid-cols-2">
-                {GENDER_IDENTITY_OPTIONS.map((option) => (
+                {SEX_OPTIONS.map((option) => (
                   <OptionButton
                     key={option.value}
                     label={option.label}
@@ -482,15 +482,7 @@ export default function OnboardingShell({
                     label={option.label}
                     selected={interestedIn.includes(option.value)}
                     onClick={() => {
-                      setInterestedIn((current) => {
-                        if (option.value === 'everyone') {
-                          return current.includes('everyone') ? [] : ['everyone'];
-                        }
-                        const withoutEveryone = current.filter((value) => value !== 'everyone');
-                        return withoutEveryone.includes(option.value)
-                          ? withoutEveryone.filter((value) => value !== option.value)
-                          : [...withoutEveryone, option.value];
-                      });
+                      setInterestedIn([option.value]);
                       setPreferencesSaved(false);
                     }}
                   />
