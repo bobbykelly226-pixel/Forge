@@ -62,7 +62,7 @@ enables the same hook for local Supabase.
 
 Production rollout order:
 
-1. Apply `20260813203536_invitation_only_signup.sql`.
+1. Apply `20260814141901_invitation_only_signup.sql`.
 2. Add at least one test invitation using the SQL above.
 3. Enable the **Before User Created** hook in the Supabase dashboard.
 4. Deploy the application changes and verify invited, uninvited, expired, and
