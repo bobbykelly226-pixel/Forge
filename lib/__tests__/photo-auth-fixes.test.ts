@@ -77,6 +77,13 @@ describe('auth confirmation helpers', () => {
     assert.equal(mapAuthErrorMessage('secret_token_value_xyz').includes('secret_token_value_xyz'), false);
   });
 
+  it('maps the database-enforced beta invitation rejection clearly', () => {
+    assert.match(
+      mapAuthErrorMessage('A valid Forge Founding Beta invitation is required to create an account.'),
+      /currently invitation-only/i
+    );
+  });
+
   it('does not treat already-registered ambiguous signups as confirmation sent', () => {
     const result = interpretSignUpResult({
       user: { id: 'abc', identities: [] },

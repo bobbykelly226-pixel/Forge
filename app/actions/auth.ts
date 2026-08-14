@@ -2,6 +2,10 @@
 
 import { Resend } from 'resend';
 
+import {
+  INVITATION_REQUIRED_MESSAGE,
+  isActiveBetaSignupInvitation,
+} from '@/lib/auth/invitations';
 import { mapAuthErrorMessage } from '@/lib/auth/messages';
 import { createClient } from '@/lib/supabase/server';
 import { createServiceClient } from '@/lib/supabase/admin';
@@ -27,6 +31,32 @@ function isRateLimitError(message: string | undefined): boolean {
     lower.includes('over_email_send_rate_limit') ||
     lower.includes('email rate limit')
   );
+}
+
+/**
+ * Defense in depth for server-side signup and its service-role email fallback.
+ * The Supabase before-user-created hook remains the authoritative boundary and
+ * also blocks callers that bypass this Server Action.
+ */
+async function hasActiveBetaSignupInvitation(email: string): Promise<boolean | null> {
+  const admin = createServiceClient();
+
+  // Without a service-role client, proceed to Auth and let the database hook
+  // make the authoritative decision. The service-role fallback is also disabled.
+  if (!admin) return null;
+
+  const { data, error } = await admin
+    .from('beta_signup_invitations')
+    .select('accepted_at, expires_at, revoked_at')
+    .eq('email', email)
+    .maybeSingle();
+
+  if (error) {
+    console.error('beta signup invitation preflight failed');
+    return false;
+  }
+
+  return isActiveBetaSignupInvitation(data);
 }
 
 /**
@@ -198,6 +228,15 @@ export async function signUpWithEmail(input: {
     return {
       success: false,
       message: 'Could not determine the current site address.',
+      status: 'error',
+    };
+  }
+
+  const hasInvitation = await hasActiveBetaSignupInvitation(email);
+  if (hasInvitation === false) {
+    return {
+      success: false,
+      message: INVITATION_REQUIRED_MESSAGE,
       status: 'error',
     };
   }

@@ -68,11 +68,11 @@ export default function SignupForm() {
       <main className="pt-16 pb-20 max-w-md mx-auto px-5 sm:px-6">
         <div className="text-center mb-10">
           <h1 className="text-4xl sm:text-5xl font-bold tracking-tight text-[#0B2D5C] mb-4">
-            Join Forge
+            Join the Founding Beta
           </h1>
           <p className="text-lg text-[#444444] leading-relaxed">
-            Create your account and help build a dating platform rooted in values,
-            character, and intentional relationships.
+            Forge is currently invitation-only. Create your account using the email
+            address that received your invitation.
           </p>
         </div>
 
@@ -137,9 +137,13 @@ export default function SignupForm() {
             disabled={isSubmitting}
             className="w-full bg-[#D62828] hover:bg-[#A61F1F] disabled:bg-gray-400 text-white font-semibold py-5 rounded-2xl text-lg transition"
           >
-            {isSubmitting ? 'Creating account...' : 'Create account'}
+            {isSubmitting ? 'Verifying invitation...' : 'Create invited account'}
           </button>
         </form>
+
+        <p className="mt-5 text-center text-sm leading-relaxed text-[#666666]">
+          Invitations are tied to the recipient&apos;s email address and may be used once.
+        </p>
 
         <p className="text-center text-[#444444] mt-8">
           Already have an account?{' '}

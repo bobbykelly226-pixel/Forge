@@ -62,6 +62,39 @@ export type Database = {
         }
         Relationships: []
       }
+      beta_signup_invitations: {
+        Row: {
+          accepted_at: string | null
+          accepted_user_id: string | null
+          email: string
+          expires_at: string | null
+          id: string
+          invited_at: string
+          note: string | null
+          revoked_at: string | null
+        }
+        Insert: {
+          accepted_at?: string | null
+          accepted_user_id?: string | null
+          email: string
+          expires_at?: string | null
+          id?: string
+          invited_at?: string
+          note?: string | null
+          revoked_at?: string | null
+        }
+        Update: {
+          accepted_at?: string | null
+          accepted_user_id?: string | null
+          email?: string
+          expires_at?: string | null
+          id?: string
+          invited_at?: string
+          note?: string | null
+          revoked_at?: string | null
+        }
+        Relationships: []
+      }
       character_signal_display_preferences: {
         Row: {
           is_public: boolean
