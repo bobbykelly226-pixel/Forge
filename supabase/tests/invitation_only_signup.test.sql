@@ -53,7 +53,9 @@ values
   ('expired@example.com', now() - interval '2 days', now() - interval '1 day', null),
   ('revoked@example.com', now(), now() + interval '7 days', now());
 
-set local role supabase_auth_admin;
+-- The Supabase pgTAP runner cannot assume the internal supabase_auth_admin
+-- role. The privilege assertions above verify the production execution
+-- boundary; the disposable database owner exercises the hook behavior below.
 
 select is(
   public.hook_enforce_beta_signup_invitation(
@@ -137,8 +139,6 @@ select is(
   403,
   'an invalid email is rejected'
 );
-
-reset role;
 
 select is(
   (select count(*)::integer from public.beta_signup_invitations where accepted_at is not null),
