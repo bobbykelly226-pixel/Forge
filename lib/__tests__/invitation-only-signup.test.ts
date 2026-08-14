@@ -8,7 +8,7 @@ import {
 } from '@/lib/auth/invitations';
 
 const migration = readFileSync(
-  'supabase/migrations/20260813203536_invitation_only_signup.sql',
+  'supabase/migrations/20260814141901_invitation_only_signup.sql',
   'utf8'
 );
 const localConfig = readFileSync('supabase/config.toml', 'utf8');
@@ -70,5 +70,15 @@ describe('invitation-only signup', () => {
     assert.match(signupAction, /hasActiveBetaSignupInvitation/);
     assert.match(signupForm, /currently invitation-only/i);
     assert.match(INVITATION_REQUIRED_MESSAGE, /Founding Beta invitation/i);
+  });
+
+  it('does not invalidate a successful signup by generating a second confirmation link', () => {
+    const freshSignupSection = signupAction.slice(
+      signupAction.indexOf('const identities = data.user?.identities'),
+      signupAction.indexOf('export async function requestPasswordReset')
+    );
+
+    assert.doesNotMatch(freshSignupSection, /deliverConfirmationWithResend/);
+    assert.match(freshSignupSection, /Check your email to confirm your account/);
   });
 });

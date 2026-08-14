@@ -312,24 +312,9 @@ export async function signUpWithEmail(input: {
     };
   }
 
-  // Fresh signup accepted by Auth. Prefer Resend delivery when available so the inbox
-  // is not dependent on Supabase's low built-in mailer limits.
-  if (createServiceClient() && process.env.RESEND_API_KEY) {
-    const delivered = await deliverConfirmationWithResend({
-      email,
-      origin: input.origin,
-      password,
-    });
-    if (!delivered.success) {
-      return { success: false, status: 'error', message: delivered.message };
-    }
-    return {
-      success: true,
-      status: 'confirmation_sent',
-      message: delivered.message,
-    };
-  }
-
+  // signUp already generated and sent the one-time confirmation token. Generating a
+  // second signup link here would invalidate the first email and strand the user.
+  // Resend remains a fallback above only when Supabase's built-in mailer is rate-limited.
   return {
     success: true,
     status: 'confirmation_sent',
