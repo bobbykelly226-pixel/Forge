@@ -14,6 +14,7 @@ import {
 } from '@/lib/types/profile-answers';
 import {
   ensureFoundationalRecords,
+  getCurrentUserPrivateDetails,
   type DataAccessResult,
   updateOnboardingProgress,
 } from '@/lib/data/profile';
@@ -174,6 +175,7 @@ export async function upsertCurrentUserProfileAnswer(
 
 export type OnboardingLoadState = {
   answers: ProfileAnswersMap;
+  dateOfBirth: string | null;
   onboardingCompleted: boolean;
   onboardingStep: OnboardingStepId;
   initialStepNumber: number;
@@ -183,9 +185,15 @@ export type OnboardingLoadState = {
 export async function loadOnboardingState(): Promise<
   DataAccessResult<OnboardingLoadState>
 > {
-  const answersResult = await loadCurrentUserProfileAnswersMap();
+  const [answersResult, privateDetailsResult] = await Promise.all([
+    loadCurrentUserProfileAnswersMap(),
+    getCurrentUserPrivateDetails(),
+  ]);
   if (!answersResult.success) {
     return answersResult;
+  }
+  if (!privateDetailsResult.success) {
+    return privateDetailsResult;
   }
 
   const supabase = await createClient();
@@ -208,16 +216,19 @@ export async function loadOnboardingState(): Promise<
   }
 
   const onboardingCompleted = Boolean(appState?.onboarding_completed);
+  const dateOfBirth = privateDetailsResult.data?.date_of_birth ?? null;
   const stepId = deriveOnboardingStep({
     onboardingCompleted,
     savedStep: appState?.onboarding_step,
     answers: answersResult.data,
+    hasAdultDateOfBirth: Boolean(dateOfBirth),
   });
 
   return {
     success: true,
     data: {
       answers: answersResult.data,
+      dateOfBirth,
       onboardingCompleted,
       onboardingStep: stepId,
       initialStepNumber: onboardingStepNumber(stepId),
@@ -243,9 +254,18 @@ export async function saveOnboardingStepProgress(
 export async function completeOnboarding(): Promise<
   DataAccessResult<{ completed: true }>
 > {
-  const answersResult = await loadCurrentUserProfileAnswersMap();
-  if (!answersResult.success) {
-    return answersResult;
+  const [answersResult, privateDetailsResult] = await Promise.all([
+    loadCurrentUserProfileAnswersMap(),
+    getCurrentUserPrivateDetails(),
+  ]);
+  if (!answersResult.success) return answersResult;
+  if (!privateDetailsResult.success) return privateDetailsResult;
+
+  if (!privateDetailsResult.data?.date_of_birth) {
+    return {
+      success: false,
+      message: 'Add your date of birth before completing onboarding.',
+    };
   }
 
   if (!isOnboardingContentComplete(answersResult.data)) {

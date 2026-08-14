@@ -21,6 +21,7 @@ describe('onboarding resume and completion', () => {
       onboardingCompleted: false,
       savedStep: null,
       answers: {},
+      hasAdultDateOfBirth: false,
     });
     assert.equal(step, ONBOARDING_STEPS.welcome);
   });
@@ -30,6 +31,7 @@ describe('onboarding resume and completion', () => {
       onboardingCompleted: false,
       savedStep: ONBOARDING_STEPS.intention,
       answers: { [PROFILE_ANSWER_KEYS.relationshipIntention]: 'Marriage-minded' },
+      hasAdultDateOfBirth: true,
     });
     assert.equal(step, ONBOARDING_STEPS.values);
   });
@@ -42,8 +44,22 @@ describe('onboarding resume and completion', () => {
         [PROFILE_ANSWER_KEYS.relationshipIntention]: 'Marriage-minded',
         [PROFILE_ANSWER_KEYS.coreValues]: ['Faith', 'Family'],
       },
+      hasAdultDateOfBirth: true,
     });
     assert.equal(step, ONBOARDING_STEPS.readiness);
+  });
+
+  it('requires adult eligibility before relationship onboarding', () => {
+    const step = deriveOnboardingStep({
+      onboardingCompleted: false,
+      savedStep: ONBOARDING_STEPS.intention,
+      answers: {
+        [PROFILE_ANSWER_KEYS.relationshipIntention]: 'Marriage-minded',
+        [PROFILE_ANSWER_KEYS.coreValues]: ['Faith'],
+      },
+      hasAdultDateOfBirth: false,
+    });
+    assert.equal(step, ONBOARDING_STEPS.eligibility);
   });
 
   it('does not treat incomplete answers as complete', () => {

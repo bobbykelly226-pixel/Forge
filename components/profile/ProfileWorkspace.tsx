@@ -60,8 +60,10 @@ import {
 } from '@/lib/profile-completion';
 import type { Profile } from '@/lib/types/profile';
 import { CORE_VALUES_OPTIONS } from '@/lib/types/profile-answers';
+import { latestEligibleAdultBirthDate } from '@/lib/age';
 
-type PrivateLocationSeed = {
+type PrivateProfileSeed = {
+  date_of_birth: string | null;
   postal_code: string | null;
   latitude: number | null;
   longitude: number | null;
@@ -71,7 +73,7 @@ type PrivateLocationSeed = {
 
 export type ProfileWorkspaceProps = {
   initialProfile: Profile;
-  privateDetails: PrivateLocationSeed | null;
+  privateDetails: PrivateProfileSeed | null;
   coreValues: string[];
   hasRelationshipAlignment: boolean;
   hasImportantAlignmentFactors: boolean;
@@ -101,7 +103,7 @@ const SECTION_ICONS: Partial<Record<ProfileSectionId, LucideIcon>> = {
 
 function buildInitialLocation(
   profile: Profile,
-  privateDetails?: PrivateLocationSeed | null
+  privateDetails?: PrivateProfileSeed | null
 ): LocationPickerValue {
   const city = profile.location_city ?? '';
   const region = profile.location_region ?? '';
@@ -434,7 +436,7 @@ function SectionEditor({
 }: {
   sectionId: ProfileSectionId;
   profile: Profile;
-  privateDetails: PrivateLocationSeed | null;
+  privateDetails: PrivateProfileSeed | null;
   coreValues: string[];
   photos: ManagedProfilePhoto[];
   status: SectionStatus;
@@ -484,16 +486,19 @@ function SectionEditor({
             />
           </label>
           <label className="block text-sm font-medium text-[#0B2D5C]">
-            Age
+            Date of birth
             <input
-              name="age"
-              type="number"
-              min={18}
-              max={120}
-              defaultValue={profile.age ?? ''}
+              name="date_of_birth"
+              type="date"
+              required
+              max={latestEligibleAdultBirthDate()}
+              defaultValue={privateDetails?.date_of_birth ?? ''}
               className={`${inputClassName} mt-2`}
               disabled={saving}
             />
+            <span className="mt-2 block text-xs font-normal leading-relaxed text-[#6F7A89]">
+              Your full date of birth stays private. Forge derives the age shown on your profile.
+            </span>
           </label>
         </>
       ) : null}

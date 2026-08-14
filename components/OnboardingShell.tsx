@@ -5,6 +5,7 @@ import { useEffect, useRef, useState, useTransition } from 'react';
 
 import {
   finishOnboarding,
+  saveOnboardingDateOfBirth,
   saveOnboardingStep,
   saveProfileAnswer,
 } from '@/app/actions/onboarding';
@@ -19,8 +20,9 @@ import {
   type RelationshipGoalValue,
 } from '@/lib/profile/structured-options';
 import { mapLegacyRelationshipGoal } from '@/lib/profile/legacy-mapping';
+import { latestEligibleAdultBirthDate } from '@/lib/age';
 
-const TOTAL_STEPS = 4;
+const TOTAL_STEPS = 5;
 const DESKTOP_MEDIA_QUERY = '(min-width: 640px)';
 
 const primaryButtonClassName =
@@ -110,9 +112,11 @@ function readStringArrayAnswer(
 
 export default function OnboardingShell({
   initialAnswers = {},
+  initialDateOfBirth = null,
   initialStep = 1,
 }: {
   initialAnswers?: ProfileAnswersMap;
+  initialDateOfBirth?: string | null;
   initialStep?: number;
 }) {
   const [step, setStep] = useState(() =>
@@ -124,6 +128,8 @@ export default function OnboardingShell({
   const [selectedValues, setSelectedValues] = useState<string[]>(() =>
     readStringArrayAnswer(initialAnswers, PROFILE_ANSWER_KEYS.coreValues)
   );
+  const [dateOfBirth, setDateOfBirth] = useState(initialDateOfBirth ?? '');
+  const [dateOfBirthSaved, setDateOfBirthSaved] = useState(Boolean(initialDateOfBirth));
   const [saveMessage, setSaveMessage] = useState<string | null>(null);
   const [saveError, setSaveError] = useState<string | null>(null);
   const [isDesktop, setIsDesktop] = useState(false);
@@ -220,11 +226,15 @@ export default function OnboardingShell({
   };
 
   const goNext = () => {
-    if (step === 2 && !intention) {
+    if (step === 2 && !dateOfBirthSaved) {
+      setSaveError('Save a valid date of birth to continue.');
+      return;
+    }
+    if (step === 3 && !intention) {
       setSaveError('Select a relationship intention to continue.');
       return;
     }
-    if (step === 3 && selectedValues.length === 0) {
+    if (step === 4 && selectedValues.length === 0) {
       setSaveError('Select at least one value to continue.');
       return;
     }
@@ -236,6 +246,20 @@ export default function OnboardingShell({
       persistStep(next);
       return next;
     });
+  };
+
+  const saveDateOfBirth = async () => {
+    if (isPending || isFinishing) return;
+    setSaveError(null);
+    setSaveMessage(null);
+    setDateOfBirthSaved(false);
+    const result = await saveOnboardingDateOfBirth(dateOfBirth);
+    if (!result.success) {
+      setSaveError(result.message);
+      return;
+    }
+    setDateOfBirthSaved(true);
+    setSaveMessage(result.message);
   };
 
   const handleFinish = async (href: string) => {
@@ -258,10 +282,14 @@ export default function OnboardingShell({
     saveError ??
     saveMessage ??
     (step === 2
+      ? dateOfBirthSaved
+        ? 'Your date of birth is stored privately. Only your age is public.'
+        : 'Enter and save your full date of birth to continue.'
+      : step === 3
       ? intention
         ? 'Your intention is saved to your account.'
         : 'Select an option to save your answer.'
-      : step === 3
+      : step === 4
         ? selectedValues.length > 0
           ? 'Your values are saved to your account.'
           : 'Select one or more values to save your answer.'
@@ -324,6 +352,51 @@ export default function OnboardingShell({
         {step === 2 && (
           <section>
             <p className="mb-3 text-sm font-semibold uppercase tracking-[0.14em] text-[#D62828]">
+              Adult eligibility
+            </p>
+            <h1 className="mb-3 text-3xl font-bold tracking-tight text-[#0B2D5C] sm:text-4xl">
+              Confirm your date of birth
+            </h1>
+            <p className="mb-6 text-base leading-relaxed text-[#555555]">
+              Forge is for adults 18 and older. Your full date of birth stays private; other
+              members only see your current age.
+            </p>
+            <label className="block text-sm font-semibold text-[#0B2D5C]">
+              Date of birth
+              <input
+                type="date"
+                value={dateOfBirth}
+                max={latestEligibleAdultBirthDate()}
+                required
+                onChange={(event) => {
+                  setDateOfBirth(event.target.value);
+                  setDateOfBirthSaved(false);
+                  setSaveMessage(null);
+                  setSaveError(null);
+                }}
+                className="mt-2 w-full rounded-2xl border border-[#0B2D5C]/20 bg-white px-5 py-4 text-base text-[#0B2D5C] focus:border-[#0B2D5C] focus:outline-none focus:ring-2 focus:ring-[#0B2D5C]/20"
+              />
+            </label>
+            <button
+              type="button"
+              onClick={() => void saveDateOfBirth()}
+              disabled={!dateOfBirth || isPending || isFinishing}
+              className="mt-4 inline-flex w-full items-center justify-center rounded-2xl border border-[#0B2D5C]/20 bg-white px-6 py-3 font-semibold text-[#0B2D5C] disabled:opacity-60"
+            >
+              {dateOfBirthSaved ? 'Saved' : 'Save date of birth'}
+            </button>
+            <p
+              className={`mt-5 text-sm ${saveError ? 'text-[#D62828]' : 'text-[#777777]'}`}
+              role={saveError ? 'alert' : undefined}
+            >
+              {statusMessage}
+            </p>
+          </section>
+        )}
+
+        {step === 3 && (
+          <section>
+            <p className="mb-3 text-sm font-semibold uppercase tracking-[0.14em] text-[#D62828]">
               Intention
             </p>
             <h1 className="mb-3 text-3xl font-bold tracking-tight text-[#0B2D5C] sm:text-4xl">
@@ -353,7 +426,7 @@ export default function OnboardingShell({
           </section>
         )}
 
-        {step === 3 && (
+        {step === 4 && (
           <section>
             <p className="mb-3 text-sm font-semibold uppercase tracking-[0.14em] text-[#D62828]">
               Values
@@ -385,7 +458,7 @@ export default function OnboardingShell({
           </section>
         )}
 
-        {step === 4 && (
+        {step === 5 && (
           <section>
             <p className="mb-3 text-sm font-semibold uppercase tracking-[0.14em] text-[#D62828]">
               Readiness

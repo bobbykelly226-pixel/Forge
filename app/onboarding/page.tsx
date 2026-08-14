@@ -24,6 +24,7 @@ export default async function OnboardingPage() {
     <main className="min-h-screen bg-[#F8F6F2] text-[#222222]">
       <OnboardingShell
         initialAnswers={bootstrap.answers}
+        initialDateOfBirth={bootstrap.dateOfBirth}
         initialStep={bootstrap.initialStep}
       />
     </main>

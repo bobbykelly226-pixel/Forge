@@ -19,6 +19,7 @@ import { resolveAuthoritativeProfilePhotoUrl, toManagedProfilePhoto } from '@/li
 import { PROFILE_ANSWER_KEYS } from '@/lib/types/profile-answers';
 import type { Profile } from '@/lib/types/profile';
 import { createClient } from '@/lib/supabase/server';
+import { validateAdultDateOfBirth } from '@/lib/age';
 
 const display = Fraunces({
   subsets: ['latin'],
@@ -63,7 +64,7 @@ export default async function MyProfileHubPage({ searchParams }: PageProps) {
     supabase
       .from('profile_private_details')
       .select(
-        'postal_code, latitude, longitude, location_place_id, location_provider'
+        'date_of_birth, postal_code, latitude, longitude, location_place_id, location_provider'
       )
       .eq('user_id', user.id)
       .maybeSingle(),
@@ -117,7 +118,9 @@ export default async function MyProfileHubPage({ searchParams }: PageProps) {
   const hasImportantAlignmentFactors = coreValues.length > 0;
 
   const discoveryCanEnable =
-    profile.status !== 'deactivated' && profile.status !== 'hidden';
+    profile.status !== 'deactivated' &&
+    profile.status !== 'hidden' &&
+    validateAdultDateOfBirth(privateDetailsResult.data?.date_of_birth ?? '').ok;
 
   const profileForWorkspace = {
     ...profile,
@@ -178,7 +181,9 @@ export default async function MyProfileHubPage({ searchParams }: PageProps) {
             canEnable: discoveryCanEnable,
             message: discoveryCanEnable
               ? null
-              : 'Discovery visibility is unavailable for this account.',
+              : profile.status === 'deactivated' || profile.status === 'hidden'
+                ? 'Discovery visibility is unavailable for this account.'
+                : 'Add a valid adult date of birth in Basics before entering Discovery.',
           }}
           profile={profileForWorkspace}
           privateDetails={privateDetailsResult.data ?? null}

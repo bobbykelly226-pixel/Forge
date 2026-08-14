@@ -18,7 +18,8 @@ import ProfileWorkspace from '@/components/profile/ProfileWorkspace';
 import type { ManagedProfilePhoto } from '@/lib/profile-photo';
 import type { Profile } from '@/lib/types/profile';
 
-type PrivateLocationSeed = {
+type PrivateProfileSeed = {
+  date_of_birth: string | null;
   postal_code: string | null;
   latitude: number | null;
   longitude: number | null;
@@ -38,7 +39,7 @@ export type MyProfileHubProps = {
     message: string | null;
   };
   profile: Profile;
-  privateDetails: PrivateLocationSeed | null;
+  privateDetails: PrivateProfileSeed | null;
   coreValues: string[];
   hasRelationshipAlignment: boolean;
   hasImportantAlignmentFactors: boolean;
