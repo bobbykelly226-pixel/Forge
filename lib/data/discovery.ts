@@ -31,11 +31,10 @@ async function attachDiscoverablePhotos(
 ): Promise<PublicDiscoveryProfile[]> {
   if (profiles.length === 0) return profiles;
   const ids = profiles.map((profile) => profile.id);
-  const { data, error } = await supabase
-    .from('discoverable_profile_photos')
-    .select('id, user_id, storage_path, display_order, is_primary')
-    .in('user_id', ids)
-    .order('display_order', { ascending: true });
+  const { data, error } = await supabase.rpc(
+    'list_eligible_discovery_profile_photos',
+    { p_profile_ids: ids }
+  );
 
   if (error) {
     console.error('attachDiscoverablePhotos:', error.message);

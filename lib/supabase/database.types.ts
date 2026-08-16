@@ -2084,6 +2084,16 @@ export type Database = {
           isSetofReturn: true
         }
       }
+      list_eligible_discovery_profile_photos: {
+        Args: { p_profile_ids: string[] }
+        Returns: {
+          display_order: number
+          id: string
+          is_primary: boolean
+          storage_path: string
+          user_id: string
+        }[]
+      }
       list_my_conversations: { Args: never; Returns: Json }
       list_my_notifications: { Args: { p_limit?: number }; Returns: Json }
       load_connection_hub_profiles: {
