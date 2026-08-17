@@ -44,7 +44,7 @@ Forge exists to help people build meaningful, lasting relationships through comp
 
 Do not introduce a second database, ORM (Prisma/Drizzle), or custom auth system. Use the existing Supabase clients in `lib/supabase/`. See `docs/FORGE_DATA_MODEL.md` for the application schema, privacy allow-list, and compatibility-answer transition plan.
 
-**Profile photos:** the live V1 upload/preview path still uses the public `profile-photos` bucket and `getPublicUrl()`. Do not flip the bucket to private until signed-URL retrieval is wired.
+**Profile photos:** `profile-photos` is private. Server code issues short-lived owner previews; Discovery receives only approved photos for eligible profiles. Never reconstruct a public bucket URL or fall back to the legacy `profiles.profile_photo_url` when managed rows exist.
 
 ---
 

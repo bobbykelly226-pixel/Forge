@@ -20,6 +20,7 @@ import {
 } from '../profile/image-processing';
 import {
   PROFILE_PHOTO_MAX_BYTES,
+  resolveAuthoritativeProfilePhotoUrl,
   validateProcessedProfilePhoto,
   validateProfilePhoto,
 } from '../profile-photo';
@@ -130,6 +131,46 @@ describe('profile photo processing rules', () => {
 });
 
 describe('public profile photo gallery', () => {
+  it('fails closed when a managed photo is not approved or signed', () => {
+    assert.equal(
+      resolveAuthoritativeProfilePhotoUrl({
+        photos: [
+          {
+            storage_path: 'member/pending.jpg',
+            is_primary: true,
+            display_order: 0,
+            public_url: null,
+          },
+        ],
+        legacyProfilePhotoUrl: 'https://legacy.example/photo.jpg',
+      }),
+      null
+    );
+
+    assert.equal(
+      resolveAuthoritativeProfilePhotoUrl({
+        photos: [
+          {
+            storage_path: 'member/approved.jpg',
+            is_primary: true,
+            display_order: 0,
+            public_url: 'https://signed.example/photo.jpg',
+          },
+        ],
+        legacyProfilePhotoUrl: 'https://legacy.example/photo.jpg',
+      }),
+      'https://signed.example/photo.jpg'
+    );
+  });
+
+  it('does not reconstruct public storage URLs in the gallery', () => {
+    const gallery = readFileSync(
+      join(process.cwd(), 'components/discovery/ProfilePhotoGallery.tsx'),
+      'utf8'
+    );
+    assert.doesNotMatch(gallery, /getPublicUrl|buildPublicProfilePhotoUrl/);
+  });
+
   it('starts on primary, wraps, and never mutates primary metadata while browsing', () => {
     const gallery = readFileSync(
       join(process.cwd(), 'components/discovery/ProfilePhotoGallery.tsx'),

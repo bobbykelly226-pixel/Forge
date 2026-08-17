@@ -13,8 +13,8 @@ import {
   MAX_PROFILE_PHOTOS_MESSAGE,
   PROFILE_PHOTO_BUCKET,
   PROFILE_PHOTO_REVALIDATE_PATHS,
-  buildPublicProfilePhotoUrl,
 } from '@/lib/profile-photo';
+import { signProfilePhotoRows } from '@/lib/data/profile-photo-urls';
 import {
   formatPublicLocation,
   toPublicLocationFields,
@@ -215,7 +215,6 @@ export async function saveProfile(formData: FormData): Promise<ProfileActionResu
   const career = readOptionalString(formData, 'career');
   const faithOther = readOptionalString(formData, 'faith_other');
   const faithTradition = readOptionalString(formData, 'faith_tradition');
-  const profilePhotoUrlInput = readOptionalString(formData, 'profile_photo_url');
   const storagePathInput = readOptionalString(formData, 'profile_photo_storage_path');
 
   if (!fullName) {
@@ -353,7 +352,7 @@ export async function saveProfile(formData: FormData): Promise<ProfileActionResu
     return { success: false, message: 'Could not load your current photos. Please try again.' };
   }
 
-  const replacingPhoto = Boolean(profilePhotoUrlInput && storagePathInput);
+  const replacingPhoto = Boolean(storagePathInput);
   if (replacingPhoto) {
     if (!storagePathInput!.startsWith(`${user.id}/`)) {
       return { success: false, message: 'Invalid photo path.' };
@@ -364,11 +363,9 @@ export async function saveProfile(formData: FormData): Promise<ProfileActionResu
     .map((photo) => photo.storage_path)
     .filter((path) => path && path !== storagePathInput);
 
-  let nextPhotoUrl: string | null | undefined = undefined;
-  if (replacingPhoto) {
-    nextPhotoUrl =
-      profilePhotoUrlInput || buildPublicProfilePhotoUrl(storagePathInput!) || null;
-  }
+  // Managed photos are private. Never persist a browser-provided or public storage URL.
+  // Owner and Discovery URLs are signed on the server when data is read.
+  const nextPhotoUrl: null | undefined = replacingPhoto ? null : undefined;
 
   const thingsIEnjoy = parseEnjoySelection(formData);
   const favoriteArtists = parseLineList(formData.get('favorite_music_artists') as string | null);
@@ -565,7 +562,7 @@ export async function saveProfile(formData: FormData): Promise<ProfileActionResu
           storage_path: storagePathInput,
           display_order: 0,
           is_primary: true,
-          moderation_status: 'approved',
+          moderation_status: 'pending',
         })
         .select('id, storage_path, is_primary')
         .single();
@@ -704,10 +701,9 @@ export async function saveProfileSection(
   }
 
   if (sectionId === 'photo') {
-    const profilePhotoUrlInput = readOptionalString(formData, 'profile_photo_url');
     const storagePathInput = readOptionalString(formData, 'profile_photo_storage_path');
 
-    if (!profilePhotoUrlInput || !storagePathInput) {
+    if (!storagePathInput) {
       return { success: false, message: 'Choose a photo to upload before saving.' };
     }
     if (!storagePathInput.startsWith(`${user.id}/`)) {
@@ -730,8 +726,7 @@ export async function saveProfileSection(
       .map((photo) => photo.storage_path)
       .filter((path) => path && path !== storagePathInput);
 
-    const nextPhotoUrl =
-      profilePhotoUrlInput || buildPublicProfilePhotoUrl(storagePathInput) || null;
+    const nextPhotoUrl = null;
 
     const profileResult = await upsertCurrentUserProfile({
       profile_photo_url: nextPhotoUrl,
@@ -774,7 +769,7 @@ export async function saveProfileSection(
         storage_path: storagePathInput,
         display_order: 0,
         is_primary: true,
-        moderation_status: 'approved',
+        moderation_status: 'pending',
       });
       if (insertError) {
         return {
@@ -1092,7 +1087,8 @@ async function loadOwnerPhotos(supabase: Awaited<ReturnType<typeof createClient>
     .order('display_order', { ascending: true });
 }
 
-function mapPhotoRows(
+async function mapPhotoRows(
+  supabase: Awaited<ReturnType<typeof createClient>>,
   rows: Array<{
     id: string;
     storage_path: string;
@@ -1100,35 +1096,29 @@ function mapPhotoRows(
     display_order: number;
   }>
 ) {
-  return rows.map((photo) => ({
+  const signedRows = await signProfilePhotoRows(supabase, rows);
+  return signedRows.map((photo) => ({
     id: photo.id,
     storage_path: photo.storage_path,
     display_order: photo.display_order,
     is_primary: photo.is_primary,
-    public_url: buildPublicProfilePhotoUrl(photo.storage_path),
+    public_url: photo.public_url ?? null,
   }));
 }
 
 async function syncLegacyPrimaryPhotoUrl(
-  supabase: Awaited<ReturnType<typeof createClient>>,
-  userId: string,
-  photos: Array<{ storage_path: string; is_primary: boolean; display_order: number }>
+  _supabase: Awaited<ReturnType<typeof createClient>>,
+  _userId: string,
+  _photos: Array<{ storage_path: string; is_primary: boolean; display_order: number }>
 ): Promise<string | null> {
-  const primary =
-    photos.find((photo) => photo.is_primary) ??
-    [...photos].sort((a, b) => a.display_order - b.display_order)[0] ??
-    null;
-  const nextUrl = primary
-    ? buildPublicProfilePhotoUrl(primary.storage_path)
-    : null;
-
+  // Legacy public URLs must remain empty once managed photos are in use.
   const result = await upsertCurrentUserProfile({
-    profile_photo_url: nextUrl,
+    profile_photo_url: null,
   });
   if (!result.success) {
     throw new Error(result.message);
   }
-  return nextUrl;
+  return null;
 }
 
 /**
@@ -1186,7 +1176,7 @@ export async function addProfilePhoto(input: {
       storage_path: storagePath,
       display_order: displayOrder,
       is_primary: makePrimary,
-      moderation_status: 'approved',
+      moderation_status: 'pending',
     })
     .select('id, storage_path, is_primary, display_order')
     .single();
@@ -1223,7 +1213,7 @@ export async function addProfilePhoto(input: {
   return {
     success: true,
     message: 'Photo added.',
-    photos: mapPhotoRows(refreshed),
+    photos: await mapPhotoRows(supabase, refreshed),
     primaryPhotoUrl,
   };
 }
@@ -1324,7 +1314,7 @@ export async function deleteProfilePhoto(photoId: string): Promise<ProfilePhotoA
   return {
     success: true,
     message: 'Photo removed.',
-    photos: mapPhotoRows(refreshed ?? []),
+    photos: await mapPhotoRows(supabase, refreshed ?? []),
     primaryPhotoUrl,
   };
 }
@@ -1386,7 +1376,7 @@ export async function setPrimaryProfilePhoto(
   return {
     success: true,
     message: 'Primary photo updated.',
-    photos: mapPhotoRows(refreshed ?? []),
+    photos: await mapPhotoRows(supabase, refreshed ?? []),
     primaryPhotoUrl,
   };
 }
@@ -1459,7 +1449,7 @@ export async function reorderProfilePhotos(
   return {
     success: true,
     message: 'Photo order saved.',
-    photos: mapPhotoRows(refreshed ?? []),
+    photos: await mapPhotoRows(supabase, refreshed ?? []),
     primaryPhotoUrl,
   };
 }
@@ -1527,7 +1517,7 @@ export async function replaceProfilePhoto(input: {
   return {
     success: true,
     message: 'Photo replaced.',
-    photos: mapPhotoRows(refreshed ?? []),
+    photos: await mapPhotoRows(supabase, refreshed ?? []),
     primaryPhotoUrl,
   };
 }

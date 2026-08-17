@@ -81,16 +81,11 @@ export function getProfilePhotoPath(userId: string, mimeType: ProfilePhotoMimeTy
   return createUniqueProfilePhotoPath(userId, mimeType, 'profile-photo');
 }
 
-export function buildPublicProfilePhotoUrl(storagePath: string): string | null {
-  const base = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  if (!base || !storagePath) return null;
-  return `${base.replace(/\/$/, '')}/storage/v1/object/public/${PROFILE_PHOTO_BUCKET}/${storagePath}`;
-}
-
 type PhotoLike = {
   storage_path: string;
   is_primary?: boolean | null;
   display_order?: number | null;
+  public_url?: string | null;
 };
 
 /**
@@ -105,8 +100,8 @@ export function resolveAuthoritativeProfilePhotoUrl(input: {
     (a, b) => (a.display_order ?? 0) - (b.display_order ?? 0)
   );
   const primary = photos.find((photo) => photo.is_primary) ?? photos[0] ?? null;
-  if (primary?.storage_path) {
-    return buildPublicProfilePhotoUrl(primary.storage_path);
+  if (primary) {
+    return primary.public_url?.trim() || null;
   }
   return input.legacyProfilePhotoUrl?.trim() || null;
 }
@@ -145,13 +140,14 @@ export function toManagedProfilePhoto(photo: {
   storage_path: string;
   display_order: number;
   is_primary: boolean;
+  public_url?: string | null;
 }): ManagedProfilePhoto {
   return {
     id: photo.id,
     storage_path: photo.storage_path,
     display_order: photo.display_order,
     is_primary: photo.is_primary,
-    public_url: buildPublicProfilePhotoUrl(photo.storage_path),
+    public_url: photo.public_url?.trim() || null,
   };
 }
 
@@ -177,9 +173,7 @@ export function orderedPublicPhotoUrls(input: {
   }
 
   return photos
-    .map((photo) =>
-      photo.storage_path ? buildPublicProfilePhotoUrl(photo.storage_path) : null
-    )
+    .map((photo) => photo.public_url?.trim() || null)
     .filter((url): url is string => Boolean(url));
 }
 
@@ -189,9 +183,7 @@ export function additionalPublicPhotoUrls(
 ): string[] {
   return sortPhotosByDisplayOrder(photos ?? [])
     .filter((photo) => !photo.is_primary)
-    .map((photo) =>
-      photo.storage_path ? buildPublicProfilePhotoUrl(photo.storage_path) : null
-    )
+    .map((photo) => photo.public_url?.trim() || null)
     .filter((url): url is string => Boolean(url));
 }
 

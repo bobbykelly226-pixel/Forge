@@ -25,28 +25,24 @@ describe('profile photo replacement paths', () => {
   });
 
   it('uses primary profile_photos as the authoritative display URL', () => {
-    process.env.NEXT_PUBLIC_SUPABASE_URL = 'https://example.supabase.co';
+    const signedUrl = 'https://example.supabase.co/storage/v1/object/sign/profile-photos/user-1/new.jpg?token=signed';
     const url = resolveAuthoritativeProfilePhotoUrl({
       photos: [
-        { storage_path: 'user-1/old.jpg', is_primary: false, display_order: 1 },
-        { storage_path: 'user-1/new.jpg', is_primary: true, display_order: 0 },
+        { storage_path: 'user-1/old.jpg', is_primary: false, display_order: 1, public_url: null },
+        { storage_path: 'user-1/new.jpg', is_primary: true, display_order: 0, public_url: signedUrl },
       ],
       legacyProfilePhotoUrl: 'https://example.supabase.co/storage/v1/object/public/profile-photos/user-1/old.jpg',
     });
-    assert.equal(
-      url,
-      'https://example.supabase.co/storage/v1/object/public/profile-photos/user-1/new.jpg'
-    );
+    assert.equal(url, signedUrl);
   });
 
-  it('keeps profile_photo_url and profile_photos aligned after successful save', () => {
-    process.env.NEXT_PUBLIC_SUPABASE_URL = 'https://example.supabase.co';
+  it('treats signed managed photos as authoritative when the legacy URL is cleared', () => {
     const path = 'user-1/new.jpg';
-    const publicUrl = `https://example.supabase.co/storage/v1/object/public/profile-photos/${path}`;
+    const signedUrl = `https://example.supabase.co/storage/v1/object/sign/profile-photos/${path}?token=signed`;
     assert.equal(
       photosAgreeWithLegacyUrl({
-        photos: [{ storage_path: path, is_primary: true, display_order: 0 }],
-        legacyProfilePhotoUrl: publicUrl,
+        photos: [{ storage_path: path, is_primary: true, display_order: 0, public_url: signedUrl }],
+        legacyProfilePhotoUrl: null,
       }),
       true
     );

@@ -3,8 +3,8 @@ import type { DataAccessResult } from '@/lib/data/profile';
 import { ensureFoundationalRecords } from '@/lib/data/profile';
 import type { PublicDiscoveryProfile } from '@/lib/discovery/presentation';
 import { loadCurrentUserProfileBundle } from '@/lib/data/bundle';
+import { signProfilePhotoRows } from '@/lib/data/profile-photo-urls';
 import {
-  buildPublicProfilePhotoUrl,
   resolveAuthoritativeProfilePhotoUrl,
   sortPhotosByDisplayOrder,
 } from '@/lib/profile-photo';
@@ -52,7 +52,15 @@ async function attachDiscoverablePhotos(
     }>
   >();
 
-  for (const row of data ?? []) {
+  const signedRows = await signProfilePhotoRows(
+    supabase,
+    (data ?? []).filter(
+      (row): row is typeof row & { storage_path: string } =>
+        Boolean(row.storage_path)
+    )
+  );
+
+  for (const row of signedRows) {
     if (!row.user_id || !row.storage_path) continue;
     const list = byUser.get(row.user_id) ?? [];
     list.push({
@@ -60,7 +68,7 @@ async function attachDiscoverablePhotos(
       storage_path: row.storage_path,
       display_order: row.display_order ?? 0,
       is_primary: Boolean(row.is_primary),
-      public_url: buildPublicProfilePhotoUrl(row.storage_path),
+      public_url: row.public_url,
     });
     byUser.set(row.user_id, list);
   }
@@ -74,7 +82,7 @@ async function attachDiscoverablePhotos(
     return {
       ...profile,
       photos,
-      profile_photo_url: primaryUrl ?? profile.profile_photo_url,
+      profile_photo_url: primaryUrl,
     };
   });
 }

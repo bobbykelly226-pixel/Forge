@@ -238,11 +238,10 @@ describe('multiple profile photos', () => {
   });
 
   it('keeps public display order aligned with saved display_order', () => {
-    process.env.NEXT_PUBLIC_SUPABASE_URL = 'https://example.supabase.co';
     const photos = [
-      { storage_path: 'u/b.jpg', is_primary: false, display_order: 1 },
-      { storage_path: 'u/a.jpg', is_primary: true, display_order: 0 },
-      { storage_path: 'u/c.jpg', is_primary: false, display_order: 2 },
+      { storage_path: 'u/b.jpg', is_primary: false, display_order: 1, public_url: 'https://signed.example/b' },
+      { storage_path: 'u/a.jpg', is_primary: true, display_order: 0, public_url: 'https://signed.example/a' },
+      { storage_path: 'u/c.jpg', is_primary: false, display_order: 2, public_url: 'https://signed.example/c' },
     ];
     const ordered = sortPhotosByDisplayOrder(photos);
     assert.deepEqual(
@@ -251,18 +250,18 @@ describe('multiple profile photos', () => {
     );
     const urls = orderedPublicPhotoUrls({ photos });
     assert.deepEqual(urls, [
-      'https://example.supabase.co/storage/v1/object/public/profile-photos/u/a.jpg',
-      'https://example.supabase.co/storage/v1/object/public/profile-photos/u/b.jpg',
-      'https://example.supabase.co/storage/v1/object/public/profile-photos/u/c.jpg',
+      'https://signed.example/a',
+      'https://signed.example/b',
+      'https://signed.example/c',
     ]);
     const additional = additionalPublicPhotoUrls(photos);
     assert.deepEqual(additional, [
-      'https://example.supabase.co/storage/v1/object/public/profile-photos/u/b.jpg',
-      'https://example.supabase.co/storage/v1/object/public/profile-photos/u/c.jpg',
+      'https://signed.example/b',
+      'https://signed.example/c',
     ]);
     assert.equal(
       resolveAuthoritativeProfilePhotoUrl({ photos }),
-      'https://example.supabase.co/storage/v1/object/public/profile-photos/u/a.jpg'
+      'https://signed.example/a'
     );
   });
 

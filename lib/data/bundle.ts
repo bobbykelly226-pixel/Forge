@@ -18,6 +18,8 @@ import {
 } from '@/lib/data/profile';
 import { loadCurrentUserProfileAnswersMap } from '@/lib/data/onboarding';
 import { resolveAuthoritativeProfilePhotoUrl } from '@/lib/profile-photo';
+import { signProfilePhotoRows } from '@/lib/data/profile-photo-urls';
+import { createClient } from '@/lib/supabase/server';
 
 export type CurrentUserProfileBundle = {
   profile: Tables<'profiles'> | null;
@@ -153,8 +155,11 @@ export async function loadSelfProfilePreview(): Promise<
     return { success: true, data: null };
   }
 
+  const supabase = await createClient();
+  const signedPhotos = await signProfilePhotoRows(supabase, photos);
+
   const resolvedPhotoUrl = resolveAuthoritativeProfilePhotoUrl({
-    photos,
+    photos: signedPhotos,
     legacyProfilePhotoUrl: profile.profile_photo_url,
   });
 
@@ -192,7 +197,7 @@ export async function loadSelfProfilePreview(): Promise<
       favorite_music_artists: profile.favorite_music_artists ?? [],
       favorite_music_songs: profile.favorite_music_songs ?? [],
       profile_photo_url: resolvedPhotoUrl,
-      photos: photos.map((photo) => ({
+      photos: signedPhotos.map((photo) => ({
         id: photo.id,
         storage_path: photo.storage_path,
         display_order: photo.display_order,
