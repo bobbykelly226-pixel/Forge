@@ -41,7 +41,7 @@ select is(
       and c.relname = 'profile_photos'
       and a.attname = 'moderation_status'
   ),
-  '''pending''::text',
+  '''pending''::photo_moderation_status',
   'new profile photos default to pending moderation'
 );
 
