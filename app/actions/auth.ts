@@ -7,6 +7,10 @@ import {
   isActiveBetaSignupInvitation,
 } from '@/lib/auth/invitations';
 import { mapAuthErrorMessage } from '@/lib/auth/messages';
+import {
+  AUTH_CAPTCHA_REQUIRED_MESSAGE,
+  isAuthCaptchaEnabled,
+} from '@/lib/auth/captcha';
 import { buildCanonicalAuthUrl } from '@/lib/auth/origins';
 import { createClient } from '@/lib/supabase/server';
 import { createServiceClient } from '@/lib/supabase/admin';
@@ -153,14 +157,21 @@ async function deliverConfirmationWithResend(input: {
  */
 export async function resendConfirmationEmail(input: {
   email: string;
+  captchaToken?: string;
 }): Promise<ActionResult> {
   const email = input.email.trim().toLowerCase();
   if (!email || !email.includes('@')) {
     return { success: false, message: 'Enter a valid email address.' };
   }
 
+  const captchaEnabled = isAuthCaptchaEnabled();
+  if (captchaEnabled && !input.captchaToken) {
+    return { success: false, message: AUTH_CAPTCHA_REQUIRED_MESSAGE };
+  }
+
   // Prefer Resend + generateLink so delivery is not blocked by built-in Auth mailer limits.
-  if (createServiceClient() && process.env.RESEND_API_KEY) {
+  // When CAPTCHA is enabled, keep this request on Supabase's CAPTCHA-protected path.
+  if (!captchaEnabled && createServiceClient() && process.env.RESEND_API_KEY) {
     return deliverConfirmationWithResend({ email });
   }
 
@@ -170,6 +181,7 @@ export async function resendConfirmationEmail(input: {
     email,
     options: {
       emailRedirectTo: buildConfirmRedirectTo(),
+      captchaToken: input.captchaToken,
     },
   });
 
@@ -199,6 +211,7 @@ export type SignUpActionResult = {
 export async function signUpWithEmail(input: {
   email: string;
   password: string;
+  captchaToken?: string;
 }): Promise<SignUpActionResult> {
   const email = input.email.trim().toLowerCase();
   const password = input.password;
@@ -210,6 +223,14 @@ export async function signUpWithEmail(input: {
     return {
       success: false,
       message: 'Use a password with at least 8 characters.',
+      status: 'error',
+    };
+  }
+  const captchaEnabled = isAuthCaptchaEnabled();
+  if (captchaEnabled && !input.captchaToken) {
+    return {
+      success: false,
+      message: AUTH_CAPTCHA_REQUIRED_MESSAGE,
       status: 'error',
     };
   }
@@ -227,12 +248,17 @@ export async function signUpWithEmail(input: {
   const { data, error } = await supabase.auth.signUp({
     email,
     password,
-    options: { emailRedirectTo },
+    options: { emailRedirectTo, captchaToken: input.captchaToken },
   });
 
   if (error) {
     // If Auth mailer is rate-limited but we can deliver via Resend, create/link and send.
-    if (isRateLimitError(error.message) && createServiceClient() && process.env.RESEND_API_KEY) {
+    if (
+      !captchaEnabled &&
+      isRateLimitError(error.message) &&
+      createServiceClient() &&
+      process.env.RESEND_API_KEY
+    ) {
       const admin = createServiceClient()!;
       const created = await admin.auth.admin.createUser({
         email,
@@ -305,16 +331,21 @@ export async function signUpWithEmail(input: {
 
 export async function requestPasswordReset(input: {
   email: string;
+  captchaToken?: string;
 }): Promise<ActionResult> {
   const email = input.email.trim().toLowerCase();
   if (!email || !email.includes('@')) {
     return { success: false, message: 'Enter a valid email address.' };
+  }
+  if (isAuthCaptchaEnabled() && !input.captchaToken) {
+    return { success: false, message: AUTH_CAPTCHA_REQUIRED_MESSAGE };
   }
   const supabase = await createClient();
   const { error } = await supabase.auth.resetPasswordForEmail(email, {
     redirectTo: buildCanonicalAuthUrl(
       '/auth/callback?next=/auth/update-password'
     ),
+    captchaToken: input.captchaToken,
   });
 
   if (error) {
