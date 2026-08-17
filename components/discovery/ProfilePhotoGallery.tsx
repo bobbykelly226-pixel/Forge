@@ -4,7 +4,6 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { ChevronLeft, ChevronRight, MapPin } from 'lucide-react';
 
 import {
-  buildPublicProfilePhotoUrl,
   resolveAuthoritativeProfilePhotoUrl,
   sortPhotosByDisplayOrder,
 } from '@/lib/profile-photo';
@@ -29,7 +28,7 @@ export type ProfilePhotoGalleryProps = {
 };
 
 function photoUrl(photo: GalleryPhoto): string | null {
-  return photo.public_url || buildPublicProfilePhotoUrl(photo.storage_path);
+  return photo.public_url?.trim() || null;
 }
 
 /**

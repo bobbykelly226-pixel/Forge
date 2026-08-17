@@ -132,7 +132,7 @@ Canonical allow-list in code: `lib/data-model-rules.ts` → `DISCOVERABLE_PROFIL
 
 ### Photo storage note
 
-The `profile-photos` bucket remains **public** for this persistence PR so existing upload/preview URLs keep working. A future PR may move to private + signed URLs once the full retrieval flow is tested.
+The `profile-photos` bucket is **private**. The server signs short-lived owner previews, and Discovery can access only approved photos for eligible profiles. New or replaced photos return to `pending` moderation.
 
 ---
 
@@ -207,9 +207,9 @@ New profiles are never auto-discoverable.
 
 ## Storage / profile photos approach
 
-**Decision: keep the existing `profile-photos` bucket PUBLIC for this PR.**
+**Decision: keep `profile-photos` PRIVATE and use server-issued signed URLs.**
 
-Why: the live Profile edit/preview flow uploads with `getPublicUrl()` (`app/profile/edit/ProfileForm.tsx`, `components/ProfilePreviewCard.tsx`). Making the bucket private now would break current photos, previews, and uploads.
+Why: profile photos are sensitive user content. Owners may preview their own pending photos, while other authenticated members may retrieve only approved photos belonging to profiles they are eligible to discover.
 
 Owner-scoped upload/update/delete policies remain. Private-bucket + signed-URL retrieval is deferred to the profile-persistence PR.
 

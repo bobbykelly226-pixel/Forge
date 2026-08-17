@@ -22,6 +22,7 @@ import { createClient } from '@/lib/supabase/server';
 import { validateAdultDateOfBirth } from '@/lib/age';
 import { getCurrentUserPreferences } from '@/lib/data/profile';
 import { matchingPreferencesAreComplete } from '@/lib/profile/matching-preferences';
+import { signProfilePhotoRows } from '@/lib/data/profile-photo-urls';
 
 const display = Fraunces({
   subsets: ['latin'],
@@ -102,8 +103,10 @@ export default async function MyProfileHubPage({ searchParams }: PageProps) {
     profile.full_name?.trim() ||
     'Your profile';
 
+  const signedPhotos = await signProfilePhotoRows(supabase, photos);
+
   const photoUrl = resolveAuthoritativeProfilePhotoUrl({
-    photos,
+    photos: signedPhotos,
     legacyProfilePhotoUrl: profile.profile_photo_url,
   });
 
@@ -197,7 +200,7 @@ export default async function MyProfileHubPage({ searchParams }: PageProps) {
           coreValues={coreValues}
           hasRelationshipAlignment={hasRelationshipAlignment}
           hasImportantAlignmentFactors={hasImportantAlignmentFactors}
-          photos={photos.map(toManagedProfilePhoto)}
+          photos={signedPhotos.map(toManagedProfilePhoto)}
           initialSection={initialSection}
             compatibilityCard={{
               completedCategories,

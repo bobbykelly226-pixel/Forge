@@ -169,9 +169,9 @@ export default function MyProfileHub({
             <div className="space-y-5 lg:sticky lg:top-0">
               <section className="rounded-[1.75rem] border border-[#0B2D5C]/08 bg-white/90 p-6 shadow-[0_12px_40px_rgba(11,45,92,0.05)]">
                 <div className="flex items-center gap-4">
-                  {photoUrl || profile.profile_photo_url ? (
+                  {photoUrl ? (
                     <img
-                      src={photoUrl || profile.profile_photo_url || ''}
+                      src={photoUrl}
                       alt=""
                       className="h-20 w-20 shrink-0 rounded-full border-4 border-white object-cover shadow-[0_8px_24px_rgba(11,45,92,0.12)]"
                     />

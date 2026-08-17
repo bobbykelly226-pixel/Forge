@@ -12,7 +12,7 @@ supabase/
 
 ## Storage notes
 
-The `profile-photos` bucket remains **public** for V1 ProfileForm compatibility (`getPublicUrl`). Private-bucket migration is deferred until signed URLs are implemented in the profile-persistence PR.
+The `profile-photos` bucket is **private**. Owners receive short-lived signed previews, while Discovery can read only moderator-approved photos for profiles the current member is eligible to discover. New and replaced photos default to `pending` moderation.
 
 ## Applying migrations
 
