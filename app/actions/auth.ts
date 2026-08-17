@@ -7,6 +7,7 @@ import {
   isActiveBetaSignupInvitation,
 } from '@/lib/auth/invitations';
 import { mapAuthErrorMessage } from '@/lib/auth/messages';
+import { buildCanonicalAuthUrl } from '@/lib/auth/origins';
 import { createClient } from '@/lib/supabase/server';
 import { createServiceClient } from '@/lib/supabase/admin';
 
@@ -15,13 +16,8 @@ type ActionResult = {
   message: string;
 };
 
-function buildConfirmRedirectTo(origin: string): string {
-  const base = origin.replace(/\/$/, '');
-  return `${base}/auth/callback?next=/onboarding`;
-}
-
-function isValidOrigin(origin: string): boolean {
-  return origin.startsWith('http://') || origin.startsWith('https://');
+function buildConfirmRedirectTo(): string {
+  return buildCanonicalAuthUrl('/auth/callback?next=/onboarding');
 }
 
 function isRateLimitError(message: string | undefined): boolean {
@@ -65,7 +61,6 @@ async function hasActiveBetaSignupInvitation(email: string): Promise<boolean | n
  */
 async function deliverConfirmationWithResend(input: {
   email: string;
-  origin: string;
   /** Required when generating a fresh signup link for a brand-new user. */
   password?: string;
 }): Promise<ActionResult> {
@@ -80,7 +75,7 @@ async function deliverConfirmationWithResend(input: {
     };
   }
 
-  const redirectTo = buildConfirmRedirectTo(input.origin);
+  const redirectTo = buildConfirmRedirectTo();
 
   const linkResult = input.password
     ? await admin.auth.admin.generateLink({
@@ -158,20 +153,15 @@ async function deliverConfirmationWithResend(input: {
  */
 export async function resendConfirmationEmail(input: {
   email: string;
-  origin: string;
 }): Promise<ActionResult> {
   const email = input.email.trim().toLowerCase();
   if (!email || !email.includes('@')) {
     return { success: false, message: 'Enter a valid email address.' };
   }
 
-  if (!isValidOrigin(input.origin)) {
-    return { success: false, message: 'Could not determine the current site address.' };
-  }
-
   // Prefer Resend + generateLink so delivery is not blocked by built-in Auth mailer limits.
   if (createServiceClient() && process.env.RESEND_API_KEY) {
-    return deliverConfirmationWithResend({ email, origin: input.origin });
+    return deliverConfirmationWithResend({ email });
   }
 
   const supabase = await createClient();
@@ -179,14 +169,14 @@ export async function resendConfirmationEmail(input: {
     type: 'signup',
     email,
     options: {
-      emailRedirectTo: buildConfirmRedirectTo(input.origin),
+      emailRedirectTo: buildConfirmRedirectTo(),
     },
   });
 
   if (error) {
     console.error('resendConfirmationEmail failed');
     if (isRateLimitError(error.message) && createServiceClient() && process.env.RESEND_API_KEY) {
-      return deliverConfirmationWithResend({ email, origin: input.origin });
+      return deliverConfirmationWithResend({ email });
     }
     return { success: false, message: mapAuthErrorMessage(error.message) };
   }
@@ -209,7 +199,6 @@ export type SignUpActionResult = {
 export async function signUpWithEmail(input: {
   email: string;
   password: string;
-  origin: string;
 }): Promise<SignUpActionResult> {
   const email = input.email.trim().toLowerCase();
   const password = input.password;
@@ -224,14 +213,6 @@ export async function signUpWithEmail(input: {
       status: 'error',
     };
   }
-  if (!isValidOrigin(input.origin)) {
-    return {
-      success: false,
-      message: 'Could not determine the current site address.',
-      status: 'error',
-    };
-  }
-
   const hasInvitation = await hasActiveBetaSignupInvitation(email);
   if (hasInvitation === false) {
     return {
@@ -241,7 +222,7 @@ export async function signUpWithEmail(input: {
     };
   }
 
-  const emailRedirectTo = buildConfirmRedirectTo(input.origin);
+  const emailRedirectTo = buildConfirmRedirectTo();
   const supabase = await createClient();
   const { data, error } = await supabase.auth.signUp({
     email,
@@ -278,7 +259,6 @@ export async function signUpWithEmail(input: {
 
       const delivered = await deliverConfirmationWithResend({
         email,
-        origin: input.origin,
         password,
       });
       if (!delivered.success) {
@@ -325,19 +305,16 @@ export async function signUpWithEmail(input: {
 
 export async function requestPasswordReset(input: {
   email: string;
-  origin: string;
 }): Promise<ActionResult> {
   const email = input.email.trim().toLowerCase();
   if (!email || !email.includes('@')) {
     return { success: false, message: 'Enter a valid email address.' };
   }
-  if (!isValidOrigin(input.origin)) {
-    return { success: false, message: 'Could not determine the current site address.' };
-  }
-
   const supabase = await createClient();
   const { error } = await supabase.auth.resetPasswordForEmail(email, {
-    redirectTo: `${input.origin.replace(/\/$/, '')}/auth/callback?next=/auth/update-password`,
+    redirectTo: buildCanonicalAuthUrl(
+      '/auth/callback?next=/auth/update-password'
+    ),
   });
 
   if (error) {

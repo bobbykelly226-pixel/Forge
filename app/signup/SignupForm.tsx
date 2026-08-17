@@ -34,7 +34,6 @@ export default function SignupForm() {
       const result = await signUpWithEmail({
         email,
         password,
-        origin: window.location.origin,
       });
 
       if (result.status === 'session') {

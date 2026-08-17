@@ -13,6 +13,7 @@ import {
   mapAuthErrorMessage,
   sanitizeInternalPath,
 } from '../auth/messages';
+import { buildCanonicalAuthUrl } from '../auth/origins';
 
 describe('profile photo replacement paths', () => {
   it('generates a new unique storage path for each replacement', () => {
@@ -116,11 +117,18 @@ describe('auth confirmation helpers', () => {
     assert.equal(sanitizeInternalPath('//evil.example'), null);
   });
 
-  it('documents resend confirmation redirect contract', () => {
-    const origin = 'https://preview.example';
-    const emailRedirectTo = `${origin}/auth/callback?next=/onboarding`;
-    assert.equal(emailRedirectTo.includes('/auth/callback'), true);
-    assert.equal(emailRedirectTo.includes('next=/onboarding'), true);
+  it('uses the canonical server origin for resend confirmation', () => {
+    const emailRedirectTo = buildCanonicalAuthUrl(
+      '/auth/callback?next=/onboarding',
+      {
+        NODE_ENV: 'production',
+        FORGE_AUTH_ORIGIN: 'https://preview.example',
+      }
+    );
+    assert.equal(
+      emailRedirectTo,
+      'https://forge.forgedinlife.com/auth/callback?next=/onboarding'
+    );
     assert.ok(AUTH_RESEND_COOLDOWN_MS >= 30_000);
   });
 
