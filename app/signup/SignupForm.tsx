@@ -2,8 +2,10 @@
 
 import { signUpWithEmail } from '@/app/actions/auth';
 import PasswordInput from '@/components/auth/PasswordInput';
+import AuthCaptcha from '@/components/auth/AuthCaptcha';
 import Header from '@/components/Header';
 import { trackLaunchEvent } from '@/lib/analytics/launch-events';
+import { getAuthCaptchaSiteKey, isAuthCaptchaEnabled } from '@/lib/auth/captcha';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
@@ -17,6 +19,10 @@ export default function SignupForm() {
   const [error, setError] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [captchaToken, setCaptchaToken] = useState<string | null>(null);
+  const [captchaResetKey, setCaptchaResetKey] = useState(0);
+  const captchaEnabled = isAuthCaptchaEnabled();
+  const captchaReady = !captchaEnabled || Boolean(captchaToken && getAuthCaptchaSiteKey());
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -34,6 +40,7 @@ export default function SignupForm() {
       const result = await signUpWithEmail({
         email,
         password,
+        captchaToken: captchaToken ?? undefined,
       });
 
       if (result.status === 'session') {
@@ -57,6 +64,10 @@ export default function SignupForm() {
       setError('Something went wrong. Please try again.');
     } finally {
       setIsSubmitting(false);
+      if (captchaEnabled) {
+        setCaptchaToken(null);
+        setCaptchaResetKey((key) => key + 1);
+      }
     }
   };
 
@@ -106,6 +117,8 @@ export default function SignupForm() {
             label="Password"
           />
 
+          <AuthCaptcha resetKey={captchaResetKey} onTokenChange={setCaptchaToken} />
+
           <PasswordInput
             id="confirm-password"
             name="confirm-password"
@@ -133,7 +146,7 @@ export default function SignupForm() {
 
           <button
             type="submit"
-            disabled={isSubmitting}
+            disabled={isSubmitting || !captchaReady}
             className="w-full bg-[#D62828] hover:bg-[#A61F1F] disabled:bg-gray-400 text-white font-semibold py-5 rounded-2xl text-lg transition"
           >
             {isSubmitting ? 'Verifying invitation...' : 'Create invited account'}

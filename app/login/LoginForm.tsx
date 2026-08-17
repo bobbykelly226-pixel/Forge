@@ -2,9 +2,11 @@
 
 import { requestPasswordReset, resendConfirmationEmail } from '@/app/actions/auth';
 import PasswordInput from '@/components/auth/PasswordInput';
+import AuthCaptcha from '@/components/auth/AuthCaptcha';
 import Header from '@/components/Header';
 import { trackLaunchEvent } from '@/lib/analytics/launch-events';
 import { AUTH_RESEND_COOLDOWN_MS, mapAuthErrorMessage } from '@/lib/auth/messages';
+import { getAuthCaptchaSiteKey, isAuthCaptchaEnabled } from '@/lib/auth/captcha';
 import { createClient } from '@/lib/supabase/client';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
@@ -25,6 +27,16 @@ export default function LoginForm() {
   const [isResending, setIsResending] = useState(false);
   const [isResetting, setIsResetting] = useState(false);
   const [cooldownSeconds, setCooldownSeconds] = useState(0);
+  const [captchaToken, setCaptchaToken] = useState<string | null>(null);
+  const [captchaResetKey, setCaptchaResetKey] = useState(0);
+  const captchaEnabled = isAuthCaptchaEnabled();
+  const captchaReady = !captchaEnabled || Boolean(captchaToken && getAuthCaptchaSiteKey());
+
+  const resetCaptcha = () => {
+    if (!captchaEnabled) return;
+    setCaptchaToken(null);
+    setCaptchaResetKey((key) => key + 1);
+  };
 
   useEffect(() => {
     if (cooldownSeconds <= 0) {
@@ -47,6 +59,7 @@ export default function LoginForm() {
       const { error: signInError } = await supabase.auth.signInWithPassword({
         email,
         password,
+        options: { captchaToken: captchaToken ?? undefined },
       });
 
       if (signInError) {
@@ -61,6 +74,7 @@ export default function LoginForm() {
       setError('Something went wrong. Please try again.');
     } finally {
       setIsSubmitting(false);
+      resetCaptcha();
     }
   };
 
@@ -73,6 +87,7 @@ export default function LoginForm() {
     try {
       const result = await resendConfirmationEmail({
         email,
+        captchaToken: captchaToken ?? undefined,
       });
 
       setCooldownSeconds(RESEND_COOLDOWN_SECONDS);
@@ -87,6 +102,7 @@ export default function LoginForm() {
       setError('Could not resend the confirmation email. Please try again.');
     } finally {
       setIsResending(false);
+      resetCaptcha();
     }
   };
 
@@ -97,6 +113,7 @@ export default function LoginForm() {
     try {
       const result = await requestPasswordReset({
         email,
+        captchaToken: captchaToken ?? undefined,
       });
       if (!result.success) {
         setError(result.message);
@@ -107,6 +124,7 @@ export default function LoginForm() {
       setError('Could not start a password reset. Please try again.');
     } finally {
       setIsResetting(false);
+      resetCaptcha();
     }
   };
 
@@ -153,6 +171,8 @@ export default function LoginForm() {
             disabled={isSubmitting}
           />
 
+          <AuthCaptcha resetKey={captchaResetKey} onTokenChange={setCaptchaToken} />
+
           {error && (
             <p className="text-sm text-red-600" role="alert">
               {error}
@@ -167,7 +187,7 @@ export default function LoginForm() {
 
           <button
             type="submit"
-            disabled={isSubmitting}
+            disabled={isSubmitting || !captchaReady}
             className="w-full bg-[#D62828] hover:bg-[#A61F1F] disabled:bg-gray-400 text-white font-semibold py-5 rounded-2xl text-lg transition"
           >
             {isSubmitting ? 'Signing in...' : 'Sign in'}
@@ -178,7 +198,7 @@ export default function LoginForm() {
           <button
             type="button"
             onClick={() => void handleResend()}
-            disabled={isResending || !email || cooldownSeconds > 0}
+            disabled={isResending || !email || cooldownSeconds > 0 || !captchaReady}
             className="text-sm font-medium text-[#0B2D5C] underline-offset-2 hover:underline disabled:opacity-50"
           >
             {isResending
@@ -190,7 +210,7 @@ export default function LoginForm() {
           <button
             type="button"
             onClick={() => void handleReset()}
-            disabled={isResetting || !email}
+            disabled={isResetting || !email || !captchaReady}
             className="text-sm font-medium text-[#5A6575] underline-offset-2 hover:underline disabled:opacity-50"
           >
             {isResetting ? 'Sending reset link...' : 'Reset password'}
