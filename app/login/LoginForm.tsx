@@ -73,7 +73,6 @@ export default function LoginForm() {
     try {
       const result = await resendConfirmationEmail({
         email,
-        origin: window.location.origin,
       });
 
       setCooldownSeconds(RESEND_COOLDOWN_SECONDS);
@@ -98,7 +97,6 @@ export default function LoginForm() {
     try {
       const result = await requestPasswordReset({
         email,
-        origin: window.location.origin,
       });
       if (!result.success) {
         setError(result.message);

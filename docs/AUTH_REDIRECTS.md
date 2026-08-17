@@ -1,14 +1,20 @@
 # Forge Auth Redirect & Email Configuration
 
-Production site: `https://forgedinlife.com`
+Canonical production site: `https://forge.forgedinlife.com`
 
 ## Application routes
 
-- Signup `emailRedirectTo`: `{origin}/auth/callback?next=/onboarding`
-- Password reset `redirectTo`: `{origin}/auth/callback?next=/auth/update-password`
+- Signup `emailRedirectTo`: `https://forge.forgedinlife.com/auth/callback?next=/onboarding`
+- Password reset `redirectTo`: `https://forge.forgedinlife.com/auth/callback?next=/auth/update-password`
 - Update password page: `/auth/update-password` (set a new password after recovery session)
 - Callback page: `/auth/callback` (handles URL hash tokens, PKCE `code`, and `token_hash`)
 - Confirm route: `/auth/confirm` (SSR `token_hash` + `type` template flow)
+
+Authentication URLs are built on the server from Forge's exact origin allowlist.
+Client payloads and request `Host`/`Origin` headers are never used. Production
+fails closed to `https://forge.forgedinlife.com`; local development may use
+`http://localhost:3000` or `http://127.0.0.1:3000`. `FORGE_AUTH_ORIGIN` is
+optional and is honored only when it exactly matches one of those origins.
 - Result page: `/auth/result?outcome=…` (confirmed / already confirmed / invalid-or-expired)
 - Legacy error page: `/auth/error` (redirects to `/auth/result` with a classified outcome)
 - Resend confirmation: login screen action → same `emailRedirectTo`
@@ -29,9 +35,10 @@ Custom SMTP (Resend) remains required for reliable delivery — see below. Re-te
 ### URL Configuration
 
 1. Open **Supabase Dashboard → Project Forge → Authentication → URL Configuration**
-2. **Site URL** = `https://forgedinlife.com`
+2. **Site URL** = `https://forge.forgedinlife.com`
 3. **Redirect URLs** must include all of:
    - `https://forgedinlife.com/**`
+   - `https://forge.forgedinlife.com/**`
    - `http://localhost:3000/**`
    - `http://127.0.0.1:3000/**`
    - `https://*-bobbykelly226-pixel.vercel.app/**`

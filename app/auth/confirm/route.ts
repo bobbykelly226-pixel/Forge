@@ -5,6 +5,7 @@ import {
   authResultPath,
   classifyConfirmationProviderError,
 } from '@/lib/auth/confirmation';
+import { buildCanonicalAuthUrl } from '@/lib/auth/origins';
 import { resolvePostAuthRedirect, sanitizeInternalPath } from '@/lib/auth/redirects';
 import { createClient } from '@/lib/supabase/server';
 
@@ -13,13 +14,15 @@ import { createClient } from '@/lib/supabase/server';
  * (SSR / custom Confirm signup template flow).
  */
 export async function GET(request: NextRequest) {
-  const { searchParams, origin } = new URL(request.url);
+  const { searchParams } = new URL(request.url);
   const tokenHash = searchParams.get('token_hash');
   const type = searchParams.get('type') as EmailOtpType | null;
   const next = sanitizeInternalPath(searchParams.get('next')) ?? '/onboarding';
 
   if (!tokenHash || !type) {
-    return NextResponse.redirect(`${origin}${authResultPath('invalid_or_expired')}`);
+    return NextResponse.redirect(
+      buildCanonicalAuthUrl(authResultPath('invalid_or_expired'))
+    );
   }
 
   const supabase = await createClient();
@@ -31,9 +34,9 @@ export async function GET(request: NextRequest) {
   if (error) {
     console.error('auth confirm verifyOtp failed');
     const outcome = classifyConfirmationProviderError(error.message);
-    return NextResponse.redirect(`${origin}${authResultPath(outcome)}`);
+    return NextResponse.redirect(buildCanonicalAuthUrl(authResultPath(outcome)));
   }
 
   const destination = await resolvePostAuthRedirect(next);
-  return NextResponse.redirect(`${origin}${destination}`);
+  return NextResponse.redirect(buildCanonicalAuthUrl(destination));
 }
