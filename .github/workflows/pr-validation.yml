@@ -16,7 +16,7 @@ jobs:
   application:
     name: Application checks
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 20
 
     steps:
       - name: Check out the pull request
@@ -36,6 +36,12 @@ jobs:
 
       - name: Run ESLint
         run: npm run lint
+
+      - name: Run TypeScript typecheck
+        run: npm run typecheck
+
+      - name: Run production build
+        run: npm run build
 
       - name: Audit dependencies
         run: npm audit --audit-level=high
@@ -57,8 +63,8 @@ jobs:
       - name: Start disposable Supabase stack
         run: supabase start
 
-      - name: Run invitation-only pgTAP tests
-        run: supabase test db supabase/tests/invitation_only_signup.test.sql
+      - name: Run full pgTAP database suite
+        run: supabase test db
 
       - name: Lint database functions
         run: supabase db lint --level error

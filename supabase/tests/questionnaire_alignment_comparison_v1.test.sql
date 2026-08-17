@@ -5,6 +5,11 @@ begin;
 create extension if not exists pgtap with schema extensions;
 set local search_path = public, extensions, pg_temp;
 
+-- This legacy contract suite exercises V1 behavior after V2 became active.
+-- Pin the active questionnaire inside this transaction; ROLLBACK restores catalog state.
+update public.questionnaire_versions
+set is_active = (version_key = 'compatibility_profile_v1');
+
 select plan(12);
 
 create function pg_temp._qa_authenticate(p_user_id uuid, p_email text)
@@ -170,6 +175,53 @@ values
 on conflict (id) do update
 set status = excluded.status,
     is_discoverable = excluded.is_discoverable;
+
+-- Discovery comparison now requires adult eligibility, reciprocal matching
+-- preferences, and a private location. Seed the minimum valid records before
+-- activating visibility so this test exercises the comparison boundary itself.
+insert into public.profile_private_details (
+  user_id, date_of_birth, latitude, longitude
+)
+values
+  ('b1111111-1111-4111-8111-111111111111', date '1990-01-01', 39.7392, -104.9903),
+  ('b2222222-2222-4222-8222-222222222222', date '1992-01-01', 39.7400, -104.9900),
+  ('b3333333-3333-4333-8333-333333333333', date '1991-01-01', 39.7410, -104.9890)
+on conflict (user_id) do update
+set date_of_birth = excluded.date_of_birth,
+    latitude = excluded.latitude,
+    longitude = excluded.longitude;
+
+insert into public.profile_preferences (
+  user_id,
+  gender_identity,
+  interested_in,
+  preferred_age_min,
+  preferred_age_max,
+  max_distance_miles,
+  discovery_enabled
+)
+values
+  ('b1111111-1111-4111-8111-111111111111', 'man', array['woman']::text[], 18, 100, 500, true),
+  ('b2222222-2222-4222-8222-222222222222', 'woman', array['man']::text[], 18, 100, 500, true),
+  ('b3333333-3333-4333-8333-333333333333', 'woman', array['man']::text[], 18, 100, 500, false)
+on conflict (user_id) do update
+set gender_identity = excluded.gender_identity,
+    interested_in = excluded.interested_in,
+    preferred_age_min = excluded.preferred_age_min,
+    preferred_age_max = excluded.preferred_age_max,
+    max_distance_miles = excluded.max_distance_miles,
+    discovery_enabled = excluded.discovery_enabled;
+
+update public.profiles
+set is_discoverable = id in (
+  'b1111111-1111-4111-8111-111111111111'::uuid,
+  'b2222222-2222-4222-8222-222222222222'::uuid
+)
+where id in (
+  'b1111111-1111-4111-8111-111111111111'::uuid,
+  'b2222222-2222-4222-8222-222222222222'::uuid,
+  'b3333333-3333-4333-8333-333333333333'::uuid
+);
 
 select pg_temp._qa_seed_answer(
   'b1111111-1111-4111-8111-111111111111',
