@@ -5,6 +5,11 @@ begin;
 create extension if not exists pgtap with schema extensions;
 set local search_path = public, extensions, pg_temp;
 
+-- This legacy contract suite exercises V1 behavior after V2 became active.
+-- Pin the active questionnaire inside this transaction; ROLLBACK restores catalog state.
+update public.questionnaire_versions
+set is_active = (version_key = 'compatibility_profile_v1');
+
 select plan(12);
 
 create function pg_temp._qa_authenticate(p_user_id uuid, p_email text)
