@@ -36,6 +36,11 @@ describe('operator profile photo moderation', () => {
     assert.match(action, /rpc\('review_profile_photo'/);
   });
 
+  it('exports only an async function from the use-server action module', () => {
+    assert.doesNotMatch(action, /export const INITIAL_PHOTO_MODERATION_ACTION_STATE/);
+    assert.match(workspace, /const INITIAL_PHOTO_MODERATION_ACTION_STATE/);
+  });
+
   it('requires a bounded reason for rejected photos', () => {
     assert.match(action, /decision === 'rejected'/);
     assert.match(action, /rejectionReason\.length < 3/);
