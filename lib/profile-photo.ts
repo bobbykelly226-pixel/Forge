@@ -132,6 +132,9 @@ export type ManagedProfilePhoto = {
   storage_path: string;
   display_order: number;
   is_primary: boolean;
+  moderation_status: 'pending' | 'approved' | 'rejected';
+  rejection_reason: string | null;
+  reviewed_at: string | null;
   public_url: string | null;
 };
 
@@ -140,6 +143,9 @@ export function toManagedProfilePhoto(photo: {
   storage_path: string;
   display_order: number;
   is_primary: boolean;
+  moderation_status: 'pending' | 'approved' | 'rejected';
+  rejection_reason?: string | null;
+  reviewed_at?: string | null;
   public_url?: string | null;
 }): ManagedProfilePhoto {
   return {
@@ -147,6 +153,9 @@ export function toManagedProfilePhoto(photo: {
     storage_path: photo.storage_path,
     display_order: photo.display_order,
     is_primary: photo.is_primary,
+    moderation_status: photo.moderation_status,
+    rejection_reason: photo.rejection_reason?.trim() || null,
+    reviewed_at: photo.reviewed_at ?? null,
     public_url: photo.public_url?.trim() || null,
   };
 }

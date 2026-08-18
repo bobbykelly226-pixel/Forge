@@ -46,6 +46,8 @@ Do not introduce a second database, ORM (Prisma/Drizzle), or custom auth system.
 
 **Profile photos:** `profile-photos` is private. Server code issues short-lived owner previews; Discovery receives only approved photos for eligible profiles. Never reconstruct a public bucket URL or fall back to the legacy `profiles.profile_photo_url` when managed rows exist.
 
+**Photo moderation:** `/internal/photo-moderation` is protected by the server-only `FORGE_OPERATOR_EMAILS` allowlist and requires a confirmed Forge account. The operator page uses the server-only service client to sign pending photos for five minutes. Decisions must use the service-role-only `review_profile_photo` function so the photo update and append-only audit event are atomic. Never expose the service key, operator allowlist, audit table, or moderation RPC to browser code or ordinary member roles.
+
 ---
 
 ## 5. Engineering Workflow

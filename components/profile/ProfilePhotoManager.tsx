@@ -234,6 +234,12 @@ export default function ProfilePhotoManager({
         <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3">
           {photos.map((photo, index) => {
             const src = photo.public_url;
+            const moderationLabel =
+              photo.moderation_status === 'approved'
+                ? 'Approved'
+                : photo.moderation_status === 'rejected'
+                  ? 'Needs replacement'
+                  : 'Pending review';
             return (
               <li
                 key={photo.id}
@@ -256,8 +262,24 @@ export default function ProfilePhotoManager({
                       Primary
                     </span>
                   ) : null}
+                  <span
+                    className={`absolute bottom-2 left-2 rounded-full px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.1em] ${
+                      photo.moderation_status === 'approved'
+                        ? 'bg-[#2E7D5B] text-white'
+                        : photo.moderation_status === 'rejected'
+                          ? 'bg-[#D62828] text-white'
+                          : 'bg-[#FFF8E8] text-[#8A5B06]'
+                    }`}
+                  >
+                    {moderationLabel}
+                  </span>
                 </div>
                 <div className="space-y-2 p-2.5">
+                  {photo.moderation_status === 'rejected' && photo.rejection_reason ? (
+                    <p className="rounded-xl border border-[#D62828]/15 bg-[#FFF5F4] px-2.5 py-2 text-[11px] leading-relaxed text-[#9B1C1C]">
+                      {photo.rejection_reason}
+                    </p>
+                  ) : null}
                   <div className="flex items-center justify-between gap-1">
                     <button
                       type="button"
