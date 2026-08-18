@@ -581,6 +581,9 @@ export type Database = {
           id: string
           is_primary: boolean
           moderation_status: Database["public"]["Enums"]["photo_moderation_status"]
+          rejection_reason: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
           storage_path: string
           updated_at: string
           user_id: string
@@ -591,6 +594,9 @@ export type Database = {
           id?: string
           is_primary?: boolean
           moderation_status?: Database["public"]["Enums"]["photo_moderation_status"]
+          rejection_reason?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
           storage_path: string
           updated_at?: string
           user_id: string
@@ -601,9 +607,45 @@ export type Database = {
           id?: string
           is_primary?: boolean
           moderation_status?: Database["public"]["Enums"]["photo_moderation_status"]
+          rejection_reason?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
           storage_path?: string
           updated_at?: string
           user_id?: string
+        }
+        Relationships: []
+      }
+      profile_photo_moderation_events: {
+        Row: {
+          created_at: string
+          decision: Database["public"]["Enums"]["photo_moderation_status"]
+          id: string
+          operator_id: string
+          photo_id: string
+          photo_owner_id: string
+          rejection_reason: string | null
+          storage_path: string
+        }
+        Insert: {
+          created_at?: string
+          decision: Database["public"]["Enums"]["photo_moderation_status"]
+          id?: string
+          operator_id: string
+          photo_id: string
+          photo_owner_id: string
+          rejection_reason?: string | null
+          storage_path: string
+        }
+        Update: {
+          created_at?: string
+          decision?: Database["public"]["Enums"]["photo_moderation_status"]
+          id?: string
+          operator_id?: string
+          photo_id?: string
+          photo_owner_id?: string
+          rejection_reason?: string | null
+          storage_path?: string
         }
         Relationships: []
       }
@@ -2176,6 +2218,15 @@ export type Database = {
           p_reported_user_id: string
         }
         Returns: Json
+      }
+      review_profile_photo: {
+        Args: {
+          p_decision: Database["public"]["Enums"]["photo_moderation_status"]
+          p_operator_id: string
+          p_photo_id: string
+          p_rejection_reason?: string | null
+        }
+        Returns: boolean
       }
       respond_open_to_chat: {
         Args: { p_action: string; p_request_id: string }

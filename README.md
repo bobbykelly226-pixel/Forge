@@ -48,3 +48,4 @@ Set these in your local `.env` file or deployment environment:
 - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
 - `RESEND_API_KEY`
 - `SUPABASE_SERVICE_ROLE_KEY` (server-only; enables reliable Auth confirmation email delivery via Resend when the built-in Supabase mailer is rate-limited)
+- `FORGE_OPERATOR_EMAILS` (server-only, comma-separated confirmed account emails allowed to access operator moderation routes)

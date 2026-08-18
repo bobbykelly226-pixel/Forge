@@ -1074,6 +1074,9 @@ export type ProfilePhotoActionResult = {
     storage_path: string;
     display_order: number;
     is_primary: boolean;
+    moderation_status: 'pending' | 'approved' | 'rejected';
+    rejection_reason: string | null;
+    reviewed_at: string | null;
     public_url: string | null;
   }>;
   primaryPhotoUrl?: string | null;
@@ -1082,7 +1085,7 @@ export type ProfilePhotoActionResult = {
 async function loadOwnerPhotos(supabase: Awaited<ReturnType<typeof createClient>>, userId: string) {
   return supabase
     .from('profile_photos')
-    .select('id, storage_path, is_primary, display_order')
+    .select('id, storage_path, is_primary, display_order, moderation_status, rejection_reason, reviewed_at')
     .eq('user_id', userId)
     .order('display_order', { ascending: true });
 }
@@ -1094,6 +1097,9 @@ async function mapPhotoRows(
     storage_path: string;
     is_primary: boolean;
     display_order: number;
+    moderation_status: 'pending' | 'approved' | 'rejected';
+    rejection_reason: string | null;
+    reviewed_at: string | null;
   }>
 ) {
   const signedRows = await signProfilePhotoRows(supabase, rows);
@@ -1102,6 +1108,9 @@ async function mapPhotoRows(
     storage_path: photo.storage_path,
     display_order: photo.display_order,
     is_primary: photo.is_primary,
+    moderation_status: photo.moderation_status,
+    rejection_reason: photo.rejection_reason,
+    reviewed_at: photo.reviewed_at,
     public_url: photo.public_url ?? null,
   }));
 }

@@ -134,6 +134,8 @@ Canonical allow-list in code: `lib/data-model-rules.ts` → `DISCOVERABLE_PROFIL
 
 The `profile-photos` bucket is **private**. The server signs short-lived owner previews, and Discovery can access only approved photos for eligible profiles. New or replaced photos return to `pending` moderation.
 
+Operator review is available only through `/internal/photo-moderation` for confirmed accounts in the server-only `FORGE_OPERATOR_EMAILS` allowlist. Approve/reject decisions record `reviewed_at`, `reviewed_by`, and a required rejection reason on the current photo row. Every decision also creates an append-only `profile_photo_moderation_events` record through the service-role-only `review_profile_photo` function. Ordinary members and anonymous callers have no audit-table or moderation-function access.
+
 ---
 
 ## Tables (summary)
