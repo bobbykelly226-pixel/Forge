@@ -11,11 +11,6 @@ export type PhotoModerationActionState = {
   message: string;
 };
 
-export const INITIAL_PHOTO_MODERATION_ACTION_STATE: PhotoModerationActionState = {
-  success: false,
-  message: '',
-};
-
 export async function moderateProfilePhotoAction(
   _previousState: PhotoModerationActionState,
   formData: FormData
