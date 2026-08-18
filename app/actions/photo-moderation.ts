@@ -3,6 +3,7 @@
 import { revalidatePath } from 'next/cache';
 
 import { isForgeOperatorUser } from '@/lib/operator/access';
+import { getOperatorMfaState } from '@/lib/operator/mfa';
 import { createServiceClient } from '@/lib/supabase/admin';
 import { createClient } from '@/lib/supabase/server';
 
@@ -41,6 +42,17 @@ export async function moderateProfilePhotoAction(
 
   if (!isForgeOperatorUser(user)) {
     return { success: false, message: 'You are not authorized to moderate photos.' };
+  }
+
+  const mfa = await getOperatorMfaState(supabase);
+  if (mfa.status === 'challenge-required') {
+    return {
+      success: false,
+      message: 'Enter your authenticator code before moderating photos.',
+    };
+  }
+  if (mfa.status === 'unavailable') {
+    return { success: false, message: mfa.message };
   }
 
   const admin = createServiceClient();

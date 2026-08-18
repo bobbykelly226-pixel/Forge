@@ -2,10 +2,10 @@ import { Fraunces, Manrope } from 'next/font/google';
 import { notFound, redirect } from 'next/navigation';
 
 import ForgeAppCanvas from '@/components/ForgeAppCanvas';
-import PhotoModerationWorkspace from '@/components/operator/PhotoModerationWorkspace';
+import OperatorMfaWorkspace from '@/components/operator/OperatorMfaWorkspace';
+import type { OperatorMfaScreenState } from '@/components/operator/OperatorMfaWorkspace';
 import { isForgeOperatorUser } from '@/lib/operator/access';
 import { getOperatorMfaState } from '@/lib/operator/mfa';
-import { loadPendingProfilePhotosForOperator } from '@/lib/operator/photo-moderation';
 import { createClient } from '@/lib/supabase/server';
 
 const display = Fraunces({
@@ -23,22 +23,26 @@ const sans = Manrope({
 export const dynamic = 'force-dynamic';
 
 export const metadata = {
-  title: 'Photo Moderation | Forge',
-  description: 'Private operator review for pending Forge profile photos.',
+  title: 'Founder Account Security | Forge',
+  description: 'Private Forge operator multi-factor authentication.',
   robots: {
     index: false,
     follow: false,
   },
 };
 
-export default async function PhotoModerationPage() {
+export default async function OperatorSecurityPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ redirectTo?: string }>;
+}) {
   const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
 
   if (!user) {
-    redirect('/login?redirectTo=/internal/photo-moderation');
+    redirect('/login?redirectTo=/internal/operator-security');
   }
 
   if (!isForgeOperatorUser(user)) {
@@ -46,11 +50,15 @@ export default async function PhotoModerationPage() {
   }
 
   const mfa = await getOperatorMfaState(supabase);
-  if (mfa.status === 'challenge-required' || mfa.status === 'unavailable') {
-    redirect('/internal/operator-security?redirectTo=/internal/photo-moderation');
-  }
-
-  const queue = await loadPendingProfilePhotosForOperator();
+  const initialScreen: OperatorMfaScreenState =
+    mfa.status === 'challenge-required'
+      ? 'challenge'
+      : mfa.status === 'verified'
+        ? 'verified'
+        : mfa.status === 'not-enrolled'
+          ? 'not-enrolled'
+          : 'unavailable';
+  const params = await searchParams;
 
   return (
     <ForgeAppCanvas
@@ -59,9 +67,11 @@ export default async function PhotoModerationPage() {
         fontFamily: 'var(--font-discovery-sans), ui-sans-serif, system-ui, sans-serif',
       }}
     >
-      <PhotoModerationWorkspace
-        photos={queue.success ? queue.data : []}
-        loadError={queue.success ? null : queue.message}
+      <OperatorMfaWorkspace
+        email={user.email ?? 'operator account'}
+        redirectTo={params.redirectTo ?? '/internal/photo-moderation'}
+        initialScreen={initialScreen}
+        initialError={mfa.status === 'unavailable' ? mfa.message : null}
       />
     </ForgeAppCanvas>
   );

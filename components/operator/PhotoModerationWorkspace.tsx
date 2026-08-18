@@ -147,10 +147,10 @@ export default function PhotoModerationWorkspace({
           </p>
         </div>
         <Link
-          href="/profile"
+          href="/internal/operator-security"
           className="inline-flex w-fit items-center justify-center rounded-2xl border border-[#0B2D5C]/14 bg-white/80 px-4 py-3 text-sm font-semibold text-[#0B2D5C] transition hover:bg-white"
         >
-          Return to Forge
+          Account security
         </Link>
       </div>
 
