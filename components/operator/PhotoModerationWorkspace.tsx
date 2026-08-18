@@ -5,10 +5,15 @@ import { useActionState } from 'react';
 import { CheckCircle2, Clock3, ShieldCheck, XCircle } from 'lucide-react';
 
 import {
-  INITIAL_PHOTO_MODERATION_ACTION_STATE,
   moderateProfilePhotoAction,
 } from '@/app/actions/photo-moderation';
+import type { PhotoModerationActionState } from '@/app/actions/photo-moderation';
 import type { OperatorPhotoReviewItem } from '@/lib/operator/photo-moderation';
+
+const INITIAL_PHOTO_MODERATION_ACTION_STATE: PhotoModerationActionState = {
+  success: false,
+  message: '',
+};
 
 function PendingPhotoCard({ photo }: { photo: OperatorPhotoReviewItem }) {
   const [state, formAction, pending] = useActionState(
