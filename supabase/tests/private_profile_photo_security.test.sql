@@ -1,6 +1,6 @@
 begin;
 
-select plan(8);
+select plan(14);
 
 select is(
   (select public from storage.buckets where id = 'profile-photos'),
@@ -79,6 +79,60 @@ select is(
   ),
   'search_path=pg_catalog',
   'the security-definer helper pins pg_catalog first in its search path'
+);
+
+select ok(
+  to_regprocedure('private.can_access_own_conversation_history(uuid)') is not null,
+  'the private current-user conversation authorization helper exists'
+);
+
+select ok(
+  has_function_privilege(
+    'authenticated',
+    'private.can_access_own_conversation_history(uuid)',
+    'EXECUTE'
+  ),
+  'authenticated members can invoke the private policy helper'
+);
+
+select ok(
+  not has_function_privilege(
+    'anon',
+    'private.can_access_own_conversation_history(uuid)',
+    'EXECUTE'
+  ),
+  'anonymous users cannot invoke the private policy helper'
+);
+
+select ok(
+  not has_function_privilege(
+    'authenticated',
+    'public.forge_can_access_conversation_history(uuid,uuid)',
+    'EXECUTE'
+  ),
+  'the parameterized public conversation helper remains unavailable to members'
+);
+
+select ok(
+  not exists (
+    select 1
+    from pg_policies
+    where coalesce(qual, '') like '%forge_can_access_conversation_history%'
+       or coalesce(with_check, '') like '%forge_can_access_conversation_history%'
+  ),
+  'RLS policies no longer call the revoked parameterized public helper'
+);
+
+select ok(
+  exists (
+    select 1
+    from pg_policies
+    where schemaname = 'storage'
+      and tablename = 'objects'
+      and policyname = 'Authorized participants read conversation history attachments'
+      and qual like '%private.can_access_own_conversation_history%'
+  ),
+  'conversation attachment reads use the private current-user helper'
 );
 
 select * from finish();
