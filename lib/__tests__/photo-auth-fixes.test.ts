@@ -115,7 +115,7 @@ describe('auth confirmation helpers', () => {
 
   it('uses the canonical server origin for resend confirmation', () => {
     const emailRedirectTo = buildCanonicalAuthUrl(
-      '/auth/callback?next=/onboarding',
+      '/auth/callback?next=/app',
       {
         NODE_ENV: 'production',
         FORGE_AUTH_ORIGIN: 'https://preview.example',
@@ -123,15 +123,15 @@ describe('auth confirmation helpers', () => {
     );
     assert.equal(
       emailRedirectTo,
-      'https://forge.forgedinlife.com/auth/callback?next=/onboarding'
+      'https://forge.forgedinlife.com/auth/callback?next=/app'
     );
     assert.ok(AUTH_RESEND_COOLDOWN_MS >= 30_000);
   });
 
   it('documents confirmed-user login and new-user onboarding redirect', () => {
     const confirmedLoginDestination = '/app';
-    const newUserAfterConfirm = '/onboarding';
+    const newUserAfterConfirm = '/app';
     assert.equal(confirmedLoginDestination.startsWith('/'), true);
-    assert.equal(newUserAfterConfirm, '/onboarding');
+    assert.equal(newUserAfterConfirm, '/app');
   });
 });

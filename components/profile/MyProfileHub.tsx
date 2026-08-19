@@ -162,6 +162,26 @@ export default function MyProfileHub({
             <LogoutButton className="!rounded-full !bg-white/70 !px-3 !py-1 !text-[10px] !uppercase !tracking-[0.14em] !text-[#0B2D5C] ring-1 ring-[#0B2D5C]/12 hover:!bg-white" />
           </div>
 
+          {!onboardingCompleted ? (
+            <section className="mb-5 flex flex-col gap-4 rounded-[1.5rem] border border-[#D62828]/15 bg-white/85 p-5 shadow-[0_10px_30px_rgba(11,45,92,0.04)] sm:flex-row sm:items-center sm:justify-between">
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-[0.14em] text-[#D62828]">
+                  Setup in progress
+                </p>
+                <p className="mt-1.5 text-sm leading-relaxed text-[#5A6575]">
+                  Continue the essentials when you are ready. Your saved profile is
+                  available here in the meantime.
+                </p>
+              </div>
+              <Link
+                href="/onboarding"
+                className="inline-flex shrink-0 items-center justify-center rounded-full bg-[#D62828] px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-[#A61F1F] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#D62828]"
+              >
+                Continue onboarding
+              </Link>
+            </section>
+          ) : null}
+
           <div
             className="lg:grid lg:grid-cols-[minmax(16rem,20rem)_minmax(0,1fr)] lg:items-start lg:gap-8 xl:gap-10"
             style={{ animation: 'profileHubFadeUp 0.5s ease-out both' }}

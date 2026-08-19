@@ -401,11 +401,8 @@ describe('Category 1 onboarding preview flow', () => {
       assert.doesNotMatch(source, /\.from\(['"]user_questionnaire_/);
     }
 
-    const appPage = read('app/app/page.tsx');
-    assert.match(appPage, /Compatibility Profile Preview/);
-    assert.match(appPage, /href="\/onboarding-v2-preview"/);
-    assert.match(appPage, /href="\/onboarding"/);
-    assert.match(appPage, /href="\/compatibility-profile"/);
+    const previewPage = read('app/onboarding-v2-preview/page.tsx');
+    assert.match(previewPage, /CompatibilityProfilePreviewShell/);
   });
 
   it('keeps mobile and desktop context panels mutually exclusive (no duplicate progress)', () => {

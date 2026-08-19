@@ -14,8 +14,30 @@ import {
   THINGS_I_ENJOY_OPTIONS,
 } from '../types/profile-answers';
 import { countPrimaryPhotos, normalizePrimaryPhotos } from '../data-model-rules';
+import { hasOnboardingProgress } from '../data/onboarding';
 
 describe('onboarding resume and completion', () => {
+  it('distinguishes a brand-new account from saved onboarding progress', () => {
+    assert.equal(
+      hasOnboardingProgress({
+        answers: {},
+        dateOfBirth: null,
+        onboardingCompleted: false,
+        initialStepNumber: 1,
+      }),
+      false
+    );
+    assert.equal(
+      hasOnboardingProgress({
+        answers: { [PROFILE_ANSWER_KEYS.relationshipIntention]: 'Marriage-minded' },
+        dateOfBirth: null,
+        onboardingCompleted: false,
+        initialStepNumber: 2,
+      }),
+      true
+    );
+  });
+
   it('resumes at welcome when no answers and no saved step exist', () => {
     const step = deriveOnboardingStep({
       onboardingCompleted: false,

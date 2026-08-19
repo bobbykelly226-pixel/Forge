@@ -21,7 +21,7 @@ type ActionResult = {
 };
 
 function buildConfirmRedirectTo(): string {
-  return buildCanonicalAuthUrl('/auth/callback?next=/onboarding');
+  return buildCanonicalAuthUrl('/auth/callback?next=/app');
 }
 
 function isRateLimitError(message: string | undefined): boolean {
