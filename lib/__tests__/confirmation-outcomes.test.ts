@@ -16,7 +16,7 @@ describe('confirmation outcome classification', () => {
     const copy = presentationForOutcome('session_ready');
     assert.equal(copy.title, 'Email confirmed');
     assert.match(copy.message, /confirmed/i);
-    assert.equal(copy.primaryHref, '/onboarding');
+    assert.equal(copy.primaryHref, '/app');
     assert.equal(copy.title.includes('Confirmation needed'), false);
   });
 
@@ -105,15 +105,15 @@ describe('confirmation outcome classification', () => {
 });
 
 describe('confirmation callback contracts', () => {
-  it('documents outcome A: session ready redirects into onboarding', () => {
+  it('documents outcome A: session ready redirects to the first-login chooser', () => {
     const result = {
       success: true as const,
       outcome: 'session_ready' as const,
-      redirectTo: '/onboarding',
+      redirectTo: '/app',
     };
     assert.equal(result.success, true);
     assert.equal(result.outcome, 'session_ready');
-    assert.equal(result.redirectTo, '/onboarding');
+    assert.equal(result.redirectTo, '/app');
     assert.doesNotMatch(CONFIRMATION_COPY.session_ready.title, /confirmation needed/i);
   });
 

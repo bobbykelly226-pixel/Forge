@@ -585,7 +585,13 @@ describe('Compatibility Profile Persistence', () => {
     assert.match(hub, /completionPercent/);
     assert.match(appPage, /href="\/compatibility-profile"/);
     assert.match(appPage, /Open Compatibility Profile/);
-    assert.match(appPage, /href="\/onboarding-v2-preview"/);
+    assert.match(appPage, /href="\/profile"/);
+    assert.match(appPage, /Start Onboarding/);
+    assert.match(appPage, /Go to My Profile/);
+    assert.doesNotMatch(appPage, /Compatibility Profile Preview/);
+    assert.doesNotMatch(appPage, />Edit Profile</);
+    assert.doesNotMatch(appPage, />Preview Profile</);
+    assert.match(hub, /Continue onboarding/);
   });
 
   it('declares secure persistence RPCs and owner only questionnaire tables in migrations and types', () => {

@@ -185,6 +185,20 @@ export type OnboardingLoadState = {
   appState: Tables<'user_app_state'> | null;
 };
 
+export function hasOnboardingProgress(
+  state: Pick<
+    OnboardingLoadState,
+    'answers' | 'dateOfBirth' | 'onboardingCompleted' | 'initialStepNumber'
+  >
+): boolean {
+  return (
+    state.onboardingCompleted ||
+    state.initialStepNumber > 1 ||
+    Boolean(state.dateOfBirth) ||
+    Object.keys(state.answers).length > 0
+  );
+}
+
 export async function loadOnboardingState(): Promise<
   DataAccessResult<OnboardingLoadState>
 > {

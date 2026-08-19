@@ -18,7 +18,7 @@ export type ConfirmationPresentation = {
   outcome: ConfirmationOutcome;
   title: string;
   message: string;
-  primaryHref: '/onboarding' | '/login';
+  primaryHref: '/app' | '/login';
   primaryLabel: string;
   secondaryHref?: '/login' | '/signup';
   secondaryLabel?: string;
@@ -30,8 +30,8 @@ export const CONFIRMATION_COPY: Record<ConfirmationOutcome, ConfirmationPresenta
   session_ready: {
     outcome: 'session_ready',
     title: 'Email confirmed',
-    message: 'Your email is confirmed. Continuing into Forge onboarding.',
-    primaryHref: '/onboarding',
+    message: 'Your email is confirmed. Choose where you would like to begin in Forge.',
+    primaryHref: '/app',
     primaryLabel: 'Continue',
   },
   confirmed_needs_signin: {

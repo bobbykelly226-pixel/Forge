@@ -8,7 +8,7 @@ import { sanitizeInternalPath } from '@/lib/auth/messages';
 export async function resolvePostAuthRedirect(
   requestedNext: string | null | undefined
 ): Promise<string> {
-  const fallback = '/onboarding';
+  const fallback = '/app';
   const next = sanitizeInternalPath(requestedNext) ?? fallback;
 
   const ensured = await ensureFoundationalRecords();
@@ -24,7 +24,7 @@ export async function resolvePostAuthRedirect(
     return next;
   }
 
-  return next === '/app' || next === '/profile' ? '/onboarding' : next;
+  return next === '/profile' ? '/app' : next;
 }
 
 export { mapAuthErrorMessage, sanitizeInternalPath } from '@/lib/auth/messages';
