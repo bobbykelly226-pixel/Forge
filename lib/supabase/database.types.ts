@@ -95,6 +95,74 @@ export type Database = {
         }
         Relationships: []
       }
+      legal_document_versions: {
+        Row: {
+          created_at: string
+          document_key: string
+          effective_at: string
+          id: string
+          is_current: boolean
+          is_material_change: boolean
+          published_at: string
+          version: string
+        }
+        Insert: {
+          created_at?: string
+          document_key: string
+          effective_at: string
+          id?: string
+          is_current?: boolean
+          is_material_change?: boolean
+          published_at?: string
+          version: string
+        }
+        Update: {
+          created_at?: string
+          document_key?: string
+          effective_at?: string
+          id?: string
+          is_current?: boolean
+          is_material_change?: boolean
+          published_at?: string
+          version?: string
+        }
+        Relationships: []
+      }
+      member_legal_acceptances: {
+        Row: {
+          accepted_at: string
+          created_at: string
+          document_version_id: string
+          id: string
+          source: string
+          user_id: string
+        }
+        Insert: {
+          accepted_at?: string
+          created_at?: string
+          document_version_id: string
+          id?: string
+          source: string
+          user_id: string
+        }
+        Update: {
+          accepted_at?: string
+          created_at?: string
+          document_version_id?: string
+          id?: string
+          source?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "member_legal_acceptances_document_version_id_fkey"
+            columns: ["document_version_id"]
+            isOneToOne: false
+            referencedRelation: "legal_document_versions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       character_signal_display_preferences: {
         Row: {
           is_public: boolean
@@ -1814,6 +1882,10 @@ export type Database = {
       }
     }
     Functions: {
+      accept_current_legal_documents: {
+        Args: Record<PropertyKey, never>
+        Returns: boolean
+      }
       block_user: { Args: { p_blocked_user_id: string }; Returns: Json }
       can_activate_discovery_visibility: {
         Args: { p_user_id: string }
@@ -1896,6 +1968,7 @@ export type Database = {
         Args: { p_conversation_id: string; p_user_id: string }
         Returns: boolean
       }
+      has_current_legal_acceptance: { Args: never; Returns: boolean }
       forge_map_legacy_profile_row: {
         Args: { p: Database["public"]["Tables"]["profiles"]["Row"] }
         Returns: {
