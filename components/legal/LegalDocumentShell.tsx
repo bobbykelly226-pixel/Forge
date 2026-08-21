@@ -24,10 +24,39 @@ export default function LegalDocumentShell({
         <p className="mb-8 text-sm text-[#666666]">
           Version {version} · Effective {effectiveDate}
         </p>
-        <div className="max-w-none leading-8 text-[#444444] [&_h2]:mb-3 [&_h2]:mt-8 [&_h2]:text-3xl [&_h2]:font-semibold [&_h2]:text-[#0B2D5C] [&_li]:pl-1 [&_p]:mb-4 [&_ul]:mb-8 [&_ul]:list-disc [&_ul]:space-y-2 [&_ul]:pl-6">
+        <div className="legal-document-content max-w-none leading-8 text-[#444444]">
           {children}
         </div>
       </main>
+
+      <style>{`
+        .legal-document-content p {
+          margin-bottom: 1rem;
+        }
+
+        .legal-document-content h2 {
+          margin-top: 2rem;
+          margin-bottom: 0.75rem;
+          color: #0B2D5C;
+          font-size: 1.875rem;
+          font-weight: 600;
+          line-height: 2.25rem;
+        }
+
+        .legal-document-content ul {
+          margin-bottom: 2rem;
+          list-style-type: disc;
+          padding-left: 1.5rem;
+        }
+
+        .legal-document-content li {
+          padding-left: 0.25rem;
+        }
+
+        .legal-document-content li + li {
+          margin-top: 0.5rem;
+        }
+      `}</style>
 
       <footer className="bg-[#0B2D5C] py-8 text-white/80">
         <div className="mx-auto max-w-6xl px-6">
