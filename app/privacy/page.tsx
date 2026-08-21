@@ -2,6 +2,9 @@
 
 import Header from '../../components/Header';
 import Link from 'next/link';
+import { getLegalDocument } from '@/lib/legal/documents';
+
+const document = getLegalDocument('privacy');
 
 export default function Privacy() {
   return (
@@ -14,7 +17,7 @@ export default function Privacy() {
         </h1>
 
         <p className="text-sm text-[#666666] mb-8">
-          Last updated: July 31, 2026
+          Version {document.version} · Effective {document.effectiveDate}
         </p>
 
         <div className="prose prose-lg max-w-none text-[#444444] leading-8">

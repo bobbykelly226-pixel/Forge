@@ -53,7 +53,12 @@ export async function proxy(request: NextRequest) {
       pathname.startsWith('/onboarding-v2-preview/') ||
       pathname.startsWith('/discovery') ||
       pathname.startsWith('/connections') ||
+      pathname.startsWith('/character-signals') ||
+      pathname.startsWith('/feedback') ||
+      pathname.startsWith('/safety/appeal') ||
       pathname.startsWith('/internal'));
+
+  const isMemberFeatureRoute = isProtectedRoute && !pathname.startsWith('/internal');
 
   if (!user && isProtectedRoute) {
     const redirectUrl = request.nextUrl.clone();
@@ -61,6 +66,24 @@ export async function proxy(request: NextRequest) {
     redirectUrl.search = '';
     redirectUrl.searchParams.set('redirectTo', pathname);
     return NextResponse.redirect(redirectUrl);
+  }
+
+  if (user && isMemberFeatureRoute) {
+    const { data: hasAcceptance, error: acceptanceError } = await supabase.rpc(
+      'has_current_legal_acceptance'
+    );
+    const migrationNotAvailable = acceptanceError?.code === 'PGRST202';
+
+    // Deployment-safe staging: the app can be previewed before its migration is
+    // applied. After the function exists, a missing acceptance or lookup failure
+    // closes member access behind the legal gate.
+    if (!migrationNotAvailable && (acceptanceError || hasAcceptance !== true)) {
+      const redirectUrl = request.nextUrl.clone();
+      redirectUrl.pathname = '/legal/acceptance';
+      redirectUrl.search = '';
+      redirectUrl.searchParams.set('redirectTo', `${pathname}${request.nextUrl.search}`);
+      return NextResponse.redirect(redirectUrl);
+    }
   }
 
   if (user && (pathname === '/login' || pathname === '/signup')) {

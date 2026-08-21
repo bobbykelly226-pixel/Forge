@@ -2,6 +2,9 @@
 
 import Header from '../../components/Header';
 import Link from 'next/link';
+import { getLegalDocument } from '@/lib/legal/documents';
+
+const document = getLegalDocument('terms');
 
 export default function Terms() {
   return (
@@ -14,7 +17,7 @@ export default function Terms() {
         </h1>
 
         <p className="text-sm text-[#666666] mb-8">
-          Last updated: July 2026
+          Version {document.version} · Effective {document.effectiveDate}
         </p>
 
         <div className="prose prose-lg max-w-none text-[#444444] leading-8">
@@ -219,7 +222,7 @@ export default function Terms() {
           </p>
 
           <p className="mb-8">
-            When we update these Terms, we will revise the “Last updated” date at the top of this page. Continued use of the website after changes are posted means you accept the updated Terms.
+            When we update these Terms, we will revise the version and effective date at the top of this page. If a change is material, Forge will require you to review and affirmatively accept the new version before continuing to member features.
           </p>
 
           <h2 className="text-3xl font-semibold text-[#0B2D5C] mt-8 mb-3">
