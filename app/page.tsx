@@ -148,6 +148,12 @@ export default function Home() {
               <Link href="/privacy" className="hover:text-white transition">Privacy Policy</Link>
               <Link href="/terms" className="hover:text-white transition">Terms of Service</Link>
               <Link href="/contact" className="hover:text-white transition">Contact</Link>
+              <Link
+                href="/login?redirectTo=/internal"
+                className="text-white/65 transition hover:text-white"
+              >
+                Administrator Login
+              </Link>
             </div>
 
             <div className="flex gap-8 text-2xl">

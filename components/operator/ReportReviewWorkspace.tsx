@@ -162,6 +162,9 @@ export default function ReportReviewWorkspace({
           </p>
         </div>
         <nav className="flex flex-wrap gap-3" aria-label="Operator tools">
+          <Link href="/internal" className="rounded-2xl border border-[#0B2D5C]/14 bg-white px-4 py-3 text-sm font-semibold text-[#0B2D5C]">
+            Administrator Home
+          </Link>
           <Link href="/internal/photo-moderation" className="rounded-2xl border border-[#0B2D5C]/14 bg-white px-4 py-3 text-sm font-semibold text-[#0B2D5C]">
             Photo moderation
           </Link>
