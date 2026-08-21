@@ -16,6 +16,7 @@ const proxy = readFileSync('proxy.ts', 'utf8');
 const acceptancePage = readFileSync('app/legal/acceptance/page.tsx', 'utf8');
 const acceptanceAction = readFileSync('app/actions/legal-acceptance.ts', 'utf8');
 const acceptanceForm = readFileSync('components/legal/LegalAcceptanceForm.tsx', 'utf8');
+const legalDocumentShell = readFileSync('components/legal/LegalDocumentShell.tsx', 'utf8');
 const termsPage = readFileSync('app/terms/page.tsx', 'utf8');
 const privacyPage = readFileSync('app/privacy/page.tsx', 'utf8');
 
@@ -68,7 +69,7 @@ describe('versioned legal and sensitive-data acceptance', () => {
     assert.match(acceptanceAction, /hasAllRequiredLegalAcknowledgements/);
     assert.match(acceptanceAction, /accept_current_legal_documents/);
     assert.match(acceptanceForm, /Accept and continue/);
-    assert.match(acceptanceForm, /Read document/);
+    assert.match(acceptanceForm, /Open document in a new tab/);
   });
 
   it('shows the same current version on the public Terms and Privacy pages', () => {
@@ -76,5 +77,12 @@ describe('versioned legal and sensitive-data acceptance', () => {
     assert.match(privacyPage, /getLegalDocument\('privacy'\)/);
     assert.match(termsPage, /Version \{document\.version\}/);
     assert.match(privacyPage, /Version \{document\.version\}/);
+  });
+
+  it('gives every legal document the established Forge legal-page styling', () => {
+    assert.match(legalDocumentShell, /\[&_h2\]:text-3xl/);
+    assert.match(legalDocumentShell, /\[&_ul\]:list-disc/);
+    assert.match(legalDocumentShell, /forgedinlife-header-light\.png/);
+    assert.match(legalDocumentShell, /© 2026 Forged In Life\. All rights reserved\./);
   });
 });

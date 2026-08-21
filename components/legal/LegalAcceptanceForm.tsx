@@ -78,7 +78,7 @@ export default function LegalAcceptanceForm({
                 rel="noopener noreferrer"
                 className="font-semibold text-[#0B2D5C] underline underline-offset-2"
               >
-                Read document
+                Open document in a new tab
               </Link>
             </span>
           </span>
