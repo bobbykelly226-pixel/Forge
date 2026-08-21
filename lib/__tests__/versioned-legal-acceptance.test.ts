@@ -80,8 +80,10 @@ describe('versioned legal and sensitive-data acceptance', () => {
   });
 
   it('gives every legal document the established Forge legal-page styling', () => {
-    assert.match(legalDocumentShell, /\[&_h2\]:text-3xl/);
-    assert.match(legalDocumentShell, /\[&_ul\]:list-disc/);
+    assert.match(legalDocumentShell, /legal-document-content h2/);
+    assert.match(legalDocumentShell, /font-size: 1\.875rem/);
+    assert.match(legalDocumentShell, /legal-document-content ul/);
+    assert.match(legalDocumentShell, /list-style-type: disc/);
     assert.match(legalDocumentShell, /forgedinlife-header-light\.png/);
     assert.match(legalDocumentShell, /© 2026 Forged In Life\. All rights reserved\./);
   });
