@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { useState } from 'react';
-import { Eye, MessageSquarePlus } from 'lucide-react';
+import { Eye, MessageSquarePlus, ShieldCheck } from 'lucide-react';
 
 import DiscoveryDesktopTopBar from '@/components/DiscoveryDesktopTopBar';
 import ForgeAppBottomNav from '@/components/ForgeAppBottomNav';
@@ -277,6 +277,19 @@ export default function MyProfileHub({
                   <span className="mt-1 block text-xs leading-relaxed text-[#6F7A89]">
                     Report a bug, ask for help, or share an idea.
                   </span>
+                </span>
+              </Link>
+
+              <Link
+                href="/profile/account"
+                className="group flex items-center gap-3 rounded-[1.5rem] border border-[#0B2D5C]/09 bg-white/80 p-4 text-[#0B2D5C] shadow-[0_10px_30px_rgba(11,45,92,0.04)] transition hover:border-[#0B2D5C]/20 hover:bg-white"
+              >
+                <span className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-[#0B2D5C]/07 transition group-hover:bg-[#0B2D5C] group-hover:text-white">
+                  <ShieldCheck className="h-5 w-5" strokeWidth={1.75} aria-hidden="true" />
+                </span>
+                <span>
+                  <span className="block text-sm font-semibold">Account & Privacy</span>
+                  <span className="mt-1 block text-xs leading-relaxed text-[#6F7A89]">Pause, export, deactivate, or delete your account.</span>
                 </span>
               </Link>
             </div>

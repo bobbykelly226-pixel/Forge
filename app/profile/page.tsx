@@ -124,6 +124,7 @@ export default async function MyProfileHubPage({ searchParams }: PageProps) {
   const hasImportantAlignmentFactors = coreValues.length > 0;
 
   const discoveryCanEnable =
+    profile.status !== 'paused' &&
     profile.status !== 'deactivated' &&
     profile.status !== 'hidden' &&
     validateAdultDateOfBirth(privateDetailsResult.data?.date_of_birth ?? '').ok &&
@@ -190,7 +191,7 @@ export default async function MyProfileHubPage({ searchParams }: PageProps) {
             canEnable: discoveryCanEnable,
             message: discoveryCanEnable
               ? null
-              : profile.status === 'deactivated' || profile.status === 'hidden'
+              : profile.status === 'paused' || profile.status === 'deactivated' || profile.status === 'hidden'
                 ? 'Discovery visibility is unavailable for this account.'
                 : 'Complete adult eligibility, matching preferences, and private location before entering Discovery.',
           }}
