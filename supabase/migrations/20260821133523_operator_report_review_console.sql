@@ -273,7 +273,7 @@ returns boolean
 language sql
 stable
 security definer
-set search_path = public
+set search_path = pg_catalog, public
 as $$
   select
     exists (
@@ -513,7 +513,7 @@ create or replace function public.submit_safety_report_appeal(
 returns uuid
 language plpgsql
 security definer
-set search_path = public
+set search_path = pg_catalog, public
 as $$
 declare
   v_uid uuid := auth.uid();
