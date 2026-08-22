@@ -56,6 +56,14 @@ export default function LegalAcceptanceForm({
 
   return (
     <form onSubmit={submit} className="space-y-4">
+      <div
+        role="note"
+        className="rounded-2xl border-2 border-[#D62828]/30 bg-[#FFF4F2] px-5 py-4 text-base font-bold leading-7 text-[#0B2D5C] shadow-sm sm:text-lg"
+      >
+        Open each agreement before checking its box. The checkbox unlocks after the
+        document opens in a new tab.
+      </div>
+
       {CURRENT_LEGAL_DOCUMENTS.map((document) => (
         <label
           key={document.key}
@@ -93,7 +101,9 @@ export default function LegalAcceptanceForm({
             </span>
             <span
               id={`${document.key}-review-status`}
-              className="mt-2 block text-xs font-medium text-[#6B7280]"
+              className={`mt-2 block text-sm font-semibold ${
+                reviewed.has(document.key) ? 'text-[#0B2D5C]' : 'text-[#A61F1F]'
+              }`}
             >
               {reviewed.has(document.key)
                 ? 'Document opened. You may now check this agreement.'
