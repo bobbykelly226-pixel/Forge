@@ -142,7 +142,7 @@ export default function OperatorMfaWorkspace({
       </h1>
       <p className="mt-3 text-base leading-relaxed text-[#5A6575]">
         Protect <span className="font-semibold text-[#0B2D5C]">{email}</span> with a
-        six-digit code from an authenticator app before handling member safety work.
+        six-digit code from an authenticator app before using administrator tools.
       </p>
 
       <section className="mt-8 rounded-[1.75rem] border border-[#0B2D5C]/10 bg-white p-6 shadow-[0_16px_45px_rgba(11,45,92,0.07)] sm:p-8">
@@ -229,13 +229,13 @@ export default function OperatorMfaWorkspace({
             </h2>
             <p className="mt-2 text-sm leading-relaxed text-[#5A6575]">
               This session is cleared for operator work. Future sign-ins will require a fresh
-              authenticator code before photo moderation.
+              authenticator code before administrator access.
             </p>
             <Link
               href={destination}
               className="mt-6 inline-flex items-center justify-center rounded-2xl bg-[#0B2D5C] px-5 py-3.5 text-sm font-semibold text-white transition hover:bg-[#123E78]"
             >
-              Continue to moderation
+              Continue securely
             </Link>
           </div>
         ) : null}

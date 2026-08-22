@@ -146,12 +146,26 @@ export default function PhotoModerationWorkspace({
             Review every new or replaced profile photo before it can appear to another member.
           </p>
         </div>
-        <Link
-          href="/internal/operator-security"
-          className="inline-flex w-fit items-center justify-center rounded-2xl border border-[#0B2D5C]/14 bg-white/80 px-4 py-3 text-sm font-semibold text-[#0B2D5C] transition hover:bg-white"
-        >
-          Account security
-        </Link>
+        <div className="flex flex-wrap gap-3">
+          <Link
+            href="/internal"
+            className="inline-flex w-fit items-center justify-center rounded-2xl border border-[#0B2D5C]/14 bg-white/80 px-4 py-3 text-sm font-semibold text-[#0B2D5C] transition hover:bg-white"
+          >
+            Administrator Home
+          </Link>
+          <Link
+            href="/internal/report-review"
+            className="inline-flex w-fit items-center justify-center rounded-2xl border border-[#0B2D5C]/14 bg-white/80 px-4 py-3 text-sm font-semibold text-[#0B2D5C] transition hover:bg-white"
+          >
+            Safety reports
+          </Link>
+          <Link
+            href="/internal/operator-security"
+            className="inline-flex w-fit items-center justify-center rounded-2xl border border-[#0B2D5C]/14 bg-white/80 px-4 py-3 text-sm font-semibold text-[#0B2D5C] transition hover:bg-white"
+          >
+            Account security
+          </Link>
+        </div>
       </div>
 
       <section className="mt-8 rounded-[1.5rem] border border-[#0B2D5C]/08 bg-white/70 p-5 shadow-[0_12px_35px_rgba(11,45,92,0.04)] sm:p-6">

@@ -1572,6 +1572,132 @@ export type Database = {
           },
         ]
       }
+      operator_member_enforcements: {
+        Row: {
+          action: string
+          created_at: string
+          id: string
+          notification_outcome: string
+          operator_id: string
+          previous_is_discoverable: boolean | null
+          previous_profile_status: Database["public"]["Enums"]["profile_status"] | null
+          reason: string
+          report_id: string
+          target_user_id: string
+        }
+        Insert: {
+          action: string
+          created_at?: string
+          id?: string
+          notification_outcome?: string
+          operator_id: string
+          previous_is_discoverable?: boolean | null
+          previous_profile_status?: Database["public"]["Enums"]["profile_status"] | null
+          reason: string
+          report_id: string
+          target_user_id: string
+        }
+        Update: {
+          action?: string
+          created_at?: string
+          id?: string
+          notification_outcome?: string
+          operator_id?: string
+          previous_is_discoverable?: boolean | null
+          previous_profile_status?: Database["public"]["Enums"]["profile_status"] | null
+          reason?: string
+          report_id?: string
+          target_user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "operator_member_enforcements_report_id_fkey"
+            columns: ["report_id"]
+            isOneToOne: false
+            referencedRelation: "user_reports"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      operator_report_cases: {
+        Row: {
+          assigned_operator_id: string | null
+          created_at: string
+          escalated_at: string | null
+          report_id: string
+          resolved_at: string | null
+          status: Database["public"]["Enums"]["operator_report_case_status"]
+          updated_at: string
+        }
+        Insert: {
+          assigned_operator_id?: string | null
+          created_at?: string
+          escalated_at?: string | null
+          report_id: string
+          resolved_at?: string | null
+          status?: Database["public"]["Enums"]["operator_report_case_status"]
+          updated_at?: string
+        }
+        Update: {
+          assigned_operator_id?: string | null
+          created_at?: string
+          escalated_at?: string | null
+          report_id?: string
+          resolved_at?: string | null
+          status?: Database["public"]["Enums"]["operator_report_case_status"]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "operator_report_cases_report_id_fkey"
+            columns: ["report_id"]
+            isOneToOne: true
+            referencedRelation: "user_reports"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      operator_report_events: {
+        Row: {
+          action: string
+          created_at: string
+          id: string
+          metadata: Json
+          operator_id: string
+          outcome: string
+          reason: string
+          report_id: string
+        }
+        Insert: {
+          action: string
+          created_at?: string
+          id?: string
+          metadata?: Json
+          operator_id: string
+          outcome: string
+          reason: string
+          report_id: string
+        }
+        Update: {
+          action?: string
+          created_at?: string
+          id?: string
+          metadata?: Json
+          operator_id?: string
+          outcome?: string
+          reason?: string
+          report_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "operator_report_events_report_id_fkey"
+            columns: ["report_id"]
+            isOneToOne: false
+            referencedRelation: "user_reports"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       report_evidence: {
         Row: {
           created_at: string
@@ -1699,6 +1825,44 @@ export type Database = {
             foreignKeyName: "safety_report_notifications_report_id_fkey"
             columns: ["report_id"]
             isOneToOne: true
+            referencedRelation: "user_reports"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      safety_report_appeals: {
+        Row: {
+          appellant_user_id: string
+          created_at: string
+          details: string
+          id: string
+          report_id: string
+          reviewed_at: string | null
+          status: string
+        }
+        Insert: {
+          appellant_user_id: string
+          created_at?: string
+          details: string
+          id?: string
+          report_id: string
+          reviewed_at?: string | null
+          status?: string
+        }
+        Update: {
+          appellant_user_id?: string
+          created_at?: string
+          details?: string
+          id?: string
+          report_id?: string
+          reviewed_at?: string | null
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "safety_report_appeals_report_id_fkey"
+            columns: ["report_id"]
+            isOneToOne: false
             referencedRelation: "user_reports"
             referencedColumns: ["id"]
           },
@@ -2368,6 +2532,29 @@ export type Database = {
         Args: { p_enabled: boolean }
         Returns: Json
       }
+      record_safety_member_notification: {
+        Args: {
+          p_operator_id: string
+          p_outcome: string
+          p_report_id: string
+          p_success: boolean
+        }
+        Returns: string
+      }
+      review_safety_report: {
+        Args: {
+          p_action: string
+          p_notify_member?: boolean
+          p_operator_id: string
+          p_reason: string
+          p_report_id: string
+        }
+        Returns: string
+      }
+      submit_safety_report_appeal: {
+        Args: { p_details: string; p_report_id: string }
+        Returns: string
+      }
       withdraw_interest: { Args: { p_recipient_id: string }; Returns: Json }
     }
     Enums: {
@@ -2404,6 +2591,7 @@ export type Database = {
         | "expired"
         | "deferred"
       photo_moderation_status: "pending" | "approved" | "rejected"
+      operator_report_case_status: "pending" | "reviewing" | "resolved" | "dismissed"
       profile_status: "draft" | "active" | "paused" | "hidden" | "deactivated"
       questionnaire_category_status: "locked" | "draft" | "preview"
       questionnaire_progress_status: "not_started" | "in_progress" | "completed"
@@ -2601,6 +2789,7 @@ export const Constants = {
         "deferred",
       ],
       photo_moderation_status: ["pending", "approved", "rejected"],
+      operator_report_case_status: ["pending", "reviewing", "resolved", "dismissed"],
       profile_status: ["draft", "active", "paused", "hidden", "deactivated"],
       questionnaire_category_status: ["locked", "draft", "preview"],
       questionnaire_progress_status: [
