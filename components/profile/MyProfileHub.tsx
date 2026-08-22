@@ -39,6 +39,7 @@ export type MyProfileHubProps = {
     enabled: boolean;
     canEnable: boolean;
     message: string | null;
+    unmetRequirements: string[];
   };
   profile: Profile;
   privateDetails: PrivateProfileSeed | null;
@@ -263,6 +264,7 @@ export default function MyProfileHub({
                 enabled={discoveryVisibility.enabled}
                 canEnable={discoveryVisibility.canEnable}
                 message={discoveryVisibility.message}
+                unmetRequirements={discoveryVisibility.unmetRequirements}
               />
 
               <Link
