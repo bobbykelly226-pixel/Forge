@@ -76,6 +76,8 @@ describe('discovery visibility write fix', () => {
     assert.doesNotMatch(source, /Profile completion is optional/);
     assert.doesNotMatch(source, /You can turn this off at any time/);
     assert.match(source, /Couldn’t update\. Try again\./);
+    assert.match(source, /Finish these items before turning on Discovery:/);
+    assert.match(source, /unmetRequirements\.map/);
   });
 
   it('removes contradictory onboarding-unlock message from Profile Hub', () => {

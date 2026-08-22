@@ -1,6 +1,6 @@
 import { Fraunces, Manrope } from 'next/font/google';
 import Link from 'next/link';
-import { FileWarning, Images, KeyRound, ShieldCheck } from 'lucide-react';
+import { FileWarning, Images, KeyRound, Scale, ShieldCheck } from 'lucide-react';
 import { notFound, redirect } from 'next/navigation';
 
 import ForgeAppCanvas from '@/components/ForgeAppCanvas';
@@ -29,6 +29,12 @@ export const metadata = {
 };
 
 const TOOLS = [
+  {
+    href: '/internal/account-governance',
+    title: 'Account Governance',
+    description: 'Manage retention schedules, deletion holds, and account lifecycle audit history.',
+    icon: Scale,
+  },
   {
     href: '/internal/photo-moderation',
     title: 'Photo Moderation',
@@ -85,7 +91,7 @@ export default async function AdministratorHomePage() {
           administrator account, authenticator verification, and permanent audit records.
         </p>
 
-        <section className="mt-9 grid gap-5 md:grid-cols-3" aria-label="Administrator tools">
+        <section className="mt-9 grid gap-5 md:grid-cols-2 xl:grid-cols-4" aria-label="Administrator tools">
           {TOOLS.map((tool) => {
             const Icon = tool.icon;
             return (

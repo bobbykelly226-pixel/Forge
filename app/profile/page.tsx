@@ -123,13 +123,32 @@ export default async function MyProfileHubPage({ searchParams }: PageProps) {
       ));
   const hasImportantAlignmentFactors = coreValues.length > 0;
 
-  const discoveryCanEnable =
+  const discoveryStatusAllowed =
+    profile.status !== 'paused' &&
     profile.status !== 'deactivated' &&
-    profile.status !== 'hidden' &&
-    validateAdultDateOfBirth(privateDetailsResult.data?.date_of_birth ?? '').ok &&
-    matchingPreferencesAreComplete(preferencesResult.success ? preferencesResult.data : null) &&
+    profile.status !== 'hidden';
+  const discoveryHasAdultDateOfBirth = validateAdultDateOfBirth(
+    privateDetailsResult.data?.date_of_birth ?? ''
+  ).ok;
+  const discoveryHasMatchingPreferences = matchingPreferencesAreComplete(
+    preferencesResult.success ? preferencesResult.data : null
+  );
+  const discoveryHasPrivateLocation =
     privateDetailsResult.data?.latitude != null &&
     privateDetailsResult.data?.longitude != null;
+  const discoveryCanEnable =
+    discoveryStatusAllowed &&
+    discoveryHasAdultDateOfBirth &&
+    discoveryHasMatchingPreferences &&
+    discoveryHasPrivateLocation;
+  const discoveryUnmetRequirements = [
+    !discoveryStatusAllowed ? 'Reactivate this account before entering Discovery.' : null,
+    !discoveryHasAdultDateOfBirth ? 'Add a valid adult date of birth.' : null,
+    !discoveryHasMatchingPreferences
+      ? 'Complete who you are looking for, the age range, and the distance range.'
+      : null,
+    !discoveryHasPrivateLocation ? 'Save your private matching location.' : null,
+  ].filter((requirement): requirement is string => requirement !== null);
 
   const profileForWorkspace = {
     ...profile,
@@ -190,9 +209,10 @@ export default async function MyProfileHubPage({ searchParams }: PageProps) {
             canEnable: discoveryCanEnable,
             message: discoveryCanEnable
               ? null
-              : profile.status === 'deactivated' || profile.status === 'hidden'
+              : profile.status === 'paused' || profile.status === 'deactivated' || profile.status === 'hidden'
                 ? 'Discovery visibility is unavailable for this account.'
                 : 'Complete adult eligibility, matching preferences, and private location before entering Discovery.',
+            unmetRequirements: discoveryUnmetRequirements,
           }}
           profile={profileForWorkspace}
           privateDetails={privateDetailsResult.data ?? null}
