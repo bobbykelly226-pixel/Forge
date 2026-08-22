@@ -72,6 +72,14 @@ describe('versioned legal and sensitive-data acceptance', () => {
     assert.match(acceptanceForm, /Open document in a new tab/);
   });
 
+  it('requires each document to be opened before its same-sized checkbox is enabled', () => {
+    assert.match(acceptanceForm, /const \[reviewed, setReviewed\]/);
+    assert.match(acceptanceForm, /disabled={!reviewed\.has\(document\.key\)}/);
+    assert.match(acceptanceForm, /next\.add\(document\.key\)/);
+    assert.match(acceptanceForm, /h-5 w-5 shrink-0/);
+    assert.match(acceptanceForm, /Open this document before checking the agreement\./);
+  });
+
   it('shows the same current version on the public Terms and Privacy pages', () => {
     assert.match(termsPage, /getLegalDocument\('terms'\)/);
     assert.match(privacyPage, /getLegalDocument\('privacy'\)/);
