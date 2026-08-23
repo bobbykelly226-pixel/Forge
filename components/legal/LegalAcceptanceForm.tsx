@@ -11,17 +11,32 @@ import { useState } from 'react';
 
 export default function LegalAcceptanceForm({
   redirectTo,
+  initialReviewedKeys,
 }: {
   redirectTo: string;
+  initialReviewedKeys: LegalDocumentKey[];
 }) {
   const router = useRouter();
-  const [reviewed, setReviewed] = useState<Set<LegalDocumentKey>>(new Set());
+  const reviewed = new Set(initialReviewedKeys);
   const [acknowledged, setAcknowledged] = useState<Set<LegalDocumentKey>>(new Set());
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const allAcknowledged = CURRENT_LEGAL_DOCUMENTS.every((document) =>
     acknowledged.has(document.key)
   );
+
+  const reviewHref = (key: LegalDocumentKey, href: string) => {
+    const reviewedKeys = Array.from(new Set([...reviewed, key]));
+    const returnParams = new URLSearchParams({
+      redirectTo,
+      reviewed: reviewedKeys.join(','),
+    });
+    const documentParams = new URLSearchParams({
+      returnTo: `/legal/acceptance?${returnParams.toString()}`,
+    });
+
+    return `${href}?${documentParams.toString()}`;
+  };
 
   const toggle = (key: LegalDocumentKey) => {
     setAcknowledged((current) => {
@@ -60,8 +75,8 @@ export default function LegalAcceptanceForm({
         role="note"
         className="rounded-2xl border-2 border-[#D62828]/30 bg-[#FFF4F2] px-5 py-4 text-base font-bold leading-7 text-[#0B2D5C] shadow-sm sm:text-lg"
       >
-        Open each agreement before checking its box. The checkbox unlocks after the
-        document opens in a new tab.
+        Open and read each document first. Then select “Done — Return to Agreements”
+        on that document page. Once you return, its checkbox will be available.
       </div>
 
       {CURRENT_LEGAL_DOCUMENTS.map((document) => (
@@ -84,19 +99,10 @@ export default function LegalAcceptanceForm({
             <span className="mt-1 block text-sm leading-6 text-[#444444]">
               {document.acknowledgement}{' '}
               <Link
-                href={document.href}
-                target="_blank"
-                rel="noopener noreferrer"
-                onClick={() => {
-                  setReviewed((current) => {
-                    const next = new Set(current);
-                    next.add(document.key);
-                    return next;
-                  });
-                }}
+                href={reviewHref(document.key, document.href)}
                 className="font-semibold text-[#0B2D5C] underline underline-offset-2"
               >
-                Open document in a new tab
+                Open and read this document
               </Link>
             </span>
             <span
@@ -106,8 +112,8 @@ export default function LegalAcceptanceForm({
               }`}
             >
               {reviewed.has(document.key)
-                ? 'Document opened. You may now check this agreement.'
-                : 'Open this document before checking the agreement.'}
+                ? 'Review completed. You may now select this agreement.'
+                : 'Open and read this document, then use its Done button to unlock this agreement.'}
             </span>
           </span>
         </label>
