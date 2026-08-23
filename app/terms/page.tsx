@@ -3,6 +3,7 @@
 import Header from '../../components/Header';
 import Link from 'next/link';
 import { getLegalDocument } from '@/lib/legal/documents';
+import LegalReviewReturnLink from '@/components/legal/LegalReviewReturnLink';
 
 const document = getLegalDocument('terms');
 
@@ -247,6 +248,7 @@ export default function Terms() {
             </a>
           </p>
         </div>
+        <LegalReviewReturnLink />
       </main>
 
       <footer className="bg-[#0B2D5C] text-white/80 py-8">
