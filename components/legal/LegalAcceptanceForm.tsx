@@ -12,13 +12,17 @@ import { useState } from 'react';
 export default function LegalAcceptanceForm({
   redirectTo,
   initialReviewedKeys,
+  initialAcknowledgedKeys,
 }: {
   redirectTo: string;
   initialReviewedKeys: LegalDocumentKey[];
+  initialAcknowledgedKeys: LegalDocumentKey[];
 }) {
   const router = useRouter();
   const reviewed = new Set(initialReviewedKeys);
-  const [acknowledged, setAcknowledged] = useState<Set<LegalDocumentKey>>(new Set());
+  const [acknowledged, setAcknowledged] = useState<Set<LegalDocumentKey>>(
+    new Set(initialAcknowledgedKeys)
+  );
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const allAcknowledged = CURRENT_LEGAL_DOCUMENTS.every((document) =>
@@ -30,6 +34,7 @@ export default function LegalAcceptanceForm({
     const returnParams = new URLSearchParams({
       redirectTo,
       reviewed: reviewedKeys.join(','),
+      acknowledged: Array.from(acknowledged).join(','),
     });
     const documentParams = new URLSearchParams({
       returnTo: `/legal/acceptance?${returnParams.toString()}`,
