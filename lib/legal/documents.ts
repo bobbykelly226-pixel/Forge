@@ -72,3 +72,10 @@ export function getLegalDocument(key: LegalDocumentKey): LegalDocumentDefinition
   }
   return document;
 }
+
+export function parseReviewedLegalDocumentKeys(value?: string): LegalDocumentKey[] {
+  if (!value) return [];
+
+  const reviewed = new Set(value.split(','));
+  return LEGAL_DOCUMENT_KEYS.filter((key) => reviewed.has(key));
+}
