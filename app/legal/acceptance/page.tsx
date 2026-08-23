@@ -9,12 +9,18 @@ import { createClient } from '@/lib/supabase/server';
 export default async function LegalAcceptancePage({
   searchParams,
 }: {
-  searchParams: Promise<{ redirectTo?: string; reviewed?: string }>;
+  searchParams: Promise<{
+    redirectTo?: string;
+    reviewed?: string;
+    acknowledged?: string;
+  }>;
 }) {
   const params = await searchParams;
   const requested = sanitizeInternalPath(params.redirectTo) ?? '/app';
   const redirectTo = requested.startsWith('/legal/acceptance') ? '/app' : requested;
   const initialReviewedKeys = parseReviewedLegalDocumentKeys(params.reviewed);
+  const initialAcknowledgedKeys = parseReviewedLegalDocumentKeys(params.acknowledged)
+    .filter((key) => initialReviewedKeys.includes(key));
   const supabase = await createClient();
   const {
     data: { user },
@@ -51,6 +57,7 @@ export default async function LegalAcceptancePage({
           <LegalAcceptanceForm
             redirectTo={redirectTo}
             initialReviewedKeys={initialReviewedKeys}
+            initialAcknowledgedKeys={initialAcknowledgedKeys}
           />
         )}
       </div>
