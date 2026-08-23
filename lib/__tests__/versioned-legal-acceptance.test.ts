@@ -17,6 +17,7 @@ const acceptancePage = readFileSync('app/legal/acceptance/page.tsx', 'utf8');
 const acceptanceAction = readFileSync('app/actions/legal-acceptance.ts', 'utf8');
 const acceptanceForm = readFileSync('components/legal/LegalAcceptanceForm.tsx', 'utf8');
 const legalDocumentShell = readFileSync('components/legal/LegalDocumentShell.tsx', 'utf8');
+const legalReviewReturnLink = readFileSync('components/legal/LegalReviewReturnLink.tsx', 'utf8');
 const termsPage = readFileSync('app/terms/page.tsx', 'utf8');
 const privacyPage = readFileSync('app/privacy/page.tsx', 'utf8');
 
@@ -69,18 +70,26 @@ describe('versioned legal and sensitive-data acceptance', () => {
     assert.match(acceptanceAction, /hasAllRequiredLegalAcknowledgements/);
     assert.match(acceptanceAction, /accept_current_legal_documents/);
     assert.match(acceptanceForm, /Accept and continue/);
-    assert.match(acceptanceForm, /Open document in a new tab/);
+    assert.match(acceptanceForm, /Open and read this document/);
   });
 
   it('requires each document to be opened before its same-sized checkbox is enabled', () => {
-    assert.match(acceptanceForm, /const \[reviewed, setReviewed\]/);
+    assert.match(acceptanceForm, /initialReviewedKeys/);
     assert.match(acceptanceForm, /disabled={!reviewed\.has\(document\.key\)}/);
-    assert.match(acceptanceForm, /next\.add\(document\.key\)/);
+    assert.match(acceptanceForm, /reviewed: reviewedKeys\.join\(','\)/);
     assert.match(acceptanceForm, /h-5 w-5 shrink-0/);
-    assert.match(acceptanceForm, /Open this document before checking the agreement\./);
-    assert.match(acceptanceForm, /Open each agreement before checking its box\./);
+    assert.match(acceptanceForm, /use its Done button to unlock this agreement\./);
+    assert.match(acceptanceForm, /Open and read each document first\./);
     assert.match(acceptanceForm, /text-base font-bold/);
     assert.match(acceptanceForm, /text-sm font-semibold/);
+  });
+
+  it('returns intentionally from every legal document before unlocking its agreement', () => {
+    assert.match(legalReviewReturnLink, /Done — Return to Agreements/);
+    assert.match(legalReviewReturnLink, /candidate\.pathname !== '\/legal\/acceptance'/);
+    assert.match(legalDocumentShell, /<LegalReviewReturnLink \/>/);
+    assert.match(termsPage, /<LegalReviewReturnLink \/>/);
+    assert.match(privacyPage, /<LegalReviewReturnLink \/>/);
   });
 
   it('shows the same current version on the public Terms and Privacy pages', () => {
