@@ -92,6 +92,13 @@ describe('versioned legal and sensitive-data acceptance', () => {
     assert.match(privacyPage, /<LegalReviewReturnLink \/>/);
   });
 
+  it('preserves earlier checkmarks across each document review round trip', () => {
+    assert.match(acceptanceForm, /initialAcknowledgedKeys/);
+    assert.match(acceptanceForm, /acknowledged: Array\.from\(acknowledged\)\.join\(','\)/);
+    assert.match(acceptancePage, /params\.acknowledged/);
+    assert.match(acceptancePage, /initialAcknowledgedKeys=\{initialAcknowledgedKeys\}/);
+  });
+
   it('shows the same current version on the public Terms and Privacy pages', () => {
     assert.match(termsPage, /getLegalDocument\('terms'\)/);
     assert.match(privacyPage, /getLegalDocument\('privacy'\)/);
