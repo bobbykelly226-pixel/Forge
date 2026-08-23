@@ -11,16 +11,37 @@ import { useState } from 'react';
 
 export default function LegalAcceptanceForm({
   redirectTo,
+  initialReviewedKeys,
+  initialAcknowledgedKeys,
 }: {
   redirectTo: string;
+  initialReviewedKeys: LegalDocumentKey[];
+  initialAcknowledgedKeys: LegalDocumentKey[];
 }) {
   const router = useRouter();
-  const [acknowledged, setAcknowledged] = useState<Set<LegalDocumentKey>>(new Set());
+  const reviewed = new Set(initialReviewedKeys);
+  const [acknowledged, setAcknowledged] = useState<Set<LegalDocumentKey>>(
+    new Set(initialAcknowledgedKeys)
+  );
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const allAcknowledged = CURRENT_LEGAL_DOCUMENTS.every((document) =>
     acknowledged.has(document.key)
   );
+
+  const reviewHref = (key: LegalDocumentKey, href: string) => {
+    const reviewedKeys = Array.from(new Set([...reviewed, key]));
+    const returnParams = new URLSearchParams({
+      redirectTo,
+      reviewed: reviewedKeys.join(','),
+      acknowledged: Array.from(acknowledged).join(','),
+    });
+    const documentParams = new URLSearchParams({
+      returnTo: `/legal/acceptance?${returnParams.toString()}`,
+    });
+
+    return `${href}?${documentParams.toString()}`;
+  };
 
   const toggle = (key: LegalDocumentKey) => {
     setAcknowledged((current) => {
@@ -55,16 +76,26 @@ export default function LegalAcceptanceForm({
 
   return (
     <form onSubmit={submit} className="space-y-4">
+      <div
+        role="note"
+        className="rounded-2xl border-2 border-[#D62828]/30 bg-[#FFF4F2] px-5 py-4 text-base font-bold leading-7 text-[#0B2D5C] shadow-sm sm:text-lg"
+      >
+        Open and read each document first. Then select “Done — Return to Agreements”
+        on that document page. Once you return, its checkbox will be available.
+      </div>
+
       {CURRENT_LEGAL_DOCUMENTS.map((document) => (
         <label
           key={document.key}
-          className="flex cursor-pointer items-start gap-4 rounded-2xl border border-[#0B2D5C]/15 bg-white p-5 shadow-sm transition hover:border-[#0B2D5C]/30"
+          className={`flex items-start gap-4 rounded-2xl border border-[#0B2D5C]/15 bg-white p-5 shadow-sm transition hover:border-[#0B2D5C]/30 ${reviewed.has(document.key) ? 'cursor-pointer' : 'cursor-default'}`}
         >
           <input
             type="checkbox"
             checked={acknowledged.has(document.key)}
             onChange={() => toggle(document.key)}
-            className="mt-1 h-5 w-5 accent-[#D62828]"
+            disabled={!reviewed.has(document.key)}
+            aria-describedby={`${document.key}-review-status`}
+            className="mt-1 h-5 w-5 shrink-0 accent-[#D62828] disabled:cursor-not-allowed disabled:opacity-45"
           />
           <span className="min-w-0">
             <span className="block font-semibold text-[#0B2D5C]">
@@ -73,13 +104,21 @@ export default function LegalAcceptanceForm({
             <span className="mt-1 block text-sm leading-6 text-[#444444]">
               {document.acknowledgement}{' '}
               <Link
-                href={document.href}
-                target="_blank"
-                rel="noopener noreferrer"
+                href={reviewHref(document.key, document.href)}
                 className="font-semibold text-[#0B2D5C] underline underline-offset-2"
               >
-                Open document in a new tab
+                Open and read this document
               </Link>
+            </span>
+            <span
+              id={`${document.key}-review-status`}
+              className={`mt-2 block text-sm font-semibold ${
+                reviewed.has(document.key) ? 'text-[#0B2D5C]' : 'text-[#A61F1F]'
+              }`}
+            >
+              {reviewed.has(document.key)
+                ? 'Review completed. You may now select this agreement.'
+                : 'Open and read this document, then use its Done button to unlock this agreement.'}
             </span>
           </span>
         </label>

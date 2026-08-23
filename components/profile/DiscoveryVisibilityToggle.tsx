@@ -10,12 +10,14 @@ type Props = {
   enabled: boolean;
   canEnable: boolean;
   message: string | null;
+  unmetRequirements: string[];
 };
 
 export default function DiscoveryVisibilityToggle({
   enabled: initialEnabled,
   canEnable,
   message,
+  unmetRequirements,
 }: Props) {
   const router = useRouter();
   const [enabled, setEnabled] = useState(initialEnabled);
@@ -88,6 +90,22 @@ export default function DiscoveryVisibilityToggle({
         <p className="mt-2 text-sm text-[#D62828]" role="alert">
           {error}
         </p>
+      ) : null}
+
+      {!canEnable && unmetRequirements.length > 0 ? (
+        <div
+          className="mt-4 rounded-2xl border border-[#D62828]/20 bg-[#FFF4F2] px-4 py-3"
+          role="status"
+        >
+          <p className="text-sm font-bold text-[#0B2D5C]">
+            Finish these items before turning on Discovery:
+          </p>
+          <ul className="mt-2 list-disc space-y-1 pl-5 text-sm leading-6 text-[#5A6575]">
+            {unmetRequirements.map((requirement) => (
+              <li key={requirement}>{requirement}</li>
+            ))}
+          </ul>
+        </div>
       ) : null}
     </section>
   );

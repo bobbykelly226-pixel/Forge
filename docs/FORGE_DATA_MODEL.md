@@ -193,6 +193,12 @@ Triggers prevent ordinary authenticated clients from changing:
 
 Users may edit intentional profile presentation fields and preferences that belong to them (`OWNER_EDITABLE_PROFILE_COLUMNS` in `lib/data-model-rules.ts`). Connection inserts require trusted SQL (`forge.allow_system_writes = on`).
 
+Member lifecycle controls use the existing protected status model without weakening operator enforcement:
+
+- `paused` hides the member from Discovery but preserves existing conversations.
+- `deactivated` disables member interactions and requires recent password confirmation to enter or leave.
+- retention, deletion, legal hold, and lifecycle audit data lives in private service-only tables described in `docs/ACCOUNT_LIFECYCLE_PRIVACY_CONTROLS.md`.
+
 ---
 
 ## New-account reliability

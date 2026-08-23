@@ -1,4 +1,5 @@
 import Header from '@/components/Header';
+import LegalReviewReturnLink from '@/components/legal/LegalReviewReturnLink';
 import Image from 'next/image';
 import Link from 'next/link';
 import type { ReactNode } from 'react';
@@ -27,6 +28,7 @@ export default function LegalDocumentShell({
         <div className="legal-document-content max-w-none leading-8 text-[#444444]">
           {children}
         </div>
+        <LegalReviewReturnLink />
       </main>
 
       <style>{`
