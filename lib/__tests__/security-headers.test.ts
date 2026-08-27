@@ -50,4 +50,12 @@ test('allows only the external browser resources Forge currently needs', () => {
   assert.match(policy, /https:\/\/\*\.supabase\.co/);
   assert.match(policy, /wss:\/\/\*\.supabase\.co/);
   assert.match(policy, /https:\/\/va\.vercel-scripts\.com/);
+  assert.match(
+    policy,
+    /script-src[^;]*https:\/\/challenges\.cloudflare\.com/
+  );
+  assert.match(
+    policy,
+    /frame-src[^;]*https:\/\/challenges\.cloudflare\.com/
+  );
 });
