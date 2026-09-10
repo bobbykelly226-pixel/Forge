@@ -16,6 +16,14 @@ const hubSource = readFileSync(
   'utf8'
 );
 
+const hardeningMigration = readFileSync(
+  join(
+    process.cwd(),
+    'supabase/migrations/20260910225823_harden_latest_connection_function_search_paths.sql'
+  ),
+  'utf8'
+);
+
 describe('Open to Chat reacceptance', () => {
   it('reactivates the unique connection and its ended conversation', () => {
     assert.match(
@@ -34,6 +42,21 @@ describe('Open to Chat reacceptance', () => {
       /notification_type = 'open_to_chat_accepted'[\s\S]*entity_id = p_request_id/i
     );
     assert.match(migration, /read_at = null,[\s\S]*created_at = now\(\)/i);
+  });
+
+  it('restores the required system-first search path on replaced functions', () => {
+    for (const signature of [
+      /send_interest\(uuid\)/i,
+      /send_open_to_chat\(uuid, text\)/i,
+      /forge_ensure_connection\([\s\S]*uuid, uuid, public\.connection_source[\s\S]*\)/i,
+      /respond_open_to_chat\(uuid, text\)/i,
+    ]) {
+      assert.match(hardeningMigration, signature);
+    }
+    assert.equal(
+      (hardeningMigration.match(/set search_path to pg_catalog, public/gi) ?? []).length,
+      4
+    );
   });
 
   it('shows active connections in Mutual and removes accepted requests from Sent', () => {
