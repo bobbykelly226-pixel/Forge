@@ -40,6 +40,7 @@ export function isSupportedNotificationType(value: string): value is Notificatio
   return (
     value === 'new_message' ||
     value === 'mutual_connection' ||
+    value === 'open_to_chat_received' ||
     value === 'open_to_chat_accepted' ||
     value === 'interest_received'
   );
@@ -56,6 +57,8 @@ export function buildNotificationBody(
       return `${name} sent you a message.`;
     case 'mutual_connection':
       return `You and ${name} are now connected.`;
+    case 'open_to_chat_received':
+      return `${name} is open to starting a conversation.`;
     case 'open_to_chat_accepted':
       return `${name} accepted your invitation to chat.`;
     case 'interest_received':

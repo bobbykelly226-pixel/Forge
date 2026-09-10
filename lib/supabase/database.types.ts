@@ -2582,6 +2582,7 @@ export type Database = {
       notification_type:
         | "new_message"
         | "mutual_connection"
+        | "open_to_chat_received"
         | "open_to_chat_accepted"
         | "interest_received"
       open_to_chat_status:
@@ -2778,6 +2779,7 @@ export const Constants = {
       notification_type: [
         "new_message",
         "mutual_connection",
+        "open_to_chat_received",
         "open_to_chat_accepted",
         "interest_received",
       ],

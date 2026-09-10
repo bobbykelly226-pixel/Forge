@@ -1,6 +1,7 @@
 export const NOTIFICATION_TYPES = [
   'new_message',
   'mutual_connection',
+  'open_to_chat_received',
   'open_to_chat_accepted',
   'interest_received',
 ] as const;
