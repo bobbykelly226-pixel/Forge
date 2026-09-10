@@ -204,7 +204,7 @@ export async function loadConnectionsHub(): Promise<DataAccessResult<Connections
       .order('created_at', { ascending: false }),
     supabase
       .from('connections')
-      .select('id, user_a_id, user_b_id, source, created_at, status')
+      .select('id, user_a_id, user_b_id, source, created_at, updated_at, status')
       .eq('status', 'active')
       .or(`user_a_id.eq.${user.id},user_b_id.eq.${user.id}`)
       .order('created_at', { ascending: false }),
@@ -223,7 +223,7 @@ export async function loadConnectionsHub(): Promise<DataAccessResult<Connections
       .from('open_to_chat_requests')
       .select('id, recipient_id, note, status, created_at')
       .eq('sender_id', user.id)
-      .in('status', ['pending', 'deferred', 'accepted'])
+      .in('status', ['pending', 'deferred'])
       .order('created_at', { ascending: false }),
   ]);
 
@@ -305,7 +305,7 @@ export async function loadConnectionsHub(): Promise<DataAccessResult<Connections
       ...card,
       connectionId: row.id,
       source: row.source,
-      relativeTime: relativeTimeLabel(row.created_at),
+      relativeTime: relativeTimeLabel(row.updated_at),
     };
   });
 
