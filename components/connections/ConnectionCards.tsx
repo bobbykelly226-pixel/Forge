@@ -248,6 +248,7 @@ export function MutualConnectionCard({
 }) {
   const { getConversationForPeer, startMutualConversation } = useConnectionsHub();
   const existingConversation = getConversationForPeer(profile.id);
+  const connectionSource = 'source' in profile ? profile.source : 'mutual_interest';
 
   const relativeTime =
     'relativeTime' in profile && typeof profile.relativeTime === 'string'
@@ -284,7 +285,9 @@ export function MutualConnectionCard({
           </p>
           <div className="mt-4 rounded-2xl border border-[#0B2D5C]/10 bg-[#E8EEF6] px-4 py-3">
             <p className="text-sm font-semibold text-[#0B2D5C]">
-              You and {profile.firstName} would both like to get to know each other.
+              {connectionSource === 'open_to_chat'
+                ? `You and ${profile.firstName} are both open to a conversation.`
+                : `You and ${profile.firstName} would both like to get to know each other.`}
             </p>
             <p className="mt-1 text-xs leading-relaxed text-[#5A6575]">
               {existingConversation
@@ -527,6 +530,7 @@ export function ForYouOverviewCard({
     note?: string | null;
     relativeTime?: string;
     connectionId?: string;
+    source?: 'mutual_interest' | 'open_to_chat';
   };
   variant: 'open_to_chat' | 'interest' | 'mutual';
 }) {
@@ -583,7 +587,9 @@ export function ForYouOverviewCard({
           )}
           {variant === 'mutual' && (
             <p className="mt-3 text-sm leading-relaxed text-[#5A6575]">
-              {profile.firstName} and you have both expressed interest.
+              {profile.source === 'open_to_chat'
+                ? `You and ${profile.firstName} are both open to a conversation.`
+                : `${profile.firstName} and you have both expressed interest.`}
             </p>
           )}
         </div>
