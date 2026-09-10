@@ -217,7 +217,7 @@ export async function loadConnectionsHub(): Promise<DataAccessResult<Connections
       .from('interests')
       .select('id, recipient_id, status, created_at')
       .eq('sender_id', user.id)
-      .in('status', ['pending', 'mutual'])
+      .eq('status', 'pending')
       .order('created_at', { ascending: false }),
     supabase
       .from('open_to_chat_requests')
@@ -324,9 +324,9 @@ export async function loadConnectionsHub(): Promise<DataAccessResult<Connections
       id: row.id,
       profileId: row.recipient_id,
       type: 'interested',
-      statusLabel: row.status === 'mutual' ? 'Mutual interest' : 'Awaiting mutual interest',
+      statusLabel: 'Awaiting mutual interest',
       relativeTime: relativeTimeLabel(row.created_at),
-      canWithdraw: row.status === 'pending',
+      canWithdraw: true,
       note: null,
       profile: profile
         ? toHubCard(profile, row.recipient_id, alignments.get(row.recipient_id))
