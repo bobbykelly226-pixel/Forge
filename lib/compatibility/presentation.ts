@@ -53,7 +53,10 @@ export function toAlignmentPresentation(
   const sharedStrengths = [
     ...result.strengths.map((item) => ({
       title: item.title,
-      copy: item.copy,
+      // The surrounding section already explains that these are alignment
+      // strengths. Repeating the same "meaningful common ground" sentence for
+      // every category makes a complete profile feel much longer than it is.
+      copy: item.title,
     })),
     // Compatible differences are useful alignment context, not conflicts.
     ...result.compatibleDifferences.map((item) => ({

@@ -59,10 +59,7 @@ describe('public profile information density', () => {
     assert.match(source, /WHY_SURFACED_PREVIEW_COUNT = 3/);
     assert.match(source, /sharedStrengths\.slice\(0, WHY_SURFACED_PREVIEW_COUNT\)/);
     assert.match(source, /\{whySurfacedExpanded \? 'Show Less' : 'Show More'\}/);
-    assert.match(
-      source,
-      /strongest factors that led Forge to introduce this profile/
-    );
+    assert.match(source, /Meaningful common ground appears across:/);
     assert.doesNotMatch(source, /id="alignments-heading"/);
     assert.doesNotMatch(source, /More About/);
   });
@@ -100,6 +97,12 @@ describe('public profile information density', () => {
     assert.match(drawer, /\{alignmentsExpanded \? 'Show Less' : 'More'\}/);
     assert.doesNotMatch(drawer, /Why you align/);
     assert.doesNotMatch(drawer, /font-semibold text-\[#0B2D5C\]\}>\{item\.title\}/);
+
+    const sections = readFileSync(
+      join(process.cwd(), 'components/discovery/ProfileAlignmentSections.tsx'),
+      'utf8'
+    );
+    assert.match(sections, /Meaningful common ground appears across:/);
   });
 
   it('adds an accessible Character Signals information control on profiles', () => {

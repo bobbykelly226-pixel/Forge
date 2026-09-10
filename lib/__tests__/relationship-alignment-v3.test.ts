@@ -5,6 +5,7 @@ import {
   evaluateCompatibility,
   evaluateQuestionnaireCompatibility,
   mergeCompatibilityResults,
+  toAlignmentPresentation,
   type CompatibilityPersonInput,
   type QuestionnaireAlignmentComparison,
   type QuestionnaireComparisonQuestion,
@@ -98,6 +99,18 @@ test('thirty identical core answers produce Strong Alignment', () => {
   const result = evaluateQuestionnaireCompatibility(comparison(questions()));
   assert.equal(result?.alignment.key, 'strong_alignment');
   assert.equal(result?.importantDifferences.length, 0);
+  assert.ok(result);
+
+  const presentation = toAlignmentPresentation(result);
+  assert.deepEqual(
+    presentation.sharedStrengths.map((item) => item.copy),
+    CATEGORIES.map((category) => category.title).sort()
+  );
+  assert.ok(
+    presentation.sharedStrengths.every(
+      (item) => !item.copy.includes('meaningful common ground')
+    )
+  );
 });
 
 test('eight ordinary opposing answers do not flip the complete picture', () => {
