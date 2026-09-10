@@ -113,6 +113,19 @@ test('thirty identical core answers produce Strong Alignment', () => {
   );
 });
 
+test('compact category labels preserve distinct onboarding alignment evidence', () => {
+  const profile = evaluateCompatibility(
+    person('viewer', { relationshipGoals: ['marriage'] }),
+    person('partner', { relationshipGoals: ['marriage'] })
+  );
+  const presentation = toAlignmentPresentation(profile);
+  assert.ok(
+    presentation.sharedStrengths.some(
+      (item) => item.copy === 'You are both open to marriage.'
+    )
+  );
+});
+
 test('eight ordinary opposing answers do not flip the complete picture', () => {
   const result = evaluateQuestionnaireCompatibility(
     comparison(questions(new Set([0, 4, 8, 12, 16, 20, 24, 28])))
