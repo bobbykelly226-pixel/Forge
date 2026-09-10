@@ -14,20 +14,6 @@ import type {
 const MIN_COMPARABLE_QUESTIONS = 12;
 const MIN_COMPARABLE_CATEGORIES = 3;
 
-/**
- * Only direct, high-impact preference questions may create an Important
- * Alignment Factor. Boundary-list questions and contextual scenarios are
- * intentionally excluded because difference alone does not prove conflict.
- */
-const DIRECT_HIGH_IMPACT_QUESTIONS = new Set([
-  'relationship_vision_intentions_q01',
-  'relationship_vision_intentions_q02',
-  'relationship_vision_intentions_q04',
-  'family_children_parenting_q04',
-  'faith_spirituality_worldview_q04',
-  'politics_civic_life_social_issues_q02',
-]);
-
 const CATEGORY_WEIGHTS: Record<QuestionnaireCompatibilityCategoryKey, number> = {
   relationship_vision_intentions: 1.3,
   values_character: 1.05,
@@ -43,7 +29,6 @@ const CATEGORY_WEIGHTS: Record<QuestionnaireCompatibilityCategoryKey, number> = 
 
 type EvaluatedQuestion = QuestionnaireComparisonQuestion & {
   score: number;
-  importantDifference: boolean;
 };
 
 type EvaluatedCategory = {
@@ -51,7 +36,6 @@ type EvaluatedCategory = {
   title: string;
   score: number;
   status: FactorStatus;
-  importantQuestion: EvaluatedQuestion | null;
 };
 
 function clamp(value: number): number {
@@ -82,8 +66,8 @@ function scoreQuestion(question: QuestionnaireComparisonQuestion): number {
   return 0.5;
 }
 
-function statusForScore(score: number): FactorStatus {
-  if (score >= 0.78) return 'strong_alignment';
+function statusForScore(score: number, allExact: boolean): FactorStatus {
+  if (allExact && score >= 0.78) return 'strong_alignment';
   if (score >= 0.58) return 'compatible_difference';
   return 'worth_discussing';
 }
@@ -106,11 +90,11 @@ function explanationItem(
 function categoryCopy(category: EvaluatedCategory): string {
   switch (category.status) {
     case 'strong_alignment':
-      return `Your completed answers show meaningful common ground around ${category.title.toLowerCase()}.`;
+      return `${category.title}: meaningful common ground.`;
     case 'compatible_difference':
-      return `Your answers around ${category.title.toLowerCase()} are not identical, but they appear to leave workable room for each other.`;
+      return `${category.title}: different answers with workable room.`;
     case 'worth_discussing':
-      return `Your answers put different emphasis on parts of ${category.title.toLowerCase()}. A thoughtful conversation would add useful context.`;
+      return `${category.title}: worth a thoughtful conversation.`;
     case 'important_difference':
       return `Your completed answers point in different directions on a high-impact part of ${category.title.toLowerCase()}. This deserves direct conversation, not judgment.`;
     case 'insufficient_information':
@@ -129,16 +113,11 @@ function evaluateCategories(
   for (const question of questions) {
     if (!question.comparable) continue;
     const score = scoreQuestion(question);
-    const importantDifference =
-      DIRECT_HIGH_IMPACT_QUESTIONS.has(question.questionKey) &&
-      question.responseBehavior !== 'multi_select' &&
-      question.responseBehavior !== 'scenario_choice' &&
-      score < 0.35;
     const current = byCategory.get(question.categoryKey) ?? {
       title: question.categoryTitle,
       questions: [],
     };
-    current.questions.push({ ...question, score, importantDifference });
+    current.questions.push({ ...question, score });
     byCategory.set(question.categoryKey, current);
   }
 
@@ -156,14 +135,14 @@ function evaluateCategories(
               0
             ) / denominator
           : 0;
-      const importantQuestion =
-        group.questions.find((question) => question.importantDifference) ?? null;
       return {
         key,
         title: group.title,
         score,
-        status: importantQuestion ? 'important_difference' : statusForScore(score),
-        importantQuestion,
+        status: statusForScore(
+          score,
+          group.questions.every((question) => question.exactMatch)
+        ),
       } satisfies EvaluatedCategory;
     })
     .sort((a, b) => a.key.localeCompare(b.key));
@@ -172,9 +151,6 @@ function evaluateCategories(
 function overallAlignment(
   categories: EvaluatedCategory[]
 ): RelationshipAlignmentKey {
-  const hasImportant = categories.some(
-    (category) => category.status === 'important_difference'
-  );
   const denominator = categories.reduce(
     (sum, category) => sum + CATEGORY_WEIGHTS[category.key],
     0
@@ -188,7 +164,6 @@ function overallAlignment(
         ) / denominator
       : 0;
 
-  if (hasImportant) return 'more_to_discover';
   if (weighted >= 0.8) return 'strong_alignment';
   if (weighted >= 0.58) return 'promising_alignment';
   return 'more_to_discover';
@@ -231,6 +206,18 @@ export function evaluateQuestionnaireCompatibility(
 
   const categories = evaluateCategories(comparison.questions);
   const alignmentKey = overallAlignment(categories);
+  const denominator = categories.reduce(
+    (sum, category) => sum + CATEGORY_WEIGHTS[category.key],
+    0
+  );
+  const weightedScore =
+    denominator > 0
+      ? categories.reduce(
+          (sum, category) =>
+            sum + category.score * CATEGORY_WEIGHTS[category.key],
+          0
+        ) / denominator
+      : 0;
 
   const strengths = categories
     .filter((category) => category.status === 'strong_alignment')
@@ -271,6 +258,7 @@ export function evaluateQuestionnaireCompatibility(
         : null,
     evaluatedCategories: categories.map((category) => category.key),
     skippedCategories: [],
+    calculation: { weightedScore, weight: denominator },
   };
 }
 

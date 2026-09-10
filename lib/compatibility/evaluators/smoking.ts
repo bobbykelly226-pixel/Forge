@@ -108,6 +108,7 @@ export const smokingEvaluator: CompatibilityEvaluator = {
           'One person’s smoking habits sit outside the other’s stated partner comfort. This is a practical boundary to respect — not a judgment of either person.',
         viewerSummary: viewerSmoking,
         partnerSummary: partnerSmoking,
+        isExplicitBoundary: true,
       });
     }
 
@@ -156,7 +157,7 @@ export const smokingEvaluator: CompatibilityEvaluator = {
       return evaluation({
         categoryKey: 'smoking',
         categoryLabel: this.label,
-        status: 'important_difference',
+        status: 'worth_discussing',
         explanation:
           'One of you does not smoke while the other smokes regularly. This is an important lifestyle difference to understand early.',
         viewerSummary: viewerSmoking,

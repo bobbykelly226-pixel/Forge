@@ -1,4 +1,5 @@
 import { buildCalibratedCategories } from '@/lib/questionnaire/catalog/calibration-v2';
+import { buildCoreCategories } from '@/lib/questionnaire/catalog/core-v3';
 import { CATEGORY_01 as BASE_CATEGORY_01 } from '@/lib/questionnaire/catalog/category-01';
 import { CATEGORY_02 as BASE_CATEGORY_02 } from '@/lib/questionnaire/catalog/category-02';
 import { CATEGORY_03 as BASE_CATEGORY_03 } from '@/lib/questionnaire/catalog/category-03';
@@ -25,24 +26,26 @@ import type {
 } from '@/lib/questionnaire/types';
 import { assertValidQuestionnaireCatalog } from '@/lib/questionnaire/validate';
 
-/** Active calibrated questionnaire catalog. V1 remains preserved in the database. */
-export const QUESTIONNAIRE_VERSION = 'compatibility_profile_v2';
+/** Active focused questionnaire catalog. V1 and V2 remain preserved in the database. */
+export const QUESTIONNAIRE_VERSION = 'compatibility_profile_v3';
 
-/** Ten categories with eight focused questions each and no priority follow-ups. */
-export const SPECIFICATION_VERSION = 'compatibility_profile_calibrated_80_v1';
+/** Ten normalized categories with three core questions each. */
+export const SPECIFICATION_VERSION = 'compatibility_profile_core_30_v1';
 
-const CATEGORIES: CategoryDefinition[] = buildCalibratedCategories([
-  BASE_CATEGORY_01,
-  BASE_CATEGORY_02,
-  BASE_CATEGORY_03,
-  BASE_CATEGORY_04,
-  BASE_CATEGORY_05,
-  BASE_CATEGORY_06,
-  BASE_CATEGORY_07,
-  BASE_CATEGORY_08,
-  BASE_CATEGORY_09,
-  BASE_CATEGORY_10,
-]);
+const CATEGORIES: CategoryDefinition[] = buildCoreCategories(
+  buildCalibratedCategories([
+    BASE_CATEGORY_01,
+    BASE_CATEGORY_02,
+    BASE_CATEGORY_03,
+    BASE_CATEGORY_04,
+    BASE_CATEGORY_05,
+    BASE_CATEGORY_06,
+    BASE_CATEGORY_07,
+    BASE_CATEGORY_08,
+    BASE_CATEGORY_09,
+    BASE_CATEGORY_10,
+  ])
+);
 
 export const [
   CATEGORY_01,
@@ -57,15 +60,8 @@ export const [
   CATEGORY_10,
 ] = CATEGORIES;
 
-/**
- * Eligibility rules are version-scoped and referenced by question ids.
- * Categories 7 through 9 attach parenting eligibility on their conditional Q9.
- */
-const ELIGIBILITY_RULES: EligibilityRuleDefinition[] = [
-  CATEGORY_07_PARENTING_ELIGIBILITY,
-  CATEGORY_08_PARENTING_ELIGIBILITY,
-  CATEGORY_09_PARENTING_ELIGIBILITY,
-];
+/** V3 core questions are universal; conditional material stays in deepening. */
+const ELIGIBILITY_RULES: EligibilityRuleDefinition[] = [];
 
 export function getQuestionnaireCatalog(): QuestionnaireCatalog {
   return assertValidQuestionnaireCatalog({

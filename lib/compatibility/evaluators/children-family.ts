@@ -44,6 +44,7 @@ export const childrenFamilyEvaluator: CompatibilityEvaluator = {
         explanation:
           'You want children, while they do not. This is an important difference to understand with care — not a judgment of either person.',
         isHighImpact: true,
+        isExplicitBoundary: true,
         viewerSummary: 'Wants children',
         partnerSummary: 'Does not want children',
       });
@@ -56,6 +57,7 @@ export const childrenFamilyEvaluator: CompatibilityEvaluator = {
         explanation:
           'You do not want children, while they do. This is an important difference to understand with care — not a judgment of either person.',
         isHighImpact: true,
+        isExplicitBoundary: true,
         viewerSummary: 'Does not want children',
         partnerSummary: 'Wants children',
       });
@@ -70,6 +72,7 @@ export const childrenFamilyEvaluator: CompatibilityEvaluator = {
         explanation:
           'They have children, and your current answers say you are not open to a partner with children. That boundary deserves clear, respectful conversation.',
         isHighImpact: true,
+        isExplicitBoundary: true,
         viewerSummary: 'Not open to partner with children',
         partnerSummary: 'Has children',
       });
@@ -82,6 +85,7 @@ export const childrenFamilyEvaluator: CompatibilityEvaluator = {
         explanation:
           'You have children, and their current answers say they are not open to a partner with children. That boundary deserves clear, respectful conversation.',
         isHighImpact: true,
+        isExplicitBoundary: true,
         viewerSummary: 'Has children',
         partnerSummary: 'Not open to partner with children',
       });

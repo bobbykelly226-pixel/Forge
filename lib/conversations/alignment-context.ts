@@ -4,6 +4,8 @@
 
 import {
   evaluateCompatibility,
+  evaluateQuestionnaireCompatibility,
+  mergeCompatibilityResults,
   personFromPublicDiscoveryProfile,
   personFromSeedCompatibilityFields,
   toAlignmentPresentation,
@@ -11,6 +13,7 @@ import {
 import { loadViewerCompatibilityPerson } from '@/lib/compatibility/load-viewer';
 import { SEED_DEMO_VIEWER } from '@/lib/compatibility/seed-viewer';
 import { getDiscoveryProfile } from '@/lib/data/discovery';
+import { loadQuestionnaireAlignmentComparison } from '@/lib/data/questionnaire-alignment';
 import { getSeedProfileById } from '@/lib/seed/catalog';
 import { isSeedProfileId } from '@/lib/seed/access';
 import type { ConversationAlignmentContext } from './types';
@@ -61,19 +64,27 @@ export async function loadConversationAlignmentContext(
     };
   }
 
-  const [viewerResult, peerResult] = await Promise.all([
+  const [viewerResult, peerResult, questionnaireComparison] = await Promise.all([
     loadViewerCompatibilityPerson(),
     getDiscoveryProfile(peerUserId),
+    loadQuestionnaireAlignmentComparison(peerUserId),
   ]);
 
   if (!viewerResult.success || !peerResult.success || !peerResult.data) {
     return null;
   }
 
-  const engine = evaluateCompatibility(
+  const profileEngine = evaluateCompatibility(
     viewerResult.person,
     personFromPublicDiscoveryProfile(peerResult.data)
   );
+  const questionnaireEngine =
+    questionnaireComparison.success && questionnaireComparison.data
+      ? evaluateQuestionnaireCompatibility(questionnaireComparison.data)
+      : null;
+  const engine = questionnaireEngine
+    ? mergeCompatibilityResults(questionnaireEngine, profileEngine)
+    : profileEngine;
   const presentation = toAlignmentPresentation(engine);
 
   return {

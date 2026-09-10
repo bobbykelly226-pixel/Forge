@@ -38,7 +38,7 @@ export type ProfileAlignmentSectionsProps = {
 
 const WHY_SURFACED_PREVIEW_COUNT = 3;
 const WHY_SURFACED_INTRO =
-  'These are some of the strongest factors that led Forge to introduce this profile to you.';
+  'Meaningful common ground appears across:';
 
 function toDrawerContent(props: ProfileAlignmentSectionsProps): AlignmentDetailsContent {
   const worthDiscussing = props.importantFactors

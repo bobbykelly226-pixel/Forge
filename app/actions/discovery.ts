@@ -16,9 +16,13 @@ import { getSeedProfileById } from '@/lib/seed/catalog';
 import { toDiscoveryFeedCard } from '@/lib/discovery/presentation';
 import { createEmptyActionState } from '@/lib/discovery-actions-types';
 import {
+  evaluateCompatibility,
   evaluateQuestionnaireCompatibility,
+  mergeCompatibilityResults,
+  personFromPublicDiscoveryProfile,
   toFeedAlignmentFields,
 } from '@/lib/compatibility';
+import { loadViewerCompatibilityPerson } from '@/lib/compatibility/load-viewer';
 import { loadQuestionnaireAlignmentComparisons } from '@/lib/data/questionnaire-alignment';
 
 export async function fetchDiscoveryFeedAction() {
@@ -32,9 +36,10 @@ export async function fetchDiscoveryFeedAction() {
   const realIds = result.data
     .map((profile) => profile.id)
     .filter((id) => !isSeedProfileId(id));
-  const [actionState, questionnaireComparisons] = await Promise.all([
+  const [actionState, questionnaireComparisons, viewer] = await Promise.all([
     loadActionStateForProfiles(realIds),
     loadQuestionnaireAlignmentComparisons(realIds),
+    loadViewerCompatibilityPerson(),
   ]);
 
   const cards = result.data.map((profile) => {
@@ -42,9 +47,19 @@ export async function fetchDiscoveryFeedAction() {
     const comparison = questionnaireComparisons.success
       ? questionnaireComparisons.data[profile.id]
       : null;
-    const engineResult = comparison
+    const questionnaireResult = comparison
       ? evaluateQuestionnaireCompatibility(comparison)
       : null;
+    const profileResult = viewer.success
+      ? evaluateCompatibility(
+          viewer.person,
+          personFromPublicDiscoveryProfile(profile)
+        )
+      : null;
+    const engineResult =
+      questionnaireResult && profileResult
+        ? mergeCompatibilityResults(questionnaireResult, profileResult)
+        : questionnaireResult ?? profileResult;
     return engineResult
       ? { ...card, ...toFeedAlignmentFields(engineResult) }
       : card;

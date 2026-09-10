@@ -303,8 +303,9 @@ describe('Categories 5 through 7 live catalogs', () => {
     const questionUi = read('components/questionnaire-preview/QuestionnaireQuestion.tsx');
     const flow = read('lib/questionnaire/preview/category-01-preview-flow.ts');
 
-    // Architecture remains in the catalog and seed.
-    assert.equal(getQuestionnaireCatalog().eligibilityRules[0]?.id, CATEGORY_07_PARENTING_ELIGIBILITY.id);
+    // Deepening architecture remains defined, while the focused live catalog is universal.
+    assert.equal(getQuestionnaireCatalog().eligibilityRules.length, 0);
+    assert.equal(CATEGORY_07_PARENTING_ELIGIBILITY.id, 'elig_parenting_role_c07');
     assert.ok(CATEGORY_07.questions[1].structuredIdentity);
     assert.ok(CATEGORY_07.questions[8].eligibilityRuleId);
 
@@ -378,8 +379,8 @@ describe('Categories 5 through 7 preview session behavior', () => {
       [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
     );
     assert.equal(getQuestionnaireCatalog().specificationVersion, SPECIFICATION_VERSION);
-    assert.equal(SPECIFICATION_VERSION, 'compatibility_profile_calibrated_80_v1');
-    assert.equal(getQuestionnaireCatalog().eligibilityRules.length, 3);
+    assert.equal(SPECIFICATION_VERSION, 'compatibility_profile_core_30_v1');
+    assert.equal(getQuestionnaireCatalog().eligibilityRules.length, 0);
     assert.match(DIRECTORY_COPY.body, /all ten/);
     assert.match(DIRECTORY_COPY.metadata, /1 through 10/);
     assert.match(PREVIEW_PAGE_DESCRIPTION, /all ten/);

@@ -717,7 +717,11 @@ export function validateQuestionnaireCatalog(
   const allQuestionIds = new Set<string>();
   const allOptionIds = new Set<string>();
   const expectedQuestionCount =
-    catalog.questionnaireVersion === 'compatibility_profile_v2' ? 8 : 10;
+    catalog.questionnaireVersion === 'compatibility_profile_v3'
+      ? 3
+      : catalog.questionnaireVersion === 'compatibility_profile_v2'
+        ? 8
+        : 10;
 
   for (const category of catalog.categories ?? []) {
     if (category.id && categoryIds.has(category.id)) {

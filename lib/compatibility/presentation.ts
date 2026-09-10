@@ -9,7 +9,18 @@ import type {
 } from '@/lib/seed/adapters';
 
 import { humanizeFactorAnswer } from './answer-labels';
+import { QUESTIONNAIRE_COMPATIBILITY_CATEGORY_KEYS } from './questionnaire-types';
 import type { AlignmentExplanationItem, CompatibilityEngineResult } from './types';
+
+const questionnaireCategoryKeys = new Set<string>(
+  QUESTIONNAIRE_COMPATIBILITY_CATEGORY_KEYS
+);
+
+function strengthPresentationCopy(item: AlignmentExplanationItem): string {
+  return questionnaireCategoryKeys.has(item.categoryKey)
+    ? item.title
+    : item.copy;
+}
 
 function toFactorAnswers(item: AlignmentExplanationItem): {
   viewerAnswer?: string;
@@ -29,10 +40,12 @@ export function toAlignmentPresentation(
     ...result.importantDifferences.map((item, index) => ({
       id: `engine-important-${item.categoryKey}-${index}`,
       title: item.title,
-      severity: 'potential_dealbreaker' as const,
+      severity: item.isExplicitBoundary
+        ? ('potential_dealbreaker' as const)
+        : ('worth_discussing' as const),
       summary: item.copy,
       explanation: item.copy,
-      isPotentialDealbreaker: true,
+      isPotentialDealbreaker: Boolean(item.isExplicitBoundary),
       answerContextMode: item.answerContextMode,
       ...toFactorAnswers(item),
     })),
@@ -51,7 +64,11 @@ export function toAlignmentPresentation(
   const sharedStrengths = [
     ...result.strengths.map((item) => ({
       title: item.title,
-      copy: item.copy,
+      // The surrounding section already explains that these are alignment
+      // strengths. Repeating the same "meaningful common ground" sentence for
+      // every category makes a complete profile feel much longer than it is.
+      // Keep distinct onboarding/profile evidence as an explanatory sentence.
+      copy: strengthPresentationCopy(item),
     })),
     // Compatible differences are useful alignment context, not conflicts.
     ...result.compatibleDifferences.map((item) => ({

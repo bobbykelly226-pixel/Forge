@@ -116,6 +116,7 @@ export const drinkingEvaluator: CompatibilityEvaluator = {
           'One person’s drinking habits sit outside the other’s stated partner comfort. Treat this as a practical boundary, not a personal judgment.',
         viewerSummary: viewerDrinking,
         partnerSummary: partnerDrinking,
+        isExplicitBoundary: true,
       });
     }
 
@@ -153,7 +154,7 @@ export const drinkingEvaluator: CompatibilityEvaluator = {
       return evaluation({
         categoryKey: 'drinking',
         categoryLabel: this.label,
-        status: bands.has('heavy') ? 'important_difference' : 'worth_discussing',
+        status: 'worth_discussing',
         explanation: bands.has('heavy')
           ? 'One of you does not drink while the other drinks regularly. This is an important lifestyle difference to understand early.'
           : 'One of you does not drink while the other drinks socially. This is worth discussing with care.',

@@ -117,7 +117,7 @@ describe('Compatibility Profile Persistence V1 audit hardening', () => {
     assert.match(dataLayer, /Preserve tombstone revisions/);
   });
 
-  it('bumps write generation on category and full restart to block delayed saves', () => {
+  it('keeps category and full restart RPCs hardened even though restart is not exposed in the live UI', () => {
     assert.match(
       migration,
       /clear_my_questionnaire_category[\s\S]*write_generation = v_new_generation/
@@ -126,10 +126,9 @@ describe('Compatibility Profile Persistence V1 audit hardening', () => {
       migration,
       /clear_my_questionnaire_profile[\s\S]*write_generation = v_new_generation/
     );
-    assert.match(shell, /saveWorkerRef\.current\.bumpGeneration/);
-    assert.match(shell, /resetQuestions|resetAllQuestions/);
-    assert.match(shell, /executeRestartAttempt/);
-    assert.match(shell, /pendingRestartRef/);
+    assert.match(actions, /restartCompatibilityCategoryAction/);
+    assert.match(actions, /restartCompatibilityProfileAction/);
+    assert.doesNotMatch(shell, /executeRestartAttempt|pendingRestartRef/);
   });
 
   it('derives completion in the database and rejects client completed status', () => {
@@ -264,9 +263,7 @@ describe('Compatibility Profile Persistence V1 audit hardening', () => {
     assert.match(dataLayer, /operationId: string/);
     assert.doesNotMatch(dataLayer, /p_operation_id: input\.operationId \?\? undefined/);
     assert.match(actions, /operationId: string/);
-    assert.match(shell, /executeRestartAttempt/);
-    assert.match(shell, /withRestartBusy/);
-    assert.match(shell, /restartIntentRef/);
+    assert.doesNotMatch(shell, /executeRestartAttempt|withRestartBusy|restartIntentRef/);
     const coordinator = read('lib/questionnaire/persistence/restart-coordinator.ts');
     assert.match(coordinator, /export async function executeRestartAttempt/);
     assert.match(coordinator, /export async function withRestartBusy/);

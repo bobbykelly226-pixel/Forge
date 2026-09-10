@@ -217,6 +217,7 @@ test('multi-select goals compare correctly and profile-only fallback cannot clai
     dataNote: null,
     evaluatedCategories: [],
     skippedCategories: [],
+    calculation: { weightedScore: 1, weight: 1 },
   } satisfies CompatibilityEngineResult;
 
   const constrained = constrainProfileFallbackAlignment(strongResult);
