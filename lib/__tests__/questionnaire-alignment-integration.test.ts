@@ -99,7 +99,7 @@ test('twelve comparable answers across three categories can produce Strong Align
   assert.equal('confidence' in result.alignment, false);
 });
 
-test('direct high-impact scale divergence becomes a separate Important Alignment Factor', () => {
+test('one direct high-impact scale divergence does not erase broad alignment', () => {
   const questions = categories.flatMap((_, categoryIndex) =>
     Array.from({ length: 4 }, (_, index) =>
       question(categoryIndex, index + 1)
@@ -116,15 +116,11 @@ test('direct high-impact scale divergence becomes a separate Important Alignment
 
   const result = evaluateQuestionnaireCompatibility(comparison(questions));
   assert.ok(result);
-  assert.equal(result.alignment.label, 'More to Discover');
-  assert.equal(result.importantDifferences.length, 1);
-  assert.equal(
-    result.importantDifferences[0]?.title,
-    'Relationship Vision & Intentions'
-  );
-  assert.match(
-    result.importantDifferences[0]?.copy ?? '',
-    /direct conversation, not judgment/i
+  assert.equal(result.alignment.label, 'Strong Alignment');
+  assert.equal(result.importantDifferences.length, 0);
+  assert.ok(
+    result.worthDiscussing.length > 0 ||
+      result.compatibleDifferences.length > 0
   );
   assert.doesNotMatch(
     JSON.stringify(result),

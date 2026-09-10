@@ -108,6 +108,7 @@ export const petsEvaluator: CompatibilityEvaluator = {
           'A pet allergy is a practical living constraint here. Forge surfaces it as an important difference — not a judgment about either person.',
         viewerSummary: viewerPets,
         partnerSummary: partnerPets,
+        isExplicitBoundary: true,
       });
     }
 
@@ -127,6 +128,7 @@ export const petsEvaluator: CompatibilityEvaluator = {
           'One person’s pets sit outside the other’s stated partner comfort. Different pets are not automatically a mismatch — but this specific combination looks like a boundary.',
         viewerSummary: viewerPets,
         partnerSummary: partnerPets,
+        isExplicitBoundary: true,
       });
     }
 

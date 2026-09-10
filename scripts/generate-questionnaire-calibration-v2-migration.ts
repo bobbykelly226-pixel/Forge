@@ -8,11 +8,31 @@
  */
 import { writeFileSync } from 'node:fs';
 
+import { buildCalibratedCategories } from '../lib/questionnaire/catalog/calibration-v2';
+import { CATEGORY_01 } from '../lib/questionnaire/catalog/category-01';
+import { CATEGORY_02 } from '../lib/questionnaire/catalog/category-02';
+import { CATEGORY_03 } from '../lib/questionnaire/catalog/category-03';
+import { CATEGORY_04 } from '../lib/questionnaire/catalog/category-04';
+import { CATEGORY_05 } from '../lib/questionnaire/catalog/category-05';
+import { CATEGORY_06 } from '../lib/questionnaire/catalog/category-06';
 import {
-  getQuestionnaireCatalog,
-  QUESTIONNAIRE_VERSION,
-  SPECIFICATION_VERSION,
-} from '../lib/questionnaire/catalog/index';
+  CATEGORY_07,
+  CATEGORY_07_PARENTING_ELIGIBILITY,
+} from '../lib/questionnaire/catalog/category-07';
+import {
+  CATEGORY_08,
+  CATEGORY_08_PARENTING_ELIGIBILITY,
+} from '../lib/questionnaire/catalog/category-08';
+import {
+  CATEGORY_09,
+  CATEGORY_09_PARENTING_ELIGIBILITY,
+} from '../lib/questionnaire/catalog/category-09';
+import { CATEGORY_10 } from '../lib/questionnaire/catalog/category-10';
+import type { QuestionnaireCatalog } from '../lib/questionnaire/types';
+import { assertValidQuestionnaireCatalog } from '../lib/questionnaire/validate';
+
+const QUESTIONNAIRE_VERSION = 'compatibility_profile_v2';
+const SPECIFICATION_VERSION = 'compatibility_profile_calibrated_80_v1';
 
 const MIGRATION_PATH =
   'supabase/migrations/20260728040337_questionnaire_calibration_v2.sql';
@@ -21,7 +41,28 @@ function sqlJson(value: unknown): string {
   return `$seed$${JSON.stringify(value)}$seed$::jsonb`;
 }
 
-const catalog = getQuestionnaireCatalog();
+// This historical generator must remain pinned to V2 even when the live catalog advances.
+const catalog: QuestionnaireCatalog = assertValidQuestionnaireCatalog({
+  questionnaireVersion: QUESTIONNAIRE_VERSION,
+  specificationVersion: SPECIFICATION_VERSION,
+  categories: buildCalibratedCategories([
+    CATEGORY_01,
+    CATEGORY_02,
+    CATEGORY_03,
+    CATEGORY_04,
+    CATEGORY_05,
+    CATEGORY_06,
+    CATEGORY_07,
+    CATEGORY_08,
+    CATEGORY_09,
+    CATEGORY_10,
+  ]),
+  eligibilityRules: [
+    CATEGORY_07_PARENTING_ELIGIBILITY,
+    CATEGORY_08_PARENTING_ELIGIBILITY,
+    CATEGORY_09_PARENTING_ELIGIBILITY,
+  ],
+});
 const questions = catalog.categories.flatMap((category) =>
   category.questions.map((question) => {
     const eligibilityRuleKey = question.eligibilityRuleId

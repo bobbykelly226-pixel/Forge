@@ -16,8 +16,6 @@ import StructuredIdentityFields from '@/components/compatibility-profile/Structu
 import PreviewContextPanel from '@/components/questionnaire-preview/PreviewContextPanel';
 import QuestionnaireQuestion from '@/components/questionnaire-preview/QuestionnaireQuestion';
 import {
-  restartCompatibilityCategoryAction,
-  restartCompatibilityProfileAction,
   saveCompatibilityAnswerAction,
   saveCompatibilityProgressAction,
 } from '@/app/actions/questionnaire';
@@ -48,11 +46,6 @@ import {
   questionnaireErrorMessage,
   SAVE_STATUS_COPY,
 } from '@/lib/questionnaire/persistence/copy';
-import {
-  executeRestartAttempt,
-  withRestartBusy,
-  type RestartOperation,
-} from '@/lib/questionnaire/persistence/restart-coordinator';
 import { QuestionSaveWorker } from '@/lib/questionnaire/persistence/save-worker';
 import type { LoadedQuestionnaireProgress } from '@/lib/data/questionnaire';
 import type { CategoryDefinition } from '@/lib/questionnaire/types';
@@ -117,9 +110,6 @@ export default function CompatibilityProfileShell({
   const [saveStatus, setSaveStatus] = useState<SaveStatusKind>('idle');
   const [saveError, setSaveError] = useState<string | null>(null);
   const [continueBusy, setContinueBusy] = useState(false);
-  const [showCategoryRestart, setShowCategoryRestart] = useState(false);
-  const [showFullRestart, setShowFullRestart] = useState(false);
-  const [restartBusy, setRestartBusy] = useState(false);
   const [pendingProgress, setPendingProgress] = useState<{
     categoryKey?: string | null;
     questionKey?: string | null;
@@ -134,11 +124,6 @@ export default function CompatibilityProfileShell({
     questionKey: string;
     answer: PersistedQuestionAnswer;
   } | null>(null);
-  const pendingRestartRef = useRef<RestartOperation | null>(null);
-  /** Survives authoritative abandon so Retry starts a new logical operation. */
-  const restartIntentRef = useRef<
-    { kind: 'category'; categoryKey: string } | { kind: 'profile' } | null
-  >(null);
   const writeGenerationRef = useRef(initialWriteGeneration);
   const stepKeyRef = useRef('directory');
 
@@ -427,13 +412,20 @@ export default function CompatibilityProfileShell({
     }
 
     if (status === 'complete') {
+      const eligible = toEligibleCategoryView(category, parentingProfile);
+      const reviewQuestion = eligible.questions[0];
       const saved = await persistProgress({
         categoryKey: category.id,
-        questionKey: null,
-        phase: 'complete',
+        questionKey: reviewQuestion?.id ?? null,
+        phase: 'base',
       });
       if (!saved) return;
-      setStep({ kind: 'complete', categoryNumber });
+      setStep({
+        kind: 'question',
+        categoryNumber,
+        questionIndex: 0,
+        phase: 'base',
+      });
       return;
     }
 
@@ -485,7 +477,6 @@ export default function CompatibilityProfileShell({
       phase: null,
     });
     if (!saved) return;
-    setShowCategoryRestart(false);
     setStep({ kind: 'directory' });
   }
 
@@ -591,17 +582,6 @@ export default function CompatibilityProfileShell({
 
     setContinueBusy(true);
     try {
-      if (flowStep.kind === 'question') {
-        const eligible = toEligibleCategoryView(category, parentingProfile);
-        const question = eligible.questions[flowStep.questionIndex];
-        const answer = answers[question.id] ?? emptyPersistedAnswer();
-        const saved = await persistAnswer(question, {
-          ...answer,
-          revision: answer.revision,
-        });
-        if (!saved) return;
-      }
-
       const next = advanceEligible(
         category,
         flowStep,
@@ -694,156 +674,7 @@ export default function CompatibilityProfileShell({
     }
   }
 
-  async function confirmCategoryRestart(category: CategoryDefinition) {
-    restartIntentRef.current = { kind: 'category', categoryKey: category.id };
-    setSaveError(null);
-    await withRestartBusy(setRestartBusy, async () => {
-      const attempt = await executeRestartAttempt({
-        pending: pendingRestartRef.current,
-        kind: 'category',
-        categoryKey: category.id,
-        currentWriteGeneration: writeGenerationRef.current,
-        execute: async (op) => {
-          const outcome = await restartCompatibilityCategoryAction({
-            categoryKey: category.id,
-            expectedWriteGeneration: op.expectedWriteGeneration,
-            operationId: op.operationId,
-          });
-          if (!outcome.success) {
-            return {
-              success: false as const,
-              message: questionnaireErrorMessage({
-                code: outcome.code,
-                message: outcome.message,
-                transportError: outcome.transportError,
-                fallback: SAVE_STATUS_COPY.restartError,
-              }),
-              code: outcome.code,
-              transportError: outcome.transportError,
-            };
-          }
-          return {
-            success: true as const,
-            writeGeneration:
-              outcome.data?.writeGeneration ?? op.expectedWriteGeneration + 1,
-          };
-        },
-      });
-      pendingRestartRef.current = attempt.pending;
-      if (!attempt.result.success) {
-        setSaveStatus('error');
-        setSaveError(attempt.result.message);
-        return;
-      }
-      if (!attempt.applySuccess) return;
-
-      restartIntentRef.current = null;
-      setWriteGeneration(attempt.result.writeGeneration);
-      writeGenerationRef.current = attempt.result.writeGeneration;
-      // Invalidate pre-restart in-flight UI updates, then reset revisions for this category.
-      saveWorkerRef.current.bumpGeneration();
-      const categoryQuestionKeys = category.questions.map((question) => question.id);
-      saveWorkerRef.current.resetQuestions(categoryQuestionKeys);
-      if (
-        pendingAnswerRef.current &&
-        categoryQuestionKeys.includes(pendingAnswerRef.current.questionKey)
-      ) {
-        pendingAnswerRef.current = null;
-      }
-      commitAnswersByCategory((prev) => ({
-        ...prev,
-        [category.number]: {},
-      }));
-      setShowCategoryRestart(false);
-      const saved = await persistProgress({
-        categoryKey: category.id,
-        questionKey: null,
-        phase: 'intro',
-      });
-      if (!saved) return;
-      setStep({ kind: 'intro', categoryNumber: category.number });
-    });
-  }
-
-  async function confirmFullRestart() {
-    restartIntentRef.current = { kind: 'profile' };
-    setSaveError(null);
-    await withRestartBusy(setRestartBusy, async () => {
-      const attempt = await executeRestartAttempt({
-        pending: pendingRestartRef.current,
-        kind: 'profile',
-        currentWriteGeneration: writeGenerationRef.current,
-        execute: async (op) => {
-          const outcome = await restartCompatibilityProfileAction({
-            expectedWriteGeneration: op.expectedWriteGeneration,
-            operationId: op.operationId,
-          });
-          if (!outcome.success) {
-            return {
-              success: false as const,
-              message: questionnaireErrorMessage({
-                code: outcome.code,
-                message: outcome.message,
-                transportError: outcome.transportError,
-                fallback: SAVE_STATUS_COPY.restartError,
-              }),
-              code: outcome.code,
-              transportError: outcome.transportError,
-            };
-          }
-          return {
-            success: true as const,
-            writeGeneration:
-              outcome.data?.writeGeneration ?? op.expectedWriteGeneration + 1,
-          };
-        },
-      });
-      pendingRestartRef.current = attempt.pending;
-      if (!attempt.result.success) {
-        setSaveStatus('error');
-        setSaveError(attempt.result.message);
-        return;
-      }
-      if (!attempt.applySuccess) return;
-
-      restartIntentRef.current = null;
-      setWriteGeneration(attempt.result.writeGeneration);
-      writeGenerationRef.current = attempt.result.writeGeneration;
-      saveWorkerRef.current.bumpGeneration();
-      saveWorkerRef.current.resetAllQuestions();
-      pendingAnswerRef.current = null;
-      answersByCategoryRef.current = {};
-      setAnswersByCategory({});
-      setSavedProgress({
-        status: 'not_started',
-        categoryKey: null,
-        questionKey: null,
-        phase: null,
-        writeGeneration: writeGenerationRef.current,
-        startedAt: null,
-        completedAt: null,
-        updatedAt: null,
-      });
-      setShowFullRestart(false);
-      setStep({ kind: 'directory' });
-    });
-  }
-
   async function retryPendingSave() {
-    // Transport failures retain pendingRestartRef; authoritative abandon clears it
-    // but restartIntentRef remains so Retry starts a new operation ID.
-    const restartIntent = restartIntentRef.current;
-    if (restartIntent?.kind === 'category') {
-      const category = categories.find((item) => item.id === restartIntent.categoryKey);
-      if (category) {
-        await confirmCategoryRestart(category);
-        return;
-      }
-    }
-    if (restartIntent?.kind === 'profile') {
-      await confirmFullRestart();
-      return;
-    }
     if (pendingProgress) {
       await persistProgress(pendingProgress);
       return;
@@ -918,12 +749,7 @@ export default function CompatibilityProfileShell({
     return (
       <OverallCompletePanel
         eligibleQuestionsCompleted={totalCompleted}
-        showRestartConfirm={showFullRestart}
-        restartBusy={restartBusy}
         onReviewCategories={() => void backToDirectory()}
-        onRequestRestart={() => setShowFullRestart(true)}
-        onConfirmRestart={() => void confirmFullRestart()}
-        onCancelRestart={() => setShowFullRestart(false)}
       />
     );
   }
@@ -963,8 +789,6 @@ export default function CompatibilityProfileShell({
           answers,
           parentingProfile
         )}
-        showRestartConfirm={showCategoryRestart}
-        restartBusy={restartBusy}
         onReview={() => {
           void (async () => {
             const reviewQuestion = eligible.questions[0];
@@ -997,9 +821,6 @@ export default function CompatibilityProfileShell({
               }
             : () => void backToDirectory()
         }
-        onRequestRestart={() => setShowCategoryRestart(true)}
-        onConfirmRestart={() => void confirmCategoryRestart(category)}
-        onCancelRestart={() => setShowCategoryRestart(false)}
       />
     );
   }

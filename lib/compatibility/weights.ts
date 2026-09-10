@@ -4,7 +4,7 @@
  * Rules:
  * - Missing answers are excluded from scoring (never treated as mismatches).
  * - Higher-impact relationship factors outweigh lifestyle preferences.
- * - A direct high-impact conflict cannot be erased by many minor similarities.
+ * - Important factors remain visible without overriding the normalized result.
  * - No numeric percentage is exposed to the UI.
  */
 
@@ -33,7 +33,7 @@ export const FACTOR_STATUS_SCORES: Record<Exclude<FactorStatus, 'insufficient_in
   };
 
 export const ALIGNMENT_SCORE_THRESHOLDS = {
-  strong: 0.82,
+  strong: 0.8,
   promising: 0.58,
 } as const;
 

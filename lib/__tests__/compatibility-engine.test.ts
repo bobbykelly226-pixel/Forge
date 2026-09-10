@@ -271,7 +271,7 @@ describe('compatibility engine V1', () => {
     assert.equal(noOpenness.status, 'worth_discussing');
   });
 
-  it('does not let many minor alignments override a high-impact conflict', () => {
+  it('keeps an important factor visible without letting it override the full result', () => {
     const viewer = personFromSeedCompatibilityFields(SEED_DEMO_VIEWER);
     const partner = person({
       id: 'p',
@@ -294,10 +294,12 @@ describe('compatibility engine V1', () => {
     });
     const result = evaluateCompatibility(viewer, partner);
     assert.ok(
-      result.alignment.key === 'more_to_discover' ||
-        result.importantDifferences.some((item) => item.categoryKey === 'relationship_intention')
+      result.importantDifferences.some((item) => item.categoryKey === 'relationship_intention')
     );
-    assert.notEqual(result.alignment.key, 'strong_alignment');
+    assert.ok(
+      result.alignment.key === 'strong_alignment' ||
+        result.alignment.key === 'promising_alignment'
+    );
   });
 
   it('is deterministic regardless of evaluator registration order', () => {

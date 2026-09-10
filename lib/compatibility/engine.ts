@@ -11,7 +11,6 @@ import { DEFAULT_COMPATIBILITY_EVALUATORS } from './evaluators';
 import {
   ALIGNMENT_SCORE_THRESHOLDS,
   FACTOR_STATUS_SCORES,
-  HIGH_IMPACT_CATEGORIES,
   MIN_SCOREABLE_CATEGORIES,
 } from './weights';
 
@@ -29,26 +28,19 @@ function toExplanation(evaluation: CategoryEvaluation): AlignmentExplanationItem
     copy: evaluation.explanation,
     viewerAnswer: evaluation.viewerSummary,
     partnerAnswer: evaluation.partnerSummary,
+    isExplicitBoundary: evaluation.isExplicitBoundary,
   };
 }
 
 function mapOverallAlignment(input: {
   scoreable: CategoryEvaluation[];
   weightedScore: number;
-  hasHighImpactConflict: boolean;
-  hasAnyImportantDifference: boolean;
 }): RelationshipAlignmentKey {
   if (input.scoreable.length < MIN_SCOREABLE_CATEGORIES) {
     return 'not_enough_information';
   }
 
-  if (input.hasHighImpactConflict) {
-    return 'more_to_discover';
-  }
-
   if (input.weightedScore >= ALIGNMENT_SCORE_THRESHOLDS.strong) {
-    // Lifestyle important differences still prevent Strong Alignment.
-    if (input.hasAnyImportantDifference) return 'promising_alignment';
     return 'strong_alignment';
   }
 
@@ -141,18 +133,9 @@ export function evaluateCompatibility(
   const importantDifferences = evaluations
     .filter((item) => item.appearAsImportantDifference)
     .map(toExplanation);
-  const hasHighImpactConflict = evaluations.some(
-    (item) =>
-      item.appearAsImportantDifference &&
-      (item.isHighImpact || HIGH_IMPACT_CATEGORIES.has(item.categoryKey))
-  );
-  const hasAnyImportantDifference = importantDifferences.length > 0;
-
   const alignmentKey = mapOverallAlignment({
     scoreable,
     weightedScore,
-    hasHighImpactConflict,
-    hasAnyImportantDifference,
   });
 
   const strengths = evaluations.filter((item) => item.appearAsStrength).map(toExplanation);
@@ -196,6 +179,7 @@ export function evaluateCompatibility(
     dataNote,
     evaluatedCategories: scoreable.map((item) => item.categoryKey),
     skippedCategories: skipped,
+    calculation: { weightedScore, weight: weightSum },
   };
 }
 

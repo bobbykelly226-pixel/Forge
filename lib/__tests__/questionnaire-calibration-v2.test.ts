@@ -15,22 +15,24 @@ const allQuestions = catalog.categories.flatMap((category) => category.questions
 const faithLanguage =
   /faith|god|jesus|christian|prayer|pray|spiritual|religious|church|worldview|belief|principle/i;
 
-describe('questionnaire calibration V2', () => {
-  it('ships ten eight-question categories with no priority follow-ups', () => {
-    assert.equal(QUESTIONNAIRE_VERSION, 'compatibility_profile_v2');
-    assert.equal(SPECIFICATION_VERSION, 'compatibility_profile_calibrated_80_v1');
+describe('questionnaire core V3', () => {
+  it('ships ten three-question categories with no priority follow-ups', () => {
+    assert.equal(QUESTIONNAIRE_VERSION, 'compatibility_profile_v3');
+    assert.equal(SPECIFICATION_VERSION, 'compatibility_profile_core_30_v1');
     assert.equal(catalog.categories.length, 10);
-    assert.equal(allQuestions.length, 80);
+    assert.equal(allQuestions.length, 30);
     assert.equal(validateQuestionnaireCatalog(catalog).ok, true);
 
     for (const category of catalog.categories) {
-      assert.equal(category.questions.length, 8);
+      assert.equal(category.questions.length, 3);
       assert.deepEqual(
         category.questions.map((question) => question.number),
-        [1, 2, 3, 4, 5, 6, 7, 8]
+        [1, 2, 3]
       );
       assert.ok(category.questions.every((question) => !question.priorityFollowUp));
+      assert.ok(category.questions.every((question) => !question.conditional));
     }
+    assert.equal(catalog.eligibilityRules.length, 0);
   });
 
   it('keeps capped multi-select answer lists concise', () => {
@@ -88,29 +90,27 @@ describe('questionnaire calibration V2', () => {
     );
   });
 
-  it('includes natural faith-guided language in every category', () => {
-    for (const category of catalog.categories) {
-      const copy = category.questions
-        .flatMap((question) => [
-          question.prompt,
-          ...question.choices.map((choice) => choice.label),
-        ])
-        .join(' ');
-      assert.match(copy, faithLanguage, `Category ${category.number}`);
-    }
+  it('retains faith and worldview context without making every category religious', () => {
+    const faith = catalog.categories[6]!;
+    const copy = faith.questions
+      .flatMap((question) => [question.prompt, ...question.choices.map((choice) => choice.label)])
+      .join(' ');
+    assert.match(copy, faithLanguage);
   });
 
-  it('uses a forward-only V2 seed that preserves V1 and carries no priority data', () => {
+  it('uses a forward-only V3 migration that preserves prior versions and copies stable responses', () => {
     const migration = readFileSync(
       join(
         process.cwd(),
-        'supabase/migrations/20260728040337_questionnaire_calibration_v2.sql'
+        'supabase/migrations/20260910125048_relationship_alignment_v3.sql'
       ),
       'utf8'
     );
-    assert.match(migration, /compatibility_profile_v2/);
-    assert.match(migration, /compatibility_profile_calibrated_80_v1/);
-    assert.match(migration, /priority_follow_up_prompt[\s\S]*priority_selection_count = null/i);
+    assert.match(migration, /compatibility_profile_v3/);
+    assert.match(migration, /compatibility_profile_core_30_v1/);
+    assert.match(migration, /user_questionnaire_responses/);
+    assert.match(migration, /user_questionnaire_selected_choices/);
+    assert.match(migration, /forge_recalculate_questionnaire_progress/);
     assert.doesNotMatch(migration, /\bdelete\s+from\b/i);
     assert.doesNotMatch(migration, /\btruncate\b/i);
     assert.doesNotMatch(migration, /\bdrop\s+table\b/i);

@@ -1,4 +1,5 @@
 export { evaluateCompatibility } from './engine';
+export { mergeCompatibilityResults } from './merge';
 export {
   evaluateQuestionnaireCompatibility,
   QUESTIONNAIRE_ALIGNMENT_COVERAGE,

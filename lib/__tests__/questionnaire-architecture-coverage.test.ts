@@ -81,14 +81,14 @@ describe('questionnaire architecture coverage (self-contained)', () => {
     const live = getQuestionnaireCatalog();
     assert.equal(live.categories.length, 10);
     assert.equal(live.categories[0].number, 1);
-    assert.equal(live.eligibilityRules.length, 3);
+    assert.equal(live.eligibilityRules.length, 0);
     assert.equal(
       live.categories.reduce((sum, c) => sum + c.questions.length, 0),
-      80
+      30
     );
   });
 
-  it('preserves the 100-question architecture proof while activating the calibrated 80-question catalog', () => {
+  it('preserves the 100-question architecture proof while activating the focused 30-question catalog', () => {
     const live = getQuestionnaireCatalog();
     const synthetic = getSyntheticCatalogFromManifest();
     const result = validateQuestionnaireCatalog(synthetic);
@@ -97,7 +97,7 @@ describe('questionnaire architecture coverage (self-contained)', () => {
     assert.equal(synthetic.categories.length, 10);
     assert.equal(
       live.categories.reduce((sum, c) => sum + c.questions.length, 0),
-      80
+      30
     );
     assert.equal(
       synthetic.categories.reduce((sum, c) => sum + c.questions.length, 0),
@@ -106,11 +106,11 @@ describe('questionnaire architecture coverage (self-contained)', () => {
     for (let n = 1; n <= 10; n += 1) {
       const category = live.categories.find((c) => c.number === n);
       assert.ok(category, `missing category ${n}`);
-      assert.equal(category?.questions.length, 8);
+      assert.equal(category?.questions.length, 3);
       assert.equal(category?.status, 'locked');
       assert.deepEqual(
         category?.questions.map((question) => question.number),
-        [1, 2, 3, 4, 5, 6, 7, 8]
+        [1, 2, 3]
       );
       assert.ok(category?.questions.every((question) => !question.priorityFollowUp));
     }
@@ -457,9 +457,9 @@ describe('questionnaire architecture coverage (self-contained)', () => {
     assert.deepEqual(manifestPriority?.priorityFollowUp?.excludedChoiceIndexes, [14, 15]);
   });
 
-  it('keeps Category 1 at eight questions with no priority follow-ups', () => {
+  it('keeps Category 1 focused at three questions with no priority follow-ups', () => {
     const live = getQuestionnaireCatalog();
-    assert.equal(live.categories[0].questions.length, 8);
+    assert.equal(live.categories[0].questions.length, 3);
     assert.ok(live.categories[0].questions.every((question) => !question.priorityFollowUp));
   });
 

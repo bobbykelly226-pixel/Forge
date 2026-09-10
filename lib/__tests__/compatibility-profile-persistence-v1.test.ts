@@ -4,6 +4,17 @@ import { join } from 'node:path';
 import { describe, it } from 'node:test';
 
 import { getQuestionnaireCatalog, QUESTIONNAIRE_VERSION } from '@/lib/questionnaire/catalog';
+import { buildCalibratedCategories } from '@/lib/questionnaire/catalog/calibration-v2';
+import { CATEGORY_01 as BASE_CATEGORY_01 } from '@/lib/questionnaire/catalog/category-01';
+import { CATEGORY_02 as BASE_CATEGORY_02 } from '@/lib/questionnaire/catalog/category-02';
+import { CATEGORY_03 as BASE_CATEGORY_03 } from '@/lib/questionnaire/catalog/category-03';
+import { CATEGORY_04 as BASE_CATEGORY_04 } from '@/lib/questionnaire/catalog/category-04';
+import { CATEGORY_05 as BASE_CATEGORY_05 } from '@/lib/questionnaire/catalog/category-05';
+import { CATEGORY_06 as BASE_CATEGORY_06 } from '@/lib/questionnaire/catalog/category-06';
+import { CATEGORY_07 as BASE_CATEGORY_07 } from '@/lib/questionnaire/catalog/category-07';
+import { CATEGORY_08 as BASE_CATEGORY_08 } from '@/lib/questionnaire/catalog/category-08';
+import { CATEGORY_09 as BASE_CATEGORY_09 } from '@/lib/questionnaire/catalog/category-09';
+import { CATEGORY_10 as BASE_CATEGORY_10 } from '@/lib/questionnaire/catalog/category-10';
 import {
   isOpenToParentingOrStepparentingRole,
   isQuestionCurrentlyEligible,
@@ -66,14 +77,26 @@ function assertNoDashPunctuation(label: string, value: string) {
 
 describe('Compatibility Profile Persistence', () => {
   const catalog = getQuestionnaireCatalog();
+  const calibratedCategories = buildCalibratedCategories([
+    BASE_CATEGORY_01,
+    BASE_CATEGORY_02,
+    BASE_CATEGORY_03,
+    BASE_CATEGORY_04,
+    BASE_CATEGORY_05,
+    BASE_CATEGORY_06,
+    BASE_CATEGORY_07,
+    BASE_CATEGORY_08,
+    BASE_CATEGORY_09,
+    BASE_CATEGORY_10,
+  ]);
 
-  it('keeps exactly 10 categories and 80 calibrated questions', () => {
+  it('keeps exactly 10 categories and 30 focused questions', () => {
     assert.equal(catalog.categories.length, 10);
     assert.equal(
       catalog.categories.reduce((sum, category) => sum + category.questions.length, 0),
-      80
+      30
     );
-    assert.equal(QUESTIONNAIRE_VERSION, 'compatibility_profile_v2');
+    assert.equal(QUESTIONNAIRE_VERSION, 'compatibility_profile_v3');
   });
 
   it('protects /compatibility-profile and redirects unauthenticated users', () => {
@@ -170,7 +193,7 @@ describe('Compatibility Profile Persistence', () => {
     }
     assert.ok(answer.selectedChoiceIds.length <= (multi.maxSelections as number));
 
-    const exclusive = catalog.categories
+    const exclusive = calibratedCategories
       .flatMap((category) => category.questions)
       .find(
         (question) =>
@@ -216,7 +239,7 @@ describe('Compatibility Profile Persistence', () => {
   });
 
   it('stores optional context only for configured selected choices', () => {
-    const question = catalog.categories
+    const question = calibratedCategories
       .flatMap((category) => category.questions)
       .find((item) => item.choices.some((choice) => choice.opensOptionalContext));
     assert.ok(question);
@@ -317,7 +340,7 @@ describe('Compatibility Profile Persistence', () => {
       true
     );
 
-    const category = catalog.categories[6];
+    const category = calibratedCategories[6];
     const parentingQuestion = category.questions.find(
       (question) => question.id === 'faith_spirituality_worldview_q09'
     );
@@ -340,7 +363,7 @@ describe('Compatibility Profile Persistence', () => {
   });
 
   it('excludes hidden conditional answers from completion while preserving stored answers', () => {
-    const category = catalog.categories[6];
+    const category = calibratedCategories[6];
     const parentingQuestion = category.questions.find(
       (question) => question.id === 'faith_spirituality_worldview_q09'
     );
@@ -438,7 +461,7 @@ describe('Compatibility Profile Persistence', () => {
 
     assert.equal(countCompletedCategories(catalog.categories, answersByCategory, profile), 10);
     assert.equal(areAllCategoriesComplete(catalog.categories, answersByCategory, profile), true);
-    assert.equal(countAllEligibleQuestions(catalog.categories, profile), 80);
+    assert.equal(countAllEligibleQuestions(catalog.categories, profile), 30);
   });
 
   it('coalesces in-flight saves and sends the newest answer with the returned revision', async () => {
@@ -482,7 +505,7 @@ describe('Compatibility Profile Persistence', () => {
   });
 
   it('treats confirmed empty selections as answered for all five minSelections: 0 questions', () => {
-    const zeroSelectionQuestions = catalog.categories.flatMap((category) =>
+    const zeroSelectionQuestions = calibratedCategories.flatMap((category) =>
       category.questions
         .filter((question) => question.minSelections === 0)
         .map((question) => ({ category, question }))

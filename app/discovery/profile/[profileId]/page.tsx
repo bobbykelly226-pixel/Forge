@@ -11,6 +11,7 @@ import DiscoveryProfileView from '@/components/discovery/DiscoveryProfileView';
 import {
   evaluateCompatibility,
   evaluateQuestionnaireCompatibility,
+  mergeCompatibilityResults,
   constrainProfileFallbackAlignment,
   personFromPublicDiscoveryProfile,
   toAlignmentPresentation,
@@ -160,17 +161,25 @@ export default async function DiscoveryProfilePage({
         ? evaluateQuestionnaireCompatibility(questionnaireComparison.data)
         : null;
 
-    if (questionnaireEngineResult) {
+    const profileEngineResult = viewer.success
+      ? evaluateCompatibility(
+          viewer.person,
+          personFromPublicDiscoveryProfile(result.profile)
+        )
+      : null;
+
+    if (questionnaireEngineResult && profileEngineResult) {
+      liveAlignmentPresentation = toAlignmentPresentation(
+        mergeCompatibilityResults(questionnaireEngineResult, profileEngineResult)
+      );
+    } else if (questionnaireEngineResult) {
       liveAlignmentPresentation = toAlignmentPresentation(
         questionnaireEngineResult
       );
-    } else if (viewer.success) {
+    } else if (profileEngineResult) {
       liveAlignmentPresentation = toAlignmentPresentation(
         constrainProfileFallbackAlignment(
-          evaluateCompatibility(
-            viewer.person,
-            personFromPublicDiscoveryProfile(result.profile)
-          )
+          profileEngineResult
         )
       );
     }

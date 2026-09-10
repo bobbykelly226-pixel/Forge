@@ -29,10 +29,12 @@ export function toAlignmentPresentation(
     ...result.importantDifferences.map((item, index) => ({
       id: `engine-important-${item.categoryKey}-${index}`,
       title: item.title,
-      severity: 'potential_dealbreaker' as const,
+      severity: item.isExplicitBoundary
+        ? ('potential_dealbreaker' as const)
+        : ('worth_discussing' as const),
       summary: item.copy,
       explanation: item.copy,
-      isPotentialDealbreaker: true,
+      isPotentialDealbreaker: Boolean(item.isExplicitBoundary),
       answerContextMode: item.answerContextMode,
       ...toFactorAnswers(item),
     })),

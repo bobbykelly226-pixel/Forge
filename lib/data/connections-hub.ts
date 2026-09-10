@@ -9,10 +9,14 @@ import {
 import { DISCOVERY_NEUTRAL_ALIGNMENT_LABEL, DISCOVERY_NEUTRAL_CONFIDENCE } from '@/lib/discovery/config';
 import { resolveAboutPreview } from '@/lib/profile/unified-about';
 import {
+  evaluateCompatibility,
   evaluateQuestionnaireCompatibility,
+  mergeCompatibilityResults,
+  personFromPublicDiscoveryProfile,
   toFeedAlignmentFields,
   type CompatibilityEngineResult,
 } from '@/lib/compatibility';
+import { loadViewerCompatibilityPerson } from '@/lib/compatibility/load-viewer';
 import { loadQuestionnaireAlignmentComparisons } from '@/lib/data/questionnaire-alignment';
 
 async function requireUser() {
@@ -235,17 +239,29 @@ export async function loadConnectionsHub(): Promise<DataAccessResult<Connections
   ];
 
   const profiles = await loadPublicProfilesByIds(supabase, relatedIds);
-  const questionnaireComparisons = await loadQuestionnaireAlignmentComparisons(
-    [...profiles.keys()]
-  );
+  const [questionnaireComparisons, viewer] = await Promise.all([
+    loadQuestionnaireAlignmentComparisons([...profiles.keys()]),
+    loadViewerCompatibilityPerson(),
+  ]);
   const alignments = new Map<string, CompatibilityEngineResult>();
-  if (questionnaireComparisons.success) {
-    for (const [profileId, comparison] of Object.entries(
-      questionnaireComparisons.data
-    )) {
-      const result = evaluateQuestionnaireCompatibility(comparison);
-      if (result) alignments.set(profileId, result);
-    }
+  for (const [profileId, profile] of profiles.entries()) {
+    const comparison = questionnaireComparisons.success
+      ? questionnaireComparisons.data[profileId]
+      : null;
+    const questionnaireResult = comparison
+      ? evaluateQuestionnaireCompatibility(comparison)
+      : null;
+    const profileResult = viewer.success
+      ? evaluateCompatibility(
+          viewer.person,
+          personFromPublicDiscoveryProfile(profile)
+        )
+      : null;
+    const result =
+      questionnaireResult && profileResult
+        ? mergeCompatibilityResults(questionnaireResult, profileResult)
+        : questionnaireResult ?? profileResult;
+    if (result) alignments.set(profileId, result);
   }
 
   const openToChat: IncomingOpenToChatItem[] = (incomingOtcRes.data ?? []).map((row) => {

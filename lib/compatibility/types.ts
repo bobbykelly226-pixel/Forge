@@ -63,6 +63,8 @@ export type CategoryEvaluation = {
   appearAsImportantDifference: boolean;
   /** High-impact categories can cap overall alignment when in conflict. */
   isHighImpact: boolean;
+  /** True only when a person's stated need or practical constraint conflicts. */
+  isExplicitBoundary: boolean;
   viewerSummary?: string;
   partnerSummary?: string;
 };
@@ -77,6 +79,8 @@ export type AlignmentExplanationItem = {
   viewerAnswer?: string;
   /** Viewed profile's human-readable answer for this factor (when available). */
   partnerAnswer?: string;
+  /** Distinguishes a stated boundary from an inferred difference. */
+  isExplicitBoundary?: boolean;
 };
 
 export type CompatibilityEngineResult = {
@@ -94,6 +98,11 @@ export type CompatibilityEngineResult = {
   dataNote: string | null;
   evaluatedCategories: CompatibilityCategoryKey[];
   skippedCategories: CompatibilityCategoryKey[];
+  /** Internal normalized evidence used to combine questionnaire and profile context. */
+  calculation: {
+    weightedScore: number;
+    weight: number;
+  };
 };
 
 /**

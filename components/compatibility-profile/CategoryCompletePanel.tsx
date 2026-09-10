@@ -2,34 +2,20 @@
 
 import Link from 'next/link';
 
-import ConfirmDialog from '@/components/compatibility-profile/ConfirmDialog';
-import {
-  CATEGORY_COMPLETE_COPY,
-  RESTART_CATEGORY_COPY,
-} from '@/lib/questionnaire/persistence/copy';
+import { CATEGORY_COMPLETE_COPY } from '@/lib/questionnaire/persistence/copy';
 
 type CategoryCompletePanelProps = {
   categoryTitle: string;
   eligibleQuestionsCompleted: number;
-  showRestartConfirm: boolean;
-  restartBusy?: boolean;
   onReview: () => void;
   onBackToCategories: () => void;
-  onRequestRestart: () => void;
-  onConfirmRestart: () => void;
-  onCancelRestart: () => void;
 };
 
 export default function CategoryCompletePanel({
   categoryTitle,
   eligibleQuestionsCompleted,
-  showRestartConfirm,
-  restartBusy = false,
   onReview,
   onBackToCategories,
-  onRequestRestart,
-  onConfirmRestart,
-  onCancelRestart,
 }: CategoryCompletePanelProps) {
   return (
     <section className="mx-auto w-full max-w-2xl">
@@ -52,20 +38,7 @@ export default function CategoryCompletePanel({
           <li>{eligibleQuestionsCompleted} eligible questions completed</li>
         </ul>
 
-        {showRestartConfirm ? (
-          <div className="mt-8">
-            <ConfirmDialog
-              heading={RESTART_CATEGORY_COPY.heading}
-              body={RESTART_CATEGORY_COPY.body}
-              confirmLabel={RESTART_CATEGORY_COPY.confirm}
-              cancelLabel={RESTART_CATEGORY_COPY.cancel}
-              onConfirm={onConfirmRestart}
-              onCancel={onCancelRestart}
-              busy={restartBusy}
-            />
-          </div>
-        ) : (
-          <div className="mt-8 flex flex-col gap-3">
+        <div className="mt-8 flex flex-col gap-3">
             <button
               type="button"
               onClick={onReview}
@@ -86,15 +59,7 @@ export default function CategoryCompletePanel({
             >
               {CATEGORY_COMPLETE_COPY.backToProfile}
             </Link>
-            <button
-              type="button"
-              onClick={onRequestRestart}
-              className="inline-flex min-h-12 items-center justify-center rounded-2xl px-6 py-3 text-sm font-semibold text-[var(--forge-graphite)] underline underline-offset-4 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--forge-navy)]"
-            >
-              Restart this category
-            </button>
-          </div>
-        )}
+        </div>
       </div>
     </section>
   );

@@ -12,7 +12,7 @@ Authoritative documentation for the Forge Backend Foundation persistence layer.
 | Source migration `20260725000000_compatibility_profile_persistence_v1.sql` | Applied through the connector as remote ledger entry `20260726021051 compatibility_profile_persistence_v1` |
 | Source migration `20260728195226_profile_discovery_connections_stabilization.sql` | Applied as remote ledger entry `20260728195226 profile_discovery_connections_stabilization` |
 | Active catalog | Compatibility Profile V2 |
-| Live catalog counts | 10 categories, 80 questions, zero priority follow-up screens |
+| Live catalog counts | 10 categories, 30 focused questions, zero conditional or priority follow-up screens |
 | RLS | Enabled on all 10 questionnaire catalog, response, progress, and operation tables |
 | Mutation grants | Authenticated direct writes revoked; hardened owner RPCs require `operation_id` |
 | Live pgTAP | 49 of 49 assertions pass inside a rollback transaction |

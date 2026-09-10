@@ -87,7 +87,7 @@ export const faithEvaluator: CompatibilityEvaluator = {
     return evaluation({
       categoryKey: 'faith',
       categoryLabel: this.label,
-      status: 'important_difference',
+      status: 'worth_discussing',
       explanation:
         'Faith appears central for one of you and far less so for the other. This is an important difference to understand early — without judging either person.',
       isHighImpact: true,

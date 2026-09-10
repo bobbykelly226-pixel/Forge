@@ -2,30 +2,16 @@
 
 import Link from 'next/link';
 
-import ConfirmDialog from '@/components/compatibility-profile/ConfirmDialog';
-import {
-  OVERALL_COMPLETE_COPY,
-  RESTART_FULL_COPY,
-} from '@/lib/questionnaire/persistence/copy';
+import { OVERALL_COMPLETE_COPY } from '@/lib/questionnaire/persistence/copy';
 
 type OverallCompletePanelProps = {
   eligibleQuestionsCompleted: number;
-  showRestartConfirm: boolean;
-  restartBusy?: boolean;
   onReviewCategories: () => void;
-  onRequestRestart: () => void;
-  onConfirmRestart: () => void;
-  onCancelRestart: () => void;
 };
 
 export default function OverallCompletePanel({
   eligibleQuestionsCompleted,
-  showRestartConfirm,
-  restartBusy = false,
   onReviewCategories,
-  onRequestRestart,
-  onConfirmRestart,
-  onCancelRestart,
 }: OverallCompletePanelProps) {
   return (
     <section className="mx-auto w-full max-w-2xl">
@@ -50,20 +36,7 @@ export default function OverallCompletePanel({
           <li>{OVERALL_COMPLETE_COPY.summarySaved}</li>
         </ul>
 
-        {showRestartConfirm ? (
-          <div className="mt-8">
-            <ConfirmDialog
-              heading={RESTART_FULL_COPY.heading}
-              body={RESTART_FULL_COPY.body}
-              confirmLabel={RESTART_FULL_COPY.confirm}
-              cancelLabel={RESTART_FULL_COPY.cancel}
-              onConfirm={onConfirmRestart}
-              onCancel={onCancelRestart}
-              busy={restartBusy}
-            />
-          </div>
-        ) : (
-          <div className="mt-8 flex flex-col gap-3">
+        <div className="mt-8 flex flex-col gap-3">
             <button
               type="button"
               onClick={onReviewCategories}
@@ -77,15 +50,7 @@ export default function OverallCompletePanel({
             >
               {OVERALL_COMPLETE_COPY.backToProfile}
             </Link>
-            <button
-              type="button"
-              onClick={onRequestRestart}
-              className="inline-flex min-h-12 items-center justify-center rounded-2xl px-6 py-3 text-sm font-semibold text-[var(--forge-graphite)] underline underline-offset-4 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--forge-navy)]"
-            >
-              {OVERALL_COMPLETE_COPY.restart}
-            </button>
-          </div>
-        )}
+        </div>
       </div>
     </section>
   );

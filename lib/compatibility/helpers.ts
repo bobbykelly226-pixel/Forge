@@ -36,6 +36,7 @@ export function insufficient(
     appearAsWorthDiscussing: false,
     appearAsImportantDifference: false,
     isHighImpact: options?.isHighImpact ?? false,
+    isExplicitBoundary: false,
   };
 }
 
@@ -46,6 +47,7 @@ export function evaluation(input: {
   explanation: string;
   supportingDetails?: string[];
   isHighImpact?: boolean;
+  isExplicitBoundary?: boolean;
   viewerSummary?: string;
   partnerSummary?: string;
 }): CategoryEvaluation {
@@ -63,6 +65,7 @@ export function evaluation(input: {
     appearAsWorthDiscussing: status === 'worth_discussing',
     appearAsImportantDifference: status === 'important_difference',
     isHighImpact: input.isHighImpact ?? false,
+    isExplicitBoundary: input.isExplicitBoundary ?? false,
     viewerSummary: input.viewerSummary,
     partnerSummary: input.partnerSummary,
   };
