@@ -3,6 +3,7 @@ import { describe, it } from 'node:test';
 import { readFileSync } from 'node:fs';
 
 import {
+  betaAccessMessage,
   INVITATION_REQUIRED_MESSAGE,
   isActiveBetaSignupInvitation,
 } from '@/lib/auth/invitations';
@@ -14,6 +15,10 @@ const migration = readFileSync(
 const localConfig = readFileSync('supabase/config.toml', 'utf8');
 const signupForm = readFileSync('app/signup/SignupForm.tsx', 'utf8');
 const signupAction = readFileSync('app/actions/auth.ts', 'utf8');
+const hybridMigration = readFileSync(
+  'supabase/migrations/20260911013000_hybrid_founding_beta_access.sql',
+  'utf8'
+);
 
 describe('invitation-only signup', () => {
   it('accepts only an unused, unrevoked, unexpired invitation', () => {
@@ -66,10 +71,25 @@ describe('invitation-only signup', () => {
     assert.match(localConfig, /\[auth\.hook\.before_user_created\][\s\S]*enabled = true/);
   });
 
-  it('keeps server-action preflight and invitation-only signup copy wired', () => {
-    assert.match(signupAction, /hasActiveBetaSignupInvitation/);
-    assert.match(signupForm, /currently invitation-only/i);
+  it('keeps server-action preflight and controlled Founding Beta copy wired', () => {
+    assert.match(signupAction, /reserveBetaSignupAccess/);
+    assert.match(signupAction, /forge_beta_reservation/);
+    assert.match(signupForm, /Founding Beta invitation link/i);
+    assert.match(signupForm, /Join the Founding Beta waitlist/i);
     assert.match(INVITATION_REQUIRED_MESSAGE, /Founding Beta invitation/i);
+  });
+
+  it('uses hashed links, proof-bound reservations, capacity, and a database-enforced hook', () => {
+    assert.equal(betaAccessMessage('full'), betaAccessMessage('link_full'));
+    assert.match(hybridMigration, /beta_enrollment_settings/);
+    assert.match(hybridMigration, /member_limit integer not null default 50/);
+    assert.match(hybridMigration, /beta_signup_links/);
+    assert.match(hybridMigration, /token_hash text not null unique/);
+    assert.match(hybridMigration, /beta_signup_reservations/);
+    assert.match(hybridMigration, /interval '30 minutes'/);
+    assert.match(hybridMigration, /extensions\.digest\(v_proof, 'sha256'\)/);
+    assert.match(hybridMigration, /accepted_count >= v_settings\.member_limit/);
+    assert.doesNotMatch(hybridMigration, /create table[^;]+\btoken\b/i);
   });
 
   it('does not invalidate a successful signup by generating a second confirmation link', () => {

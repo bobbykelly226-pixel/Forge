@@ -10,7 +10,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 
-export default function SignupForm() {
+export default function SignupForm({ invitationToken }: { invitationToken?: string }) {
   const router = useRouter();
 
   const [email, setEmail] = useState('');
@@ -41,6 +41,7 @@ export default function SignupForm() {
         email,
         password,
         captchaToken: captchaToken ?? undefined,
+        invitationToken,
       });
 
       if (result.status === 'session') {
@@ -51,6 +52,10 @@ export default function SignupForm() {
       }
 
       if (result.status === 'error' || !result.success) {
+        if (result.waitlistPath) {
+          router.replace(result.waitlistPath);
+          return;
+        }
         setError(result.message);
         return;
       }
@@ -60,6 +65,8 @@ export default function SignupForm() {
         trackLaunchEvent('Account Signup Accepted', { flow: 'email_confirmation' });
       }
       setMessage(result.message);
+      // Remove the bearer token from the address bar once signup completes.
+      if (invitationToken) window.history.replaceState(null, '', '/signup');
     } catch {
       setError('Something went wrong. Please try again.');
     } finally {
@@ -81,8 +88,9 @@ export default function SignupForm() {
             Join the Founding Beta
           </h1>
           <p className="text-lg text-[#444444] leading-relaxed">
-            Forge is currently invitation-only. Create your account using the email
-            address that received your invitation.
+            {invitationToken
+              ? 'Create your account using this Founding Beta invitation. We will check that a place is still available.'
+              : 'Use a Founding Beta invitation link or the email address that received a direct invitation.'}
           </p>
         </div>
 
@@ -149,12 +157,20 @@ export default function SignupForm() {
             disabled={isSubmitting || !captchaReady}
             className="w-full bg-[#D62828] hover:bg-[#A61F1F] disabled:bg-gray-400 text-white font-semibold py-5 rounded-2xl text-lg transition"
           >
-            {isSubmitting ? 'Verifying invitation...' : 'Create invited account'}
+            {isSubmitting ? 'Verifying invitation...' : 'Create my Forge account'}
           </button>
         </form>
 
         <p className="mt-5 text-center text-sm leading-relaxed text-[#666666]">
-          Invitations are tied to the recipient&apos;s email address and may be used once.
+          Access is limited during the Founding Beta so Forge can support every early member well.
+        </p>
+
+        <p className="mt-3 text-center text-sm leading-relaxed text-[#666666]">
+          Don&apos;t have an active invitation?{' '}
+          <Link href="/waitlist" className="font-semibold text-[#0B2D5C] hover:text-[#D62828]">
+            Join the Founding Beta waitlist
+          </Link>
+          .
         </p>
 
         <p className="text-center text-[#444444] mt-8">
