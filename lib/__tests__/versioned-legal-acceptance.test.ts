@@ -75,7 +75,7 @@ describe('versioned legal and sensitive-data acceptance', () => {
 
   it('uses an authenticated, least-privilege, hardened per-document RPC', () => {
     assert.match(streamlinedMigration, /v_user_id uuid := \(select auth\.uid\(\)\)/);
-    assert.match(streamlinedMigration, /security definer[\s\S]*set search_path = ''/);
+    assert.match(streamlinedMigration, /security definer[\s\S]*set search_path = pg_catalog, public/);
     assert.match(streamlinedMigration, /revoke all on function public\.accept_current_legal_document\(text\) from public, anon/);
     assert.match(streamlinedMigration, /grant execute on function public\.accept_current_legal_document\(text\) to authenticated/);
   });

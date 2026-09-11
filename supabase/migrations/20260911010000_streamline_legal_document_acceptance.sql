@@ -4,7 +4,7 @@ create or replace function public.accept_current_legal_document(p_document_key t
 returns boolean
 language plpgsql
 security definer
-set search_path = ''
+set search_path = pg_catalog, public
 as $$
 declare
   v_user_id uuid := (select auth.uid());
