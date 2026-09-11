@@ -2046,6 +2046,10 @@ export type Database = {
       }
     }
     Functions: {
+      accept_current_legal_document: {
+        Args: { p_document_key: string }
+        Returns: boolean
+      }
       accept_current_legal_documents: {
         Args: Record<PropertyKey, never>
         Returns: boolean

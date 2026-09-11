@@ -2,7 +2,6 @@ import { redirect } from 'next/navigation';
 
 import LegalAcceptanceForm from '@/components/legal/LegalAcceptanceForm';
 import { loadCurrentLegalAcceptance } from '@/lib/data/legal-acceptance';
-import { parseReviewedLegalDocumentKeys } from '@/lib/legal/documents';
 import { sanitizeInternalPath } from '@/lib/auth/messages';
 import { createClient } from '@/lib/supabase/server';
 
@@ -11,16 +10,11 @@ export default async function LegalAcceptancePage({
 }: {
   searchParams: Promise<{
     redirectTo?: string;
-    reviewed?: string;
-    acknowledged?: string;
   }>;
 }) {
   const params = await searchParams;
   const requested = sanitizeInternalPath(params.redirectTo) ?? '/app';
   const redirectTo = requested.startsWith('/legal/acceptance') ? '/app' : requested;
-  const initialReviewedKeys = parseReviewedLegalDocumentKeys(params.reviewed);
-  const initialAcknowledgedKeys = parseReviewedLegalDocumentKeys(params.acknowledged)
-    .filter((key) => initialReviewedKeys.includes(key));
   const supabase = await createClient();
   const {
     data: { user },
@@ -31,10 +25,6 @@ export default async function LegalAcceptancePage({
   }
 
   const status = await loadCurrentLegalAcceptance();
-  if (status.accepted) {
-    redirect(redirectTo);
-  }
-
   return (
     <main className="min-h-screen bg-[#F8F6F2] px-5 py-12 text-[#222222] sm:px-6">
       <div className="mx-auto max-w-2xl">
@@ -56,8 +46,7 @@ export default async function LegalAcceptancePage({
         ) : (
           <LegalAcceptanceForm
             redirectTo={redirectTo}
-            initialReviewedKeys={initialReviewedKeys}
-            initialAcknowledgedKeys={initialAcknowledgedKeys}
+            initialAcceptedKeys={status.acceptedKeys}
           />
         )}
       </div>

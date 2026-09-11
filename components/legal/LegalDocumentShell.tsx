@@ -1,5 +1,6 @@
 import Header from '@/components/Header';
-import LegalReviewReturnLink from '@/components/legal/LegalReviewReturnLink';
+import LegalDocumentAcceptanceAction from '@/components/legal/LegalDocumentAcceptanceAction';
+import type { LegalDocumentKey } from '@/lib/legal/documents';
 import Image from 'next/image';
 import Link from 'next/link';
 import type { ReactNode } from 'react';
@@ -8,11 +9,13 @@ export default function LegalDocumentShell({
   title,
   version,
   effectiveDate,
+  documentKey,
   children,
 }: {
   title: string;
   version: string;
   effectiveDate: string;
+  documentKey: LegalDocumentKey;
   children: ReactNode;
 }) {
   return (
@@ -28,7 +31,7 @@ export default function LegalDocumentShell({
         <div className="legal-document-content max-w-none leading-8 text-[#444444]">
           {children}
         </div>
-        <LegalReviewReturnLink />
+        <LegalDocumentAcceptanceAction documentKey={documentKey} />
       </main>
 
       <style>{`
