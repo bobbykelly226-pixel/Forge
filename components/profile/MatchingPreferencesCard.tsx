@@ -11,6 +11,9 @@ import {
   MIN_DISTANCE_MILES,
   MIN_MATCH_AGE,
   matchingPreferencesAreComplete,
+  getInterestedInSelections,
+  toggleInterestedInSelection,
+  type InterestedInChoice,
 } from '@/lib/profile/matching-preferences';
 import type { Tables } from '@/lib/supabase/database.types';
 
@@ -22,7 +25,9 @@ export default function MatchingPreferencesCard({
   hasPrivateCoordinates: boolean;
 }) {
   const [genderIdentity, setGenderIdentity] = useState(initialPreferences?.gender_identity ?? '');
-  const [interestedIn, setInterestedIn] = useState(initialPreferences?.interested_in ?? []);
+  const [interestedIn, setInterestedIn] = useState(() =>
+    getInterestedInSelections(initialPreferences?.interested_in)
+  );
   const [minimumAge, setMinimumAge] = useState(initialPreferences?.preferred_age_min ?? 25);
   const [maximumAge, setMaximumAge] = useState(initialPreferences?.preferred_age_max ?? 55);
   const [distance, setDistance] = useState(initialPreferences?.max_distance_miles ?? 50);
@@ -44,8 +49,9 @@ export default function MatchingPreferencesCard({
     });
   };
 
-  const toggleInterest = (value: string) => {
-    setInterestedIn([value]);
+  const toggleInterest = (value: InterestedInChoice) => {
+    setInterestedIn((current) => toggleInterestedInSelection(current, value));
+    setMessage(null);
   };
 
   return (
@@ -88,6 +94,7 @@ export default function MatchingPreferencesCard({
 
           <fieldset>
             <legend className="text-sm font-semibold text-[#0B2D5C]">I am interested in</legend>
+            <p className="mt-1 text-sm text-[#5A6575]">Select at least one.</p>
             <div className="mt-2 flex flex-wrap gap-2">
               {INTERESTED_IN_OPTIONS.map((option) => (
                 <button

@@ -30,6 +30,8 @@ import {
   MIN_DISTANCE_MILES,
   MIN_MATCH_AGE,
   matchingPreferencesAreComplete,
+  getInterestedInSelections,
+  toggleInterestedInSelection,
 } from '@/lib/profile/matching-preferences';
 import type { Tables } from '@/lib/supabase/database.types';
 
@@ -144,7 +146,9 @@ export default function OnboardingShell({
   const [dateOfBirth, setDateOfBirth] = useState(initialDateOfBirth ?? '');
   const [dateOfBirthSaved, setDateOfBirthSaved] = useState(Boolean(initialDateOfBirth));
   const [genderIdentity, setGenderIdentity] = useState(initialPreferences?.gender_identity ?? '');
-  const [interestedIn, setInterestedIn] = useState<string[]>(initialPreferences?.interested_in ?? []);
+  const [interestedIn, setInterestedIn] = useState(() =>
+    getInterestedInSelections(initialPreferences?.interested_in)
+  );
   const [preferredAgeMin, setPreferredAgeMin] = useState(initialPreferences?.preferred_age_min ?? 25);
   const [preferredAgeMax, setPreferredAgeMax] = useState(initialPreferences?.preferred_age_max ?? 55);
   const [maxDistanceMiles, setMaxDistanceMiles] = useState(initialPreferences?.max_distance_miles ?? 50);
@@ -475,6 +479,7 @@ export default function OnboardingShell({
 
             <fieldset className="mt-6">
               <legend className="text-sm font-semibold text-[#0B2D5C]">I am interested in</legend>
+              <p className="mt-1 text-sm text-[#5A6575]">Select at least one.</p>
               <div className="mt-2 grid grid-cols-1 gap-2 sm:grid-cols-2">
                 {INTERESTED_IN_OPTIONS.map((option) => (
                   <OptionButton
@@ -482,7 +487,7 @@ export default function OnboardingShell({
                     label={option.label}
                     selected={interestedIn.includes(option.value)}
                     onClick={() => {
-                      setInterestedIn([option.value]);
+                      setInterestedIn((current) => toggleInterestedInSelection(current, option.value));
                       setPreferencesSaved(false);
                     }}
                   />
