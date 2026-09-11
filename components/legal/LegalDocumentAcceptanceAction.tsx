@@ -51,9 +51,6 @@ function AcceptanceAction({ documentKey }: { documentKey: LegalDocumentKey }) {
 
   return (
     <div className="mt-12 rounded-3xl border-2 border-[#D62828]/25 bg-[#FFF4F2] p-5 text-center shadow-sm">
-      <p className="mb-4 font-semibold leading-7 text-[#0B2D5C]">
-        Ready to accept this document?
-      </p>
       <button
         type="button"
         onClick={accept}

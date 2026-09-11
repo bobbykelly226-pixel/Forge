@@ -28,15 +28,11 @@ export default async function LegalAcceptancePage({
   return (
     <main className="min-h-screen bg-[#F8F6F2] px-5 py-12 text-[#222222] sm:px-6">
       <div className="mx-auto max-w-2xl">
-        <p className="mb-3 text-sm font-semibold uppercase tracking-wide text-[#D62828]">
-          Required before continuing
-        </p>
         <h1 className="text-4xl font-bold tracking-tight text-[#0B2D5C] sm:text-5xl">
-          Review Forge&apos;s current agreements
+          Review your agreements
         </h1>
         <p className="mb-8 mt-4 text-lg leading-8 text-[#444444]">
-          Forge records the exact version and time of each acceptance. If a material
-          version changes later, you will be asked to review and accept it again.
+          Open each document and accept it at the bottom to continue.
         </p>
 
         {status.unavailable ? (
