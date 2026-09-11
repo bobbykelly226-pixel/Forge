@@ -14,7 +14,7 @@ const foundationMigration = readFileSync(
   'utf8'
 );
 const streamlinedMigration = readFileSync(
-  'supabase/migrations/20260911010000_streamline_legal_document_acceptance.sql',
+  'supabase/migrations/20260911194006_streamline_legal_document_acceptance.sql',
   'utf8'
 );
 const proxy = readFileSync('proxy.ts', 'utf8');

@@ -16,7 +16,7 @@ changes. A successful Vercel build does not apply Supabase migrations.
    ```
 
    A null result means the acceptance-saving test is blocked. The required
-   migration is `20260911010000_streamline_legal_document_acceptance.sql`.
+   migration is `20260911194006_streamline_legal_document_acceptance.sql`.
    It adds authenticated per-document acceptance and preserves the existing
    batch function and acceptance history. Apply it to an isolated test database,
    or obtain explicit approval before applying it to the shared live database.
