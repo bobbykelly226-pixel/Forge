@@ -14,6 +14,12 @@ export type Database = {
   }
   public: {
     Tables: {
+      beta_enrollment_waitlist: {
+        Row: { email: string; name: string; created_at: string }
+        Insert: { email: string; name: string; created_at?: string }
+        Update: { email?: string; name?: string; created_at?: string }
+        Relationships: []
+      }
       beta_feedback_submissions: {
         Row: {
           area: Database["public"]["Enums"]["beta_feedback_area"]
@@ -72,6 +78,7 @@ export type Database = {
           invited_at: string
           note: string | null
           revoked_at: string | null
+          source_link_id: string | null
         }
         Insert: {
           accepted_at?: string | null
@@ -82,6 +89,7 @@ export type Database = {
           invited_at?: string
           note?: string | null
           revoked_at?: string | null
+          source_link_id?: string | null
         }
         Update: {
           accepted_at?: string | null
@@ -92,8 +100,124 @@ export type Database = {
           invited_at?: string
           note?: string | null
           revoked_at?: string | null
+          source_link_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "beta_signup_invitations_source_link_id_fkey"
+            columns: ["source_link_id"]
+            isOneToOne: false
+            referencedRelation: "beta_signup_links"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      beta_enrollment_settings: {
+        Row: {
+          accepted_count: number
+          enrollment_open: boolean
+          member_limit: number
+          singleton: boolean
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          accepted_count?: number
+          enrollment_open?: boolean
+          member_limit?: number
+          singleton?: boolean
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          accepted_count?: number
+          enrollment_open?: boolean
+          member_limit?: number
+          singleton?: boolean
+          updated_at?: string
+          updated_by?: string | null
         }
         Relationships: []
+      }
+      beta_signup_links: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          expires_at: string | null
+          id: string
+          label: string
+          max_uses: number
+          paused_at: string | null
+          revoked_at: string | null
+          token_hash: string
+          use_count: number
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          expires_at?: string | null
+          id?: string
+          label: string
+          max_uses: number
+          paused_at?: string | null
+          revoked_at?: string | null
+          token_hash: string
+          use_count?: number
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          expires_at?: string | null
+          id?: string
+          label?: string
+          max_uses?: number
+          paused_at?: string | null
+          revoked_at?: string | null
+          token_hash?: string
+          use_count?: number
+        }
+        Relationships: []
+      }
+      beta_signup_reservations: {
+        Row: {
+          accepted_user_id: string | null
+          consumed_at: string | null
+          email: string
+          expires_at: string
+          id: string
+          link_id: string
+          proof_hash: string
+          reserved_at: string
+        }
+        Insert: {
+          accepted_user_id?: string | null
+          consumed_at?: string | null
+          email: string
+          expires_at?: string
+          id?: string
+          link_id: string
+          proof_hash: string
+          reserved_at?: string
+        }
+        Update: {
+          accepted_user_id?: string | null
+          consumed_at?: string | null
+          email?: string
+          expires_at?: string
+          id?: string
+          link_id?: string
+          proof_hash?: string
+          reserved_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "beta_signup_reservations_link_id_fkey"
+            columns: ["link_id"]
+            isOneToOne: false
+            referencedRelation: "beta_signup_links"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       legal_document_versions: {
         Row: {
@@ -2046,9 +2170,20 @@ export type Database = {
       }
     }
     Functions: {
+      beta_enrollment_counts: { Args: Record<string, never>; Returns: Json }
+      set_beta_member_limit: { Args: { p_limit: number; p_operator: string }; Returns: boolean }
+      join_beta_waitlist: { Args: { p_email: string; p_name: string }; Returns: boolean }
       accept_current_legal_documents: {
         Args: Record<PropertyKey, never>
         Returns: boolean
+      }
+      reserve_beta_signup_access: {
+        Args: {
+          p_email: string
+          p_link_token_hash: string
+          p_reservation_proof_hash: string
+        }
+        Returns: Json
       }
       block_user: { Args: { p_blocked_user_id: string }; Returns: Json }
       can_activate_discovery_visibility: {

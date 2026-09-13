@@ -77,7 +77,7 @@ describe('auth confirmation helpers', () => {
   it('maps the database-enforced beta invitation rejection clearly', () => {
     assert.match(
       mapAuthErrorMessage('A valid Forge Founding Beta invitation is required to create an account.'),
-      /currently invitation-only/i
+      /invitation link|direct invitation/i
     );
   });
 

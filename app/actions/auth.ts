@@ -2,10 +2,8 @@
 
 import { Resend } from 'resend';
 
-import {
-  INVITATION_REQUIRED_MESSAGE,
-  isActiveBetaSignupInvitation,
-} from '@/lib/auth/invitations';
+import { reserveBetaSignupAccess } from '@/lib/auth/beta-access';
+import { betaAccessMessage, betaAccessReasonFromAuthError, betaWaitlistPath } from '@/lib/auth/invitations';
 import { mapAuthErrorMessage } from '@/lib/auth/messages';
 import {
   AUTH_CAPTCHA_REQUIRED_MESSAGE,
@@ -31,32 +29,6 @@ function isRateLimitError(message: string | undefined): boolean {
     lower.includes('over_email_send_rate_limit') ||
     lower.includes('email rate limit')
   );
-}
-
-/**
- * Defense in depth for server-side signup and its service-role email fallback.
- * The Supabase before-user-created hook remains the authoritative boundary and
- * also blocks callers that bypass this Server Action.
- */
-async function hasActiveBetaSignupInvitation(email: string): Promise<boolean | null> {
-  const admin = createServiceClient();
-
-  // Without a service-role client, proceed to Auth and let the database hook
-  // make the authoritative decision. The service-role fallback is also disabled.
-  if (!admin) return null;
-
-  const { data, error } = await admin
-    .from('beta_signup_invitations')
-    .select('accepted_at, expires_at, revoked_at')
-    .eq('email', email)
-    .maybeSingle();
-
-  if (error) {
-    console.error('beta signup invitation preflight failed');
-    return false;
-  }
-
-  return isActiveBetaSignupInvitation(data);
 }
 
 /**
@@ -203,6 +175,7 @@ export type SignUpActionResult = {
   success: boolean;
   message: string;
   status: 'session' | 'confirmation_sent' | 'already_registered' | 'error';
+  waitlistPath?: string;
 };
 
 /**
@@ -212,6 +185,7 @@ export async function signUpWithEmail(input: {
   email: string;
   password: string;
   captchaToken?: string;
+  invitationToken?: string;
 }): Promise<SignUpActionResult> {
   const email = input.email.trim().toLowerCase();
   const password = input.password;
@@ -234,68 +208,47 @@ export async function signUpWithEmail(input: {
       status: 'error',
     };
   }
-  const hasInvitation = await hasActiveBetaSignupInvitation(email);
-  if (hasInvitation === false) {
+  const access = await reserveBetaSignupAccess({
+    email,
+    invitationToken: input.invitationToken,
+  });
+  if (access && !access.ok) {
     return {
       success: false,
-      message: INVITATION_REQUIRED_MESSAGE,
+      message: betaAccessMessage(access.reason),
       status: 'error',
+      waitlistPath: betaWaitlistPath(access.reason),
     };
   }
+
+  const signupMetadata = access?.ok && access.reservationProof
+    ? { forge_beta_reservation: access.reservationProof }
+    : undefined;
 
   const emailRedirectTo = buildConfirmRedirectTo();
   const supabase = await createClient();
   const { data, error } = await supabase.auth.signUp({
     email,
     password,
-    options: { emailRedirectTo, captchaToken: input.captchaToken },
+    options: {
+      emailRedirectTo,
+      captchaToken: input.captchaToken,
+      data: signupMetadata,
+    },
   });
 
   if (error) {
-    // If Auth mailer is rate-limited but we can deliver via Resend, create/link and send.
-    if (
-      !captchaEnabled &&
-      isRateLimitError(error.message) &&
-      createServiceClient() &&
-      process.env.RESEND_API_KEY
-    ) {
-      const admin = createServiceClient()!;
-      const created = await admin.auth.admin.createUser({
-        email,
-        password,
-        email_confirm: false,
-      });
-
-      if (created.error) {
-        const msg = created.error.message.toLowerCase();
-        if (msg.includes('already') || msg.includes('registered')) {
-          return {
-            success: true,
-            status: 'already_registered',
-            message:
-              'If an account already exists for that email, sign in instead. You can reset your password or resend confirmation from the sign-in page.',
-          };
-        }
-        return {
-          success: false,
-          status: 'error',
-          message: mapAuthErrorMessage(created.error.message),
-        };
-      }
-
-      const delivered = await deliverConfirmationWithResend({
-        email,
-        password,
-      });
-      if (!delivered.success) {
-        return { success: false, status: 'error', message: delivered.message };
-      }
+    const enrollmentReason = betaAccessReasonFromAuthError(error.message);
+    if (enrollmentReason) {
       return {
-        success: true,
-        status: 'confirmation_sent',
-        message: delivered.message,
+        success: false,
+        status: 'error',
+        message: betaAccessMessage(enrollmentReason),
+        waitlistPath: betaWaitlistPath(enrollmentReason),
       };
     }
+    // Never fall back to administrative user creation: all beta signups must
+    // pass the public Auth CAPTCHA and before-user-created admission hook.
 
     return {
       success: false,

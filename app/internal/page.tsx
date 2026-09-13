@@ -1,6 +1,6 @@
 import { Fraunces, Manrope } from 'next/font/google';
 import Link from 'next/link';
-import { FileWarning, Images, KeyRound, Scale, ShieldCheck } from 'lucide-react';
+import { FileWarning, Images, KeyRound, Link2, Scale, ShieldCheck } from 'lucide-react';
 import { notFound, redirect } from 'next/navigation';
 
 import ForgeAppCanvas from '@/components/ForgeAppCanvas';
@@ -29,6 +29,12 @@ export const metadata = {
 };
 
 const TOOLS = [
+  {
+    href: '/internal/beta-enrollment',
+    title: 'Beta Enrollment',
+    description: 'Create invitation links, control cohort capacity, and pause or reopen enrollment.',
+    icon: Link2,
+  },
   {
     href: '/internal/account-governance',
     title: 'Account Governance',
@@ -91,7 +97,7 @@ export default async function AdministratorHomePage() {
           administrator account, authenticator verification, and permanent audit records.
         </p>
 
-        <section className="mt-9 grid gap-5 md:grid-cols-2 xl:grid-cols-4" aria-label="Administrator tools">
+        <section className="mt-9 grid gap-5 md:grid-cols-2 xl:grid-cols-5" aria-label="Administrator tools">
           {TOOLS.map((tool) => {
             const Icon = tool.icon;
             return (

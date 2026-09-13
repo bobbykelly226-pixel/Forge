@@ -1,6 +1,6 @@
 import { redirect } from 'next/navigation';
 
-/** Legacy short waitlist URL — Forge now uses direct signup. */
+/** Preserve the short waitlist URL for Founding Beta recruitment materials. */
 export default function WaitRedirect() {
-  redirect('/signup');
+  redirect('/waitlist');
 }
