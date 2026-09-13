@@ -242,3 +242,15 @@
   .forge-profile-theme img.forge-corner-logo { width: 220px; max-width: 100%; }
   .forge-profile-theme .forge-mobile-brand-row { display: none; }
 }
+
+/* Compact icon-and-label utility row, matching the footer navigation. */
+.forge-profile-theme [data-profile-chrome="header"].forge-header-nav { padding: 10px 8px; }
+.forge-profile-theme .forge-header-nav :is(a, button) {
+  border: 0;
+  box-shadow: none;
+  background-color: transparent !important;
+  padding: 8px 2px;
+  min-height: 56px;
+  font-weight: 600;
+}
+.forge-profile-theme .forge-header-nav :is(a, button):hover { background-color: #20364F !important; }
