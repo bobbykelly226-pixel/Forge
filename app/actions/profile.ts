@@ -1,5 +1,7 @@
 'use server';
 
+import { validCoreValues, normalizeCoreValues, CORE_VALUES_GUIDANCE } from '@/lib/profile/core-values';
+
 import { saveRelationshipPreferences } from './relationship-preferences';
 import { revalidatePath } from 'next/cache';
 
@@ -8,7 +10,6 @@ import {
   upsertCurrentUserProfile,
 } from '@/lib/data/profile';
 import { createClient } from '@/lib/supabase/server';
-import { CORE_VALUES_OPTIONS } from '@/lib/types/profile-answers';
 import {
   MAX_PROFILE_PHOTOS,
   MAX_PROFILE_PHOTOS_MESSAGE,
@@ -673,10 +674,8 @@ export async function saveProfileSection(
 
   if (sectionId === 'factors') {
     const selected = formData.getAll('core_values').map(String);
-    const allowed = new Set<string>(CORE_VALUES_OPTIONS);
-    const coreValues = CORE_VALUES_OPTIONS.filter((label) => selected.includes(label)).filter(
-      (label) => allowed.has(label)
-    );
+    if (!validCoreValues(selected)) return { success: false, message: CORE_VALUES_GUIDANCE };
+    const coreValues = normalizeCoreValues(selected);
 
     const { error } = await supabase.from('profile_answers').upsert(
       {

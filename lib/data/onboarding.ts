@@ -1,3 +1,4 @@
+import { validCoreValues, normalizeCoreValues, CORE_VALUES_GUIDANCE } from '@/lib/profile/core-values';
 import { createClient } from '@/lib/supabase/server';
 import type { Json, Tables } from '@/lib/supabase/database.types';
 import {
@@ -113,9 +114,14 @@ export async function upsertCurrentUserProfileAnswer(
     return { success: false, message: 'You must be signed in.' };
   }
 
-  const normalized: ProfileAnswerValue = Array.isArray(answerValue)
+  let normalized: ProfileAnswerValue = Array.isArray(answerValue)
     ? answerValue.map((item) => item.trim()).filter(Boolean)
     : answerValue.trim();
+
+  if (questionKey === PROFILE_ANSWER_KEYS.coreValues) {
+    if (!validCoreValues(normalized)) return { success: false, message: CORE_VALUES_GUIDANCE };
+    normalized = normalizeCoreValues(normalized);
+  }
 
   if (questionKey === PROFILE_ANSWER_KEYS.relationshipIntention) {
     if (!validRelationshipAnswer(normalized)) return { success: false, message: 'Select at least one relationship goal.' };

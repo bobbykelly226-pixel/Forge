@@ -16,7 +16,7 @@ test('one checklist supports every nonempty combination and restores all saved s
     const form = new FormData();
     goals.forEach(goal => form.append('relationship_goals', goal));
     assert.deepEqual(parseRelationshipPreferences(form), goals.length ? goals : null);
-    assert.equal(isOnboardingContentComplete({relationship_intention: goals, core_values: ['Faith']}), goals.length > 0);
+    assert.equal(isOnboardingContentComplete({relationship_intention: goals, core_values: ['Faith', 'Family', 'Loyalty']}), goals.length > 0);
     const html = renderToStaticMarkup(React.createElement(RelationshipPreferencesFields, { goals }));
     assert.equal((html.match(/type="checkbox"/g) ?? []).length, 5);
     assert.equal((html.match(/checked=""/g) ?? []).length, goals.length);

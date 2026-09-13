@@ -1,5 +1,6 @@
 'use client';
 
+import CoreValuesFields from '@/components/profile/CoreValuesFields';
 import Link from 'next/link';
 import { useEffect, useRef, useState } from 'react';
 import {
@@ -60,7 +61,6 @@ import {
 import type { Profile } from '@/lib/types/profile';
 import RelationshipPreferencesFields from './RelationshipPreferencesFields';
 import { relationshipGoals } from '@/lib/profile/relationship-preferences';
-import { CORE_VALUES_OPTIONS } from '@/lib/types/profile-answers';
 import { latestEligibleAdultBirthDate } from '@/lib/age';
 
 type PrivateProfileSeed = {
@@ -637,24 +637,7 @@ function SectionEditor({
       ) : null}
 
       {sectionId === 'factors' ? (
-        <fieldset className="space-y-3" disabled={saving}>
-          <legend className="text-sm font-medium text-[#0B2D5C]">
-            Important Alignment Factors
-          </legend>
-          <p className="text-xs text-[#888888]">Optional — choose what matters most.</p>
-          {CORE_VALUES_OPTIONS.map((label) => (
-            <label key={label} className="flex items-center gap-3 text-[#222222]">
-              <input
-                type="checkbox"
-                name="core_values"
-                value={label}
-                defaultChecked={coreValues.includes(label)}
-                className="h-5 w-5 rounded border-[#0B2D5C]/30"
-              />
-              <span>{label}</span>
-            </label>
-          ))}
-        </fieldset>
+        <CoreValuesFields initialValues={coreValues} disabled={saving} />
       ) : null}
 
       {status === 'error' && message ? (

@@ -1,3 +1,4 @@
+import { validCoreValues } from '@/lib/profile/core-values';
 import { validRelationshipAnswer } from '@/lib/profile/relationship-preferences';
 /**
  * Stable profile questionnaire keys (authoritative: profile_answers).
@@ -79,8 +80,7 @@ export function deriveOnboardingStep(input: {
   const hasIntention =
     validRelationshipAnswer(input.answers.relationship_intention);
   const hasValues =
-    Array.isArray(input.answers.core_values) &&
-    input.answers.core_values.length > 0;
+    validCoreValues(input.answers.core_values);
 
   if (!hasIntention) {
     // Honor an explicit saved welcome/intention step if present.
@@ -106,7 +106,7 @@ export function isOnboardingContentComplete(answers: ProfileAnswersMap): boolean
   const hasIntention =
     validRelationshipAnswer(answers.relationship_intention);
   const hasValues =
-    Array.isArray(answers.core_values) && answers.core_values.length > 0;
+    validCoreValues(answers.core_values);
   return hasIntention && hasValues;
 }
 
@@ -127,16 +127,4 @@ export type ThingsIEnjoyLabel = (typeof THINGS_I_ENJOY_OPTIONS)[number];
 export const MAX_THINGS_I_ENJOY = 30;
 export const MAX_THING_I_ENJOY_LENGTH = 80;
 
-/** Important Alignment Factors / core values catalog (onboarding + My Profile). */
-export const CORE_VALUES_OPTIONS = [
-  'Faith',
-  'Family',
-  'Communication',
-  'Emotional maturity',
-  'Loyalty',
-  'Shared goals',
-  'Service',
-  'Growth',
-] as const;
-
-export type CoreValueLabel = (typeof CORE_VALUES_OPTIONS)[number];
+export { CORE_VALUES_OPTIONS, type CoreValueLabel } from '@/lib/profile/core-values';

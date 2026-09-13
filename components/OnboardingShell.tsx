@@ -1,6 +1,8 @@
 'use client';
 
 import Link from 'next/link';
+import CoreValuesFields from '@/components/profile/CoreValuesFields';
+import { normalizeCoreValues, validCoreValues } from '@/lib/profile/core-values';
 import RelationshipPreferencesFields from '@/components/profile/RelationshipPreferencesFields';
 import { saveRelationshipPreferences } from '@/app/actions/relationship-preferences';
 import { useEffect, useRef, useState, useTransition } from 'react';
@@ -15,7 +17,6 @@ import {
 import { trackLaunchEvent } from '@/lib/analytics/launch-events';
 import {
   PROFILE_ANSWER_KEYS,
-  CORE_VALUES_OPTIONS,
   type ProfileAnswersMap,
 } from '@/lib/types/profile-answers';
 import { relationshipGoals } from '@/lib/profile/relationship-preferences';
@@ -45,7 +46,6 @@ const secondaryButtonClassName =
 /** Shared with Profile Edit — one source of truth for relationship goals. */
 
 
-const VALUES_OPTIONS = CORE_VALUES_OPTIONS;
 
 function ProgressBar({ step }: { step: number }) {
   const progress = (step / TOTAL_STEPS) * 100;
@@ -125,7 +125,7 @@ export default function OnboardingShell({
     relationshipGoals(initialAnswers.relationship_intention, initialAnswers.relationship_also_open_to)
   );
   const [selectedValues, setSelectedValues] = useState<string[]>(() =>
-    readStringArrayAnswer(initialAnswers, PROFILE_ANSWER_KEYS.coreValues)
+    normalizeCoreValues(readStringArrayAnswer(initialAnswers, PROFILE_ANSWER_KEYS.coreValues))
   );
   const [dateOfBirth, setDateOfBirth] = useState(initialDateOfBirth ?? '');
   const [dateOfBirthSaved, setDateOfBirthSaved] = useState(Boolean(initialDateOfBirth));
@@ -145,7 +145,6 @@ export default function OnboardingShell({
   const [isPending, startTransition] = useTransition();
   const [isFinishing, setIsFinishing] = useState(false);
 
-  const saveGenerationRef = useRef<Record<string, number>>({});
 
   useEffect(() => {
     const mediaQuery = window.matchMedia(DESKTOP_MEDIA_QUERY);
@@ -164,55 +163,6 @@ export default function OnboardingShell({
     });
   };
 
-  const persistAnswer = (
-    questionKey: string,
-    answerValue: string | string[],
-    successMessage: string
-  ) => {
-    const generation = (saveGenerationRef.current[questionKey] ?? 0) + 1;
-    saveGenerationRef.current[questionKey] = generation;
-
-    void (async () => {
-      try {
-        const result = await saveProfileAnswer(questionKey, answerValue);
-
-        if (saveGenerationRef.current[questionKey] !== generation) {
-          return;
-        }
-
-        if (result.success) {
-          setSaveError(null);
-          setSaveMessage(successMessage);
-        } else {
-          setSaveMessage(null);
-          setSaveError(result.message);
-        }
-      } catch {
-        if (saveGenerationRef.current[questionKey] !== generation) {
-          return;
-        }
-
-        setSaveMessage(null);
-        setSaveError('Could not save your answer. Please try again.');
-      }
-    })();
-  };
-
-  const toggleValue = (value: string) => {
-    if (isPending || isFinishing) return;
-    const next = selectedValues.includes(value)
-      ? selectedValues.filter((item) => item !== value)
-      : [...selectedValues, value];
-
-    setSelectedValues(next);
-    setSaveError(null);
-    persistAnswer(
-      PROFILE_ANSWER_KEYS.coreValues,
-      next,
-      next.length > 0 ? 'Values saved.' : 'Values cleared.'
-    );
-  };
-
   const goBack = () => {
     setSaveMessage(null);
     setSaveError(null);
@@ -223,10 +173,11 @@ export default function OnboardingShell({
     });
   };
 
+  const [savingValues, setSavingValues] = useState(false);
   const relationshipForm = useRef<HTMLFormElement>(null);
   const [savingRelationship, setSavingRelationship] = useState(false);
   const goNext = async () => {
-    if (savingRelationship) return;
+    if (savingRelationship || savingValues) return;
     if (step === 4) {
       if (!relationshipForm.current?.reportValidity()) return;
       setSavingRelationship(true);
@@ -246,9 +197,14 @@ export default function OnboardingShell({
       setSaveError('Save your matching preferences to continue.');
       return;
     }
-    if (step === 5 && selectedValues.length === 0) {
-      setSaveError('Select at least one value to continue.');
-      return;
+    if (step === 5) {
+      if (!validCoreValues(selectedValues)) { setSaveError('Choose between 3 and 5 values to continue.'); return; }
+      setSavingValues(true);
+      try {
+        const result = await saveProfileAnswer(PROFILE_ANSWER_KEYS.coreValues, selectedValues);
+        if (!result.success) { setSaveError(result.message); return; }
+      } catch { setSaveError('Could not save your values. Please try again.'); return; }
+      finally { setSavingValues(false); }
     }
 
     setSaveMessage(null);
@@ -324,14 +280,12 @@ export default function OnboardingShell({
       : step === 4
       ? 'Choose Continue to save your relationship preferences.'
       : step === 5
-        ? selectedValues.length > 0
-          ? 'Your values are saved to your account.'
-          : 'Select one or more values to save your answer.'
+        ? 'Choose Continue to save your values.'
         : null);
 
   const backControl =
     step > 1 ? (
-      <button type="button" onClick={goBack} disabled={savingRelationship} className={secondaryButtonClassName}>
+      <button type="button" onClick={goBack} disabled={savingRelationship || savingValues} className={secondaryButtonClassName}>
         Back
       </button>
     ) : (
@@ -344,7 +298,7 @@ export default function OnboardingShell({
     <button
       type="button"
       onClick={goNext}
-      disabled={isPending || isFinishing || savingRelationship}
+      disabled={isPending || isFinishing || savingRelationship || savingValues}
       className={primaryButtonClassName}
     >
       Continue
@@ -530,7 +484,7 @@ export default function OnboardingShell({
             <button
               type="button"
               onClick={() => void saveMatchingPreferences()}
-              disabled={isPending || isFinishing || savingRelationship}
+              disabled={isPending || isFinishing || savingRelationship || savingValues}
               className="mt-5 inline-flex w-full sm:w-auto items-center justify-center rounded-2xl border border-[#0B2D5C]/20 bg-white px-6 py-3 font-semibold text-[#0B2D5C] disabled:opacity-60"
             >
               {preferencesSaved ? 'Saved' : 'Save matching preferences'}
@@ -550,7 +504,7 @@ export default function OnboardingShell({
               Relationship goals
             </h1>
             <form ref={relationshipForm} onSubmit={e => { e.preventDefault(); void goNext(); }}>
-              <RelationshipPreferencesFields goals={intention} disabled={savingRelationship} />
+              <RelationshipPreferencesFields goals={intention} disabled={savingRelationship || savingValues} />
             </form>
             <p
               className={`mt-5 text-sm ${saveError ? 'text-[#D62828]' : 'text-[#777777]'}`}
@@ -569,21 +523,8 @@ export default function OnboardingShell({
             <h1 className="mb-3 text-3xl font-bold tracking-tight text-[#0B2D5C] sm:text-4xl">
               What matters most
             </h1>
-            <p className="mb-6 max-w-prose text-base leading-relaxed text-[#555555]">
-              Select the values that feel most important in a relationship. Choose as many as
-              resonate.
-            </p>
-            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
-              {VALUES_OPTIONS.map((option) => (
-                <OptionButton
-                  key={option}
-                  label={option}
-                  selected={selectedValues.includes(option)}
-                  disabled={isFinishing}
-                  onClick={() => toggleValue(option)}
-                />
-              ))}
-            </div>
+            <CoreValuesFields initialValues={selectedValues} disabled={savingValues || isFinishing}
+              onChange={(next) => { setSelectedValues(next); setSaveError(null); setSaveMessage(null); }} />
             <p
               className={`mt-5 text-sm ${saveError ? 'text-[#D62828]' : 'text-[#777777]'}`}
               role={saveError ? 'alert' : undefined}

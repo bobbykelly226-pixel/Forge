@@ -1,3 +1,4 @@
+import { normalizeCoreValues } from '@/lib/profile/core-values';
 /**
  * Owner profile workspace sections — one catalog for hub summaries,
  * checklist routing, and section saves.
@@ -321,7 +322,7 @@ export function summarizeProfileSection(
       return parts.length ? parts.join(' · ') : 'Not added yet';
     }
     case 'factors': {
-      const values = (extras?.coreValues ?? []).filter((item) => hasText(item));
+      const values = normalizeCoreValues(extras?.coreValues);
       return values.length ? values.join(', ') : 'Not added yet';
     }
     case 'voice':

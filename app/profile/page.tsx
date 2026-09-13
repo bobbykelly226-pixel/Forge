@@ -1,3 +1,4 @@
+import { normalizeCoreValues } from '@/lib/profile/core-values';
 import { Fraunces, Manrope } from 'next/font/google';
 import { redirect } from 'next/navigation';
 
@@ -111,9 +112,7 @@ export default async function MyProfileHubPage({ searchParams }: PageProps) {
   });
 
   const coreValuesRaw = answers[PROFILE_ANSWER_KEYS.coreValues];
-  const coreValues = Array.isArray(coreValuesRaw)
-    ? coreValuesRaw.filter((item): item is string => typeof item === 'string')
-    : [];
+  const coreValues = normalizeCoreValues(coreValuesRaw);
 
   const hasRelationshipAlignment =
     (Array.isArray(profile.relationship_goals) && profile.relationship_goals.length > 0) ||
