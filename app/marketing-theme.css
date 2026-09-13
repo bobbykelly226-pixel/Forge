@@ -15,7 +15,7 @@
   border-radius: 6px;
 }
 :where(.min-h-screen:has(> .forge-marketing-header)) :is([class~="text-[#222222]"], [class~="text-[#444444]"], [class~="text-[#666666]"]) {
-  color: #5C636B;
+  color: #252A31;
 }
 :where(.min-h-screen:has(> .forge-marketing-header)) :is([class~="text-[#D62828]"], [class~="text-red-600"]) {
   color: #C92027;
