@@ -13,6 +13,7 @@ type ForgeAuthenticatedTwoColumnShellProps = {
    * vs Discovery / Connections (1360).
    */
   wide?: boolean;
+  documentScroll?: boolean;
   asideStyle?: CSSProperties;
   className?: string;
 };
@@ -28,24 +29,25 @@ export default function ForgeAuthenticatedTwoColumnShell({
   aside,
   children,
   wide = false,
+  documentScroll = false,
   asideStyle,
   className,
 }: ForgeAuthenticatedTwoColumnShellProps) {
   return (
     <div
       className={cn(
-        'mx-auto min-h-screen w-full lg:h-full lg:min-h-0 lg:overflow-hidden lg:px-8 lg:py-8',
+        documentScroll ? 'mx-auto min-h-screen w-full lg:px-8 lg:py-8' : 'mx-auto min-h-screen w-full lg:h-full lg:min-h-0 lg:overflow-hidden lg:px-8 lg:py-8',
         wide
           ? 'lg:max-w-[1280px] xl:max-w-[1440px] xl:px-10'
           : 'lg:max-w-[1280px] xl:max-w-[1360px] xl:px-10',
         className
       )}
     >
-      <div className="lg:grid lg:h-full lg:min-h-0 lg:grid-cols-[17.5rem_minmax(0,1fr)] lg:items-stretch lg:gap-10 lg:overflow-hidden xl:grid-cols-[18.5rem_minmax(0,1fr)] xl:gap-12">
+      <div className={documentScroll ? "lg:grid lg:grid-cols-[17.5rem_minmax(0,1fr)] lg:items-start lg:gap-10 xl:gap-12" : "lg:grid lg:h-full lg:min-h-0 lg:grid-cols-[17.5rem_minmax(0,1fr)] lg:items-stretch lg:gap-10 lg:overflow-hidden xl:grid-cols-[18.5rem_minmax(0,1fr)] xl:gap-12"}>
         <aside
           data-profile-chrome="navigation"
           className={cn(
-            'hidden lg:block lg:h-full lg:min-h-0 lg:overflow-y-auto lg:overscroll-contain',
+            documentScroll ? 'hidden lg:block' : 'hidden lg:block lg:h-full lg:min-h-0 lg:overflow-y-auto lg:overscroll-contain',
             PANEL_SCROLLBAR
           )}
           style={asideStyle}
@@ -56,7 +58,7 @@ export default function ForgeAuthenticatedTwoColumnShell({
         <div
           data-forge-scroll-region
           className={cn(
-            'min-h-screen w-full min-w-0 lg:h-full lg:min-h-0 lg:overflow-y-auto lg:overscroll-contain',
+            documentScroll ? 'w-full min-w-0' : 'min-h-screen w-full min-w-0 lg:h-full lg:min-h-0 lg:overflow-y-auto lg:overscroll-contain',
             PANEL_SCROLLBAR
           )}
         >

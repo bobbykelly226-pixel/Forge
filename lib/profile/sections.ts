@@ -79,7 +79,7 @@ export const PROFILE_SECTIONS: ProfileSectionDefinition[] = [
   {
     id: 'relationship',
     title: 'Relationship preferences',
-    description: 'Your main goal, other possibilities, and preferred pace.',
+    description: 'What you are looking for in a relationship.',
     editable: true,
   },
   {
@@ -168,6 +168,14 @@ export const PROFILE_SECTIONS: ProfileSectionDefinition[] = [
     comingSoon: true,
     editable: false,
   },
+];
+
+/** Visual groups retain every existing focused editor and saved field. */
+export const PROFILE_EDIT_GROUPS: { id: string; title: string; sections: ProfileSectionId[] }[] = [
+  { id: 'basics', title: 'Profile basics', sections: ['photo', 'basics', 'location', 'about', 'relationship', 'children'] },
+  { id: 'values', title: 'Values & lifestyle', sections: ['factors', 'faith', 'smoking', 'drinking'] },
+  { id: 'plans', title: 'Life & plans', sections: ['pets', 'relocation', 'education', 'career', 'service'] },
+  { id: 'interests', title: 'Interests', sections: ['enjoy', 'music'] },
 ];
 
 function hasText(value: string | null | undefined): boolean {

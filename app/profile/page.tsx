@@ -189,7 +189,7 @@ export default async function MyProfileHubPage({ searchParams }: PageProps) {
 
   return (
     <ForgeAppCanvas
-      desktopViewportLock
+      desktopViewportLock={false}
       className={`forge-profile-theme ${display.variable} ${sans.variable}`}
       style={{
         fontFamily: 'var(--font-discovery-sans), ui-sans-serif, system-ui, sans-serif',

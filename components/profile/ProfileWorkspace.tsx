@@ -2,22 +2,9 @@
 
 import CoreValuesFields from '@/components/profile/CoreValuesFields';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
-import {
-  Camera,
-  ChevronDown,
-  Compass,
-  HeartHandshake,
-  Mic,
-  Music2,
-  Sparkles,
-  Star,
-  TextQuote,
-  UserRound,
-  Video,
-  MapPin,
-  type LucideIcon,
-} from 'lucide-react';
+import { ChevronDown } from 'lucide-react';
 
 import { saveProfileSection } from '@/app/actions/profile';
 import LocationPicker, {
@@ -48,13 +35,13 @@ import {
 } from '@/lib/profile/structured-options';
 import {
   PROFILE_SECTIONS,
+  PROFILE_EDIT_GROUPS,
   checklistItemToSectionId,
   isProfileSectionId,
   summarizeProfileSection,
   type ProfileSectionId,
 } from '@/lib/profile/sections';
 import {
-  calculateProfileCompletionPercent,
   getProfileCompletionSections,
   type ProfileCompletionSectionId,
 } from '@/lib/profile-completion';
@@ -80,27 +67,13 @@ export type ProfileWorkspaceProps = {
   hasImportantAlignmentFactors: boolean;
   initialPhotos: ManagedProfilePhoto[];
   initialSection?: string | null;
+  compatibilityComplete?: boolean;
   onPrimaryPhotoChange?: (url: string | null) => void;
   onCompletionPercentChange?: (percent: number) => void;
 };
 
 const inputClassName =
   'w-full px-5 py-3.5 rounded-2xl border border-[#0B2D5C]/30 focus:border-[#0B2D5C] focus:outline-none focus:ring-2 focus:ring-[#0B2D5C]/20 text-base';
-
-const SECTION_ICONS: Partial<Record<ProfileSectionId, LucideIcon>> = {
-  photo: Camera,
-  basics: UserRound,
-  location: MapPin,
-  about: TextQuote,
-  relationship: Compass,
-  children: HeartHandshake,
-  faith: Sparkles,
-  enjoy: HeartHandshake,
-  music: Music2,
-  factors: Star,
-  voice: Mic,
-  video: Video,
-};
 
 function buildInitialLocation(
   profile: Profile,
@@ -135,15 +108,18 @@ export default function ProfileWorkspace({
   hasImportantAlignmentFactors,
   initialPhotos,
   initialSection,
+  compatibilityComplete = false,
   onPrimaryPhotoChange,
   onCompletionPercentChange,
 }: ProfileWorkspaceProps) {
+  const router = useRouter();
   const [profile, setProfile] = useState<Profile>(initialProfile);
   const [coreValues, setCoreValues] = useState<string[]>(initialCoreValues);
   const [photos, setPhotos] = useState<ManagedProfilePhoto[]>(initialPhotos);
   const [openSection, setOpenSection] = useState<ProfileSectionId | null>(() =>
     isProfileSectionId(initialSection) ? initialSection : null
   );
+  const [openGroup, setOpenGroup] = useState<string | null>(() => PROFILE_EDIT_GROUPS.find(group => group.sections.includes(initialSection as ProfileSectionId))?.id ?? null);
   const [sectionStatus, setSectionStatus] = useState<Record<string, SectionStatus>>({});
   const [sectionMessage, setSectionMessage] = useState<Record<string, string>>({});
   const sectionRefs = useRef<Partial<Record<ProfileSectionId, HTMLElement | null>>>({});
@@ -158,7 +134,7 @@ export default function ProfileWorkspace({
   }, [openSection]);
 
   const photoCount = photos.length;
-  const completionSections = getProfileCompletionSections({
+  const sourceCompletion = getProfileCompletionSections({
     profile,
     photoCount,
     hasRelationshipAlignment:
@@ -168,7 +144,15 @@ export default function ProfileWorkspace({
     hasImportantAlignmentFactors:
       hasImportantAlignmentFactors || coreValues.length > 0,
   });
-  const completionPercent = calculateProfileCompletionPercent(completionSections);
+  const completionSections = [
+    sourceCompletion.find(item => item.id === 'photos')!,
+    sourceCompletion.find(item => item.id === 'details')!,
+    sourceCompletion.find(item => item.id === 'about')!,
+    { ...sourceCompletion.find(item => item.id === 'enjoy')!, label: 'Add Things I Enjoy' },
+    { ...sourceCompletion.find(item => item.id === 'music')!, label: 'Add Favorite Music' },
+    { id: 'compatibility' as const, label: 'Complete Compatibility Profile', complete: compatibilityComplete },
+  ];
+  const completionPercent = Math.round(completionSections.filter(item => item.complete).length / completionSections.length * 100);
   const showCompletionUi = completionPercent < 100;
 
   useEffect(() => {
@@ -178,7 +162,8 @@ export default function ProfileWorkspace({
   useEffect(() => {
     if (!openSection) return;
     const node = sectionRefs.current[openSection];
-    node?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    node?.focus({ preventScroll: true });
+    node?.scrollIntoView({ behavior: 'instant', block: 'start' });
   }, [openSection]);
 
   const setStatus = (id: ProfileSectionId, status: SectionStatus, message = '') => {
@@ -189,6 +174,7 @@ export default function ProfileWorkspace({
   const openForEdit = (id: ProfileSectionId) => {
     const definition = PROFILE_SECTIONS.find((section) => section.id === id);
     if (!definition || definition.comingSoon || !definition.editable) return;
+    setOpenGroup(PROFILE_EDIT_GROUPS.find(group => group.sections.includes(id))?.id ?? null);
     setOpenSection(id);
     setStatus(id, 'editing');
   };
@@ -291,7 +277,7 @@ export default function ProfileWorkspace({
                 Profile checklist
               </h2>
               <p className="mt-1 text-sm text-[#5A6575]">
-                {completionPercent}% complete — informational only. Discovery is not gated.
+                {completionPercent}% complete
               </p>
             </div>
             <Link
@@ -306,7 +292,7 @@ export default function ProfileWorkspace({
               <li key={item.id}>
                 <button
                   type="button"
-                  onClick={() => openFromChecklist(item.id)}
+                  onClick={() => item.id === 'compatibility' ? router.push('/compatibility-profile') : openFromChecklist(item.id)}
                   className="flex w-full items-center gap-3 rounded-2xl px-2 py-2 text-left text-sm text-[#0B2D5C] transition hover:bg-[#EEF2F7] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0B2D5C]"
                 >
                   <span
@@ -322,7 +308,7 @@ export default function ProfileWorkspace({
                   <span className={item.complete ? '' : 'text-[#5A6575]'}>{item.label}</span>
                   {!item.complete ? (
                     <span className="ml-auto text-xs font-semibold uppercase tracking-[0.12em] text-[#D62828]">
-                      Open
+                      {item.label.split(' ')[0]}
                     </span>
                   ) : null}
                 </button>
@@ -339,15 +325,29 @@ export default function ProfileWorkspace({
             className="text-xl tracking-[-0.01em] text-[#0B2D5C] lg:text-2xl"
             style={{ fontFamily: 'var(--font-discovery-display), Georgia, serif' }}
           >
-            Profile sections
+            Edit your profile
           </h2>
           <p className="mt-2 max-w-2xl text-sm leading-relaxed text-[#5A6575]">
-            Review what you have shared. Edit one section at a time — nothing is required.
+            Choose a group to update your profile.
           </p>
         </div>
 
-        {PROFILE_SECTIONS.map((section) => {
-          const Icon = SECTION_ICONS[section.id] ?? UserRound;
+        {PROFILE_EDIT_GROUPS.map(group => (
+          <section key={group.id} className="overflow-hidden rounded-[6px] border border-[#0B2D5C] bg-[#E6E6E7]">
+            <div className="flex items-center justify-between gap-4 p-5">
+              <div className="min-w-0">
+                <h3 className="text-xl font-semibold text-[#0B2D5C]">{group.title}</h3>
+                <p className="mt-1 text-sm text-black">{group.sections.map(id => PROFILE_SECTIONS.find(section => section.id === id)?.title).join(' · ')}</p>
+              </div>
+              <button type="button" disabled={Object.values(sectionStatus).includes('saving')}
+                aria-label={`${openGroup === group.id ? 'Close' : 'Edit'} ${group.title}`} aria-expanded={openGroup === group.id} aria-controls={`group-${group.id}`}
+                onClick={() => { setOpenGroup(openGroup === group.id ? null : group.id); setOpenSection(null); }}
+                className="shrink-0 rounded-[6px] bg-[#0B2D5C] px-4 py-2 text-sm font-semibold text-white">
+                {openGroup === group.id ? 'Close' : 'Edit'}
+              </button>
+            </div>
+            <div id={`group-${group.id}`} hidden={openGroup !== group.id} className="border-t border-[#C9CBCE] px-4 pb-4">
+        {group.sections.map(id => PROFILE_SECTIONS.find(section => section.id === id)!).map((section) => {
           const isOpen = openSection === section.id;
           const status = sectionStatus[section.id] ?? 'idle';
           const summary = summarizeProfileSection(section.id, profile, {
@@ -364,12 +364,9 @@ export default function ProfileWorkspace({
               ref={(node) => {
                 sectionRefs.current[section.id] = node;
               }}
-              className="rounded-[1.5rem] border border-[#0B2D5C]/08 bg-white/90 shadow-[0_8px_28px_rgba(11,45,92,0.04)]"
+              className="border-b border-[#C9CBCE] last:border-b-0"
             >
               <div className="flex items-start gap-3.5 px-4 py-4 sm:px-5">
-                <span data-icon-badge className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-[#EEF2F7] text-[#0B2D5C]">
-                  <Icon className="h-5 w-5" strokeWidth={1.75} aria-hidden="true" />
-                </span>
                 <div className="min-w-0 flex-1">
                   <div className="flex flex-wrap items-center gap-2">
                     <h3 className="text-[15px] font-semibold text-[#0B2D5C]">{section.title}</h3>
@@ -382,9 +379,8 @@ export default function ProfileWorkspace({
                       <span className="text-xs font-semibold text-green-700">Saved</span>
                     ) : null}
                   </div>
-                  <p className="mt-1 text-sm text-[#5A6575]">{section.description}</p>
                   {!isOpen ? (
-                    <p className="mt-2 text-sm leading-relaxed text-[#0B2D5C]/90 line-clamp-3">
+                    <p className="mt-2 text-sm leading-relaxed text-[#0B2D5C]/90 line-clamp-1">
                       {summary}
                     </p>
                   ) : null}
@@ -394,6 +390,7 @@ export default function ProfileWorkspace({
                     type="button"
                     onClick={() => (isOpen ? cancelEdit(section.id) : openForEdit(section.id))}
                     className="inline-flex shrink-0 items-center gap-1 rounded-2xl border border-[#0B2D5C]/15 bg-white px-3.5 py-2 text-sm font-semibold text-[#0B2D5C] transition hover:bg-[#EEF2F7]"
+                    disabled={Object.values(sectionStatus).includes('saving')}
                     aria-expanded={isOpen}
                   >
                     {isOpen ? 'Close' : 'Edit'}
@@ -431,6 +428,9 @@ export default function ProfileWorkspace({
             </article>
           );
         })}
+            </div>
+          </section>
+        ))}
       </section>
     </div>
   );

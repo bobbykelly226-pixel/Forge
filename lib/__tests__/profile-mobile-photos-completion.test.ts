@@ -160,7 +160,7 @@ describe('mobile structured controls', () => {
 });
 
 describe('profile completion at 100%', () => {
-  it('shows completion UI below 100% and hides both at exactly 100%', () => {
+  it('keeps one checklist and removes the duplicate ring', () => {
     const incomplete = getProfileCompletionSections({
       profile: minimalProfile({ short_bio: null, things_i_enjoy: [] }),
       photoCount: 1,
@@ -187,8 +187,7 @@ describe('profile completion at 100%', () => {
       join(process.cwd(), 'components/profile/ProfileWorkspace.tsx'),
       'utf8'
     );
-    assert.match(hub, /showCompletionUi = completionPercent < 100/);
-    assert.match(hub, /profile-completion-summary/);
+    assert.doesNotMatch(hub, /CompletionRing|profile-completion-summary/);
     assert.match(workspace, /showCompletionUi = completionPercent < 100/);
     assert.match(workspace, /profile-completion-checklist/);
     assert.doesNotMatch(hub, /100% complete banner|fully complete/i);
@@ -218,7 +217,7 @@ describe('profile completion at 100%', () => {
       join(process.cwd(), 'components/profile/MyProfileHub.tsx'),
       'utf8'
     );
-    assert.match(hub, /never required for Discovery/);
+    assert.doesNotMatch(hub, /canEnable=.*completionPercent/);
     assert.match(hub, /DiscoveryVisibilityToggle/);
   });
 });
