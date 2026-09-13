@@ -11,9 +11,9 @@ export default function Header() {
   const closeMenu = () => setMenuOpen(false);
 
   return (
-    <nav className="border-b border-[#0B2D5C]/20 bg-[#0B2D5C] backdrop-blur-md sticky top-0 z-50">
+    <nav className="forge-marketing-header border-b border-[#0B2D5C]/20 bg-[#0B2D5C] backdrop-blur-md sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-8 py-4 flex items-center justify-between gap-4">
-        <Link href="/" onClick={closeMenu} className="flex items-center gap-3 hover:opacity-90 transition flex-shrink-0 pl-2">
+        <Link href="/" aria-current={pathname === '/' ? 'page' : undefined} onClick={closeMenu} className="flex items-center gap-3 hover:opacity-90 transition flex-shrink-0 pl-2">
           <img 
             src="/Logos/forgedinlife-header-light.png" 
             alt="Forge" 
@@ -22,10 +22,10 @@ export default function Header() {
         </Link>
 
         <div className="hidden md:flex items-center gap-6 lg:gap-10 text-sm sm:text-lg font-semibold text-white">
-          <Link href="/" className={`hover:text-[#D62828] transition ${pathname === '/' ? 'text-[#D62828]' : ''}`}>Home</Link>
-          <Link href="/about" className={`hover:text-[#D62828] transition ${pathname === '/about' ? 'text-[#D62828]' : ''}`}>About</Link>
-          <Link href="/values" className={`hover:text-[#D62828] transition ${pathname === '/values' ? 'text-[#D62828]' : ''}`}>Values</Link>
-          <Link href="/founder" className={`hover:text-[#D62828] transition ${pathname === '/founder' ? 'text-[#D62828]' : ''}`}>Meet the Founder</Link>
+          <Link href="/" aria-current={pathname === '/' ? 'page' : undefined} className={`hover:text-[#D62828] transition ${pathname === '/' ? 'text-[#D62828]' : ''}`}>Home</Link>
+          <Link href="/about" aria-current={pathname === '/about' ? 'page' : undefined} className={`hover:text-[#D62828] transition ${pathname === '/about' ? 'text-[#D62828]' : ''}`}>About</Link>
+          <Link href="/values" aria-current={pathname === '/values' ? 'page' : undefined} className={`hover:text-[#D62828] transition ${pathname === '/values' ? 'text-[#D62828]' : ''}`}>Values</Link>
+          <Link href="/founder" aria-current={pathname === '/founder' ? 'page' : undefined} className={`hover:text-[#D62828] transition ${pathname === '/founder' ? 'text-[#D62828]' : ''}`}>Meet the Founder</Link>
           <div className="flex items-center gap-3 lg:gap-4 ml-2">
             <Link
               href="/login"
@@ -55,10 +55,10 @@ export default function Header() {
       {menuOpen && (
         <div className="md:hidden bg-[#0B2D5C] border-t border-white/20 py-4">
           <div className="flex flex-col text-center gap-3 text-lg font-semibold text-white px-6">
-            <Link href="/" onClick={closeMenu} className="py-3 hover:text-[#D62828]">Home</Link>
-            <Link href="/about" onClick={closeMenu} className="py-3 hover:text-[#D62828]">About</Link>
-            <Link href="/values" onClick={closeMenu} className="py-3 hover:text-[#D62828]">Values</Link>
-            <Link href="/founder" onClick={closeMenu} className="py-3 hover:text-[#D62828]">Meet the Founder</Link>
+            <Link href="/" aria-current={pathname === '/' ? 'page' : undefined} onClick={closeMenu} className="py-3 hover:text-[#D62828]">Home</Link>
+            <Link href="/about" aria-current={pathname === '/about' ? 'page' : undefined} onClick={closeMenu} className="py-3 hover:text-[#D62828]">About</Link>
+            <Link href="/values" aria-current={pathname === '/values' ? 'page' : undefined} onClick={closeMenu} className="py-3 hover:text-[#D62828]">Values</Link>
+            <Link href="/founder" aria-current={pathname === '/founder' ? 'page' : undefined} onClick={closeMenu} className="py-3 hover:text-[#D62828]">Meet the Founder</Link>
             <div className="border-t border-white/20 pt-4 mt-1 flex flex-col gap-3">
               <Link
                 href="/login"

@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import ForgeObservability from '@/components/analytics/ForgeObservability';
 import './globals.css';
 import './profile-theme.css';
+import './marketing-theme.css';
 import ForwardNavigationScroll from '@/components/ForwardNavigationScroll';
 
 export const metadata: Metadata = {

@@ -22,8 +22,8 @@ export default function DiscoveryDesktopTopBar({
   const notificationsUnreadCount = notifications?.notificationsUnreadCount ?? 0;
 
   const visibility = showOnMobile
-    ? 'forge-header-nav mb-5 grid grid-cols-4 items-stretch gap-1 bg-[#0B1C30] px-2 py-3 lg:mb-8'
-    : 'forge-header-nav mb-8 hidden grid-cols-4 items-stretch gap-1 bg-[#0B1C30] px-2 py-3 lg:grid';
+    ? 'forge-header-nav mb-5 grid grid-cols-4 items-stretch gap-1 bg-[#0B2D5C] px-2 py-3 lg:mb-8'
+    : 'forge-header-nav mb-8 hidden grid-cols-4 items-stretch gap-1 bg-[#0B2D5C] px-2 py-3 lg:grid';
 
   return (
     <div data-profile-chrome="header" className={visibility}>
