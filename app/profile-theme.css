@@ -3,7 +3,7 @@
 .forge-profile-theme {
   --profile-surface: #E6E6E7;
   --profile-input: #F7F7F7;
-  --profile-text: #0B1C30;
+  --profile-text: var(--profile-navy, #0B1C30);
   --profile-muted: #5C636B;
   --profile-border: #C9CBCE;
   --forge-app-background: #A9ADB3;
@@ -19,7 +19,7 @@
 .forge-profile-theme [class~="bg-[#0B2D5C]"]:not([role="img"]),
 .forge-profile-theme .group:hover [class~="group-hover:bg-[#0B2D5C]"]:not([role="img"]),
 .forge-profile-theme [class~="hover:bg-[#0A2540]"]:not([role="img"]):hover,
-.forge-profile-theme [class~="hover:bg-[#0B2D5C]"]:not([role="img"]):hover { background-color: #0B1C30; }
+.forge-profile-theme [class~="hover:bg-[#0B2D5C]"]:not([role="img"]):hover { background-color: var(--profile-navy, #0B1C30); }
 .forge-profile-theme [class~="bg-[#0B2D5C]/06"]:not([role="img"]),
 .forge-profile-theme [class~="bg-[#0B2D5C]/07"]:not([role="img"]),
 .forge-profile-theme [class~="bg-[#0B2D5C]/08"]:not([role="img"]),
@@ -124,17 +124,17 @@
 
 /* Navy chrome is separate from the light-gray working area. */
 .forge-profile-theme [data-profile-chrome] {
-  --profile-surface: #0B1C30;
+  --profile-surface: var(--profile-navy, #0B1C30);
   --profile-input: #182C42;
   --profile-text: #FFFFFF;
   --profile-muted: #D4D5D7;
   --profile-border: #415268;
-  background-color: #0B1C30;
+  background-color: var(--profile-navy, #0B1C30);
   color: #FFFFFF;
   border-radius: 0;
 }
 .forge-profile-theme aside[data-profile-chrome] > div {
-  background-color: #0B1C30;
+  background-color: var(--profile-navy, #0B1C30);
   border: 0;
   border-radius: 0;
   box-shadow: none;
@@ -159,7 +159,7 @@
 .forge-profile-theme :is(button, a[href]):not([role="switch"]):not(:has(img)) {
   --profile-text: #FFFFFF;
   --profile-muted: #E6E6E7;
-  background-color: #0B1C30 !important;
+  background-color: var(--profile-navy, #0B1C30) !important;
   color: #FFFFFF !important;
   border-color: #415268;
 }
@@ -173,17 +173,17 @@
 }
 .forge-profile-theme button[aria-pressed="true"] { box-shadow: inset 0 0 0 2px #FFFFFF; }
 .forge-profile-theme button[aria-pressed="false"] { border: 1px solid #83909E; }
-.forge-profile-theme button[role="switch"][aria-checked="true"] { background-color: #0B1C30; }
+.forge-profile-theme button[role="switch"][aria-checked="true"] { background-color: var(--profile-navy, #0B1C30); }
 .forge-profile-theme button[role="switch"][aria-checked="false"] { background-color: #737B86; }
 .forge-profile-theme [data-icon-badge] {
-  --profile-text: #0B1C30;
+  --profile-text: var(--profile-navy, #0B1C30);
   background-color: #FFFFFF !important;
-  color: #0B1C30 !important;
+  color: var(--profile-navy, #0B1C30) !important;
 }
 .forge-profile-theme [data-profile-chrome="header"] :is(a, button) {
-  --profile-text: #0B1C30;
+  --profile-text: var(--profile-navy, #0B1C30);
   background-color: #FFFFFF !important;
-  color: #0B1C30 !important;
+  color: var(--profile-navy, #0B1C30) !important;
 }
 .forge-profile-theme img.forge-corner-logo {
   width: 112px;
@@ -211,7 +211,7 @@
   div[class~="bg-white/80"][class*="rounded-"],
   div[class~="bg-white/90"][class*="rounded-"]
 ):not([data-profile-chrome] *):not([data-profile-chrome]) {
-  outline: 1px solid #0B1C30;
+  outline: 1px solid var(--profile-navy, #0B1C30);
   outline-offset: -1px;
 }
 /* Preserve the stronger keyboard focus indicator during the visual trial. */
@@ -223,7 +223,7 @@
 /* Readable header actions replace ambiguous icon-only controls. */
 .forge-profile-theme [data-profile-chrome="header"] :is(a, button) {
   --profile-text: #FFFFFF;
-  background-color: #0B1C30 !important;
+  background-color: var(--profile-navy, #0B1C30) !important;
   color: #FFFFFF !important;
   font-weight: 700;
   min-height: 44px;
@@ -283,21 +283,21 @@
 /* Shared content surfaces retain the approved compact card treatment. */
 .forge-profile-theme :is(div, section, article)[class*="rounded-"][class*="bg-white/"]:not([data-profile-chrome] *) {
   border-radius: 6px;
-  outline: 1px solid #0B1C30;
+  outline: 1px solid var(--profile-navy, #0B1C30);
   outline-offset: -1px;
 }
 .forge-profile-theme [role="tab"][aria-selected="true"] { box-shadow: inset 0 -2px #C92027; }
 .forge-profile-theme [role="tab"] > span[aria-label] {
   background: #FFFFFF;
-  color: #0B1C30;
+  color: var(--profile-navy, #0B1C30);
 }
 
 /* Conversation links are text navigation, not filled action buttons. */
 .forge-profile-theme a[href][data-text-link]:not([role="switch"]):not(:has(img)),
 .forge-profile-theme a[href][data-text-link]:not([role="switch"]):not(:has(img)):hover {
-  --profile-text: #0B1C30;
+  --profile-text: var(--profile-navy, #0B1C30);
   background: transparent !important;
-  color: #0B1C30 !important;
+  color: var(--profile-navy, #0B1C30) !important;
   border: 0;
   box-shadow: none;
 }
@@ -305,27 +305,27 @@
 .forge-profile-theme [data-message-direction="received"] {
   /* Override the legacy bg-white mapping, including its :not specificity. */
   background-color: #FFFFFF !important;
-  color: #0B1C30;
+  color: var(--profile-navy, #0B1C30);
   border-color: #C9CBCE;
 }
 
 /* Notifications and Feedback use the same compact surfaces as Profile. */
 .forge-profile-theme [data-notifications-panel] {
   background: #A9ADB3 !important;
-  border: 1px solid #0B1C30;
+  border: 1px solid var(--profile-navy, #0B1C30);
   border-radius: 6px;
 }
 .forge-profile-theme [data-notifications-panel] > div:last-child {
   margin: 12px;
   background: #E6E6E7;
-  border: 1px solid #0B1C30;
+  border: 1px solid var(--profile-navy, #0B1C30);
   border-radius: 6px;
 }
 .forge-profile-theme [data-feedback-workspace] :is(label[class*="rounded-"], select, textarea, div[class*="rounded-"]) {
   border-radius: 6px;
 }
 .forge-profile-theme [data-feedback-workspace] label:has(input[type="radio"]) {
-  background: #0B1C30;
+  background: var(--profile-navy, #0B1C30);
   color: #FFFFFF;
   --profile-text: #FFFFFF;
   --profile-muted: #E6E6E7;
@@ -340,14 +340,14 @@
 .forge-profile-theme [data-discovery-filters] {
   background: #A9ADB3 !important;
   border-radius: 6px;
-  border: 1px solid #0B1C30;
+  border: 1px solid var(--profile-navy, #0B1C30);
 }
 .forge-profile-theme [data-discovery-filters] :is(details, label[class*="rounded-"], input, select) {
   border-radius: 6px;
 }
-.forge-profile-theme [data-discovery-filters] details { border-color: #0B1C30; }
+.forge-profile-theme [data-discovery-filters] details { border-color: var(--profile-navy, #0B1C30); }
 .forge-profile-theme [data-discovery-filters] summary {
-  background: #0B1C30;
+  background: var(--profile-navy, #0B1C30);
   --profile-text: #FFFFFF;
   --profile-muted: #E6E6E7;
   color: #FFFFFF;
@@ -380,4 +380,27 @@
   }
   .forge-profile-theme .forge-mobile-brand-row > img { grid-column: 1 / -1; grid-row: 1; }
   .forge-profile-theme .forge-mobile-brand-row > :is(a, button) { grid-column: auto; grid-row: 2; }
+}
+
+/* Profile-only homepage-blue trial; other destinations retain their approved navy. */
+.forge-app-canvas:has(.forge-mobile-brand-row) {
+  --profile-navy: #0B2D5C;
+}
+
+/* The Preview link and Log Out button share one mobile action geometry. */
+.forge-profile-theme .forge-mobile-brand-row > :is(a[href], button) {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  width: 120px;
+  height: 44px;
+  min-height: 44px;
+  padding: 8px 14px;
+  border: 1px solid #415268;
+  border-radius: 6px;
+  font-size: 10px;
+  line-height: 1;
+  font-weight: 600;
+  letter-spacing: 0.14em;
 }
