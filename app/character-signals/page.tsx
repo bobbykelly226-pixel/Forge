@@ -39,7 +39,7 @@ export default async function CharacterSignalsPage() {
   return (
     <ForgeAppCanvas
       desktopViewportLock
-      className={`${display.variable} ${sans.variable}`}
+      className={`forge-profile-theme ${display.variable} ${sans.variable}`}
       style={{
         fontFamily: 'var(--font-discovery-sans), ui-sans-serif, system-ui, sans-serif',
       }}

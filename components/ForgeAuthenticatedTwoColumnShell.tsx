@@ -53,6 +53,7 @@ export default function ForgeAuthenticatedTwoColumnShell({
         </aside>
 
         <div
+          data-forge-scroll-region
           className={cn(
             'min-h-screen w-full min-w-0 lg:h-full lg:min-h-0 lg:overflow-y-auto lg:overscroll-contain',
             PANEL_SCROLLBAR

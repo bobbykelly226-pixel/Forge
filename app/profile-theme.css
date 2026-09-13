@@ -1,0 +1,131 @@
+/* Profile review palette. Scoped to Profile and Character Signals only.
+   Explicit legacy utility mappings bridge existing editors to shared theme tokens. */
+.forge-profile-theme {
+  --profile-surface: #2D3B4C;
+  --profile-input: #1D2C3F;
+  --profile-text: #FFFFFF;
+  --profile-muted: #C5CED9;
+  --profile-border: #66768B;
+  --forge-app-background: #0B1C30;
+  color-scheme: dark;
+  color: var(--profile-text);
+  background-color: var(--forge-app-background);
+}
+.forge-profile-theme [class~="!bg-white/70"]:not([role="img"]),
+.forge-profile-theme [class~="hover:!bg-white"]:not([role="img"]):hover { background-color: var(--profile-surface) !important; }
+.forge-profile-theme [class~="!text-[#0B2D5C]"] { color: var(--profile-text) !important; }
+.forge-profile-theme [class~="accent-[#0B2D5C]"],
+.forge-profile-theme [class~="accent-[#D62828]"] { accent-color: #FF8C91; }
+.forge-profile-theme [class~="bg-[#0B2D5C]"]:not([role="img"]),
+.forge-profile-theme .group:hover [class~="group-hover:bg-[#0B2D5C]"]:not([role="img"]),
+.forge-profile-theme [class~="hover:bg-[#0A2540]"]:not([role="img"]):hover,
+.forge-profile-theme [class~="hover:bg-[#0B2D5C]"]:not([role="img"]):hover { background-color: #162A43; }
+.forge-profile-theme [class~="bg-[#0B2D5C]/06"]:not([role="img"]),
+.forge-profile-theme [class~="bg-[#0B2D5C]/07"]:not([role="img"]),
+.forge-profile-theme [class~="bg-[#0B2D5C]/08"]:not([role="img"]),
+.forge-profile-theme [class~="bg-[#0B2D5C]/10"]:not([role="img"]),
+.forge-profile-theme [class~="bg-[#0B2D5C]/15"]:not([role="img"]),
+.forge-profile-theme [class~="bg-[#0B2D5C]/20"]:not([role="img"]),
+.forge-profile-theme [class~="bg-[#0B2D5C]/25"]:not([role="img"]),
+.forge-profile-theme [class~="bg-[#0B2D5C]/45"]:not([role="img"]),
+.forge-profile-theme [class~="bg-[#0B2D5C]/85"]:not([role="img"]),
+.forge-profile-theme [class~="bg-[#EEF2F7]"]:not([role="img"]),
+.forge-profile-theme [class~="bg-[#EEF2F7]/55"]:not([role="img"]),
+.forge-profile-theme [class~="hover:bg-[#0B2D5C]/06"]:not([role="img"]):hover,
+.forge-profile-theme [class~="hover:bg-[#0B2D5C]/6"]:not([role="img"]):hover,
+.forge-profile-theme [class~="hover:bg-[#EEF2F7]"]:not([role="img"]):hover { background-color: var(--profile-input); }
+.forge-profile-theme [class~="bg-[#D62828]"]:not([role="img"]) { background-color: #C92027; }
+.forge-profile-theme [class~="bg-[#D62828]/5"]:not([role="img"]) { background-color: #4B2834; }
+.forge-profile-theme [class~="bg-[#F8F6F2]"]:not([role="img"]),
+.forge-profile-theme [class~="bg-[#F8F6F2]/80"]:not([role="img"]),
+.forge-profile-theme [class~="bg-[#F8F6F2]/95"]:not([role="img"]),
+.forge-profile-theme [class~="bg-[#FBF9F6]"]:not([role="img"]),
+.forge-profile-theme [class~="bg-[#FBF9F6]/95"]:not([role="img"]),
+.forge-profile-theme [class~="bg-white"]:not([role="img"]),
+.forge-profile-theme [class~="bg-white/10"]:not([role="img"]),
+.forge-profile-theme [class~="bg-white/15"]:not([role="img"]),
+.forge-profile-theme [class~="bg-white/20"]:not([role="img"]),
+.forge-profile-theme [class~="bg-white/60"]:not([role="img"]),
+.forge-profile-theme [class~="bg-white/70"]:not([role="img"]),
+.forge-profile-theme [class~="bg-white/75"]:not([role="img"]),
+.forge-profile-theme [class~="bg-white/80"]:not([role="img"]),
+.forge-profile-theme [class~="bg-white/85"]:not([role="img"]),
+.forge-profile-theme [class~="bg-white/90"]:not([role="img"]),
+.forge-profile-theme [class~="bg-white/95"]:not([role="img"]),
+.forge-profile-theme [class~="hover:bg-[#F8F6F2]"]:not([role="img"]):hover,
+.forge-profile-theme [class~="hover:bg-[#FBF9F6]"]:not([role="img"]):hover,
+.forge-profile-theme [class~="hover:bg-white"]:not([role="img"]):hover,
+.forge-profile-theme [class~="hover:bg-white/25"]:not([role="img"]):hover { background-color: var(--profile-surface); }
+.forge-profile-theme [class~="bg-red-50"]:not([role="img"]) { background-color: #4B2834; }
+.forge-profile-theme [class~="border-[#0B2D5C]"],
+.forge-profile-theme [class~="border-[#0B2D5C]/06"],
+.forge-profile-theme [class~="border-[#0B2D5C]/08"],
+.forge-profile-theme [class~="border-[#0B2D5C]/09"],
+.forge-profile-theme [class~="border-[#0B2D5C]/10"],
+.forge-profile-theme [class~="border-[#0B2D5C]/12"],
+.forge-profile-theme [class~="border-[#0B2D5C]/14"],
+.forge-profile-theme [class~="border-[#0B2D5C]/15"],
+.forge-profile-theme [class~="border-[#0B2D5C]/18"],
+.forge-profile-theme [class~="border-[#0B2D5C]/20"],
+.forge-profile-theme [class~="border-[#0B2D5C]/25"],
+.forge-profile-theme [class~="border-[#0B2D5C]/30"],
+.forge-profile-theme [class~="border-[#0B2D5C]/35"],
+.forge-profile-theme [class~="border-[#C5CCD6]/55"],
+.forge-profile-theme [class~="border-[#C5CCD6]/80"],
+.forge-profile-theme [class~="border-white"],
+.forge-profile-theme [class~="border-white/20"],
+.forge-profile-theme [class~="border-white/25"],
+.forge-profile-theme [class~="hover:border-[#0B2D5C]/18"]:hover,
+.forge-profile-theme [class~="hover:border-[#0B2D5C]/20"]:hover,
+.forge-profile-theme [class~="hover:border-[#0B2D5C]/22"]:hover,
+.forge-profile-theme [class~="hover:border-[#0B2D5C]/25"]:hover,
+.forge-profile-theme [class~="hover:border-[#0B2D5C]/30"]:hover,
+.forge-profile-theme [class~="hover:border-[#0B2D5C]/35"]:hover,
+.forge-profile-theme [class~="hover:border-[#0B2D5C]/40"]:hover,
+.forge-profile-theme [class~="hover:border-[#0B2D5C]/45"]:hover { border-color: var(--profile-border); }
+.forge-profile-theme [class~="focus-visible:outline-[#0B2D5C]"]:focus-visible,
+.forge-profile-theme [class~="focus-visible:outline-[#D62828]"]:focus-visible,
+.forge-profile-theme [class~="outline-[#0B2D5C]"] { outline-color: #FF8C91; }
+.forge-profile-theme .group:hover [class~="group-hover:text-white"],
+.forge-profile-theme [class~="hover:text-[#0A2540]"]:hover,
+.forge-profile-theme [class~="hover:text-[#0B2D5C]"]:hover,
+.forge-profile-theme [class~="hover:text-white"]:hover,
+.forge-profile-theme [class~="text-[#0B2D5C]"],
+.forge-profile-theme [class~="text-[#0B2D5C]/35"],
+.forge-profile-theme [class~="text-[#0B2D5C]/45"],
+.forge-profile-theme [class~="text-[#0B2D5C]/65"],
+.forge-profile-theme [class~="text-[#0B2D5C]/70"],
+.forge-profile-theme [class~="text-[#0B2D5C]/75"],
+.forge-profile-theme [class~="text-[#0B2D5C]/90"],
+.forge-profile-theme [class~="text-[#1A2332]"],
+.forge-profile-theme [class~="text-white"],
+.forge-profile-theme [class~="text-white/60"],
+.forge-profile-theme [class~="text-white/70"],
+.forge-profile-theme [class~="text-white/80"],
+.forge-profile-theme [class~="text-white/85"],
+.forge-profile-theme [class~="text-white/90"] { color: var(--profile-text); }
+.forge-profile-theme [class~="hover:text-[#5A6575]"]:hover,
+.forge-profile-theme [class~="placeholder:text-[#8A93A0]"]::placeholder,
+.forge-profile-theme [class~="text-[#5A6575]"],
+.forge-profile-theme [class~="text-[#6B7585]"],
+.forge-profile-theme [class~="text-[#6F7A89]"],
+.forge-profile-theme [class~="text-[#7A8494]"],
+.forge-profile-theme [class~="text-[#8A93A0]"] { color: var(--profile-muted); }
+.forge-profile-theme [class~="hover:text-[#D62828]"]:hover,
+.forge-profile-theme [class~="text-[#A61F1F]"],
+.forge-profile-theme [class~="text-[#D62828]"],
+.forge-profile-theme [class~="text-red-600"],
+.forge-profile-theme [class~="text-red-700"] { color: #FF8C91; }
+.forge-profile-theme [class~="ring-[#0B2D5C]"],
+.forge-profile-theme [class~="ring-[#0B2D5C]/12"] { --tw-ring-color: var(--profile-border); }
+.forge-profile-theme [class~="text-green-700"] { color: #A7E4BF; }
+
+.forge-profile-theme :is(input:not([type="range"]):not([type="checkbox"]):not([type="radio"]), select, textarea) {
+  background-color: var(--profile-input);
+  color: var(--profile-text);
+  border-color: var(--profile-border);
+}
+.forge-profile-theme :is(input, textarea)::placeholder { color: var(--profile-muted); opacity: 1; }
+.forge-profile-theme :focus-visible { outline: 2px solid #FF8C91; outline-offset: 3px; }
+.forge-profile-theme img[src*="/Logos/"] { background: #FFFFFF; border-radius: 10px; padding: 6px; }
+.forge-profile-theme [data-forge-scroll-region] { scrollbar-color: #8292A7 transparent; }

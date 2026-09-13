@@ -62,7 +62,7 @@ export default function WhatAreCharacterSignalsDrawer({
       const active = document.activeElement as HTMLElement | null;
 
       if (event.shiftKey) {
-        if (active === first || !panelRef.current.contains(active)) {
+        if (active === first || active === panelRef.current || !panelRef.current.contains(active)) {
           event.preventDefault();
           last.focus();
         }
@@ -79,7 +79,10 @@ export default function WhatAreCharacterSignalsDrawer({
 
     const previousOverflow = document.body.style.overflow;
     document.body.style.overflow = 'hidden';
-    const focusTimer = window.setTimeout(() => primaryRef.current?.focus(), 30);
+    const focusTimer = window.setTimeout(() => {
+      panelRef.current?.focus({ preventScroll: true });
+      panelRef.current?.querySelector<HTMLElement>('[data-drawer-content]')?.scrollTo({ top: 0, behavior: 'instant' });
+    }, 30);
 
     const onDocumentKeyDown = (event: KeyboardEvent) => {
       if (event.key === 'Escape') onClose();
@@ -152,7 +155,7 @@ export default function WhatAreCharacterSignalsDrawer({
           </div>
         </div>
 
-        <div className="flex-1 overflow-y-auto overscroll-contain px-5 py-5 sm:px-6 sm:py-6">
+        <div data-drawer-content className="flex-1 overflow-y-auto overscroll-contain px-5 py-5 sm:px-6 sm:py-6">
           <div id={descriptionId} className="space-y-5 text-[15px] leading-relaxed text-[#5A6575]">
             <div className="space-y-3">
               <p>

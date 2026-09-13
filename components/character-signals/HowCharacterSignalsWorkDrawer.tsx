@@ -98,7 +98,7 @@ export default function HowCharacterSignalsWorkDrawer({
       const active = document.activeElement as HTMLElement | null;
 
       if (event.shiftKey) {
-        if (active === first || !panelRef.current.contains(active)) {
+        if (active === first || active === panelRef.current || !panelRef.current.contains(active)) {
           event.preventDefault();
           last.focus();
         }
@@ -115,7 +115,10 @@ export default function HowCharacterSignalsWorkDrawer({
 
     const previousOverflow = document.body.style.overflow;
     document.body.style.overflow = 'hidden';
-    const focusTimer = window.setTimeout(() => primaryRef.current?.focus(), 30);
+    const focusTimer = window.setTimeout(() => {
+      panelRef.current?.focus({ preventScroll: true });
+      panelRef.current?.querySelector<HTMLElement>('[data-drawer-content]')?.scrollTo({ top: 0, behavior: 'instant' });
+    }, 30);
 
     const onDocumentKeyDown = (event: KeyboardEvent) => {
       if (event.key === 'Escape') onClose();
@@ -151,7 +154,7 @@ export default function HowCharacterSignalsWorkDrawer({
         onKeyDown={handleKeyDown}
         className="relative z-[86] flex max-h-[92vh] w-full max-w-md flex-col overflow-hidden rounded-t-[1.75rem] bg-[#F8F6F2] shadow-[0_-18px_60px_rgba(11,45,92,0.22)] outline-none sm:max-h-[88vh] sm:rounded-[1.75rem]"
       >
-        <div className="flex-1 overflow-y-auto overscroll-contain px-5 py-6 sm:px-7 sm:py-7">
+        <div data-drawer-content className="flex-1 overflow-y-auto overscroll-contain px-5 py-6 sm:px-7 sm:py-7">
           <h2
             id={titleId}
             className="text-[1.45rem] leading-tight tracking-[-0.02em] text-[#0B2D5C]"
