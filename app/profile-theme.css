@@ -196,3 +196,8 @@
 @media (min-width: 1024px) {
   .forge-profile-theme img.forge-corner-logo { width: 160px; }
 }
+
+/* Tighter corners on cards and actions; keep avatars and toggle thumbs circular. */
+.forge-profile-theme :is(section[class*="rounded-"], article, a[class*="rounded-"], button:not([role="switch"]), [data-icon-badge]) {
+  border-radius: 6px !important;
+}

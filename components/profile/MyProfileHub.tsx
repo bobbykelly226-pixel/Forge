@@ -160,7 +160,7 @@ export default function MyProfileHub({
             >
               Preview
             </Link>
-            <LogoutButton className="!rounded-full !bg-white/70 !px-3 !py-1 !text-[10px] !uppercase !tracking-[0.14em] !text-[#0B2D5C] ring-1 ring-[#0B2D5C]/12 hover:!bg-white" />
+            <LogoutButton className="rounded-lg bg-[#0B1C30] px-3 py-2 text-[10px] uppercase tracking-[0.14em] text-white" />
           </div>
 
           {!onboardingCompleted ? (
