@@ -219,3 +219,26 @@
   outline: 2px solid #C92027;
   outline-offset: 3px;
 }
+
+/* Readable header actions replace ambiguous icon-only controls. */
+.forge-profile-theme [data-profile-chrome="header"] :is(a, button) {
+  --profile-text: #FFFFFF;
+  background-color: #0B1C30 !important;
+  color: #FFFFFF !important;
+  font-weight: 700;
+  min-height: 44px;
+  border: 1px solid #66768B;
+}
+.forge-profile-theme img.forge-corner-logo { width: clamp(150px, 44vw, 190px); }
+.forge-profile-theme .forge-mobile-brand-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px 20px;
+}
+.forge-profile-theme .forge-mobile-brand-row > img { grid-row: span 2; }
+.forge-profile-theme .forge-mobile-brand-row > :is(a, button) { grid-column: 2; }
+@media (min-width: 1024px) {
+  .forge-profile-theme img.forge-corner-logo { width: 220px; max-width: 100%; }
+  .forge-profile-theme .forge-mobile-brand-row { display: none; }
+}

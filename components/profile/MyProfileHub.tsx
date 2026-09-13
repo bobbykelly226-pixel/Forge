@@ -148,7 +148,7 @@ export default function MyProfileHub({
         </div>
 
         <div className="mx-auto flex w-full max-w-lg flex-col px-4 pb-[7.5rem] pt-5 sm:px-6 sm:pt-7 lg:mx-0 lg:max-w-none lg:px-0 lg:pb-10 lg:pt-0">
-          <div className="mb-5 flex flex-wrap items-center justify-between gap-3 lg:hidden">
+          <div className="forge-mobile-brand-row mb-5 flex flex-wrap items-center justify-between gap-3 lg:hidden">
             <img
               src="/Logos/forge-founder-transparent.png"
               alt="Forge"
