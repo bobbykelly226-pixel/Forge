@@ -35,3 +35,14 @@ CI tests first. Founder walkthrough: existing Profile → Relationship → each
 choice (one at a time), save/refresh, Preview; fresh onboarding Step 4; desktop
 and mobile. Do not mark FIX-004 complete until browser/device and release
 verification evidence is recorded.
+
+## Verification checkpoint
+
+625 application tests, TypeScript, build and lint (zero errors) pass.
+PR Validation #98, run 34745555339, passed application and disposable database
+checks, including all eight new database assertions. Vercel Preview for
+0f2692f84766b2c83cbed719b39f610076f898a3 is READY.
+The additive constraint was applied to the shared database and verified
+validated with all five accepted identifiers. Migration filename is aligned
+with its recorded version 20260913073722; SQL content is unchanged.
+No Production web release or founder browser acceptance is claimed.
