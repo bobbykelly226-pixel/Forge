@@ -6,7 +6,7 @@
   --profile-text: #0B1C30;
   --profile-muted: #5C636B;
   --profile-border: #C9CBCE;
-  --forge-app-background: #D4D5D7;
+  --forge-app-background: #A9ADB3;
   color-scheme: light;
   color: var(--profile-text);
   background-color: var(--forge-app-background);
@@ -154,3 +154,45 @@
 .forge-profile-theme [class~="bg-[#D62828]"] { color: #FFFFFF; }
 .forge-profile-theme [class~="bg-[#0B2D5C]"][class~="text-white"] { color: #FFFFFF; }
 .forge-profile-theme [data-profile-chrome] [class~="text-[#D62828]"] { color: #FFFFFF; }
+
+/* Founder refinement: clear navy actions and white icon badges. */
+.forge-profile-theme :is(button, a[href]):not([role="switch"]):not(:has(img)) {
+  --profile-text: #FFFFFF;
+  --profile-muted: #E6E6E7;
+  background-color: #0B1C30 !important;
+  color: #FFFFFF !important;
+  border-color: #415268;
+}
+.forge-profile-theme button:not([role="switch"]):not(:has(img)) {
+  min-height: 40px;
+  padding: 8px 14px;
+  border-radius: 12px;
+}
+.forge-profile-theme :is(button, a[href]):not([role="switch"]):not(:has(img)):hover {
+  background-color: #20364F !important;
+}
+.forge-profile-theme button[aria-pressed="true"] { box-shadow: inset 0 0 0 2px #FFFFFF; }
+.forge-profile-theme button[aria-pressed="false"] { border: 1px solid #83909E; }
+.forge-profile-theme button[role="switch"][aria-checked="true"] { background-color: #0B1C30; }
+.forge-profile-theme button[role="switch"][aria-checked="false"] { background-color: #737B86; }
+.forge-profile-theme [data-icon-badge] {
+  --profile-text: #0B1C30;
+  background-color: #FFFFFF !important;
+  color: #0B1C30 !important;
+}
+.forge-profile-theme [data-profile-chrome="header"] :is(a, button) {
+  --profile-text: #0B1C30;
+  background-color: #FFFFFF !important;
+  color: #0B1C30 !important;
+}
+.forge-profile-theme img.forge-corner-logo {
+  width: 112px;
+  height: auto;
+  padding: 0;
+  background: transparent;
+  border-radius: 12px;
+  flex-shrink: 0;
+}
+@media (min-width: 1024px) {
+  .forge-profile-theme img.forge-corner-logo { width: 160px; }
+}

@@ -53,9 +53,9 @@ export default function CharacterSignalsWorkspace() {
         aside={
           <div className="rounded-[1.75rem] border border-[#0B2D5C]/08 bg-white/70 p-6 shadow-[0_12px_32px_rgba(11,45,92,0.04)] backdrop-blur-sm xl:p-7">
             <img
-              src="/Logos/forgedinlife-header-dark.png"
+              src="/Logos/forge-founder-mark.jpeg"
               alt="Forge"
-              className="h-12 w-auto"
+              className="forge-corner-logo h-12 w-auto"
             />
 
             <h1
@@ -86,11 +86,11 @@ export default function CharacterSignalsWorkspace() {
             className="shrink-0"
             style={{ animation: 'characterSignalsFadeUp 0.45s ease-out both' }}
           >
-            <div className="mb-5 flex items-center justify-between gap-3 lg:hidden">
+            <div className="mb-5 flex flex-wrap items-center justify-between gap-3 lg:hidden">
               <img
-                src="/Logos/forgedinlife-header-dark.png"
+                src="/Logos/forge-founder-mark.jpeg"
                 alt="Forge"
-                className="h-12 w-auto sm:h-14"
+                className="forge-corner-logo h-12 w-auto sm:h-14"
               />
               <p className="rounded-full border border-[#0B2D5C]/12 bg-white/70 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.16em] text-[#0B2D5C]/65">Private by default</p>
             </div>
