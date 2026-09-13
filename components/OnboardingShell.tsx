@@ -30,6 +30,8 @@ import {
   MIN_DISTANCE_MILES,
   MIN_MATCH_AGE,
   matchingPreferencesAreComplete,
+  getInterestedInSelections,
+  toggleInterestedInSelection,
 } from '@/lib/profile/matching-preferences';
 import type { Tables } from '@/lib/supabase/database.types';
 
@@ -144,7 +146,9 @@ export default function OnboardingShell({
   const [dateOfBirth, setDateOfBirth] = useState(initialDateOfBirth ?? '');
   const [dateOfBirthSaved, setDateOfBirthSaved] = useState(Boolean(initialDateOfBirth));
   const [genderIdentity, setGenderIdentity] = useState(initialPreferences?.gender_identity ?? '');
-  const [interestedIn, setInterestedIn] = useState<string[]>(initialPreferences?.interested_in ?? []);
+  const [interestedIn, setInterestedIn] = useState(() =>
+    getInterestedInSelections(initialPreferences?.interested_in)
+  );
   const [preferredAgeMin, setPreferredAgeMin] = useState(initialPreferences?.preferred_age_min ?? 25);
   const [preferredAgeMax, setPreferredAgeMax] = useState(initialPreferences?.preferred_age_max ?? 55);
   const [maxDistanceMiles, setMaxDistanceMiles] = useState(initialPreferences?.max_distance_miles ?? 50);
@@ -367,7 +371,7 @@ export default function OnboardingShell({
   );
 
   return (
-    <div className="mx-auto max-w-lg px-5 pb-24 pt-10 sm:px-6 sm:pt-14">
+    <div className="mx-auto w-full max-w-[1024px] px-5 pb-12 pt-6 sm:px-8 sm:pt-8">
       <Link
         href="/app"
         className="mb-6 inline-flex items-center text-sm font-medium text-[#0B2D5C] transition hover:text-[#D62828]"
@@ -377,21 +381,21 @@ export default function OnboardingShell({
 
       <ProgressBar step={step} />
 
-      <div className="rounded-[2rem] border border-[#0B2D5C]/10 bg-white p-7 shadow-[0_18px_50px_rgba(11,45,92,0.06)] sm:p-9">
+      <div className="rounded-[2rem] border border-[#0B2D5C]/10 bg-white p-5 shadow-[0_18px_50px_rgba(11,45,92,0.06)] sm:p-8 lg:p-10">
         {step === 1 && (
-          <section>
+          <section className="min-w-0">
             <p className="mb-3 text-sm font-semibold uppercase tracking-[0.14em] text-[#D62828]">
               Welcome
             </p>
             <h1 className="mb-4 text-3xl font-bold tracking-tight text-[#0B2D5C] sm:text-4xl">
               Welcome to Forge
             </h1>
-            <p className="text-base leading-relaxed text-[#555555] sm:text-lg">
+            <p className="max-w-prose text-base leading-relaxed text-[#555555] sm:text-lg">
               Forge is built for people who want something real. We&apos;ll start by learning what
               matters most so future compatibility can be based on more than photos and
               surface-level attraction.
             </p>
-            <p className="mt-5 text-base leading-relaxed text-[#555555]">
+            <p className="mt-5 max-w-prose text-base leading-relaxed text-[#555555]">
               This first pass is simple on purpose. Your answers are saved to your account so you
               can leave and come back anytime.
             </p>
@@ -399,18 +403,18 @@ export default function OnboardingShell({
         )}
 
         {step === 2 && (
-          <section>
+          <section className="min-w-0">
             <p className="mb-3 text-sm font-semibold uppercase tracking-[0.14em] text-[#D62828]">
               Adult eligibility
             </p>
             <h1 className="mb-3 text-3xl font-bold tracking-tight text-[#0B2D5C] sm:text-4xl">
               Confirm your date of birth
             </h1>
-            <p className="mb-6 text-base leading-relaxed text-[#555555]">
+            <p className="mb-6 max-w-prose text-base leading-relaxed text-[#555555]">
               Forge is for adults 18 and older. Your full date of birth stays private; other
               members only see your current age.
             </p>
-            <label className="block text-sm font-semibold text-[#0B2D5C]">
+            <label className="block max-w-md text-sm font-semibold text-[#0B2D5C]">
               Date of birth
               <input
                 type="date"
@@ -423,14 +427,14 @@ export default function OnboardingShell({
                   setSaveMessage(null);
                   setSaveError(null);
                 }}
-                className="mt-2 w-full rounded-2xl border border-[#0B2D5C]/20 bg-white px-5 py-4 text-base text-[#0B2D5C] focus:border-[#0B2D5C] focus:outline-none focus:ring-2 focus:ring-[#0B2D5C]/20"
+                className="mt-2 min-w-0 w-full rounded-2xl border border-[#0B2D5C]/20 bg-white px-5 py-4 text-base text-[#0B2D5C] focus:border-[#0B2D5C] focus:outline-none focus:ring-2 focus:ring-[#0B2D5C]/20"
               />
             </label>
             <button
               type="button"
               onClick={() => void saveDateOfBirth()}
               disabled={!dateOfBirth || isPending || isFinishing}
-              className="mt-4 inline-flex w-full items-center justify-center rounded-2xl border border-[#0B2D5C]/20 bg-white px-6 py-3 font-semibold text-[#0B2D5C] disabled:opacity-60"
+              className="mt-4 inline-flex w-full sm:w-auto items-center justify-center rounded-2xl border border-[#0B2D5C]/20 bg-white px-6 py-3 font-semibold text-[#0B2D5C] disabled:opacity-60"
             >
               {dateOfBirthSaved ? 'Saved' : 'Save date of birth'}
             </button>
@@ -444,104 +448,109 @@ export default function OnboardingShell({
         )}
 
         {step === 3 && (
-          <section>
+          <section className="min-w-0">
             <p className="mb-3 text-sm font-semibold uppercase tracking-[0.14em] text-[#D62828]">
               Matching
             </p>
             <h1 className="mb-3 text-3xl font-bold tracking-tight text-[#0B2D5C] sm:text-4xl">
               Who you would like to meet
             </h1>
-            <p className="mb-6 text-base leading-relaxed text-[#555555]">
+            <p className="mb-6 max-w-prose text-base leading-relaxed text-[#555555]">
               These settings stay private. Forge uses them in both directions so members only
               appear when each person fits the other&apos;s preferences.
             </p>
 
-            <fieldset>
-              <legend className="text-sm font-semibold text-[#0B2D5C]">I am</legend>
-              <div className="mt-2 grid grid-cols-1 gap-2 sm:grid-cols-2">
-                {SEX_OPTIONS.map((option) => (
-                  <OptionButton
-                    key={option.value}
-                    label={option.label}
-                    selected={genderIdentity === option.value}
-                    onClick={() => {
-                      setGenderIdentity(option.value);
+            <div className="grid grid-cols-1 gap-6 lg:grid-cols-2 lg:gap-8">
+              <fieldset className="min-w-0">
+                <legend className="text-sm font-semibold text-[#0B2D5C]">I am</legend>
+                <div className="mt-2 grid grid-cols-1 gap-2 sm:grid-cols-2">
+                  {SEX_OPTIONS.map((option) => (
+                    <OptionButton
+                      key={option.value}
+                      label={option.label}
+                      selected={genderIdentity === option.value}
+                      onClick={() => {
+                        setGenderIdentity(option.value);
+                        setPreferencesSaved(false);
+                      }}
+                    />
+                  ))}
+                </div>
+              </fieldset>
+
+              <fieldset className="min-w-0">
+                <legend className="text-sm font-semibold text-[#0B2D5C]">I am interested in</legend>
+                <p className="mt-1 text-sm text-[#5A6575]">Select at least one.</p>
+                <div className="mt-2 grid grid-cols-1 gap-2 sm:grid-cols-2">
+                  {INTERESTED_IN_OPTIONS.map((option) => (
+                    <OptionButton
+                      key={option.value}
+                      label={option.label}
+                      selected={interestedIn.includes(option.value)}
+                      onClick={() => {
+                        setInterestedIn((current) => toggleInterestedInSelection(current, option.value));
+                        setPreferencesSaved(false);
+                      }}
+                    />
+                  ))}
+                </div>
+              </fieldset>
+            </div>
+
+            <div className="mt-6 grid grid-cols-1 gap-6 md:grid-cols-2 md:items-end lg:gap-8">
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                <label className="text-sm font-semibold text-[#0B2D5C]">
+                  Minimum age
+                  <input
+                    type="number"
+                    min={MIN_MATCH_AGE}
+                    max={MAX_MATCH_AGE}
+                    value={preferredAgeMin}
+                    onChange={(event) => {
+                      setPreferredAgeMin(Number(event.target.value));
                       setPreferencesSaved(false);
                     }}
+                    className="mt-2 min-w-0 w-full rounded-2xl border border-[#0B2D5C]/20 px-4 py-3"
                   />
-                ))}
-              </div>
-            </fieldset>
-
-            <fieldset className="mt-6">
-              <legend className="text-sm font-semibold text-[#0B2D5C]">I am interested in</legend>
-              <div className="mt-2 grid grid-cols-1 gap-2 sm:grid-cols-2">
-                {INTERESTED_IN_OPTIONS.map((option) => (
-                  <OptionButton
-                    key={option.value}
-                    label={option.label}
-                    selected={interestedIn.includes(option.value)}
-                    onClick={() => {
-                      setInterestedIn([option.value]);
+                </label>
+                <label className="text-sm font-semibold text-[#0B2D5C]">
+                  Maximum age
+                  <input
+                    type="number"
+                    min={MIN_MATCH_AGE}
+                    max={MAX_MATCH_AGE}
+                    value={preferredAgeMax}
+                    onChange={(event) => {
+                      setPreferredAgeMax(Number(event.target.value));
                       setPreferencesSaved(false);
                     }}
+                    className="mt-2 min-w-0 w-full rounded-2xl border border-[#0B2D5C]/20 px-4 py-3"
                   />
-                ))}
+                </label>
               </div>
-            </fieldset>
 
-            <div className="mt-6 grid grid-cols-2 gap-3">
-              <label className="text-sm font-semibold text-[#0B2D5C]">
-                Minimum age
+              <label className="block min-w-0 text-sm font-semibold text-[#0B2D5C]">
+                Maximum distance: {maxDistanceMiles} miles
                 <input
-                  type="number"
-                  min={MIN_MATCH_AGE}
-                  max={MAX_MATCH_AGE}
-                  value={preferredAgeMin}
+                  type="range"
+                  min={MIN_DISTANCE_MILES}
+                  max={MAX_DISTANCE_MILES}
+                  step="5"
+                  value={maxDistanceMiles}
                   onChange={(event) => {
-                    setPreferredAgeMin(Number(event.target.value));
+                    setMaxDistanceMiles(Number(event.target.value));
                     setPreferencesSaved(false);
                   }}
-                  className="mt-2 w-full rounded-2xl border border-[#0B2D5C]/20 px-4 py-3"
-                />
-              </label>
-              <label className="text-sm font-semibold text-[#0B2D5C]">
-                Maximum age
-                <input
-                  type="number"
-                  min={MIN_MATCH_AGE}
-                  max={MAX_MATCH_AGE}
-                  value={preferredAgeMax}
-                  onChange={(event) => {
-                    setPreferredAgeMax(Number(event.target.value));
-                    setPreferencesSaved(false);
-                  }}
-                  className="mt-2 w-full rounded-2xl border border-[#0B2D5C]/20 px-4 py-3"
+                  className="mt-3 w-full accent-[#D62828]"
                 />
               </label>
             </div>
-
-            <label className="mt-5 block text-sm font-semibold text-[#0B2D5C]">
-              Maximum distance: {maxDistanceMiles} miles
-              <input
-                type="range"
-                min={MIN_DISTANCE_MILES}
-                max={MAX_DISTANCE_MILES}
-                step="5"
-                value={maxDistanceMiles}
-                onChange={(event) => {
-                  setMaxDistanceMiles(Number(event.target.value));
-                  setPreferencesSaved(false);
-                }}
-                className="mt-3 w-full accent-[#D62828]"
-              />
-            </label>
 
             <button
               type="button"
               onClick={() => void saveMatchingPreferences()}
               disabled={isPending || isFinishing}
-              className="mt-5 inline-flex w-full items-center justify-center rounded-2xl border border-[#0B2D5C]/20 bg-white px-6 py-3 font-semibold text-[#0B2D5C] disabled:opacity-60"
+              className="mt-5 inline-flex w-full sm:w-auto items-center justify-center rounded-2xl border border-[#0B2D5C]/20 bg-white px-6 py-3 font-semibold text-[#0B2D5C] disabled:opacity-60"
             >
               {preferencesSaved ? 'Saved' : 'Save matching preferences'}
             </button>
@@ -552,18 +561,18 @@ export default function OnboardingShell({
         )}
 
         {step === 4 && (
-          <section>
+          <section className="min-w-0">
             <p className="mb-3 text-sm font-semibold uppercase tracking-[0.14em] text-[#D62828]">
               Intention
             </p>
             <h1 className="mb-3 text-3xl font-bold tracking-tight text-[#0B2D5C] sm:text-4xl">
               What you&apos;re looking for
             </h1>
-            <p className="mb-6 text-base leading-relaxed text-[#555555]">
+            <p className="mb-6 max-w-prose text-base leading-relaxed text-[#555555]">
               Choose the option that best reflects your relationship intention right now. You can
               refine this later.
             </p>
-            <div className="space-y-3">
+            <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
               {INTENTION_OPTIONS.map((option) => (
                 <OptionButton
                   key={option.value}
@@ -584,18 +593,18 @@ export default function OnboardingShell({
         )}
 
         {step === 5 && (
-          <section>
+          <section className="min-w-0">
             <p className="mb-3 text-sm font-semibold uppercase tracking-[0.14em] text-[#D62828]">
               Values
             </p>
             <h1 className="mb-3 text-3xl font-bold tracking-tight text-[#0B2D5C] sm:text-4xl">
               What matters most
             </h1>
-            <p className="mb-6 text-base leading-relaxed text-[#555555]">
+            <p className="mb-6 max-w-prose text-base leading-relaxed text-[#555555]">
               Select the values that feel most important in a relationship. Choose as many as
               resonate.
             </p>
-            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
               {VALUES_OPTIONS.map((option) => (
                 <OptionButton
                   key={option}
@@ -616,18 +625,18 @@ export default function OnboardingShell({
         )}
 
         {step === 6 && (
-          <section>
+          <section className="min-w-0">
             <p className="mb-3 text-sm font-semibold uppercase tracking-[0.14em] text-[#D62828]">
               Readiness
             </p>
             <h1 className="mb-3 text-3xl font-bold tracking-tight text-[#0B2D5C] sm:text-4xl">
               Your profile is next
             </h1>
-            <p className="mb-5 text-base leading-relaxed text-[#555555] sm:text-lg">
+            <p className="mb-5 max-w-prose text-base leading-relaxed text-[#555555] sm:text-lg">
               Your Forge profile is where compatibility starts to become visible. The more honest
               and complete it is, the better Forge can help surface meaningful alignment.
             </p>
-            <p className="mb-8 text-base leading-relaxed text-[#555555]">
+            <p className="mb-8 max-w-prose text-base leading-relaxed text-[#555555]">
               Take a moment to strengthen your profile, then preview how others may see you.
             </p>
             {saveError && (
@@ -635,7 +644,7 @@ export default function OnboardingShell({
                 {saveError}
               </p>
             )}
-            <div className="flex flex-col gap-3">
+            <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
               <button
                 type="button"
                 disabled={isFinishing}

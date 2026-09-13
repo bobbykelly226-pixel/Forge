@@ -123,9 +123,9 @@ export default function MyProfileHub({
         aside={
           <div className="rounded-[1.75rem] border border-[#0B2D5C]/08 bg-white/70 p-6 shadow-[0_12px_32px_rgba(11,45,92,0.04)] backdrop-blur-sm xl:p-7">
             <img
-              src="/Logos/forgedinlife-header-dark.png"
+              src="/Logos/forge-founder-transparent.png"
               alt="Forge"
-              className="h-12 w-auto"
+              className="forge-corner-logo h-12 w-auto"
             />
             <h1
               className="mt-8 text-[1.75rem] leading-none tracking-[-0.02em] text-[#0B2D5C]"
@@ -148,11 +148,11 @@ export default function MyProfileHub({
         </div>
 
         <div className="mx-auto flex w-full max-w-lg flex-col px-4 pb-[7.5rem] pt-5 sm:px-6 sm:pt-7 lg:mx-0 lg:max-w-none lg:px-0 lg:pb-10 lg:pt-0">
-          <div className="mb-5 flex items-center justify-between gap-3 lg:hidden">
+          <div className="forge-mobile-brand-row mb-5 flex flex-wrap items-center justify-between gap-3 lg:hidden">
             <img
-              src="/Logos/forgedinlife-header-dark.png"
+              src="/Logos/forge-founder-transparent.png"
               alt="Forge"
-              className="h-12 w-auto sm:h-14"
+              className="forge-corner-logo h-12 w-auto sm:h-14"
             />
             <Link
               href="/profile/preview"
@@ -160,7 +160,7 @@ export default function MyProfileHub({
             >
               Preview
             </Link>
-            <LogoutButton className="!rounded-full !bg-white/70 !px-3 !py-1 !text-[10px] !uppercase !tracking-[0.14em] !text-[#0B2D5C] ring-1 ring-[#0B2D5C]/12 hover:!bg-white" />
+            <LogoutButton className="rounded-lg bg-[#0B1C30] px-3 py-2 text-[10px] uppercase tracking-[0.14em] text-white" />
           </div>
 
           {!onboardingCompleted ? (
@@ -271,7 +271,7 @@ export default function MyProfileHub({
                 href="/feedback"
                 className="group flex items-center gap-3 rounded-[1.5rem] border border-[#0B2D5C]/09 bg-white/80 p-4 text-[#0B2D5C] shadow-[0_10px_30px_rgba(11,45,92,0.04)] transition hover:border-[#0B2D5C]/20 hover:bg-white"
               >
-                <span className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-[#0B2D5C]/07 transition group-hover:bg-[#0B2D5C] group-hover:text-white">
+                <span data-icon-badge className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-[#0B2D5C]/07 transition group-hover:bg-[#0B2D5C] group-hover:text-white">
                   <MessageSquarePlus className="h-5 w-5" strokeWidth={1.75} aria-hidden="true" />
                 </span>
                 <span>
@@ -286,7 +286,7 @@ export default function MyProfileHub({
                 href="/profile/account"
                 className="group flex items-center gap-3 rounded-[1.5rem] border border-[#0B2D5C]/09 bg-white/80 p-4 text-[#0B2D5C] shadow-[0_10px_30px_rgba(11,45,92,0.04)] transition hover:border-[#0B2D5C]/20 hover:bg-white"
               >
-                <span className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-[#0B2D5C]/07 transition group-hover:bg-[#0B2D5C] group-hover:text-white">
+                <span data-icon-badge className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-[#0B2D5C]/07 transition group-hover:bg-[#0B2D5C] group-hover:text-white">
                   <ShieldCheck className="h-5 w-5" strokeWidth={1.75} aria-hidden="true" />
                 </span>
                 <span>

@@ -148,7 +148,7 @@ export function NewRecognitionSection({ signals }: { signals: UserSignalInstance
             return (
               <li key={instance.id} className="rounded-2xl border border-[#0B2D5C]/08 bg-white/80 px-4 py-4">
                 <div className="flex items-start gap-3">
-                  <span className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#EEF2F7] text-[#0B2D5C]">
+                  <span data-icon-badge className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#EEF2F7] text-[#0B2D5C]">
                     <CharacterSignalIcon signalId={instance.signalId} className="h-4 w-4" />
                   </span>
                   <div className="min-w-0">

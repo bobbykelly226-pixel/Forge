@@ -14,16 +14,17 @@ import { createClient } from '@/lib/supabase/client';
 type Props = {
   attachment: ConversationAttachment;
   isSent: boolean;
+  localPreviewUrl?: string;
 };
 
-export default function MessageAttachment({ attachment, isSent }: Props) {
+export default function MessageAttachment({ attachment, isSent, localPreviewUrl }: Props) {
   const [signedUrl, setSignedUrl] = useState<string | null>(null);
   const [failed, setFailed] = useState(false);
   const path = attachment.storagePath;
 
   useEffect(() => {
     let active = true;
-    if (!path) return;
+    if (!path || localPreviewUrl) return;
 
     const load = async () => {
       const supabase = createClient();
@@ -41,7 +42,9 @@ export default function MessageAttachment({ attachment, isSent }: Props) {
     return () => {
       active = false;
     };
-  }, [path]);
+  }, [path, localPreviewUrl]);
+
+  const displayUrl = localPreviewUrl ?? signedUrl;
 
   if (!path) return null;
 
@@ -51,7 +54,7 @@ export default function MessageAttachment({ attachment, isSent }: Props) {
   const foreground = isSent ? 'text-white' : 'text-[#0B2D5C]';
   const secondary = isSent ? 'text-white/70' : 'text-[#7A8494]';
 
-  if (!signedUrl && !failed) {
+  if (!displayUrl && !failed) {
     return (
       <div className={`flex min-w-48 items-center gap-2 py-1 ${secondary}`}>
         <LoaderCircle className="h-4 w-4 animate-spin" aria-hidden="true" />
@@ -60,7 +63,7 @@ export default function MessageAttachment({ attachment, isSent }: Props) {
     );
   }
 
-  if (failed || !signedUrl) {
+  if (failed || !displayUrl) {
     return (
       <div className={`flex items-center gap-2 py-1 ${secondary}`}>
         <FileText className="h-4 w-4" aria-hidden="true" />
@@ -72,7 +75,7 @@ export default function MessageAttachment({ attachment, isSent }: Props) {
   if (image) {
     return (
       <a
-        href={signedUrl}
+        href={displayUrl}
         target="_blank"
         rel="noreferrer"
         className="block overflow-hidden rounded-xl focus:outline-none focus:ring-2 focus:ring-white/70"
@@ -81,7 +84,8 @@ export default function MessageAttachment({ attachment, isSent }: Props) {
         {/* Private, short-lived Supabase URL cannot be statically optimized by Next Image. */}
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
-          src={signedUrl}
+          src={displayUrl}
+          onError={() => setFailed(true)}
           alt={name}
           className="max-h-80 w-full min-w-48 max-w-sm object-contain"
         />
@@ -96,7 +100,7 @@ export default function MessageAttachment({ attachment, isSent }: Props) {
 
   return (
     <a
-      href={signedUrl}
+      href={displayUrl}
       target="_blank"
       rel="noreferrer"
       download={name}

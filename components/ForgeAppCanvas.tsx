@@ -16,7 +16,7 @@ type ForgeAppCanvasProps = {
 
 /**
  * Permanent Forge application canvas.
- * Soft Slate (#E8EBF0) via --forge-app-background.
+ * Approved Profile palette shared across every application destination.
  * Use only on authenticated app shell routes — not marketing pages.
  */
 export default function ForgeAppCanvas({
@@ -28,7 +28,7 @@ export default function ForgeAppCanvas({
   return (
     <div
       className={cn(
-        'forge-app-canvas min-h-screen text-[#1A2332]',
+        'forge-app-canvas forge-profile-theme min-h-screen text-[#1A2332]',
         desktopViewportLock && 'lg:h-dvh lg:min-h-0 lg:overflow-hidden',
         className
       )}

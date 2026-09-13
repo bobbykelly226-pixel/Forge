@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { useCallback, useRef, useState } from 'react';
 
 import DiscoveryDesktopTopBar from '@/components/DiscoveryDesktopTopBar';
@@ -28,7 +29,7 @@ export default function CharacterSignalsWorkspace() {
 
   const closeLearnMore = useCallback(() => {
     setLearnMoreOpen(false);
-    window.requestAnimationFrame(() => learnMoreTriggerRef.current?.focus());
+    window.requestAnimationFrame(() => learnMoreTriggerRef.current?.focus({ preventScroll: true }));
   }, []);
 
   return (
@@ -52,9 +53,9 @@ export default function CharacterSignalsWorkspace() {
         aside={
           <div className="rounded-[1.75rem] border border-[#0B2D5C]/08 bg-white/70 p-6 shadow-[0_12px_32px_rgba(11,45,92,0.04)] backdrop-blur-sm xl:p-7">
             <img
-              src="/Logos/forgedinlife-header-dark.png"
+              src="/Logos/forge-founder-transparent.png"
               alt="Forge"
-              className="h-12 w-auto"
+              className="forge-corner-logo h-12 w-auto"
             />
 
             <h1
@@ -77,16 +78,19 @@ export default function CharacterSignalsWorkspace() {
         </div>
 
         <div className="mx-auto flex w-full max-w-lg flex-col px-4 pb-[7.5rem] pt-5 sm:px-6 sm:pt-7 lg:mx-0 lg:max-w-2xl lg:px-0 lg:pb-10 lg:pt-0">
+          <Link href="/profile" className="mb-5 inline-flex min-h-11 items-center gap-2 self-start rounded-xl border border-[#0B2D5C]/20 px-4 py-2 text-sm font-semibold text-[#0B2D5C]">
+            ← Back to Profile
+          </Link>
           {/* Section 1 — intro */}
           <header
             className="shrink-0"
             style={{ animation: 'characterSignalsFadeUp 0.45s ease-out both' }}
           >
-            <div className="mb-5 flex items-center justify-between gap-3 lg:hidden">
+            <div className="mb-5 flex flex-wrap items-center justify-between gap-3 lg:hidden">
               <img
-                src="/Logos/forgedinlife-header-dark.png"
+                src="/Logos/forge-founder-transparent.png"
                 alt="Forge"
-                className="h-12 w-auto sm:h-14"
+                className="forge-corner-logo h-12 w-auto sm:h-14"
               />
               <p className="rounded-full border border-[#0B2D5C]/12 bg-white/70 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.16em] text-[#0B2D5C]/65">Private by default</p>
             </div>

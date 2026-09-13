@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo } from 'react';
+import { useEffect, useId, useMemo, useState } from 'react';
 import { ChevronDown, SlidersHorizontal, X } from 'lucide-react';
 
 import {
@@ -103,6 +103,9 @@ export default function DiscoveryFiltersDrawer({
   onChange: (filters: DiscoveryFilters) => void;
   onClose: () => void;
 }) {
+  const locationListId = useId();
+  const [showLocations, setShowLocations] = useState(false);
+  const locations = [...new Set(profiles.map((profile) => profile.location).filter((location): location is string => Boolean(location)))].sort();
   useEffect(() => {
     if (!open) return;
     const onKeyDown = (event: KeyboardEvent) => {
@@ -131,12 +134,13 @@ export default function DiscoveryFiltersDrawer({
         onClick={onClose}
       />
       <section
+        data-discovery-filters
         role="dialog"
         aria-modal="true"
         aria-labelledby="discovery-filter-title"
         className="relative h-full w-full max-w-xl overflow-y-auto bg-[#FBF9F6] shadow-[-20px_0_60px_rgba(7,28,56,0.22)]"
       >
-        <header className="sticky top-0 z-10 flex items-center justify-between border-b border-[#0B2D5C]/08 bg-[#FBF9F6]/95 px-5 py-4 backdrop-blur sm:px-7">
+        <header data-profile-chrome="header" className="sticky top-0 z-10 flex items-center justify-between border-b border-[#0B2D5C]/08 bg-[#FBF9F6]/95 px-5 py-4 backdrop-blur sm:px-7">
           <div className="flex items-center gap-3">
             <SlidersHorizontal className="h-5 w-5 text-[#D62828]" aria-hidden="true" />
             <div>
@@ -164,10 +168,7 @@ export default function DiscoveryFiltersDrawer({
             <div className="grid grid-cols-2 gap-3">
               <label className="text-xs font-medium text-[#5A6575]">
                 Minimum
-                <input
-                  type="number"
-                  min={18}
-                  max={120}
+                <select
                   value={filters.minAge ?? ''}
                   onChange={(event) =>
                     onChange({
@@ -175,15 +176,15 @@ export default function DiscoveryFiltersDrawer({
                       minAge: event.target.value ? Number(event.target.value) : null,
                     })
                   }
-                  className="mt-1 w-full rounded-2xl border border-[#0B2D5C]/20 bg-white px-4 py-3 text-base text-[#0B2D5C]"
-                />
+                  className="mt-1 w-full rounded-md border border-[#0B2D5C]/20 bg-white px-4 py-3 text-base text-[#0B2D5C]"
+                >
+                  <option value="">Any age</option>
+                  {Array.from({ length: 103 }, (_, index) => index + 18).map((age) => <option key={age} value={age}>{age}</option>)}
+                </select>
               </label>
               <label className="text-xs font-medium text-[#5A6575]">
                 Maximum
-                <input
-                  type="number"
-                  min={18}
-                  max={120}
+                <select
                   value={filters.maxAge ?? ''}
                   onChange={(event) =>
                     onChange({
@@ -191,24 +192,45 @@ export default function DiscoveryFiltersDrawer({
                       maxAge: event.target.value ? Number(event.target.value) : null,
                     })
                   }
-                  className="mt-1 w-full rounded-2xl border border-[#0B2D5C]/20 bg-white px-4 py-3 text-base text-[#0B2D5C]"
-                />
+                  className="mt-1 w-full rounded-md border border-[#0B2D5C]/20 bg-white px-4 py-3 text-base text-[#0B2D5C]"
+                >
+                  <option value="">Any age</option>
+                  {Array.from({ length: 103 }, (_, index) => index + 18).map((age) => <option key={age} value={age}>{age}</option>)}
+                </select>
               </label>
             </div>
           </fieldset>
 
-          <label className="block text-sm font-semibold text-[#0B2D5C]">
-            Location
+          <div className="block text-sm font-semibold text-[#0B2D5C]">
+            <label htmlFor={locationListId}>Location</label>
             <input
               type="search"
+              id={locationListId}
+              autoComplete="off"
               value={filters.locationQuery}
               onChange={(event) =>
-                onChange({ ...filters, locationQuery: event.target.value })
+                { onChange({ ...filters, locationQuery: event.target.value }); setShowLocations(true); }
               }
-              placeholder="City or state"
+              placeholder="Start typing a city or state"
               className="mt-2 w-full rounded-2xl border border-[#0B2D5C]/20 bg-white px-4 py-3 text-base font-normal text-[#0B2D5C]"
             />
-          </label>
+            {showLocations && filters.locationQuery.trim() && (
+              <ul aria-label="Suggested locations" className="mt-2 space-y-2">
+                {locations.filter((location) => location.toLowerCase().includes(filters.locationQuery.trim().toLowerCase())).map((location) => (
+                  <li key={location}>
+                    <button type="button" className="w-full text-left text-sm" onClick={() => {
+                      onChange({ ...filters, locationQuery: location });
+                      setShowLocations(false);
+                    }}>{location}</button>
+                  </li>
+                ))}
+                {!locations.some((location) => location.toLowerCase().includes(filters.locationQuery.trim().toLowerCase())) && (
+                  <li className="text-sm font-normal">No available profile locations match this city or state.</li>
+                )}
+              </ul>
+            )}
+            <span className="mt-2 block text-xs font-normal text-[#5A6575]">Tap a suggested location. Your filters apply to the available profiles.</span>
+          </div>
 
           <div className="space-y-3">
             <FilterChecklist

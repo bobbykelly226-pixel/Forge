@@ -147,6 +147,15 @@ export default function ProfileWorkspace({
   const [sectionMessage, setSectionMessage] = useState<Record<string, string>>({});
   const sectionRefs = useRef<Partial<Record<ProfileSectionId, HTMLElement | null>>>({});
 
+  const returnSection = useRef<ProfileSectionId | null>(null);
+  useEffect(() => {
+    if (!returnSection.current || openSection) return;
+    const node = sectionRefs.current[returnSection.current];
+    node?.focus({ preventScroll: true });
+    node?.scrollIntoView({ behavior: 'instant', block: 'start' });
+    returnSection.current = null;
+  }, [openSection]);
+
   const photoCount = photos.length;
   const completionSections = getProfileCompletionSections({
     profile,
@@ -192,6 +201,7 @@ export default function ProfileWorkspace({
     if (sectionStatus[id] === 'saving') return;
     setOpenSection(null);
     setStatus(id, 'idle');
+    returnSection.current = id;
   };
 
   const handleSectionSave = async (
@@ -223,6 +233,7 @@ export default function ProfileWorkspace({
         setCoreValues(result.coreValues);
       }
 
+      returnSection.current = id;
       setStatus(id, 'saved', result.message || 'Saved.');
       setOpenSection(null);
     } catch {
@@ -347,13 +358,15 @@ export default function ProfileWorkspace({
             <article
               key={section.id}
               id={`section-${section.id}`}
+              tabIndex={-1}
+              style={{ scrollMarginTop: 24 }}
               ref={(node) => {
                 sectionRefs.current[section.id] = node;
               }}
               className="rounded-[1.5rem] border border-[#0B2D5C]/08 bg-white/90 shadow-[0_8px_28px_rgba(11,45,92,0.04)]"
             >
               <div className="flex items-start gap-3.5 px-4 py-4 sm:px-5">
-                <span className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-[#EEF2F7] text-[#0B2D5C]">
+                <span data-icon-badge className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-[#EEF2F7] text-[#0B2D5C]">
                   <Icon className="h-5 w-5" strokeWidth={1.75} aria-hidden="true" />
                 </span>
                 <div className="min-w-0 flex-1">

@@ -5,7 +5,6 @@ import {
   Bookmark,
   Check,
   Heart,
-  Info,
   RotateCcw,
   Send,
   X,
@@ -45,7 +44,7 @@ function ActionTile({
   actionRef?: React.Ref<HTMLButtonElement>;
 }) {
   const base =
-    'flex w-full flex-col items-start gap-1 rounded-2xl px-4 py-3.5 text-left transition active:scale-[0.99] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 disabled:cursor-not-allowed disabled:opacity-70 lg:gap-1.5 lg:px-5 lg:py-4';
+    'flex h-full w-full flex-col items-start gap-1 rounded-2xl px-4 py-3.5 text-left transition active:scale-[0.99] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 disabled:cursor-not-allowed disabled:opacity-70 lg:gap-1.5 lg:px-5 lg:py-4';
 
   const variants = {
     primary: active
@@ -141,9 +140,9 @@ export default function DiscoveryActionTiles({
       }}
       aria-label="Learn about Open to Chat"
       aria-haspopup="dialog"
-      className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-[#0B2D5C]/15 bg-white/80 text-[#6B7585] transition hover:border-[#0B2D5C]/30 hover:text-[#0B2D5C] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0B2D5C]"
+      className="inline-flex min-h-10 shrink-0 items-center justify-center whitespace-nowrap rounded-md px-2 py-2 text-xs font-semibold"
     >
-      <Info className="h-4 w-4" strokeWidth={1.75} aria-hidden="true" />
+      <span>Learn more</span>
     </button>
   );
 
@@ -155,9 +154,9 @@ export default function DiscoveryActionTiles({
         handleInterestedInfo(profileName);
       }}
       aria-label="What Interested means"
-      className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-white/25 bg-white/15 text-white transition hover:bg-white/25 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+      className="inline-flex min-h-10 shrink-0 items-center justify-center whitespace-nowrap rounded-md px-2 py-2 text-xs font-semibold"
     >
-      <Info className="h-4 w-4" strokeWidth={1.75} aria-hidden="true" />
+      <span>Learn more</span>
     </button>
   );
 

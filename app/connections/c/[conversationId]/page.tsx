@@ -1,6 +1,5 @@
 import type { Viewport } from 'next';
 import { Fraunces, Manrope } from 'next/font/google';
-import Link from 'next/link';
 import { notFound, redirect } from 'next/navigation';
 
 import {
@@ -93,14 +92,6 @@ export default async function ConversationThreadPage({
         }}
       >
         <div className="mx-auto min-h-screen w-full max-w-3xl px-4 pb-28 pt-4 sm:px-6 lg:pb-10">
-          <p className="mb-3">
-            <Link
-              href="/connections?tab=conversations"
-              className="text-sm font-semibold text-[#0B2D5C] underline decoration-[#0B2D5C]/35 underline-offset-4"
-            >
-              ← Messages
-            </Link>
-          </p>
           <ConversationThread
             meta={meta}
             initialMessages={buildSeedMessages(conversationId)}
@@ -161,14 +152,6 @@ export default async function ConversationThreadPage({
     >
       <NotificationsProvider initialMessagesUnread={false}>
         <div className="mx-auto min-h-screen w-full max-w-3xl px-4 pb-28 pt-4 sm:px-6 lg:pb-10">
-          <p className="mb-3">
-            <Link
-              href="/connections?tab=conversations"
-              className="text-sm font-semibold text-[#0B2D5C] underline decoration-[#0B2D5C]/35 underline-offset-4"
-            >
-              ← Messages
-            </Link>
-          </p>
           <ConversationThread
             meta={meta}
             initialMessages={messages}

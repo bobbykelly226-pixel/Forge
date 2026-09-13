@@ -6,8 +6,9 @@ export const SEX_OPTIONS = [
 export const INTERESTED_IN_OPTIONS = [
   { value: 'man', label: 'Men' },
   { value: 'woman', label: 'Women' },
-  { value: 'everyone', label: 'Both' },
 ] as const;
+
+export type InterestedInChoice = (typeof INTERESTED_IN_OPTIONS)[number]['value'];
 
 export const MIN_MATCH_AGE = 18;
 export const MAX_MATCH_AGE = 100;
@@ -25,20 +26,48 @@ export type MatchingPreferencesInput = {
 const identityValues = new Set<string>(SEX_OPTIONS.map((option) => option.value));
 const interestValues = new Set<string>(INTERESTED_IN_OPTIONS.map((option) => option.value));
 
+/** Expand the existing database representation into the two independent controls. */
+export function getInterestedInSelections(
+  values: readonly string[] | null | undefined
+): InterestedInChoice[] {
+  if (!Array.isArray(values) || values.length === 0) return [];
+  if (values.length === 1 && values[0] === 'everyone') return ['man', 'woman'];
+  // Do not silently discard unsupported values and turn invalid data into a match.
+  if (values.some((value) => !interestValues.has(value))) return [];
+  return INTERESTED_IN_OPTIONS.filter((option) => values.includes(option.value)).map(
+    (option) => option.value
+  );
+}
+
+export function toggleInterestedInSelection(
+  selected: readonly InterestedInChoice[],
+  choice: InterestedInChoice
+): InterestedInChoice[] {
+  return selected.includes(choice)
+    ? selected.filter((value) => value !== choice)
+    : getInterestedInSelections([...selected, choice]);
+}
+
 export function validateMatchingPreferences(
   input: MatchingPreferencesInput
 ): { ok: true; value: MatchingPreferencesInput } | { ok: false; message: string } {
+  if (
+    !input ||
+    typeof input.genderIdentity !== 'string' ||
+    !Array.isArray(input.interestedIn) ||
+    input.interestedIn.some((value) => typeof value !== 'string')
+  ) {
+    return { ok: false, message: 'Choose who you would like to meet.' };
+  }
   const genderIdentity = input.genderIdentity.trim();
-  const interestedIn = [...new Set(input.interestedIn.map((value) => value.trim()).filter(Boolean))];
+  const rawInterests = [...new Set(input.interestedIn.map((value) => value.trim()))];
+  const selections = getInterestedInSelections(rawInterests);
 
   if (!identityValues.has(genderIdentity)) {
     return { ok: false, message: 'Choose Male or Female.' };
   }
-  if (interestedIn.length === 0 || interestedIn.some((value) => !interestValues.has(value))) {
-    return { ok: false, message: 'Choose who you would like to meet.' };
-  }
-  if (interestedIn.length !== 1) {
-    return { ok: false, message: 'Choose Men, Women, or Both.' };
+  if (selections.length === 0) {
+    return { ok: false, message: 'Select at least one option: Men or Women.' };
   }
   if (!Number.isInteger(input.preferredAgeMin) || input.preferredAgeMin < MIN_MATCH_AGE) {
     return { ok: false, message: 'Minimum preferred age must be at least 18.' };
@@ -64,7 +93,8 @@ export function validateMatchingPreferences(
     ok: true,
     value: {
       genderIdentity,
-      interestedIn,
+      // Keep the existing single-value database contract and reciprocal matching.
+      interestedIn: selections.length === 2 ? ['everyone'] : selections,
       preferredAgeMin: input.preferredAgeMin,
       preferredAgeMax: input.preferredAgeMax,
       maxDistanceMiles: input.maxDistanceMiles,

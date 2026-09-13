@@ -1,6 +1,8 @@
 import type { Metadata } from 'next';
 import ForgeObservability from '@/components/analytics/ForgeObservability';
 import './globals.css';
+import './profile-theme.css';
+import ForwardNavigationScroll from '@/components/ForwardNavigationScroll';
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://forge.forgedinlife.com'),
@@ -44,6 +46,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body>
+        <ForwardNavigationScroll />
         {children}
         <ForgeObservability />
       </body>

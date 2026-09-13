@@ -111,6 +111,11 @@ export default function ConversationThread({
   const composerTextRef = useRef('');
   const refreshingMessagesRef = useRef(false);
   const refreshQueuedRef = useRef(false);
+  const [demoPreviews, setDemoPreviews] = useState<Record<string, string>>({});
+  const demoAttachmentUrls = useRef<Record<string, string>>({});
+  useEffect(() => () => {
+    Object.values(demoAttachmentUrls.current).forEach((url) => URL.revokeObjectURL(url));
+  }, []);
 
   const [messages, setMessages] = useState<ConversationMessage[]>(() =>
     sortMessagesChronologically(initialMessages)
@@ -355,6 +360,26 @@ export default function ConversationThread({
 
     const clientMessageId = existingClientMessageId ?? createClientMessageId();
     let attachment = existingAttachment;
+
+    if (pendingFile && isSeed) {
+      const validationMessage = validateMessageAttachment(pendingFile);
+      if (validationMessage) {
+        setLiveMessage(validationMessage);
+        return false;
+      }
+      const path = `demo-${clientMessageId}`;
+      const previewUrl = URL.createObjectURL(pendingFile);
+      demoAttachmentUrls.current[path] = previewUrl;
+      setDemoPreviews((current) => ({ ...current, [path]: previewUrl }));
+      attachment = {
+        storage_path: path,
+        file_name: sanitizeAttachmentName(pendingFile.name),
+        mime_type: pendingFile.type,
+        file_size: pendingFile.size,
+        width: null,
+        height: null,
+      };
+    }
 
     if (pendingFile && !isSeed) {
       const validationMessage = validateMessageAttachment(pendingFile);
@@ -603,7 +628,8 @@ export default function ConversationThread({
           <div className="min-w-0 flex-1">
             <Link
               href="/connections?tab=conversations"
-              className="text-xs font-medium text-[#7A8494] transition hover:text-[#0B2D5C]"
+              data-text-link
+              className="inline-flex min-h-11 items-center text-sm font-semibold text-[#7A8494] transition hover:text-[#0B2D5C]"
             >
               ← Messages
             </Link>
@@ -611,7 +637,7 @@ export default function ConversationThread({
               className="mt-1 truncate text-xl tracking-[-0.02em] text-[#0B2D5C]"
               style={{ fontFamily: 'var(--font-discovery-display), Georgia, serif' }}
             >
-              <Link href={profileHref} className="transition hover:text-[#0A2540]">
+              <Link data-text-link href={profileHref} className="transition hover:text-[#0A2540]">
                 {meta.peerFirstName}
               </Link>
             </h1>
@@ -799,6 +825,7 @@ export default function ConversationThread({
                   className={`flex flex-col ${isSent ? 'items-end' : 'items-start'}`}
                 >
                   <div
+                    data-message-direction={isSent ? "sent" : "received"}
                     className={`max-w-[85%] rounded-[1.25rem] px-4 py-3 text-[15px] leading-relaxed shadow-sm ${
                       isSent
                         ? 'rounded-br-md bg-[#0B2D5C] text-white'
@@ -809,6 +836,7 @@ export default function ConversationThread({
                       <MessageAttachment
                         key={attachment.id ?? attachment.storagePath}
                         attachment={attachment}
+                        localPreviewUrl={isSeed ? demoPreviews[attachment.storagePath] : undefined}
                         isSent={isSent}
                       />
                     ))}

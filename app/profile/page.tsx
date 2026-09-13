@@ -79,7 +79,7 @@ export default async function MyProfileHubPage({ searchParams }: PageProps) {
   if (!bundle.success) {
     return (
       <ForgeAppCanvas
-        className={`${display.variable} ${sans.variable}`}
+        className={`forge-profile-theme ${display.variable} ${sans.variable}`}
         style={{
           fontFamily: 'var(--font-discovery-sans), ui-sans-serif, system-ui, sans-serif',
         }}
@@ -191,7 +191,7 @@ export default async function MyProfileHubPage({ searchParams }: PageProps) {
   return (
     <ForgeAppCanvas
       desktopViewportLock
-      className={`${display.variable} ${sans.variable}`}
+      className={`forge-profile-theme ${display.variable} ${sans.variable}`}
       style={{
         fontFamily: 'var(--font-discovery-sans), ui-sans-serif, system-ui, sans-serif',
       }}

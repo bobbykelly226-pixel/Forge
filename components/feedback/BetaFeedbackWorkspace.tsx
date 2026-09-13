@@ -4,13 +4,11 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { useActionState, useEffect, useRef } from 'react';
 import {
-  ArrowLeft,
   Bug,
   CheckCircle2,
   CircleHelp,
   LifeBuoy,
   Lightbulb,
-  MessageSquarePlus,
   ShieldCheck,
 } from 'lucide-react';
 
@@ -55,11 +53,11 @@ export default function BetaFeedbackWorkspace() {
         aside={
           <div className="rounded-[1.75rem] border border-[#0B2D5C]/08 bg-white/70 p-6 shadow-[0_12px_32px_rgba(11,45,92,0.04)] backdrop-blur-sm xl:p-7">
             <Image
-              src="/Logos/forgedinlife-header-dark.png"
+              src="/Logos/forge-founder-transparent.png"
               alt="Forge"
               width={200}
               height={48}
-              className="h-12 w-auto"
+              className="forge-corner-logo h-12 w-auto"
             />
             <h1
               className="mt-8 text-[1.75rem] leading-none tracking-[-0.02em] text-[#0B2D5C]"
@@ -76,30 +74,20 @@ export default function BetaFeedbackWorkspace() {
       >
         <DiscoveryDesktopTopBar />
 
-        <main className="mx-auto w-full max-w-3xl px-4 pb-[7.5rem] sm:px-6 lg:mx-0 lg:max-w-none lg:px-0 lg:pb-10">
+        <main data-feedback-workspace className="mx-auto w-full max-w-3xl px-4 pb-[7.5rem] sm:px-6 lg:mx-0 lg:max-w-none lg:px-0 lg:pb-10">
           <div className="mb-5 flex items-center justify-between gap-3 lg:hidden">
             <Image
-              src="/Logos/forgedinlife-header-dark.png"
+              src="/Logos/forge-founder-transparent.png"
               alt="Forge"
               width={200}
               height={56}
-              className="h-12 w-auto sm:h-14"
+              className="forge-corner-logo h-12 w-auto sm:h-14"
             />
-            <Link
-              href="/profile"
-              className="inline-flex items-center gap-1.5 rounded-full border border-[#0B2D5C]/12 bg-white/75 px-3 py-2 text-xs font-semibold text-[#0B2D5C]"
-            >
-              <ArrowLeft className="h-3.5 w-3.5" aria-hidden="true" />
-              Profile
-            </Link>
           </div>
 
           <section className="overflow-hidden rounded-[1.9rem] border border-[#0B2D5C]/08 bg-white/90 shadow-[0_18px_55px_rgba(11,45,92,0.07)]">
             <div className="border-b border-[#0B2D5C]/08 bg-[linear-gradient(135deg,rgba(11,45,92,0.06),rgba(214,40,40,0.035))] px-5 py-6 sm:px-8 sm:py-8">
               <div className="flex items-start gap-4">
-                <span className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-[#0B2D5C] text-white shadow-[0_8px_20px_rgba(11,45,92,0.2)]">
-                  <MessageSquarePlus className="h-5 w-5" strokeWidth={1.75} aria-hidden="true" />
-                </span>
                 <div>
                   <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#D62828]">
                     Founding beta
@@ -178,19 +166,25 @@ export default function BetaFeedbackWorkspace() {
                           <input
                             type="radio"
                             name="category"
+                            onChange={() => {
+                              const next = document.getElementById('feedback-area');
+                              next?.focus({ preventScroll: true });
+                              next?.parentElement?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                            }}
                           value={category.value}
                           className="peer sr-only"
                           required
                         />
                           <span className="flex items-start gap-3">
-                            <span className="mt-0.5 inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[#0B2D5C]/07 text-[#0B2D5C] group-has-[:checked]:bg-[#D62828] group-has-[:checked]:text-white group-has-[:focus-visible]:outline group-has-[:focus-visible]:outline-2 group-has-[:focus-visible]:outline-offset-2 group-has-[:focus-visible]:outline-[#0B2D5C]">
+                            <span data-icon-badge className="mt-0.5 inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[#0B2D5C]/07 text-[#0B2D5C] group-has-[:checked]:bg-[#D62828] group-has-[:checked]:text-white group-has-[:focus-visible]:outline group-has-[:focus-visible]:outline-2 group-has-[:focus-visible]:outline-offset-2 group-has-[:focus-visible]:outline-[#0B2D5C]">
                               <Icon className="h-4 w-4" strokeWidth={1.75} aria-hidden="true" />
                             </span>
                             <span>
                               <span className="block text-sm font-semibold text-[#0B2D5C]">
                                 {category.label}
+                                <span className="feedback-selected ml-2 text-xs">✓ Selected</span>
                               </span>
-                              <span className="mt-1.5 block text-xs leading-relaxed text-[#687384]">
+                              <span data-feedback-description className="mt-1.5 block text-xs leading-relaxed text-[#E6E6E7]">
                                 {category.description}
                               </span>
                             </span>

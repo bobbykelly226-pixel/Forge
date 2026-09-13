@@ -1,7 +1,6 @@
 'use client';
 
 import { useCallback, useRef, type KeyboardEvent } from 'react';
-import { useRouter } from 'next/navigation';
 
 import {
   useConnectionsHub,
@@ -23,7 +22,6 @@ type ConnectionsTabsProps = {
 };
 
 export default function ConnectionsTabs({ layout = 'horizontal' }: ConnectionsTabsProps) {
-  const router = useRouter();
   const { activeTab, setActiveTab, tabCounts } = useConnectionsHub();
   const tabListRef = useRef<HTMLDivElement>(null);
 
@@ -32,15 +30,7 @@ export default function ConnectionsTabs({ layout = 'horizontal' }: ConnectionsTa
     count: tabCounts[tab.id],
   }));
 
-  const selectTab = useCallback(
-    (tabId: ConnectionsTabId) => {
-      setActiveTab(tabId);
-      const href =
-        tabId === 'forYou' ? '/connections' : `/connections?tab=${tabId}`;
-      router.replace(href, { scroll: false });
-    },
-    [router, setActiveTab]
-  );
+  const selectTab = setActiveTab;
 
   const focusTab = useCallback((tabId: ConnectionsTabId) => {
     const button = tabListRef.current?.querySelector<HTMLButtonElement>(

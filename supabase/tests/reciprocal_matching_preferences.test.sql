@@ -3,7 +3,7 @@
 begin;
 create extension if not exists pgtap with schema extensions;
 set local search_path = public, extensions, pg_temp;
-select plan(10);
+select plan(19);
 
 insert into auth.users (
   instance_id, id, aud, role, email, encrypted_password, email_confirmed_at,
@@ -53,8 +53,57 @@ select throws_ok(
   $$,
   null,
   null,
-  'the database rejects more than one interest choice'
+  'the database requires client selections to use its single-value storage representation'
 );
+
+-- The application encodes the two independently selected controls as the existing
+-- everyone value. Exercise that exact persisted payload, with reciprocal limits.
+update public.profile_preferences set interested_in = array['everyone']
+where user_id = '16161616-1616-4616-8616-161616161616';
+select ok(public.forge_profiles_match_preferences('15151515-1515-4515-8515-151515151515', '16161616-1616-4616-8616-161616161616'),
+  'a legacy combined preference accepts an eligible woman reciprocally');
+
+update public.profile_preferences set interested_in = array['everyone']
+where user_id = '15151515-1515-4515-8515-151515151515';
+select ok(public.forge_profiles_match_preferences('15151515-1515-4515-8515-151515151515', '16161616-1616-4616-8616-161616161616'),
+  'two selected controls stored as everyone include an eligible man');
+
+update public.profile_preferences set gender_identity = 'woman'
+where user_id = '16161616-1616-4616-8616-161616161616';
+select ok(public.forge_profiles_match_preferences('15151515-1515-4515-8515-151515151515', '16161616-1616-4616-8616-161616161616'),
+  'the same persisted combined preference includes an eligible woman');
+
+update public.profile_preferences set interested_in = array['man']
+where user_id = '16161616-1616-4616-8616-161616161616';
+select ok(not public.forge_profiles_match_preferences('15151515-1515-4515-8515-151515151515', '16161616-1616-4616-8616-161616161616'),
+  'a combined viewer preference never bypasses the other member preference');
+
+update public.profile_preferences set interested_in = array['woman']
+where user_id = '16161616-1616-4616-8616-161616161616';
+select ok(public.forge_profiles_match_preferences('15151515-1515-4515-8515-151515151515', '16161616-1616-4616-8616-161616161616'),
+  'deselecting Men and saving Women preserves reciprocal eligibility');
+
+update public.profile_preferences set interested_in = '{}'::text[]
+where user_id = '16161616-1616-4616-8616-161616161616';
+select ok(not public.forge_matching_preferences_complete('16161616-1616-4616-8616-161616161616'),
+  'an empty stored preference is incomplete');
+select ok(not public.forge_profiles_match_preferences('15151515-1515-4515-8515-151515151515', '16161616-1616-4616-8616-161616161616'),
+  'an empty stored preference cannot be matched');
+select throws_ok(
+  $$ update public.profile_preferences set interested_in = array['unsupported']
+     where user_id = '16161616-1616-4616-8616-161616161616' $$,
+  null, null, 'unsupported stored interests are rejected'
+);
+select throws_ok(
+  $$ update public.profile_preferences set interested_in = array['everyone', 'man']
+     where user_id = '16161616-1616-4616-8616-161616161616' $$,
+  null, null, 'mixed legacy and individual stored interests are rejected'
+);
+
+update public.profile_preferences set interested_in = array['man']
+where user_id = '15151515-1515-4515-8515-151515151515';
+update public.profile_preferences set gender_identity = 'man'
+where user_id = '16161616-1616-4616-8616-161616161616';
 
 update public.profile_preferences set interested_in = array['man']
 where user_id = '16161616-1616-4616-8616-161616161616';
