@@ -254,3 +254,20 @@
   font-weight: 600;
 }
 .forge-profile-theme .forge-header-nav :is(a, button):hover { background-color: #20364F !important; }
+
+/* Optional red accent trial; approved pre-trial design has its own restore branch. */
+.forge-profile-theme [data-profile-chrome="navigation"] a[aria-current="page"] {
+  position: relative;
+  border-left-color: transparent;
+}
+.forge-profile-theme [data-profile-chrome="navigation"] a[aria-current="page"]::after {
+  content: '';
+  position: absolute;
+  bottom: 3px;
+  left: 25%;
+  width: 50%;
+  height: 2px;
+  border-radius: 1px;
+  background: #C92027;
+  pointer-events: none;
+}
