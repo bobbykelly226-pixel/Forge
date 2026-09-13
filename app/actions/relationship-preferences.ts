@@ -14,5 +14,7 @@ export async function saveRelationshipPreferences(form: FormData) {
   });
   if (error) return { success: false, message: 'Your preferences could not be saved. Please try again.' };
   for (const path of ['/profile', '/profile/preview', '/discovery', '/connections', '/onboarding']) revalidatePath(path);
-  return { success: true, message: 'Relationship preferences saved.' };
+  return { success: true, message: 'Relationship preferences saved.', profile: {
+    relationship_goal: value.primary, relationship_goals: [value.primary, ...value.also], relationship_pace: value.pace,
+  } };
 }
