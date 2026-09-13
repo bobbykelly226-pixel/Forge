@@ -4,13 +4,11 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { useActionState, useEffect, useRef } from 'react';
 import {
-  ArrowLeft,
   Bug,
   CheckCircle2,
   CircleHelp,
   LifeBuoy,
   Lightbulb,
-  MessageSquarePlus,
   ShieldCheck,
 } from 'lucide-react';
 
@@ -85,21 +83,11 @@ export default function BetaFeedbackWorkspace() {
               height={56}
               className="forge-corner-logo h-12 w-auto sm:h-14"
             />
-            <Link
-              href="/profile"
-              className="inline-flex items-center gap-1.5 rounded-full border border-[#0B2D5C]/12 bg-white/75 px-3 py-2 text-xs font-semibold text-[#0B2D5C]"
-            >
-              <ArrowLeft className="h-3.5 w-3.5" aria-hidden="true" />
-              Profile
-            </Link>
           </div>
 
           <section className="overflow-hidden rounded-[1.9rem] border border-[#0B2D5C]/08 bg-white/90 shadow-[0_18px_55px_rgba(11,45,92,0.07)]">
             <div className="border-b border-[#0B2D5C]/08 bg-[linear-gradient(135deg,rgba(11,45,92,0.06),rgba(214,40,40,0.035))] px-5 py-6 sm:px-8 sm:py-8">
               <div className="flex items-start gap-4">
-                <span data-icon-badge className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-[#0B2D5C] text-white shadow-[0_8px_20px_rgba(11,45,92,0.2)]">
-                  <MessageSquarePlus className="h-5 w-5" strokeWidth={1.75} aria-hidden="true" />
-                </span>
                 <div>
                   <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#D62828]">
                     Founding beta
