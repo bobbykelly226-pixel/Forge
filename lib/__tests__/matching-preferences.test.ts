@@ -1,8 +1,11 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
+import { readFileSync } from 'node:fs';
 
 import {
   INTERESTED_IN_OPTIONS,
+  MIN_MATCH_AGE,
+  MAX_MATCH_AGE,
   getInterestedInSelections,
   matchingPreferencesAreComplete,
   toggleInterestedInSelection,
@@ -19,6 +22,28 @@ const valid = {
 };
 
 describe('matching preference validation', () => {
+  it('uses labeled native age selectors on Profile instead of number inputs', () => {
+    const source = readFileSync(new URL('../../components/profile/MatchingPreferencesCard.tsx', import.meta.url), 'utf8');
+    for (const bound of ['minimumAge', 'maximumAge']) {
+      assert.match(source, new RegExp(`<select\\s+value=\\{${bound}\\}`));
+    }
+    assert.doesNotMatch(source, /type="number"/);
+    assert.match(source, /length: MAX_MATCH_AGE - MIN_MATCH_AGE \+ 1/);
+    assert.match(source, /MIN_MATCH_AGE \+ index/);
+  });
+
+  it('accepts every supported picker age without changing it and rejects reversed bounds', () => {
+    for (let age = MIN_MATCH_AGE; age <= MAX_MATCH_AGE; age++) {
+      const result = validateMatchingPreferences({ ...valid, preferredAgeMin: age, preferredAgeMax: age });
+      assert.equal(result.ok, true);
+      if (result.ok) {
+        assert.equal(result.value.preferredAgeMin, age);
+        assert.equal(result.value.preferredAgeMax, age);
+      }
+    }
+    assert.equal(validateMatchingPreferences({ ...valid, preferredAgeMin: MAX_MATCH_AGE, preferredAgeMax: MIN_MATCH_AGE }).ok, false);
+  });
+
   it('accepts complete bounded preferences', () => {
     assert.equal(validateMatchingPreferences(valid).ok, true);
   });

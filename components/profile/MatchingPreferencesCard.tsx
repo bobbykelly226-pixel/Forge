@@ -17,6 +17,11 @@ import {
 } from '@/lib/profile/matching-preferences';
 import type { Tables } from '@/lib/supabase/database.types';
 
+const MATCH_AGES = Array.from(
+  { length: MAX_MATCH_AGE - MIN_MATCH_AGE + 1 },
+  (_, index) => MIN_MATCH_AGE + index
+);
+
 export default function MatchingPreferencesCard({
   initialPreferences,
   hasPrivateCoordinates,
@@ -117,11 +122,31 @@ export default function MatchingPreferencesCard({
           <div className="grid grid-cols-2 gap-3">
             <label className="text-sm font-semibold text-[#0B2D5C]">
               Minimum age
-              <input type="number" min={MIN_MATCH_AGE} max={MAX_MATCH_AGE} value={minimumAge} onChange={(event) => setMinimumAge(Number(event.target.value))} className="mt-2 w-full rounded-2xl border border-[#0B2D5C]/20 px-4 py-3" />
+              <select
+                value={minimumAge}
+                disabled={isPending}
+                onChange={(event) => {
+                  setMinimumAge(Number(event.target.value));
+                  setMessage(null);
+                }}
+                className="mt-2 min-h-12 w-full min-w-0 rounded-2xl border border-[#0B2D5C]/20 bg-white px-3 py-3 text-base focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0B2D5C] disabled:opacity-60"
+              >
+                {MATCH_AGES.map((age) => <option key={age} value={age}>{age}</option>)}
+              </select>
             </label>
             <label className="text-sm font-semibold text-[#0B2D5C]">
               Maximum age
-              <input type="number" min={MIN_MATCH_AGE} max={MAX_MATCH_AGE} value={maximumAge} onChange={(event) => setMaximumAge(Number(event.target.value))} className="mt-2 w-full rounded-2xl border border-[#0B2D5C]/20 px-4 py-3" />
+              <select
+                value={maximumAge}
+                disabled={isPending}
+                onChange={(event) => {
+                  setMaximumAge(Number(event.target.value));
+                  setMessage(null);
+                }}
+                className="mt-2 min-h-12 w-full min-w-0 rounded-2xl border border-[#0B2D5C]/20 bg-white px-3 py-3 text-base focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0B2D5C] disabled:opacity-60"
+              >
+                {MATCH_AGES.map((age) => <option key={age} value={age}>{age}</option>)}
+              </select>
             </label>
           </div>
 
