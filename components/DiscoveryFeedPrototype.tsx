@@ -48,7 +48,7 @@ function FilterButton({
         Filters
       </span>
       {count > 0 ? (
-        <span className="rounded-full bg-white/20 px-2 py-0.5 text-xs">{count}</span>
+        <span data-filter-count className="px-1 text-xs font-semibold">{count}</span>
       ) : null}
     </button>
   );

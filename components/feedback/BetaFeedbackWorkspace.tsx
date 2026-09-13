@@ -178,6 +178,11 @@ export default function BetaFeedbackWorkspace() {
                           <input
                             type="radio"
                             name="category"
+                            onChange={() => {
+                              const next = document.getElementById('feedback-area');
+                              next?.focus({ preventScroll: true });
+                              next?.parentElement?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                            }}
                           value={category.value}
                           className="peer sr-only"
                           required
@@ -189,6 +194,7 @@ export default function BetaFeedbackWorkspace() {
                             <span>
                               <span className="block text-sm font-semibold text-[#0B2D5C]">
                                 {category.label}
+                                <span className="feedback-selected ml-2 text-xs">✓ Selected</span>
                               </span>
                               <span data-feedback-description className="mt-1.5 block text-xs leading-relaxed text-[#E6E6E7]">
                                 {category.description}

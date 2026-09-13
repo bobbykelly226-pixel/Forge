@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useId, useMemo } from 'react';
+import { useEffect, useId, useMemo, useState } from 'react';
 import { ChevronDown, SlidersHorizontal, X } from 'lucide-react';
 
 import {
@@ -104,6 +104,7 @@ export default function DiscoveryFiltersDrawer({
   onClose: () => void;
 }) {
   const locationListId = useId();
+  const [showLocations, setShowLocations] = useState(false);
   const locations = [...new Set(profiles.map((profile) => profile.location).filter((location): location is string => Boolean(location)))].sort();
   useEffect(() => {
     if (!open) return;
@@ -200,23 +201,36 @@ export default function DiscoveryFiltersDrawer({
             </div>
           </fieldset>
 
-          <label className="block text-sm font-semibold text-[#0B2D5C]">
-            Location
+          <div className="block text-sm font-semibold text-[#0B2D5C]">
+            <label htmlFor={locationListId}>Location</label>
             <input
               type="search"
-              list={locationListId}
+              id={locationListId}
+              autoComplete="off"
               value={filters.locationQuery}
               onChange={(event) =>
-                onChange({ ...filters, locationQuery: event.target.value })
+                { onChange({ ...filters, locationQuery: event.target.value }); setShowLocations(true); }
               }
               placeholder="Start typing a city or state"
               className="mt-2 w-full rounded-2xl border border-[#0B2D5C]/20 bg-white px-4 py-3 text-base font-normal text-[#0B2D5C]"
             />
-            <datalist id={locationListId}>
-              {locations.map((location) => <option key={location} value={location} />)}
-            </datalist>
-            <span className="mt-2 block text-xs font-normal text-[#5A6575]">Choose a location from the available profiles, or type a city or state.</span>
-          </label>
+            {showLocations && filters.locationQuery.trim() && (
+              <ul aria-label="Suggested locations" className="mt-2 space-y-2">
+                {locations.filter((location) => location.toLowerCase().includes(filters.locationQuery.trim().toLowerCase())).map((location) => (
+                  <li key={location}>
+                    <button type="button" className="w-full text-left text-sm" onClick={() => {
+                      onChange({ ...filters, locationQuery: location });
+                      setShowLocations(false);
+                    }}>{location}</button>
+                  </li>
+                ))}
+                {!locations.some((location) => location.toLowerCase().includes(filters.locationQuery.trim().toLowerCase())) && (
+                  <li className="text-sm font-normal">No available profile locations match this city or state.</li>
+                )}
+              </ul>
+            )}
+            <span className="mt-2 block text-xs font-normal text-[#5A6575]">Tap a suggested location. Your filters apply to the available profiles.</span>
+          </div>
 
           <div className="space-y-3">
             <FilterChecklist
