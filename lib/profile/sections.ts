@@ -76,8 +76,8 @@ export const PROFILE_SECTIONS: ProfileSectionDefinition[] = [
   },
   {
     id: 'relationship',
-    title: 'Relationship goal',
-    description: 'What you are looking for in Forge.',
+    title: 'Relationship preferences',
+    description: 'Your main goal, other possibilities, and preferred pace.',
     editable: true,
   },
   {
@@ -230,7 +230,9 @@ export function summarizeProfileSection(
     case 'about':
       return resolveUnifiedAbout(profile.short_bio, profile.more_about) ?? 'Not added yet';
     case 'relationship':
-      return structuredLabel('relationship_goal', profile.relationship_goal ?? profile.relationship_goals?.[0]) ?? 'Not added yet';
+      return [structuredLabel('relationship_goal', profile.relationship_goal ?? profile.relationship_goals?.[0]),
+        (profile.relationship_goals ?? []).filter(x => x !== (profile.relationship_goal ?? profile.relationship_goals?.[0])).map(x => structuredLabel('relationship_goal', x)).filter(Boolean).join(', ')
+      ].filter(Boolean).join(' · Also open to: ') || 'Not added yet';
     case 'children': {
       const parts = [
         structuredLabel('has_children', profile.has_children),

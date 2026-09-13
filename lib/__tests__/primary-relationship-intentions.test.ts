@@ -26,9 +26,9 @@ test('onboarding rejects arbitrary nonempty intentions', () => {
   }
 });
 
-test('public summaries use existing primary intention without exposing historical secondary goals', () => {
-  const row = collectStructuredPublicProfileDetails({relationship_goal: 'marriage', relationship_goals: ['intentional_dating', 'marriage']}).find(x => x.label === 'Relationship intention');
+test('public summaries use existing primary intention while retaining the primary goal', () => {
+  const row = collectStructuredPublicProfileDetails({relationship_goal: 'marriage', relationship_goals: ['intentional_dating', 'marriage']}).find(x => x.label === 'Looking for');
   assert.equal(row?.value, 'Marriage');
-  const legacy = collectStructuredPublicProfileDetails({relationship_goal: null, relationship_goals: ['serious_relationship', 'marriage']}).find(x => x.label === 'Relationship intention');
+  const legacy = collectStructuredPublicProfileDetails({relationship_goal: null, relationship_goals: ['serious_relationship', 'marriage']}).find(x => x.label === 'Looking for');
   assert.equal(legacy?.value, 'Long-term relationship');
 });

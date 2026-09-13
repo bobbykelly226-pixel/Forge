@@ -1,6 +1,8 @@
 'use client';
 
 import Link from 'next/link';
+import RelationshipPreferencesFields from '@/components/profile/RelationshipPreferencesFields';
+import { saveRelationshipPreferences } from '@/app/actions/relationship-preferences';
 import { useEffect, useRef, useState, useTransition } from 'react';
 
 import {
@@ -17,7 +19,6 @@ import {
   type ProfileAnswersMap,
 } from '@/lib/types/profile-answers';
 import {
-  RELATIONSHIP_GOAL_OPTIONS,
   type RelationshipGoalValue,
 } from '@/lib/profile/structured-options';
 import { mapLegacyRelationshipGoal } from '@/lib/profile/legacy-mapping';
@@ -45,7 +46,7 @@ const secondaryButtonClassName =
   'inline-flex w-full items-center justify-center rounded-2xl border border-[#0B2D5C]/20 bg-white px-8 py-4 text-lg font-semibold text-[#0B2D5C] transition hover:bg-[#F8F6F2]';
 
 /** Shared with Profile Edit — one source of truth for relationship goals. */
-const INTENTION_OPTIONS = RELATIONSHIP_GOAL_OPTIONS;
+
 
 const VALUES_OPTIONS = CORE_VALUES_OPTIONS;
 
@@ -217,17 +218,6 @@ export default function OnboardingShell({
     })();
   };
 
-  const selectIntention = (option: RelationshipGoalValue) => {
-    if (isPending || isFinishing) return;
-    setIntention(option);
-    setSaveError(null);
-    persistAnswer(
-      PROFILE_ANSWER_KEYS.relationshipIntention,
-      option,
-      'Intention saved.'
-    );
-  };
-
   const toggleValue = (value: string) => {
     if (isPending || isFinishing) return;
     const next = selectedValues.includes(value)
@@ -253,17 +243,32 @@ export default function OnboardingShell({
     });
   };
 
-  const goNext = () => {
+  const [relationshipSeed, setRelationshipSeed] = useState({
+    also: Array.isArray(initialAnswers.relationship_also_open_to) ? initialAnswers.relationship_also_open_to : [],
+    pace: typeof initialAnswers.relationship_pace === 'string' ? initialAnswers.relationship_pace : '',
+  });
+  const relationshipForm = useRef<HTMLFormElement>(null);
+  const [savingRelationship, setSavingRelationship] = useState(false);
+  const goNext = async () => {
+    if (savingRelationship) return;
+    if (step === 4) {
+      if (!relationshipForm.current?.reportValidity()) return;
+      setSavingRelationship(true);
+      try {
+        const form = new FormData(relationshipForm.current);
+        const result = await saveRelationshipPreferences(form);
+        if (!result.success) { setSaveError(result.message); return; }
+        setIntention(String(form.get('relationship_goal')) as RelationshipGoalValue);
+        setRelationshipSeed({also: form.getAll('relationship_also_open_to').map(String), pace: String(form.get('relationship_pace') ?? '')});
+      } catch { setSaveError('Could not save your preferences. Please try again.'); return; }
+      finally { setSavingRelationship(false); }
+    }
     if (step === 2 && !dateOfBirthSaved) {
       setSaveError('Save a valid date of birth to continue.');
       return;
     }
     if (step === 3 && !preferencesSaved) {
       setSaveError('Save your matching preferences to continue.');
-      return;
-    }
-    if (step === 4 && !intention) {
-      setSaveError('Select a relationship intention to continue.');
       return;
     }
     if (step === 5 && selectedValues.length === 0) {
@@ -342,9 +347,7 @@ export default function OnboardingShell({
           ? 'Your matching preferences are stored privately.'
           : 'Complete and save these fields to continue.'
       : step === 4
-      ? intention
-        ? 'Your intention is saved to your account.'
-        : 'Select an option to save your answer.'
+      ? 'Choose Continue to save your relationship preferences.'
       : step === 5
         ? selectedValues.length > 0
           ? 'Your values are saved to your account.'
@@ -353,7 +356,7 @@ export default function OnboardingShell({
 
   const backControl =
     step > 1 ? (
-      <button type="button" onClick={goBack} className={secondaryButtonClassName}>
+      <button type="button" onClick={goBack} disabled={savingRelationship} className={secondaryButtonClassName}>
         Back
       </button>
     ) : (
@@ -366,7 +369,7 @@ export default function OnboardingShell({
     <button
       type="button"
       onClick={goNext}
-      disabled={isPending || isFinishing}
+      disabled={isPending || isFinishing || savingRelationship}
       className={primaryButtonClassName}
     >
       Continue
@@ -552,7 +555,7 @@ export default function OnboardingShell({
             <button
               type="button"
               onClick={() => void saveMatchingPreferences()}
-              disabled={isPending || isFinishing}
+              disabled={isPending || isFinishing || savingRelationship}
               className="mt-5 inline-flex w-full sm:w-auto items-center justify-center rounded-2xl border border-[#0B2D5C]/20 bg-white px-6 py-3 font-semibold text-[#0B2D5C] disabled:opacity-60"
             >
               {preferencesSaved ? 'Saved' : 'Save matching preferences'}
@@ -572,21 +575,14 @@ export default function OnboardingShell({
               What you&apos;re looking for
             </h1>
             <p className="mb-6 max-w-prose text-base leading-relaxed text-[#555555]">
-              Choose the option that best reflects your relationship intention right now. You can
-              refine this later.
+              Share your main goal, other outcomes you welcome, and your preferred pace.
             </p>
-            <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
-              {INTENTION_OPTIONS.map((option) => (
-                <OptionButton
-                  key={option.value}
-                  label={option.label}
-                  description={option.description}
-                  selected={intention === option.value}
-                  disabled={isFinishing}
-                  onClick={() => selectIntention(option.value)}
-                />
-              ))}
-            </div>
+            <form ref={relationshipForm} onSubmit={e => { e.preventDefault(); void goNext(); }}>
+              <RelationshipPreferencesFields primary={intention ?? ''}
+                also={relationshipSeed.also}
+                pace={relationshipSeed.pace}
+                disabled={savingRelationship} />
+            </form>
             <p
               className={`mt-5 text-sm ${saveError ? 'text-[#D62828]' : 'text-[#777777]'}`}
               role={saveError ? 'alert' : undefined}

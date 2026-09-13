@@ -223,6 +223,8 @@ describe('no dual-write contract', () => {
   it('documents profile_answers as the only write target keys', () => {
     assert.deepEqual(Object.values(PROFILE_ANSWER_KEYS), [
       'relationship_intention',
+      'relationship_also_open_to',
+      'relationship_pace',
       'core_values',
     ]);
   });

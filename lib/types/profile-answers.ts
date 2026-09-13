@@ -6,6 +6,8 @@ import { mapLegacyRelationshipGoal } from '@/lib/profile/legacy-mapping';
 
 export const PROFILE_ANSWER_KEYS = {
   relationshipIntention: 'relationship_intention',
+  relationshipAlsoOpenTo: 'relationship_also_open_to',
+  relationshipPace: 'relationship_pace',
   coreValues: 'core_values',
 } as const;
 

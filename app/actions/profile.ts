@@ -1,5 +1,6 @@
 'use server';
 
+import { saveRelationshipPreferences } from './relationship-preferences';
 import { revalidatePath } from 'next/cache';
 
 import {
@@ -828,15 +829,7 @@ export async function saveProfileSection(
     fields.career = readOptionalString(formData, 'career');
   }
 
-  if (sectionId === 'relationship') {
-    const relationshipGoals = readRelationshipGoals(formData);
-    if (relationshipGoals.length !== 1) {
-      return { success: false, message: 'Choose one valid relationship intention.' };
-    }
-    fields.relationship_goals = relationshipGoals;
-    fields.relationship_goal = relationshipGoals[0] ?? null;
-    if (relationshipGoals.length > 0) answeredUnmapped.push('relationship_goal');
-  }
+  if (sectionId === 'relationship') return saveRelationshipPreferences(formData);
 
   if (sectionId === 'children') {
     for (const item of [

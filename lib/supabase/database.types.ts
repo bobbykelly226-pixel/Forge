@@ -838,6 +838,7 @@ export type Database = {
           profile_photo_url: string | null
           relationship_goal: string | null
           relationship_goals: string[]
+          relationship_pace: string | null
           relocation: string | null
           service_background: string | null
           service_backgrounds: string[]
@@ -887,6 +888,7 @@ export type Database = {
           profile_photo_url?: string | null
           relationship_goal?: string | null
           relationship_goals?: string[]
+          relationship_pace?: string | null
           relocation?: string | null
           service_background?: string | null
           service_backgrounds?: string[]
@@ -936,6 +938,7 @@ export type Database = {
           profile_photo_url?: string | null
           relationship_goal?: string | null
           relationship_goals?: string[]
+          relationship_pace?: string | null
           relocation?: string | null
           service_background?: string | null
           service_backgrounds?: string[]
@@ -1967,6 +1970,7 @@ export type Database = {
           profile_photo_url: string | null
           relationship_goal: string | null
           relationship_goals: string[] | null
+          relationship_pace: string | null
           relocation: string | null
           service_background: string | null
           service_backgrounds: string[] | null
@@ -2001,6 +2005,7 @@ export type Database = {
           profile_photo_url?: string | null
           relationship_goal?: string | null
           relationship_goals?: string[] | null
+          relationship_pace?: string | null
           relocation?: string | null
           service_background?: string | null
           service_backgrounds?: string[] | null
@@ -2035,6 +2040,7 @@ export type Database = {
           profile_photo_url?: string | null
           relationship_goal?: string | null
           relationship_goals?: string[] | null
+          relationship_pace?: string | null
           relocation?: string | null
           service_background?: string | null
           service_backgrounds?: string[] | null
@@ -2046,6 +2052,11 @@ export type Database = {
       }
     }
     Functions: {
+      save_my_relationship_preferences: {
+        Args: { p_primary: string; p_also?: string[]; p_pace?: string | null }
+        Returns: undefined
+      }
+
       accept_current_legal_documents: {
         Args: Record<PropertyKey, never>
         Returns: boolean
@@ -2171,6 +2182,7 @@ export type Database = {
           profile_photo_url: string | null
           relationship_goal: string | null
           relationship_goals: string[]
+          relationship_pace: string | null
           relocation: string | null
           service_background: string | null
           service_backgrounds: string[]
@@ -2288,6 +2300,7 @@ export type Database = {
           profile_photo_url: string | null
           relationship_goal: string | null
           relationship_goals: string[] | null
+          relationship_pace: string | null
           relocation: string | null
           service_background: string | null
           service_backgrounds: string[] | null
@@ -2349,6 +2362,7 @@ export type Database = {
           profile_photo_url: string | null
           relationship_goal: string | null
           relationship_goals: string[] | null
+          relationship_pace: string | null
           relocation: string | null
           service_background: string | null
           service_backgrounds: string[] | null
@@ -2404,6 +2418,7 @@ export type Database = {
           profile_photo_url: string | null
           relationship_goal: string | null
           relationship_goals: string[] | null
+          relationship_pace: string | null
           relocation: string | null
           service_background: string | null
           service_backgrounds: string[] | null

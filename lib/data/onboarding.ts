@@ -98,6 +98,10 @@ export async function upsertCurrentUserProfileAnswer(
     return ensured;
   }
 
+  if (questionKey === 'relationship_also_open_to' || questionKey === 'relationship_pace') {
+    return { success: false, message: 'Save relationship preferences together.' };
+  }
+
   if (!isAllowedKey(questionKey)) {
     return { success: false, message: 'Unknown question.' };
   }

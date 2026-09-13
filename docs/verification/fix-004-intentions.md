@@ -46,3 +46,22 @@ The additive constraint was applied to the shared database and verified
 validated with all five accepted identifiers. Migration filename is aligned
 with its recorded version 20260913073722; SQL content is unchanged.
 No Production web release or founder browser acceptance is claimed.
+
+## Superseding founder direction: flexibility and pace
+
+Bobby approved a primary goal plus optional Also open to destinations and a
+separate optional relationship-development preference. The three destinations
+are Marriage, Lifelong partnership, and Long-term relationship. The two former
+pace-like intentions remain visible only for members who previously selected
+them; no existing answer is silently reinterpreted or overwritten. Members can
+keep their legacy primary or choose a destination when ready.
+
+Pace choices: Let it develop naturally; Move slowly and build trust; Ready to
+pursue commitment. Optional clear state is supported. A security-invoker RPC
+saves the primary, deduplicated alternatives, pace and onboarding resume answers
+in one transaction under existing member RLS. The primary cannot also appear in
+alternatives. Onboarding Continue awaits the successful save. Pace is a separate
+public profile field, omitted when unanswered and cleared by account deletion.
+Discovery goal filters include explicitly selected alternatives. Compatibility
+question content, weights and evaluator rules remain unchanged; pace is not a
+scoring input. The approved visual baseline is preserved.
