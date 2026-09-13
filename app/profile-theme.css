@@ -201,3 +201,21 @@
 .forge-profile-theme :is(section[class*="rounded-"], article, a[class*="rounded-"], button:not([role="switch"]), [data-icon-badge]) {
   border-radius: 6px !important;
 }
+
+/* Reversible review: one-pixel navy outline on light-gray content cards. */
+.forge-profile-theme :is(
+  section[class*="rounded-"],
+  article[id^="section-"],
+  a.group[class*="rounded-"],
+  div[class~="bg-white/70"][class*="rounded-"],
+  div[class~="bg-white/80"][class*="rounded-"],
+  div[class~="bg-white/90"][class*="rounded-"]
+):not([data-profile-chrome] *):not([data-profile-chrome]) {
+  outline: 1px solid #0B1C30;
+  outline-offset: -1px;
+}
+/* Preserve the stronger keyboard focus indicator during the visual trial. */
+.forge-profile-theme :is(a, button):focus-visible {
+  outline: 2px solid #C92027;
+  outline-offset: 3px;
+}
