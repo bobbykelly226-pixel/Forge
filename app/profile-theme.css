@@ -271,3 +271,11 @@
   background: #C92027;
   pointer-events: none;
 }
+
+/* Footer selection uses the red underline only, without the legacy side border. */
+.forge-profile-theme nav[data-profile-chrome="navigation"] a[href],
+.forge-profile-theme nav[data-profile-chrome="navigation"] a[aria-current="page"] {
+  border: 0;
+  box-shadow: none;
+  background-color: transparent !important;
+}
