@@ -113,7 +113,7 @@ describe('mobile structured controls', () => {
       'relocation',
       'faith_identity',
       'faith_importance',
-      'relationship_goal',
+      'relationship_goals',
       'pets_types',
       'pets_partner_preferences',
       'smoking_product_types',

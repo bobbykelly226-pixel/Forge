@@ -1,18 +1,23 @@
 import { RELATIONSHIP_GOAL_OPTIONS } from './structured-options';
+import { mapLegacyRelationshipGoal } from './legacy-mapping';
 
-export const RELATIONSHIP_DESTINATIONS = RELATIONSHIP_GOAL_OPTIONS.slice(0, 3);
-export const RELATIONSHIP_PACE_OPTIONS = [
-  { value: 'naturally', label: 'Let it develop naturally' },
-  { value: 'slowly', label: 'Move slowly and build trust' },
-  { value: 'ready', label: 'Ready to pursue commitment' },
-] as const;
+/** Merge older scalar/alternative answers without losing a member's selections. */
+export function relationshipGoals(primary: unknown, goals: unknown = []) {
+  const values = [...(Array.isArray(primary) ? primary : [primary]), ...(Array.isArray(goals) ? goals : [])];
+  const mapped = values.flatMap(value => {
+    const goal = typeof value === 'string' ? mapLegacyRelationshipGoal(value).mapped : null;
+    return goal ? [goal] : [];
+  });
+  return RELATIONSHIP_GOAL_OPTIONS.filter(option => mapped.includes(option.value)).map(option => option.value);
+}
+
+export function validRelationshipAnswer(value: unknown): boolean {
+  const values = Array.isArray(value) ? value : [value];
+  return values.length > 0 && values.every(item => typeof item === 'string' && Boolean(mapLegacyRelationshipGoal(item).mapped));
+}
 
 export function parseRelationshipPreferences(form: FormData) {
-  const primary = String(form.get('relationship_goal') ?? '');
-  const also = form.getAll('relationship_also_open_to').map(String);
-  const pace = String(form.get('relationship_pace') ?? '');
-  if (!RELATIONSHIP_GOAL_OPTIONS.some(x => x.value === primary) ||
-      also.some(x => !RELATIONSHIP_DESTINATIONS.some(o => o.value === x)) ||
-      (pace && !RELATIONSHIP_PACE_OPTIONS.some(x => x.value === pace))) return null;
-  return { primary, also: [...new Set(also)].filter(x => x !== primary), pace: pace || null };
+  const values = form.getAll('relationship_goals');
+  if (!values.length || values.some(value => !RELATIONSHIP_GOAL_OPTIONS.some(option => option.value === value))) return null;
+  return relationshipGoals(values);
 }

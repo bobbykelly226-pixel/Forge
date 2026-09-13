@@ -59,6 +59,7 @@ import {
 } from '@/lib/profile-completion';
 import type { Profile } from '@/lib/types/profile';
 import RelationshipPreferencesFields from './RelationshipPreferencesFields';
+import { relationshipGoals } from '@/lib/profile/relationship-preferences';
 import { CORE_VALUES_OPTIONS } from '@/lib/types/profile-answers';
 import { latestEligibleAdultBirthDate } from '@/lib/age';
 
@@ -536,9 +537,7 @@ function SectionEditor({
 
       {sectionId === 'relationship' ? (
         <RelationshipPreferencesFields
-          primary={profile.relationship_goal ?? profile.relationship_goals?.[0] ?? ''}
-          also={profile.relationship_goals ?? []}
-          pace={profile.relationship_pace ?? ''}
+          goals={relationshipGoals(profile.relationship_goal, profile.relationship_goals)}
           disabled={saving}
         />
       ) : null}

@@ -18,10 +18,7 @@ import {
   CORE_VALUES_OPTIONS,
   type ProfileAnswersMap,
 } from '@/lib/types/profile-answers';
-import {
-  type RelationshipGoalValue,
-} from '@/lib/profile/structured-options';
-import { mapLegacyRelationshipGoal } from '@/lib/profile/legacy-mapping';
+import { relationshipGoals } from '@/lib/profile/relationship-preferences';
 import { latestEligibleAdultBirthDate } from '@/lib/age';
 import {
   SEX_OPTIONS,
@@ -102,23 +99,6 @@ function OptionButton({
   );
 }
 
-function readStringAnswer(
-  answers: ProfileAnswersMap,
-  key: (typeof PROFILE_ANSWER_KEYS)[keyof typeof PROFILE_ANSWER_KEYS]
-): string | null {
-  const value = answers[key];
-  return typeof value === 'string' ? value : null;
-}
-
-function readRelationshipIntention(
-  answers: ProfileAnswersMap
-): RelationshipGoalValue | null {
-  const raw = readStringAnswer(answers, PROFILE_ANSWER_KEYS.relationshipIntention);
-  if (!raw) return null;
-  const mapped = mapLegacyRelationshipGoal(raw);
-  return mapped.mapped;
-}
-
 function readStringArrayAnswer(
   answers: ProfileAnswersMap,
   key: (typeof PROFILE_ANSWER_KEYS)[keyof typeof PROFILE_ANSWER_KEYS]
@@ -141,8 +121,8 @@ export default function OnboardingShell({
   const [step, setStep] = useState(() =>
     Math.min(TOTAL_STEPS, Math.max(1, initialStep))
   );
-  const [intention, setIntention] = useState<RelationshipGoalValue | null>(() =>
-    readRelationshipIntention(initialAnswers)
+  const [intention, setIntention] = useState<string[]>(() =>
+    relationshipGoals(initialAnswers.relationship_intention, initialAnswers.relationship_also_open_to)
   );
   const [selectedValues, setSelectedValues] = useState<string[]>(() =>
     readStringArrayAnswer(initialAnswers, PROFILE_ANSWER_KEYS.coreValues)
@@ -243,10 +223,6 @@ export default function OnboardingShell({
     });
   };
 
-  const [relationshipSeed, setRelationshipSeed] = useState({
-    also: Array.isArray(initialAnswers.relationship_also_open_to) ? initialAnswers.relationship_also_open_to : [],
-    pace: typeof initialAnswers.relationship_pace === 'string' ? initialAnswers.relationship_pace : '',
-  });
   const relationshipForm = useRef<HTMLFormElement>(null);
   const [savingRelationship, setSavingRelationship] = useState(false);
   const goNext = async () => {
@@ -258,8 +234,7 @@ export default function OnboardingShell({
         const form = new FormData(relationshipForm.current);
         const result = await saveRelationshipPreferences(form);
         if (!result.success) { setSaveError(result.message); return; }
-        setIntention(String(form.get('relationship_goal')) as RelationshipGoalValue);
-        setRelationshipSeed({also: form.getAll('relationship_also_open_to').map(String), pace: String(form.get('relationship_pace') ?? '')});
+        setIntention(form.getAll('relationship_goals').map(String));
       } catch { setSaveError('Could not save your preferences. Please try again.'); return; }
       finally { setSavingRelationship(false); }
     }
@@ -572,16 +547,10 @@ export default function OnboardingShell({
               Intention
             </p>
             <h1 className="mb-3 text-3xl font-bold tracking-tight text-[#0B2D5C] sm:text-4xl">
-              What you&apos;re looking for
+              Relationship goals
             </h1>
-            <p className="mb-6 max-w-prose text-base leading-relaxed text-[#555555]">
-              Share your main goal, other outcomes you welcome, and your preferred pace.
-            </p>
             <form ref={relationshipForm} onSubmit={e => { e.preventDefault(); void goNext(); }}>
-              <RelationshipPreferencesFields primary={intention ?? ''}
-                also={relationshipSeed.also}
-                pace={relationshipSeed.pace}
-                disabled={savingRelationship} />
+              <RelationshipPreferencesFields goals={intention} disabled={savingRelationship} />
             </form>
             <p
               className={`mt-5 text-sm ${saveError ? 'text-[#D62828]' : 'text-[#777777]'}`}

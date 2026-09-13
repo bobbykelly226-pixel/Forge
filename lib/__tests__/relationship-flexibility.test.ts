@@ -1,43 +1,46 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { parseRelationshipPreferences } from '../profile/relationship-preferences';
-import { collectStructuredPublicProfileDetails } from '../profile/public-labels';
 import React from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import RelationshipPreferencesFields from '../../components/profile/RelationshipPreferencesFields';
+import { parseRelationshipPreferences, relationshipGoals } from '../profile/relationship-preferences';
 import { RELATIONSHIP_GOAL_OPTIONS } from '../profile/structured-options';
+import { collectStructuredPublicProfileDetails } from '../profile/public-labels';
+import { isOnboardingContentComplete } from '../types/profile-answers';
 
-test('all five primary choices remain available when reopening any saved answer', () => {
+test('one checklist supports every nonempty combination and restores all saved selections', () => {
   Object.assign(globalThis, { React });
-  for (const primary of ['', ...RELATIONSHIP_GOAL_OPTIONS.map(option => option.value)]) {
-    const html = renderToStaticMarkup(React.createElement(RelationshipPreferencesFields, { primary }));
-    assert.equal((html.match(/type="radio"/g) ?? []).length, 5);
-    for (const option of RELATIONSHIP_GOAL_OPTIONS) {
-      assert.ok(html.includes(`value="${option.value}"`), `${option.value} missing for ${primary}`);
-      const form = new FormData();
-      form.set('relationship_goal', option.value);
-      assert.equal(parseRelationshipPreferences(form)?.primary, option.value);
-    }
-    assert.ok(!html.includes('Your previous answer is preserved'));
+  const options = RELATIONSHIP_GOAL_OPTIONS.map(option => option.value);
+  for (let mask = 0; mask < 32; mask++) {
+    const goals = options.filter((_, index) => mask & (1 << index));
+    const form = new FormData();
+    goals.forEach(goal => form.append('relationship_goals', goal));
+    assert.deepEqual(parseRelationshipPreferences(form), goals.length ? goals : null);
+    assert.equal(isOnboardingContentComplete({relationship_intention: goals, core_values: ['Faith']}), goals.length > 0);
+    const html = renderToStaticMarkup(React.createElement(RelationshipPreferencesFields, { goals }));
+    assert.equal((html.match(/type="checkbox"/g) ?? []).length, 5);
+    assert.equal((html.match(/checked=""/g) ?? []).length, goals.length);
+    assert.equal(html.includes('required=""'), goals.length === 0);
+    assert.ok(!html.includes('type="radio"'));
+    assert.ok(!html.includes('<select'));
+    assert.ok(!html.includes('also open to'));
+    for (const goal of options) assert.ok(html.includes(`value="${goal}"`));
   }
 });
 
-test('marriage with long-term flexibility and a slow pace are independent preferences', () => {
-  const form = new FormData();
-  form.set('relationship_goal', 'marriage');
-  form.append('relationship_also_open_to', 'serious_relationship');
-  form.append('relationship_also_open_to', 'marriage');
-  form.append('relationship_also_open_to', 'serious_relationship');
-  form.set('relationship_pace', 'slowly');
-  assert.deepEqual(parseRelationshipPreferences(form), {primary: 'marriage', also: ['serious_relationship'], pace: 'slowly'});
-  const rows = collectStructuredPublicProfileDetails({relationship_goal: 'marriage', relationship_goals: ['marriage','serious_relationship'], relationship_pace: 'slowly'});
-  assert.equal(rows.find(x => x.label === 'Looking for')?.value, 'Marriage');
-  assert.equal(rows.find(x => x.label === 'Also open to')?.value, 'Long-term relationship');
-  assert.equal(rows.find(x => x.label === 'Relationship pace')?.value, 'Move slowly and build trust');
+test('old primary and alternatives become one set without duplicating or losing goals', () => {
+  assert.deepEqual(relationshipGoals('marriage', ['serious_relationship', 'marriage']), ['marriage','serious_relationship']);
+  assert.deepEqual(relationshipGoals('Dating with intention', ['marriage']), ['marriage','intentional_dating']);
+  const rows = collectStructuredPublicProfileDetails({relationship_goal:'marriage', relationship_goals:['marriage','serious_relationship'], relationship_pace:'slowly'});
+  assert.equal(rows.find(row => row.label === 'Looking for')?.value, 'Marriage, Long-term relationship');
+  assert.ok(!rows.some(row => row.label === 'Also open to' || row.label === 'Relationship pace'));
 });
-test('optional preferences clear and invalid values fail validation', () => {
-  const form = new FormData(); form.set('relationship_goal','lifelong_partnership');
-  assert.deepEqual(parseRelationshipPreferences(form), {primary:'lifelong_partnership',also:[],pace:null});
-  form.set('relationship_pace','invalid'); assert.equal(parseRelationshipPreferences(form),null);
-  form.delete('relationship_pace'); form.append('relationship_also_open_to','invalid'); assert.equal(parseRelationshipPreferences(form),null);
+
+test('selection validation rejects invalid values and deduplicates repeated goals', () => {
+  const form = new FormData();
+  form.append('relationship_goals','marriage');
+  form.append('relationship_goals','marriage');
+  assert.deepEqual(parseRelationshipPreferences(form), ['marriage']);
+  form.append('relationship_goals','invalid');
+  assert.equal(parseRelationshipPreferences(form), null);
 });

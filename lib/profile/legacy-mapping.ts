@@ -91,6 +91,7 @@ export function mapLegacyRelationshipGoal(
       serious_relationship: 'serious_relationship',
       long_term_relationship: 'serious_relationship',
       intentional_dating: 'intentional_dating',
+      dating_with_intention: 'intentional_dating',
       open_to_serious_dating: 'intentional_dating',
       getting_to_know_someone: 'getting_to_know_someone',
       not_sure_yet_but_intentional: 'getting_to_know_someone',

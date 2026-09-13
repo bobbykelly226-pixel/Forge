@@ -4,6 +4,7 @@
  */
 
 import type { Profile } from '@/lib/types/profile';
+import { relationshipGoals } from './relationship-preferences';
 import {
   normalizePetsIdentity,
   petsTypeDisplayLabel,
@@ -230,9 +231,8 @@ export function summarizeProfileSection(
     case 'about':
       return resolveUnifiedAbout(profile.short_bio, profile.more_about) ?? 'Not added yet';
     case 'relationship':
-      return [structuredLabel('relationship_goal', profile.relationship_goal ?? profile.relationship_goals?.[0]),
-        (profile.relationship_goals ?? []).filter(x => x !== (profile.relationship_goal ?? profile.relationship_goals?.[0])).map(x => structuredLabel('relationship_goal', x)).filter(Boolean).join(', ')
-      ].filter(Boolean).join(' · Also open to: ') || 'Not added yet';
+      return relationshipGoals(profile.relationship_goal, profile.relationship_goals)
+        .map(goal => structuredLabel('relationship_goal', goal)).filter(Boolean).join(', ') || 'Not added yet';
     case 'children': {
       const parts = [
         structuredLabel('has_children', profile.has_children),

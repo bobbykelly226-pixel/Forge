@@ -2052,6 +2052,10 @@ export type Database = {
       }
     }
     Functions: {
+      save_my_relationship_goals: {
+        Args: { p_goals: string[] }
+        Returns: undefined
+      }
       save_my_relationship_preferences: {
         Args: { p_primary: string; p_also?: string[]; p_pace?: string | null }
         Returns: undefined
