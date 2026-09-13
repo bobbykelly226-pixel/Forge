@@ -4,6 +4,7 @@
  */
 
 import type { Profile } from '@/lib/types/profile';
+import { relationshipGoals } from './relationship-preferences';
 import {
   normalizePetsIdentity,
   petsTypeDisplayLabel,
@@ -76,8 +77,8 @@ export const PROFILE_SECTIONS: ProfileSectionDefinition[] = [
   },
   {
     id: 'relationship',
-    title: 'Relationship goal',
-    description: 'What you are looking for in Forge.',
+    title: 'Relationship preferences',
+    description: 'Your main goal, other possibilities, and preferred pace.',
     editable: true,
   },
   {
@@ -230,15 +231,8 @@ export function summarizeProfileSection(
     case 'about':
       return resolveUnifiedAbout(profile.short_bio, profile.more_about) ?? 'Not added yet';
     case 'relationship':
-      return (
-        (profile.relationship_goals?.length
-          ? profile.relationship_goals
-              .map((goal) => structuredLabel('relationship_goal', goal))
-              .filter(Boolean)
-              .join(' · ')
-          : structuredLabel('relationship_goal', profile.relationship_goal)) ??
-        'Not added yet'
-      );
+      return relationshipGoals(profile.relationship_goal, profile.relationship_goals)
+        .map(goal => structuredLabel('relationship_goal', goal)).filter(Boolean).join(', ') || 'Not added yet';
     case 'children': {
       const parts = [
         structuredLabel('has_children', profile.has_children),

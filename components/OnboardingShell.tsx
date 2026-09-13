@@ -1,6 +1,8 @@
 'use client';
 
 import Link from 'next/link';
+import RelationshipPreferencesFields from '@/components/profile/RelationshipPreferencesFields';
+import { saveRelationshipPreferences } from '@/app/actions/relationship-preferences';
 import { useEffect, useRef, useState, useTransition } from 'react';
 
 import {
@@ -16,11 +18,7 @@ import {
   CORE_VALUES_OPTIONS,
   type ProfileAnswersMap,
 } from '@/lib/types/profile-answers';
-import {
-  RELATIONSHIP_GOAL_OPTIONS,
-  type RelationshipGoalValue,
-} from '@/lib/profile/structured-options';
-import { mapLegacyRelationshipGoal } from '@/lib/profile/legacy-mapping';
+import { relationshipGoals } from '@/lib/profile/relationship-preferences';
 import { latestEligibleAdultBirthDate } from '@/lib/age';
 import {
   SEX_OPTIONS,
@@ -45,7 +43,7 @@ const secondaryButtonClassName =
   'inline-flex w-full items-center justify-center rounded-2xl border border-[#0B2D5C]/20 bg-white px-8 py-4 text-lg font-semibold text-[#0B2D5C] transition hover:bg-[#F8F6F2]';
 
 /** Shared with Profile Edit — one source of truth for relationship goals. */
-const INTENTION_OPTIONS = RELATIONSHIP_GOAL_OPTIONS;
+
 
 const VALUES_OPTIONS = CORE_VALUES_OPTIONS;
 
@@ -72,11 +70,13 @@ function ProgressBar({ step }: { step: number }) {
 
 function OptionButton({
   label,
+  description,
   selected,
   onClick,
   disabled,
 }: {
   label: string;
+  description?: string;
   selected: boolean;
   onClick: () => void;
   disabled?: boolean;
@@ -93,26 +93,10 @@ function OptionButton({
           : 'border-[#0B2D5C]/15 bg-white text-[#0B2D5C] hover:border-[#0B2D5C]/35'
       }`}
     >
-      {label}
+      <span className="block">{label}</span>
+      {description ? <span className="mt-2 block text-sm font-normal leading-relaxed">{description}</span> : null}
     </button>
   );
-}
-
-function readStringAnswer(
-  answers: ProfileAnswersMap,
-  key: (typeof PROFILE_ANSWER_KEYS)[keyof typeof PROFILE_ANSWER_KEYS]
-): string | null {
-  const value = answers[key];
-  return typeof value === 'string' ? value : null;
-}
-
-function readRelationshipIntention(
-  answers: ProfileAnswersMap
-): RelationshipGoalValue | null {
-  const raw = readStringAnswer(answers, PROFILE_ANSWER_KEYS.relationshipIntention);
-  if (!raw) return null;
-  const mapped = mapLegacyRelationshipGoal(raw);
-  return mapped.mapped;
 }
 
 function readStringArrayAnswer(
@@ -137,8 +121,8 @@ export default function OnboardingShell({
   const [step, setStep] = useState(() =>
     Math.min(TOTAL_STEPS, Math.max(1, initialStep))
   );
-  const [intention, setIntention] = useState<RelationshipGoalValue | null>(() =>
-    readRelationshipIntention(initialAnswers)
+  const [intention, setIntention] = useState<string[]>(() =>
+    relationshipGoals(initialAnswers.relationship_intention, initialAnswers.relationship_also_open_to)
   );
   const [selectedValues, setSelectedValues] = useState<string[]>(() =>
     readStringArrayAnswer(initialAnswers, PROFILE_ANSWER_KEYS.coreValues)
@@ -214,17 +198,6 @@ export default function OnboardingShell({
     })();
   };
 
-  const selectIntention = (option: RelationshipGoalValue) => {
-    if (isPending || isFinishing) return;
-    setIntention(option);
-    setSaveError(null);
-    persistAnswer(
-      PROFILE_ANSWER_KEYS.relationshipIntention,
-      option,
-      'Intention saved.'
-    );
-  };
-
   const toggleValue = (value: string) => {
     if (isPending || isFinishing) return;
     const next = selectedValues.includes(value)
@@ -250,17 +223,27 @@ export default function OnboardingShell({
     });
   };
 
-  const goNext = () => {
+  const relationshipForm = useRef<HTMLFormElement>(null);
+  const [savingRelationship, setSavingRelationship] = useState(false);
+  const goNext = async () => {
+    if (savingRelationship) return;
+    if (step === 4) {
+      if (!relationshipForm.current?.reportValidity()) return;
+      setSavingRelationship(true);
+      try {
+        const form = new FormData(relationshipForm.current);
+        const result = await saveRelationshipPreferences(form);
+        if (!result.success) { setSaveError(result.message); return; }
+        setIntention(form.getAll('relationship_goals').map(String));
+      } catch { setSaveError('Could not save your preferences. Please try again.'); return; }
+      finally { setSavingRelationship(false); }
+    }
     if (step === 2 && !dateOfBirthSaved) {
       setSaveError('Save a valid date of birth to continue.');
       return;
     }
     if (step === 3 && !preferencesSaved) {
       setSaveError('Save your matching preferences to continue.');
-      return;
-    }
-    if (step === 4 && !intention) {
-      setSaveError('Select a relationship intention to continue.');
       return;
     }
     if (step === 5 && selectedValues.length === 0) {
@@ -339,9 +322,7 @@ export default function OnboardingShell({
           ? 'Your matching preferences are stored privately.'
           : 'Complete and save these fields to continue.'
       : step === 4
-      ? intention
-        ? 'Your intention is saved to your account.'
-        : 'Select an option to save your answer.'
+      ? 'Choose Continue to save your relationship preferences.'
       : step === 5
         ? selectedValues.length > 0
           ? 'Your values are saved to your account.'
@@ -350,7 +331,7 @@ export default function OnboardingShell({
 
   const backControl =
     step > 1 ? (
-      <button type="button" onClick={goBack} className={secondaryButtonClassName}>
+      <button type="button" onClick={goBack} disabled={savingRelationship} className={secondaryButtonClassName}>
         Back
       </button>
     ) : (
@@ -363,7 +344,7 @@ export default function OnboardingShell({
     <button
       type="button"
       onClick={goNext}
-      disabled={isPending || isFinishing}
+      disabled={isPending || isFinishing || savingRelationship}
       className={primaryButtonClassName}
     >
       Continue
@@ -549,7 +530,7 @@ export default function OnboardingShell({
             <button
               type="button"
               onClick={() => void saveMatchingPreferences()}
-              disabled={isPending || isFinishing}
+              disabled={isPending || isFinishing || savingRelationship}
               className="mt-5 inline-flex w-full sm:w-auto items-center justify-center rounded-2xl border border-[#0B2D5C]/20 bg-white px-6 py-3 font-semibold text-[#0B2D5C] disabled:opacity-60"
             >
               {preferencesSaved ? 'Saved' : 'Save matching preferences'}
@@ -566,23 +547,11 @@ export default function OnboardingShell({
               Intention
             </p>
             <h1 className="mb-3 text-3xl font-bold tracking-tight text-[#0B2D5C] sm:text-4xl">
-              What you&apos;re looking for
+              Relationship goals
             </h1>
-            <p className="mb-6 max-w-prose text-base leading-relaxed text-[#555555]">
-              Choose the option that best reflects your relationship intention right now. You can
-              refine this later.
-            </p>
-            <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
-              {INTENTION_OPTIONS.map((option) => (
-                <OptionButton
-                  key={option.value}
-                  label={option.label}
-                  selected={intention === option.value}
-                  disabled={isFinishing}
-                  onClick={() => selectIntention(option.value)}
-                />
-              ))}
-            </div>
+            <form ref={relationshipForm} onSubmit={e => { e.preventDefault(); void goNext(); }}>
+              <RelationshipPreferencesFields goals={intention} disabled={savingRelationship} />
+            </form>
             <p
               className={`mt-5 text-sm ${saveError ? 'text-[#D62828]' : 'text-[#777777]'}`}
               role={saveError ? 'alert' : undefined}

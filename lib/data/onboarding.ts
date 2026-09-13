@@ -19,7 +19,7 @@ import {
   type DataAccessResult,
   updateOnboardingProgress,
 } from '@/lib/data/profile';
-import { mapLegacyRelationshipGoal } from '@/lib/profile/legacy-mapping';
+import { relationshipGoals, validRelationshipAnswer } from '@/lib/profile/relationship-preferences';
 import { matchingPreferencesAreComplete } from '@/lib/profile/matching-preferences';
 
 const ALLOWED_KEYS = new Set<string>(Object.values(PROFILE_ANSWER_KEYS));
@@ -97,6 +97,10 @@ export async function upsertCurrentUserProfileAnswer(
     return ensured;
   }
 
+  if (questionKey === 'relationship_also_open_to' || questionKey === 'relationship_pace') {
+    return { success: false, message: 'Save relationship preferences together.' };
+  }
+
   if (!isAllowedKey(questionKey)) {
     return { success: false, message: 'Unknown question.' };
   }
@@ -112,6 +116,13 @@ export async function upsertCurrentUserProfileAnswer(
   const normalized: ProfileAnswerValue = Array.isArray(answerValue)
     ? answerValue.map((item) => item.trim()).filter(Boolean)
     : answerValue.trim();
+
+  if (questionKey === PROFILE_ANSWER_KEYS.relationshipIntention) {
+    if (!validRelationshipAnswer(normalized)) return { success: false, message: 'Select at least one relationship goal.' };
+    const { error } = await supabase.rpc('save_my_relationship_goals', { p_goals: relationshipGoals(normalized) });
+    return error ? { success: false, message: 'Could not save your relationship goals. Please try again.' }
+      : { success: true, data: { questionKey } };
+  }
 
   if (
     (typeof normalized === 'string' && !normalized) ||
@@ -149,27 +160,6 @@ export async function upsertCurrentUserProfileAnswer(
   if (error) {
     console.error('upsert profile answer:', error.message);
     return { success: false, message: 'Could not save your answer. Please try again.' };
-  }
-
-  // Keep profiles.relationship_goal as the shared authoritative public field.
-  if (
-    questionKey === PROFILE_ANSWER_KEYS.relationshipIntention &&
-    typeof normalized === 'string'
-  ) {
-    const mapped = mapLegacyRelationshipGoal(normalized);
-    if (mapped.mapped) {
-      const { error: profileError } = await supabase
-        .from('profiles')
-        .update({ relationship_goal: mapped.mapped })
-        .eq('id', user.id);
-      if (profileError) {
-        console.error('sync relationship_goal:', profileError.message);
-        return {
-          success: false,
-          message: 'Could not sync your relationship goal. Please try again.',
-        };
-      }
-    }
   }
 
   return { success: true, data: { questionKey } };

@@ -22,6 +22,7 @@ export type PublicDiscoveryProfile = {
   location_country?: string | null;
   relationship_goal: string | null;
   relationship_goals?: string[] | null;
+  relationship_pace?: string | null;
   faith_identity?: string | null;
   faith_tradition?: string | null;
   faith_other?: string | null;
@@ -140,8 +141,7 @@ export function toDiscoveryFeedCard(profile: PublicDiscoveryProfile): DiscoveryF
     photoUrl: profile.profile_photo_url,
     filterData: {
       relationshipGoals:
-        profile.relationship_goals?.filter(Boolean) ??
-        (profile.relationship_goal ? [profile.relationship_goal] : []),
+        profile.relationship_goals?.length ? profile.relationship_goals : profile.relationship_goal ? [profile.relationship_goal] : [],
       faithIdentity: profile.faith_identity ?? null,
       faithImportance: profile.faith_importance,
       children: profile.children,

@@ -41,7 +41,6 @@ import {
   FAITH_IMPORTANCE_OPTIONS,
   HAS_CHILDREN_OPTIONS,
   OPEN_TO_PARTNER_WITH_CHILDREN_OPTIONS,
-  RELATIONSHIP_GOAL_OPTIONS,
   RELOCATION_OPTIONS,
   SERVICE_BACKGROUND_OPTIONS,
   WANTS_CHILDREN_OPTIONS,
@@ -59,6 +58,8 @@ import {
   type ProfileCompletionSectionId,
 } from '@/lib/profile-completion';
 import type { Profile } from '@/lib/types/profile';
+import RelationshipPreferencesFields from './RelationshipPreferencesFields';
+import { relationshipGoals } from '@/lib/profile/relationship-preferences';
 import { CORE_VALUES_OPTIONS } from '@/lib/types/profile-answers';
 import { latestEligibleAdultBirthDate } from '@/lib/age';
 
@@ -535,14 +536,8 @@ function SectionEditor({
       ) : null}
 
       {sectionId === 'relationship' ? (
-        <RelationshipFields
-          defaultValues={
-            profile.relationship_goals?.length
-              ? profile.relationship_goals
-              : profile.relationship_goal
-                ? [profile.relationship_goal]
-                : []
-          }
+        <RelationshipPreferencesFields
+          goals={relationshipGoals(profile.relationship_goal, profile.relationship_goals)}
           disabled={saving}
         />
       ) : null}
@@ -712,31 +707,6 @@ function SingleChoiceFields({
       onChange={setValue}
       disabled={disabled}
     />
-  );
-}
-
-function RelationshipFields({
-  defaultValues,
-  disabled,
-}: {
-  defaultValues: string[];
-  disabled?: boolean;
-}) {
-  const [values, setValues] = useState(defaultValues);
-  return (
-    <>
-      <input type="hidden" name="relationship_goal" value={values[0] ?? ''} />
-      <MultiChoiceChips
-        name="relationship_goals"
-        legend="Relationship goals"
-        options={RELATIONSHIP_GOAL_OPTIONS}
-        values={values}
-        onChange={setValues}
-        exclusiveValues={[]}
-        optionalNote="Optional — select every relationship goal that honestly fits."
-        disabled={disabled}
-      />
-    </>
   );
 }
 

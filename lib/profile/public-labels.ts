@@ -1,3 +1,4 @@
+import { relationshipGoals } from './relationship-preferences';
 /**
  * Natural-language public labels for structured profile fields.
  * Prefer-not-to-say and unanswered values are omitted from public presentation.
@@ -15,6 +16,7 @@ import { formatPublicLocation } from './location-format';
 export type PublicProfileLabelSource = {
   relationship_goal?: string | null;
   relationship_goals?: string[] | null;
+  relationship_pace?: string | null;
   faith_identity?: string | null;
   faith_tradition?: string | null;
   faith_other?: string | null;
@@ -170,20 +172,13 @@ function faithImportancePublicLabel(value: string | null | undefined): string | 
 export function collectStructuredPublicProfileDetails(
   profile: PublicProfileLabelSource
 ): Array<{ label: string; value: string }> {
-  const relationshipGoals = (
-    profile.relationship_goals?.length
-      ? profile.relationship_goals
-      : profile.relationship_goal
-        ? [profile.relationship_goal]
-        : []
-  )
-    .map((goal) => visibleStructuredLabel('relationship_goal', goal))
-    .filter((goal): goal is string => Boolean(goal));
+  const intentions = relationshipGoals(profile.relationship_goal, profile.relationship_goals)
+    .map(goal => visibleStructuredLabel('relationship_goal', goal)).filter(Boolean).join(', ') || null;
 
   const rows: Array<{ label: string; value: string | null }> = [
     {
-      label: relationshipGoals.length === 1 ? 'Relationship goal' : 'Relationship goals',
-      value: relationshipGoals.length > 0 ? relationshipGoals.join(', ') : null,
+      label: 'Looking for',
+      value: intentions,
     },
     { label: 'Faith', value: faithPublicLabel(profile) },
     {

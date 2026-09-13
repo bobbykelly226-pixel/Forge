@@ -93,7 +93,7 @@ describe('human-readable factor answers', () => {
     );
     assert.equal(
       humanizeFactorAnswer('serious_relationship', 'relationship_intention'),
-      'Looking for a serious relationship'
+      'Looking for a long-term relationship'
     );
     assert.doesNotMatch(humanizeFactorAnswer('never', 'smoking') ?? '', /_/);
   });

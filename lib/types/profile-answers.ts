@@ -1,3 +1,4 @@
+import { validRelationshipAnswer } from '@/lib/profile/relationship-preferences';
 /**
  * Stable profile questionnaire keys (authoritative: profile_answers).
  * Mirrors the live onboarding questions — do not invent unused keys here.
@@ -5,6 +6,8 @@
 
 export const PROFILE_ANSWER_KEYS = {
   relationshipIntention: 'relationship_intention',
+  relationshipAlsoOpenTo: 'relationship_also_open_to',
+  relationshipPace: 'relationship_pace',
   coreValues: 'core_values',
 } as const;
 
@@ -74,8 +77,7 @@ export function deriveOnboardingStep(input: {
   }
 
   const hasIntention =
-    typeof input.answers.relationship_intention === 'string' &&
-    input.answers.relationship_intention.trim().length > 0;
+    validRelationshipAnswer(input.answers.relationship_intention);
   const hasValues =
     Array.isArray(input.answers.core_values) &&
     input.answers.core_values.length > 0;
@@ -102,8 +104,7 @@ export function deriveOnboardingStep(input: {
 
 export function isOnboardingContentComplete(answers: ProfileAnswersMap): boolean {
   const hasIntention =
-    typeof answers.relationship_intention === 'string' &&
-    answers.relationship_intention.trim().length > 0;
+    validRelationshipAnswer(answers.relationship_intention);
   const hasValues =
     Array.isArray(answers.core_values) && answers.core_values.length > 0;
   return hasIntention && hasValues;

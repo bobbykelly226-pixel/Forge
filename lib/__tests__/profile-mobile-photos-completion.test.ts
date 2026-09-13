@@ -89,7 +89,8 @@ describe('mobile structured controls', () => {
       join(process.cwd(), 'components/profile/StructuredChoices.tsx'),
       'utf8'
     );
-    const structuredSources = `${workspace}\n${lifestyle}`;
+    const relationship = readFileSync(join(process.cwd(), 'components/profile/RelationshipPreferencesFields.tsx'), 'utf8');
+    const structuredSources = `${workspace}\n${lifestyle}\n${relationship}`;
 
     assert.match(choices, /data-structured-control-type="single"/);
     assert.match(choices, /data-structured-control-type="multi"/);
@@ -112,7 +113,7 @@ describe('mobile structured controls', () => {
       'relocation',
       'faith_identity',
       'faith_importance',
-      'relationship_goal',
+      'relationship_goals',
       'pets_types',
       'pets_partner_preferences',
       'smoking_product_types',
