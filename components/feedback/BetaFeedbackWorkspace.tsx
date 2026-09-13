@@ -76,7 +76,7 @@ export default function BetaFeedbackWorkspace() {
       >
         <DiscoveryDesktopTopBar />
 
-        <main className="mx-auto w-full max-w-3xl px-4 pb-[7.5rem] sm:px-6 lg:mx-0 lg:max-w-none lg:px-0 lg:pb-10">
+        <main data-feedback-workspace className="mx-auto w-full max-w-3xl px-4 pb-[7.5rem] sm:px-6 lg:mx-0 lg:max-w-none lg:px-0 lg:pb-10">
           <div className="mb-5 flex items-center justify-between gap-3 lg:hidden">
             <Image
               src="/Logos/forge-founder-transparent.png"
@@ -97,7 +97,7 @@ export default function BetaFeedbackWorkspace() {
           <section className="overflow-hidden rounded-[1.9rem] border border-[#0B2D5C]/08 bg-white/90 shadow-[0_18px_55px_rgba(11,45,92,0.07)]">
             <div className="border-b border-[#0B2D5C]/08 bg-[linear-gradient(135deg,rgba(11,45,92,0.06),rgba(214,40,40,0.035))] px-5 py-6 sm:px-8 sm:py-8">
               <div className="flex items-start gap-4">
-                <span className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-[#0B2D5C] text-white shadow-[0_8px_20px_rgba(11,45,92,0.2)]">
+                <span data-icon-badge className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-[#0B2D5C] text-white shadow-[0_8px_20px_rgba(11,45,92,0.2)]">
                   <MessageSquarePlus className="h-5 w-5" strokeWidth={1.75} aria-hidden="true" />
                 </span>
                 <div>
@@ -183,7 +183,7 @@ export default function BetaFeedbackWorkspace() {
                           required
                         />
                           <span className="flex items-start gap-3">
-                            <span className="mt-0.5 inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[#0B2D5C]/07 text-[#0B2D5C] group-has-[:checked]:bg-[#D62828] group-has-[:checked]:text-white group-has-[:focus-visible]:outline group-has-[:focus-visible]:outline-2 group-has-[:focus-visible]:outline-offset-2 group-has-[:focus-visible]:outline-[#0B2D5C]">
+                            <span data-icon-badge className="mt-0.5 inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[#0B2D5C]/07 text-[#0B2D5C] group-has-[:checked]:bg-[#D62828] group-has-[:checked]:text-white group-has-[:focus-visible]:outline group-has-[:focus-visible]:outline-2 group-has-[:focus-visible]:outline-offset-2 group-has-[:focus-visible]:outline-[#0B2D5C]">
                               <Icon className="h-4 w-4" strokeWidth={1.75} aria-hidden="true" />
                             </span>
                             <span>

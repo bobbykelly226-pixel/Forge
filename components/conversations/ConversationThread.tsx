@@ -111,6 +111,11 @@ export default function ConversationThread({
   const composerTextRef = useRef('');
   const refreshingMessagesRef = useRef(false);
   const refreshQueuedRef = useRef(false);
+  const [demoPreviews, setDemoPreviews] = useState<Record<string, string>>({});
+  const demoAttachmentUrls = useRef<Record<string, string>>({});
+  useEffect(() => () => {
+    Object.values(demoAttachmentUrls.current).forEach((url) => URL.revokeObjectURL(url));
+  }, []);
 
   const [messages, setMessages] = useState<ConversationMessage[]>(() =>
     sortMessagesChronologically(initialMessages)
@@ -355,6 +360,26 @@ export default function ConversationThread({
 
     const clientMessageId = existingClientMessageId ?? createClientMessageId();
     let attachment = existingAttachment;
+
+    if (pendingFile && isSeed) {
+      const validationMessage = validateMessageAttachment(pendingFile);
+      if (validationMessage) {
+        setLiveMessage(validationMessage);
+        return false;
+      }
+      const path = `demo-${clientMessageId}`;
+      const previewUrl = URL.createObjectURL(pendingFile);
+      demoAttachmentUrls.current[path] = previewUrl;
+      setDemoPreviews((current) => ({ ...current, [path]: previewUrl }));
+      attachment = {
+        storage_path: path,
+        file_name: sanitizeAttachmentName(pendingFile.name),
+        mime_type: pendingFile.type,
+        file_size: pendingFile.size,
+        width: null,
+        height: null,
+      };
+    }
 
     if (pendingFile && !isSeed) {
       const validationMessage = validateMessageAttachment(pendingFile);
@@ -811,6 +836,7 @@ export default function ConversationThread({
                       <MessageAttachment
                         key={attachment.id ?? attachment.storagePath}
                         attachment={attachment}
+                        localPreviewUrl={isSeed ? demoPreviews[attachment.storagePath] : undefined}
                         isSent={isSent}
                       />
                     ))}

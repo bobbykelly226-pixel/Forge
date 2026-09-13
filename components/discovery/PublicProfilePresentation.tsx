@@ -244,7 +244,7 @@ export function PublicProfileBackLink({
   label: string;
 }) {
   return (
-    <Link href={href} className="text-sm font-semibold text-[#0B2D5C] transition hover:text-[#D62828]">
+    <Link data-text-link href={href} className="text-sm font-semibold text-[#0B2D5C] transition hover:text-[#D62828]">
       {label}
     </Link>
   );
