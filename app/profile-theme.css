@@ -335,3 +335,20 @@
   border-color: #C92027;
   box-shadow: inset 0 -2px #C92027;
 }
+
+.forge-profile-theme [data-feedback-description] { color: #E6E6E7 !important; }
+.forge-profile-theme [data-discovery-filters] {
+  background: #A9ADB3 !important;
+  border-radius: 6px;
+  border: 1px solid #0B1C30;
+}
+.forge-profile-theme [data-discovery-filters] :is(details, label[class*="rounded-"], input, select) {
+  border-radius: 6px;
+}
+.forge-profile-theme [data-discovery-filters] details { border-color: #0B1C30; }
+.forge-profile-theme [data-discovery-filters] summary {
+  background: #0B1C30;
+  --profile-text: #FFFFFF;
+  --profile-muted: #E6E6E7;
+  color: #FFFFFF;
+}

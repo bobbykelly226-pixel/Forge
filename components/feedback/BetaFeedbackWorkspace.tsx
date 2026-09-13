@@ -190,7 +190,7 @@ export default function BetaFeedbackWorkspace() {
                               <span className="block text-sm font-semibold text-[#0B2D5C]">
                                 {category.label}
                               </span>
-                              <span className="mt-1.5 block text-xs leading-relaxed text-[#687384]">
+                              <span data-feedback-description className="mt-1.5 block text-xs leading-relaxed text-[#E6E6E7]">
                                 {category.description}
                               </span>
                             </span>
