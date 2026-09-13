@@ -1,0 +1,90 @@
+/* Public Forge pages share the approved app palette and compact corners.
+   Scope follows the shared marketing Header, including public auth/legal pages. */
+:where(.min-h-screen:has(> .forge-marketing-header)) {
+  background: #A9ADB3;
+  color: #0B2D5C;
+  color-scheme: light;
+}
+:where(.min-h-screen:has(> .forge-marketing-header)) :is([class~="bg-[#F8F6F2]"], [class~="bg-[#F4F4F4]"]) {
+  background-color: #A9ADB3;
+}
+:where(.min-h-screen:has(> .forge-marketing-header)) [class~="bg-white"] {
+  background-color: #E6E6E7;
+}
+:where(.min-h-screen:has(> .forge-marketing-header)) [class*="rounded-"]:not(img) {
+  border-radius: 6px;
+}
+:where(.min-h-screen:has(> .forge-marketing-header)) :is([class~="text-[#222222]"], [class~="text-[#444444]"], [class~="text-[#666666]"]) {
+  color: #5C636B;
+}
+:where(.min-h-screen:has(> .forge-marketing-header)) :is([class~="text-[#D62828]"], [class~="text-red-600"]) {
+  color: #C92027;
+}
+:where(.min-h-screen:has(> .forge-marketing-header)) :is(.prose, form, .grid > div:has(img[src^="/icon-"])) {
+  background: #E6E6E7; border: 1px solid #0B2D5C; border-radius: 6px; padding: clamp(20px, 4vw, 40px); box-shadow: 0 8px 24px rgb(11 45 92 / 8%);
+}
+:where(.min-h-screen:has(> .forge-marketing-header)) .prose .prose {
+  padding: 0; border: 0; box-shadow: none;
+}
+:where(.min-h-screen:has(> .forge-marketing-header)) .grid > div:has(img[src^="/icon-"]) {
+  padding: 20px 16px; min-width: 0;
+}
+:where(.min-h-screen:has(> .forge-marketing-header)) .grid > div > div:has(> img[src^="/icon-"]) {
+  background: #FFFFFF; border-radius: 6px; width: 112px; margin-inline: auto;
+}
+:where(.min-h-screen:has(> .forge-marketing-header)) .grid:has(> div img[src^="/icon-"]) {
+  gap: 16px;
+}
+:where(.min-h-screen:has(> .forge-marketing-header)) :is(input:not([type="checkbox"]):not([type="radio"]), select, textarea) {
+  background: #F7F7F7; color: #0B2D5C; border: 1px solid #0B2D5C; border-radius: 6px;
+}
+:where(.min-h-screen:has(> .forge-marketing-header)) :is(a, button)[class*="bg-"] {
+  background: #0B2D5C; color: #FFFFFF; border: 1px solid #C5CCD6; border-radius: 6px;
+}
+:where(.min-h-screen:has(> .forge-marketing-header)) :is(a, button)[class*="bg-"]:hover {
+  background: #0A2540; color: #FFFFFF;
+}
+:where(.min-h-screen:has(> .forge-marketing-header)) button:disabled {
+  opacity: .55; cursor: not-allowed;
+}
+:where(.min-h-screen:has(> .forge-marketing-header)) :is(a, button, input, select, textarea):focus-visible {
+  outline: 2px solid #C92027; outline-offset: 3px;
+}
+:where(.min-h-screen:has(> .forge-marketing-header)) .forge-marketing-header {
+  background: #0B2D5C; border-bottom: 1px solid #C5CCD6;
+}
+:where(.min-h-screen:has(> .forge-marketing-header)) .forge-marketing-header a:not(:has(img)) {
+  color: #FFFFFF;
+}
+:where(.min-h-screen:has(> .forge-marketing-header)) .forge-marketing-header a[aria-current="page"] {
+  text-decoration: underline; text-decoration-color: #C92027; text-decoration-thickness: 2px; text-underline-offset: 8px;
+}
+:where(.min-h-screen:has(> .forge-marketing-header)) .forge-marketing-header > div:first-child {
+  padding-inline: clamp(16px, 4vw, 32px);
+}
+:where(.min-h-screen:has(> .forge-marketing-header)) .forge-marketing-header button {
+  min-width: 44px; min-height: 44px;
+}
+:where(.min-h-screen:has(> .forge-marketing-header)) footer {
+  background: #0B2D5C; color: #E6E6E7; border-top: 1px solid #C5CCD6;
+}
+:where(.min-h-screen:has(> .forge-marketing-header)) :is(footer, .forge-marketing-header) img {
+  max-width: 100%; object-fit: contain;
+}
+:where(.min-h-screen:has(> .forge-marketing-header)) > :is(main, div[class*="max-w-"]) > h1 {
+  text-align: center;
+}
+:where(.min-h-screen:has(> .forge-marketing-header)) [class~="from-[#F8F6F2]"] {
+  background-image: linear-gradient(to right, #A9ADB3 0%, rgb(169 173 179 / 96%) 60%, transparent 100%);
+}
+:where(.min-h-screen:has(> .forge-marketing-header)) .prose :is(a[href], button):not([class*="bg-"]) {
+  color: #0B2D5C; text-decoration: underline; text-underline-offset: 3px;
+}
+:where(.min-h-screen:has(> .forge-marketing-header)) .prose [class*="bg-white/"] {
+  background: #F7F7F7; border-color: #0B2D5C;
+}
+@media (min-width: 768px) and (max-width: 1100px) {
+  :where(.min-h-screen:has(> .forge-marketing-header)) .grid[class*="md:grid-cols-6"] { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .forge-marketing-header > div > a img { height: 64px; }
+  .forge-marketing-header > div > div { gap: 16px; font-size: 14px; }
+}
