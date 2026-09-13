@@ -5,7 +5,7 @@ const document = getLegalDocument('community_standards');
 
 export default function CommunityStandardsPage() {
   return (
-    <LegalDocumentShell {...document}>
+    <LegalDocumentShell {...document} documentKey={document.key}>
       <p>
         Forge is built for intentional, respectful relationships. Every member is
         responsible for protecting the dignity, privacy, and safety of other people.
