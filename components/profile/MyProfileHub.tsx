@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { Eye } from 'lucide-react';
 
 import DiscoveryDesktopTopBar from '@/components/DiscoveryDesktopTopBar';
@@ -14,7 +14,7 @@ import ProfileCompatibilityCard, {
   type ProfileCompatibilityCardProps,
 } from '@/components/compatibility-profile/ProfileCompatibilityCard';
 import DiscoveryVisibilityToggle from '@/components/profile/DiscoveryVisibilityToggle';
-import ProfileWorkspace from '@/components/profile/ProfileWorkspace';
+import ProfileWorkspace, { type ProfileWorkspaceHandle } from '@/components/profile/ProfileWorkspace';
 import MatchingPreferencesCard from '@/components/profile/MatchingPreferencesCard';
 import type { ManagedProfilePhoto } from '@/lib/profile-photo';
 import type { Profile } from '@/lib/types/profile';
@@ -69,6 +69,7 @@ export default function MyProfileHub({
   compatibilityCard,
 }: MyProfileHubProps) {
   const [photoUrl, setPhotoUrl] = useState(initialPhotoUrl);
+  const workspaceRef = useRef<ProfileWorkspaceHandle>(null);
 
   return (
     <>
@@ -185,6 +186,14 @@ export default function MyProfileHub({
                   </div>
                 </div>
 
+                <button
+                  type="button"
+                  onClick={() => workspaceRef.current?.openPhotos()}
+                  className="mt-4 inline-flex min-h-11 w-full items-center justify-center rounded-md px-4 py-2 text-sm font-semibold focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+                >
+                  Update photos
+                </button>
+
                 <div className="mt-5 border-t border-[#C9CBCE] pt-5">
                   <Link
                     data-text-link href="/profile/preview"
@@ -212,6 +221,7 @@ export default function MyProfileHub({
 
             <div className="mt-8 min-w-0 space-y-5 lg:mt-0">
               <ProfileWorkspace
+                ref={workspaceRef}
                 initialProfile={profile}
                 privateDetails={privateDetails}
                 coreValues={coreValues}

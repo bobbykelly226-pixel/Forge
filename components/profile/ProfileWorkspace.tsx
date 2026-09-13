@@ -4,7 +4,7 @@ import MusicFields from '@/components/profile/MusicFields';
 import CoreValuesFields from '@/components/profile/CoreValuesFields';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useImperativeHandle, useRef, useState, type Ref } from 'react';
 import { ChevronDown } from 'lucide-react';
 
 import { saveProfileSection } from '@/app/actions/profile';
@@ -60,7 +60,10 @@ type PrivateProfileSeed = {
   location_provider: string | null;
 };
 
+export type ProfileWorkspaceHandle = { openPhotos: () => void };
+
 export type ProfileWorkspaceProps = {
+  ref?: Ref<ProfileWorkspaceHandle>;
   initialProfile: Profile;
   privateDetails: PrivateProfileSeed | null;
   coreValues: string[];
@@ -102,6 +105,7 @@ function buildInitialLocation(
 type SectionStatus = 'idle' | 'editing' | 'saving' | 'saved' | 'error';
 
 export default function ProfileWorkspace({
+  ref,
   initialProfile,
   privateDetails,
   coreValues: initialCoreValues,
@@ -189,6 +193,19 @@ export default function ProfileWorkspace({
     setOpenSection(id);
     setStatus(id, 'editing');
   };
+
+  useImperativeHandle(ref, () => ({
+    openPhotos() {
+      if (Object.values(sectionStatus).includes('saving')) return;
+      if (openSection === 'photo') {
+        const node = sectionRefs.current.photo;
+        node?.focus({ preventScroll: true });
+        node?.scrollIntoView({ behavior: 'instant', block: 'start' });
+        return;
+      }
+      openForEdit('photo');
+    },
+  }));
 
   const openFromChecklist = (checklistId: ProfileCompletionSectionId) => {
     const target = checklistItemToSectionId(checklistId, profile, { coreValues });
