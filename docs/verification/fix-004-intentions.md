@@ -1,4 +1,35 @@
-# FIX-004: primary relationship intentions
+# FIX-004: multi-select relationship goals
+
+## Current founder-approved contract — September 13, 2026
+
+This supersedes the single-primary and primary/alternatives/pace designs below,
+which remain historical context. One question: **What are you looking for?**
+Helper: **Select all that genuinely reflect what you’re open to.**
+Choose one or more of the same five options. No ranking, secondary list or pace
+control. All choices remain visible. Saved choices appear together on profiles.
+
+Profile and onboarding share one checkbox fieldset. Existing scalar and alternative
+answers load as a combined set. New saves use an atomic, member-authorized
+security-invoker RPC, store the full array in profiles and the onboarding answer,
+and reject zero or invalid selections. The database permits all five choices.
+The old scalar field is kept for older readers, not as a member-selected priority.
+Previously saved pace is retained but not displayed; no global answer rewrite.
+The existing array-aware compatibility and Discovery logic remains in place.
+
+628 local tests pass, including rendered checks of all 31 nonempty combinations,
+empty-selection gating, legacy preservation, and combined public labels. Build
+passes; lint has zero errors and 39 existing warnings. New database tests cover
+all-five persistence, resume, deselection, return to dating, and authorization.
+Founder mobile/authenticated acceptance and a Production web release remain open.
+
+PR Validation #104 (34786376825) passed application and full database checks for
+72162efc3427cc442a520d8a8ef040e1c530d8ab. Migration 20260913222046 applied to the
+shared database after CI passed; the five-choice constraint and invoker-only,
+authenticated execution grants were verified. No Production web release.
+The pre-change security advisor reported existing definer-function warnings,
+private RLS/no-policy informational notices, and leaked-password-protection
+disabled. These are separate follow-up items; this change adds no definer RPC.
+Password protection follow-up: https://supabase.com/docs/guides/auth/password-security#password-strength-and-leaked-password-protection
 
 Source: Forge HQ task 3c9194770d2b814c9f3fe36523a4c9df.
 
