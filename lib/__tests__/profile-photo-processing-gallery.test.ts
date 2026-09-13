@@ -11,6 +11,7 @@ import {
   PROFILE_PHOTO_PROCESS_MESSAGES,
   ProfilePhotoProcessError,
   centeredCropRect,
+  containedPhotoRect,
   clampCropRect,
   isHeicLikeFile,
   panCropRect,
@@ -238,4 +239,20 @@ describe('public profile photo gallery', () => {
     assert.match(gallery, /overflow-x-auto/);
     assert.match(gallery, /shrink-0/);
   });
+});
+
+
+describe('whole photo framing', () => {
+  for (const [width, height] of [[4000, 2000], [1000, 4000], [2000, 2000], [1500, 2000]]) {
+    it(`includes every edge of a ${width} by ${height} source without distortion`, () => {
+      const rect = containedPhotoRect(width, height, 1440, 1920);
+      assert.ok(rect.x >= 0 && rect.y >= 0);
+      assert.ok(rect.x + rect.width <= 1440);
+      assert.ok(rect.y + rect.height <= 1920);
+      assert.ok(Math.abs(rect.width / rect.height - width / height) < 1e-10);
+      assert.equal(rect.x * 2 + rect.width, 1440);
+      assert.equal(rect.y * 2 + rect.height, 1920);
+      assert.ok(rect.width === 1440 || rect.height === 1920);
+    });
+  }
 });

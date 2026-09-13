@@ -238,12 +238,21 @@ export function resizedOutputDimensions(
   };
 }
 
+/** Center the whole source inside a frame without changing its proportions. */
+export function containedPhotoRect(width: number, height: number, frameWidth: number, frameHeight: number): CropRect {
+  const scale = Math.min(frameWidth / width, frameHeight / height);
+  const fittedWidth = width * scale;
+  const fittedHeight = height * scale;
+  return { x: (frameWidth - fittedWidth) / 2, y: (frameHeight - fittedHeight) / 2, width: fittedWidth, height: fittedHeight };
+}
+
 export type ProcessCroppedPhotoInput = {
   source: CanvasImageSource;
   crop: CropRect;
   maxLongEdge?: number;
   quality?: number;
   fileName?: string;
+  fitEntirePhoto?: boolean;
 };
 
 export type ProcessCroppedPhotoResult = {
@@ -265,9 +274,11 @@ export async function processCroppedProfilePhoto(
     throw new ProfilePhotoProcessError('process', PROFILE_PHOTO_PROCESS_MESSAGES.process);
   }
 
+  const frameWidth = input.fitEntirePhoto ? Math.max(crop.width, crop.height * PROFILE_PHOTO_CROP_ASPECT) : crop.width;
+  const frameHeight = input.fitEntirePhoto ? frameWidth / PROFILE_PHOTO_CROP_ASPECT : crop.height;
   const out = resizedOutputDimensions(
-    crop.width,
-    crop.height,
+    frameWidth,
+    frameHeight,
     input.maxLongEdge ?? PROFILE_PHOTO_PROCESSED_MAX_LONG_EDGE
   );
 
@@ -279,19 +290,18 @@ export async function processCroppedProfilePhoto(
     throw new ProfilePhotoProcessError('process', PROFILE_PHOTO_PROCESS_MESSAGES.process);
   }
 
-  ctx.imageSmoothingEnabled = true;
-  ctx.imageSmoothingQuality = 'high';
-  ctx.drawImage(
-    input.source,
-    crop.x,
-    crop.y,
-    crop.width,
-    crop.height,
-    0,
-    0,
-    out.width,
-    out.height
-  );
+  const draw = (width: number, height: number) => {
+    ctx.imageSmoothingEnabled = true;
+    ctx.imageSmoothingQuality = 'high';
+    ctx.fillStyle = '#FFFFFF';
+    ctx.fillRect(0, 0, width, height);
+    const target = input.fitEntirePhoto
+      ? containedPhotoRect(crop.width, crop.height, width, height)
+      : { x: 0, y: 0, width, height };
+    ctx.drawImage(input.source, crop.x, crop.y, crop.width, crop.height,
+      target.x, target.y, target.width, target.height);
+  };
+  draw(out.width, out.height);
 
   const quality = input.quality ?? PROFILE_PHOTO_PROCESSED_QUALITY;
   const blob = await canvasToJpegBlob(canvas, quality);
@@ -301,20 +311,10 @@ export async function processCroppedProfilePhoto(
 
   if (blob.size > PROFILE_PHOTO_PROCESSED_MAX_BYTES) {
     // Retry once at a lower quality / slightly smaller edge.
-    const tighter = resizedOutputDimensions(crop.width, crop.height, 1600);
+    const tighter = resizedOutputDimensions(frameWidth, frameHeight, 1600);
     canvas.width = tighter.width;
     canvas.height = tighter.height;
-    ctx.drawImage(
-      input.source,
-      crop.x,
-      crop.y,
-      crop.width,
-      crop.height,
-      0,
-      0,
-      tighter.width,
-      tighter.height
-    );
+    draw(tighter.width, tighter.height);
     const retry = await canvasToJpegBlob(canvas, 0.75);
     if (!retry || retry.size > PROFILE_PHOTO_PROCESSED_MAX_BYTES) {
       throw new ProfilePhotoProcessError(

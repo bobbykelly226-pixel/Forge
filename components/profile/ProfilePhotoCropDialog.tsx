@@ -42,6 +42,9 @@ export default function ProfilePhotoCropDialog({
     [image.height, image.width]
   );
   const [zoom, setZoom] = useState(1);
+  const [fitEntirePhoto, setFitEntirePhoto] = useState(false);
+  const pointers = useRef(new Map<number, { x: number; y: number }>());
+  const pinch = useRef<{ distance: number; zoom: number } | null>(null);
   const [offset, setOffset] = useState({ x: 0, y: 0 });
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -97,12 +100,26 @@ export default function ProfilePhotoCropDialog({
     } as const;
   }, [crop.height, crop.width, crop.x, crop.y, image.height, image.objectUrl, image.width]);
 
+  const pointerDistance = () => {
+    const points = [...pointers.current.values()];
+    return points.length === 2 ? Math.hypot(points[0].x - points[1].x, points[0].y - points[1].y) : 0;
+  };
+
   const onPointerDown = (event: React.PointerEvent) => {
+    if (fitEntirePhoto || controlsDisabled || pointers.current.size >= 2) return;
+    pointers.current.set(event.pointerId, { x: event.clientX, y: event.clientY });
+    if (pointers.current.size === 2) pinch.current = { distance: pointerDistance(), zoom };
     event.currentTarget.setPointerCapture(event.pointerId);
     dragRef.current = { x: event.clientX, y: event.clientY };
   };
 
   const onPointerMove = (event: React.PointerEvent) => {
+    if (fitEntirePhoto || controlsDisabled || !pointers.current.has(event.pointerId)) return;
+    pointers.current.set(event.pointerId, { x: event.clientX, y: event.clientY });
+    if (pointers.current.size === 2 && pinch.current) {
+      setZoom(Math.max(1, Math.min(3, pinch.current.zoom * pointerDistance() / Math.max(1, pinch.current.distance))));
+      return;
+    }
     if (!dragRef.current || !frameRef.current) return;
     const frame = frameRef.current.getBoundingClientRect();
     const dxPx = event.clientX - dragRef.current.x;
@@ -115,8 +132,10 @@ export default function ProfilePhotoCropDialog({
     }));
   };
 
-  const onPointerUp = () => {
-    dragRef.current = null;
+  const onPointerUp = (event: React.PointerEvent) => {
+    pointers.current.delete(event.pointerId);
+    pinch.current = null;
+    dragRef.current = [...pointers.current.values()][0] ?? null;
   };
 
   const handleConfirm = async () => {
@@ -125,7 +144,8 @@ export default function ProfilePhotoCropDialog({
     try {
       const result = await processCroppedProfilePhoto({
         source: image.bitmap,
-        crop,
+        crop: fitEntirePhoto ? { x: 0, y: 0, width: image.width, height: image.height } : crop,
+        fitEntirePhoto,
         fileName,
       });
       onConfirm(result.file);
@@ -159,27 +179,40 @@ export default function ProfilePhotoCropDialog({
             Position your photo
           </h2>
           <p className="mt-1 text-sm text-[#5A6575]">
-            Drag to reposition. Zoom to frame the moment. We’ll resize it before uploading.
+            Fit the whole photo or fill the frame. In Fill mode, drag and pinch to adjust.
           </p>
         </div>
 
         <div className="min-h-0 space-y-4 overflow-y-auto overscroll-contain px-5 py-4">
+          <div className="grid grid-cols-2 gap-2" aria-label="Photo framing">
+            {[{ fit: true, label: 'Fit entire photo' }, { fit: false, label: 'Fill frame' }].map((mode) => (
+              <button key={mode.label} type="button" aria-pressed={fitEntirePhoto === mode.fit}
+                disabled={controlsDisabled}
+                onClick={() => { setFitEntirePhoto(mode.fit); setZoom(1); setOffset({ x: 0, y: 0 }); pointers.current.clear(); pinch.current = null; dragRef.current = null; }}
+                className={`min-h-11 rounded-xl border px-3 py-2 text-sm font-semibold ${fitEntirePhoto === mode.fit ? 'bg-[#0B2D5C] text-white' : 'bg-white text-[#0B2D5C]'}`}>
+                {mode.label}
+              </button>
+            ))}
+          </div>
           <div
             ref={frameRef}
             className="relative mx-auto aspect-[3/4] w-full max-w-[min(18rem,33dvh)] touch-none overflow-hidden rounded-[1.5rem] bg-[#0B2D5C]/10"
-            style={previewBackground}
+            style={fitEntirePhoto ? { backgroundImage: `url(${image.objectUrl})`, backgroundSize: 'contain', backgroundPosition: 'center', backgroundRepeat: 'no-repeat', backgroundColor: '#FFFFFF' } : previewBackground}
             onPointerDown={onPointerDown}
             onPointerMove={onPointerMove}
             onPointerUp={onPointerUp}
             onPointerCancel={onPointerUp}
+            onLostPointerCapture={onPointerUp}
             role="img"
             aria-label="Crop preview"
           />
 
+          {fitEntirePhoto ? <p className="text-sm text-[#5A6575]">Your whole photo is included. White space fills any gaps.</p> : null}
           <label className="block text-sm font-medium text-[#0B2D5C]">
             Zoom
             <input
               type="range"
+              disabled={fitEntirePhoto || controlsDisabled}
               min={1}
               max={3}
               step={0.01}
