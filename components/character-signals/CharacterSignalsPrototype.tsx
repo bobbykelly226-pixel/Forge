@@ -53,7 +53,7 @@ export default function CharacterSignalsWorkspace() {
         aside={
           <div className="rounded-[1.75rem] border border-[#0B2D5C]/08 bg-white/70 p-6 shadow-[0_12px_32px_rgba(11,45,92,0.04)] backdrop-blur-sm xl:p-7">
             <img
-              src="/Logos/forge-founder-mark.jpeg"
+              src="/Logos/forge-founder-transparent.png"
               alt="Forge"
               className="forge-corner-logo h-12 w-auto"
             />
@@ -88,7 +88,7 @@ export default function CharacterSignalsWorkspace() {
           >
             <div className="mb-5 flex flex-wrap items-center justify-between gap-3 lg:hidden">
               <img
-                src="/Logos/forge-founder-mark.jpeg"
+                src="/Logos/forge-founder-transparent.png"
                 alt="Forge"
                 className="forge-corner-logo h-12 w-auto sm:h-14"
               />
