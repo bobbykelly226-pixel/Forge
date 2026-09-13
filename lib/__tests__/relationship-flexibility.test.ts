@@ -2,6 +2,25 @@ import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { parseRelationshipPreferences } from '../profile/relationship-preferences';
 import { collectStructuredPublicProfileDetails } from '../profile/public-labels';
+import React from 'react';
+import { renderToStaticMarkup } from 'react-dom/server';
+import RelationshipPreferencesFields from '../../components/profile/RelationshipPreferencesFields';
+import { RELATIONSHIP_GOAL_OPTIONS } from '../profile/structured-options';
+
+test('all five primary choices remain available when reopening any saved answer', () => {
+  Object.assign(globalThis, { React });
+  for (const primary of ['', ...RELATIONSHIP_GOAL_OPTIONS.map(option => option.value)]) {
+    const html = renderToStaticMarkup(React.createElement(RelationshipPreferencesFields, { primary }));
+    assert.equal((html.match(/type="radio"/g) ?? []).length, 5);
+    for (const option of RELATIONSHIP_GOAL_OPTIONS) {
+      assert.ok(html.includes(`value="${option.value}"`), `${option.value} missing for ${primary}`);
+      const form = new FormData();
+      form.set('relationship_goal', option.value);
+      assert.equal(parseRelationshipPreferences(form)?.primary, option.value);
+    }
+    assert.ok(!html.includes('Your previous answer is preserved'));
+  }
+});
 
 test('marriage with long-term flexibility and a slow pace are independent preferences', () => {
   const form = new FormData();

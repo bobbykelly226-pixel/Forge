@@ -9,18 +9,16 @@ export default function RelationshipPreferencesFields({ primary = '', also = [],
 }) {
   const [selected, setSelected] = useState(primary);
   const [alternatives, setAlternatives] = useState(also);
-  const legacy = RELATIONSHIP_GOAL_OPTIONS.find(x => x.value === primary && !RELATIONSHIP_DESTINATIONS.some(d => d.value === x.value));
-  const options = legacy ? [...RELATIONSHIP_DESTINATIONS, legacy] : RELATIONSHIP_DESTINATIONS;
   const choice = 'flex gap-3 items-start rounded-[6px] border border-[#0B2D5C] bg-[#F7F7F7] p-4 text-[#0B2D5C] cursor-pointer has-[:focus-visible]:outline has-[:focus-visible]:outline-2 has-[:checked]:border-[#C92027]';
   return <fieldset disabled={disabled} className="space-y-6">
     <fieldset>
       <legend className="mb-2 font-semibold">Looking for</legend>
       <p className="mb-3 text-sm text-black">Choose your main relationship goal.</p>
-      <div className="grid grid-cols-1 gap-3 md:grid-cols-2">{options.map(option => <label key={option.value} className={choice}>
+      <div className="grid grid-cols-1 gap-3 md:grid-cols-2">{RELATIONSHIP_GOAL_OPTIONS.map(option => <label key={option.value} className={choice}>
         <input type="radio" name="relationship_goal" value={option.value} required checked={selected === option.value}
           onChange={() => { setSelected(option.value); setAlternatives(a => a.filter(x => x !== option.value)); }} className="mt-1 accent-[#0B2D5C]" />
         <span><span className="block font-semibold">{option.label}</span><span className="block text-sm text-black">{option.description}</span>
-          {legacy?.value === option.value ? <span className="block text-sm">Your previous answer is preserved. You can choose a goal when you’re ready.</span> : null}</span>
+        </span>
       </label>)}</div>
     </fieldset>
     <fieldset>
