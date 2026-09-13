@@ -26,7 +26,7 @@ export default function DiscoveryDesktopTopBar({
     : 'mb-8 hidden items-center justify-end gap-2 lg:flex';
 
   return (
-    <div className={visibility}>
+    <div data-profile-chrome="header" className={visibility}>
       <Link
         href="/connections?tab=conversations"
         className="relative inline-flex items-center gap-2 rounded-full border border-[#0B2D5C]/10 bg-white/75 px-3.5 py-2 text-sm font-medium text-[#0B2D5C] transition hover:border-[#0B2D5C]/22 hover:bg-white"

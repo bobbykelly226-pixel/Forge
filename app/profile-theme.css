@@ -1,13 +1,13 @@
 /* Profile review palette. Scoped to Profile and Character Signals only.
    Explicit legacy utility mappings bridge existing editors to shared theme tokens. */
 .forge-profile-theme {
-  --profile-surface: #465463;
-  --profile-input: #263747;
-  --profile-text: #FFFFFF;
-  --profile-muted: #E0E6ED;
-  --profile-border: #83909E;
-  --forge-app-background: #0B1C30;
-  color-scheme: dark;
+  --profile-surface: #E6E6E7;
+  --profile-input: #F7F7F7;
+  --profile-text: #0B1C30;
+  --profile-muted: #5C636B;
+  --profile-border: #C9CBCE;
+  --forge-app-background: #D4D5D7;
+  color-scheme: light;
   color: var(--profile-text);
   background-color: var(--forge-app-background);
 }
@@ -15,11 +15,11 @@
 .forge-profile-theme [class~="hover:!bg-white"]:not([role="img"]):hover { background-color: var(--profile-surface) !important; }
 .forge-profile-theme [class~="!text-[#0B2D5C]"] { color: var(--profile-text) !important; }
 .forge-profile-theme [class~="accent-[#0B2D5C]"],
-.forge-profile-theme [class~="accent-[#D62828]"] { accent-color: #FFBCC0; }
+.forge-profile-theme [class~="accent-[#D62828]"] { accent-color: #C92027; }
 .forge-profile-theme [class~="bg-[#0B2D5C]"]:not([role="img"]),
 .forge-profile-theme .group:hover [class~="group-hover:bg-[#0B2D5C]"]:not([role="img"]),
 .forge-profile-theme [class~="hover:bg-[#0A2540]"]:not([role="img"]):hover,
-.forge-profile-theme [class~="hover:bg-[#0B2D5C]"]:not([role="img"]):hover { background-color: #162A43; }
+.forge-profile-theme [class~="hover:bg-[#0B2D5C]"]:not([role="img"]):hover { background-color: #0B1C30; }
 .forge-profile-theme [class~="bg-[#0B2D5C]/06"]:not([role="img"]),
 .forge-profile-theme [class~="bg-[#0B2D5C]/07"]:not([role="img"]),
 .forge-profile-theme [class~="bg-[#0B2D5C]/08"]:not([role="img"]),
@@ -35,7 +35,7 @@
 .forge-profile-theme [class~="hover:bg-[#0B2D5C]/6"]:not([role="img"]):hover,
 .forge-profile-theme [class~="hover:bg-[#EEF2F7]"]:not([role="img"]):hover { background-color: var(--profile-input); }
 .forge-profile-theme [class~="bg-[#D62828]"]:not([role="img"]) { background-color: #C92027; }
-.forge-profile-theme [class~="bg-[#D62828]/5"]:not([role="img"]) { background-color: #4B2834; }
+.forge-profile-theme [class~="bg-[#D62828]/5"]:not([role="img"]) { background-color: #F6E7E8; }
 .forge-profile-theme [class~="bg-[#F8F6F2]"]:not([role="img"]),
 .forge-profile-theme [class~="bg-[#F8F6F2]/80"]:not([role="img"]),
 .forge-profile-theme [class~="bg-[#F8F6F2]/95"]:not([role="img"]),
@@ -56,7 +56,7 @@
 .forge-profile-theme [class~="hover:bg-[#FBF9F6]"]:not([role="img"]):hover,
 .forge-profile-theme [class~="hover:bg-white"]:not([role="img"]):hover,
 .forge-profile-theme [class~="hover:bg-white/25"]:not([role="img"]):hover { background-color: var(--profile-surface); }
-.forge-profile-theme [class~="bg-red-50"]:not([role="img"]) { background-color: #4B2834; }
+.forge-profile-theme [class~="bg-red-50"]:not([role="img"]) { background-color: #F6E7E8; }
 .forge-profile-theme [class~="border-[#0B2D5C]"],
 .forge-profile-theme [class~="border-[#0B2D5C]/06"],
 .forge-profile-theme [class~="border-[#0B2D5C]/08"],
@@ -85,11 +85,9 @@
 .forge-profile-theme [class~="hover:border-[#0B2D5C]/45"]:hover { border-color: var(--profile-border); }
 .forge-profile-theme [class~="focus-visible:outline-[#0B2D5C]"]:focus-visible,
 .forge-profile-theme [class~="focus-visible:outline-[#D62828]"]:focus-visible,
-.forge-profile-theme [class~="outline-[#0B2D5C]"] { outline-color: #FFBCC0; }
-.forge-profile-theme .group:hover [class~="group-hover:text-white"],
+.forge-profile-theme [class~="outline-[#0B2D5C]"] { outline-color: #C92027; }
 .forge-profile-theme [class~="hover:text-[#0A2540]"]:hover,
 .forge-profile-theme [class~="hover:text-[#0B2D5C]"]:hover,
-.forge-profile-theme [class~="hover:text-white"]:hover,
 .forge-profile-theme [class~="text-[#0B2D5C]"],
 .forge-profile-theme [class~="text-[#0B2D5C]/35"],
 .forge-profile-theme [class~="text-[#0B2D5C]/45"],
@@ -97,13 +95,7 @@
 .forge-profile-theme [class~="text-[#0B2D5C]/70"],
 .forge-profile-theme [class~="text-[#0B2D5C]/75"],
 .forge-profile-theme [class~="text-[#0B2D5C]/90"],
-.forge-profile-theme [class~="text-[#1A2332]"],
-.forge-profile-theme [class~="text-white"],
-.forge-profile-theme [class~="text-white/60"],
-.forge-profile-theme [class~="text-white/70"],
-.forge-profile-theme [class~="text-white/80"],
-.forge-profile-theme [class~="text-white/85"],
-.forge-profile-theme [class~="text-white/90"] { color: var(--profile-text); }
+.forge-profile-theme [class~="text-[#1A2332]"] { color: var(--profile-text); }
 .forge-profile-theme [class~="hover:text-[#5A6575]"]:hover,
 .forge-profile-theme [class~="placeholder:text-[#8A93A0]"]::placeholder,
 .forge-profile-theme [class~="text-[#5A6575]"],
@@ -115,10 +107,10 @@
 .forge-profile-theme [class~="text-[#A61F1F]"],
 .forge-profile-theme [class~="text-[#D62828]"],
 .forge-profile-theme [class~="text-red-600"],
-.forge-profile-theme [class~="text-red-700"] { color: #FFBCC0; }
+.forge-profile-theme [class~="text-red-700"] { color: #C92027; }
 .forge-profile-theme [class~="ring-[#0B2D5C]"],
 .forge-profile-theme [class~="ring-[#0B2D5C]/12"] { --tw-ring-color: var(--profile-border); }
-.forge-profile-theme [class~="text-green-700"] { color: #A7E4BF; }
+.forge-profile-theme [class~="text-green-700"] { color: #21613B; }
 
 .forge-profile-theme :is(input:not([type="range"]):not([type="checkbox"]):not([type="radio"]), select, textarea) {
   background-color: var(--profile-input);
@@ -126,6 +118,39 @@
   border-color: var(--profile-border);
 }
 .forge-profile-theme :is(input, textarea)::placeholder { color: var(--profile-muted); opacity: 1; }
-.forge-profile-theme :focus-visible { outline: 2px solid #FFBCC0; outline-offset: 3px; }
+.forge-profile-theme :focus-visible { outline: 2px solid #C92027; outline-offset: 3px; }
 .forge-profile-theme img[src*="/Logos/"] { background: #FFFFFF; border-radius: 10px; padding: 6px; }
 .forge-profile-theme [data-forge-scroll-region] { scrollbar-color: #8292A7 transparent; }
+
+/* Navy chrome is separate from the light-gray working area. */
+.forge-profile-theme [data-profile-chrome] {
+  --profile-surface: #0B1C30;
+  --profile-input: #182C42;
+  --profile-text: #FFFFFF;
+  --profile-muted: #D4D5D7;
+  --profile-border: #415268;
+  background-color: #0B1C30;
+  color: #FFFFFF;
+  border-radius: 0;
+}
+.forge-profile-theme aside[data-profile-chrome] > div {
+  background-color: #0B1C30;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+  min-height: 100%;
+}
+.forge-profile-theme [data-profile-chrome="header"] { padding: 16px 20px; }
+.forge-profile-theme [data-profile-chrome] a[aria-current="page"] {
+  background-color: #203348;
+  border-left: 3px solid #C92027;
+}
+.forge-profile-theme :is(article[id^="section-"], section[class*="rounded-"]) {
+  border-radius: 10px;
+  box-shadow: 0 2px 8px rgb(11 28 48 / 10%);
+}
+.forge-profile-theme article:has(> form),
+.forge-profile-theme article:has(button[aria-expanded="true"]) { border-left: 4px solid #C92027; }
+.forge-profile-theme [class~="bg-[#D62828]"] { color: #FFFFFF; }
+.forge-profile-theme [class~="bg-[#0B2D5C]"][class~="text-white"] { color: #FFFFFF; }
+.forge-profile-theme [data-profile-chrome] [class~="text-[#D62828]"] { color: #FFFFFF; }

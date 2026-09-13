@@ -43,6 +43,7 @@ export default function ForgeAuthenticatedTwoColumnShell({
     >
       <div className="lg:grid lg:h-full lg:min-h-0 lg:grid-cols-[17.5rem_minmax(0,1fr)] lg:items-stretch lg:gap-10 lg:overflow-hidden xl:grid-cols-[18.5rem_minmax(0,1fr)] xl:gap-12">
         <aside
+          data-profile-chrome="navigation"
           className={cn(
             'hidden lg:block lg:h-full lg:min-h-0 lg:overflow-y-auto lg:overscroll-contain',
             PANEL_SCROLLBAR
