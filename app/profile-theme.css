@@ -229,7 +229,7 @@
   min-height: 44px;
   border: 1px solid #66768B;
 }
-.forge-profile-theme img.forge-corner-logo { width: clamp(150px, 44vw, 190px); }
+.forge-profile-theme img.forge-corner-logo { width: clamp(200px, 56vw, 250px); max-width: 100%; }
 .forge-profile-theme .forge-mobile-brand-row {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
@@ -239,7 +239,7 @@
 .forge-profile-theme .forge-mobile-brand-row > img { grid-row: span 2; }
 .forge-profile-theme .forge-mobile-brand-row > :is(a, button) { grid-column: 2; }
 @media (min-width: 1024px) {
-  .forge-profile-theme img.forge-corner-logo { width: 220px; max-width: 100%; }
+  .forge-profile-theme img.forge-corner-logo { width: 260px; max-width: 100%; }
   .forge-profile-theme .forge-mobile-brand-row { display: none; }
 }
 
