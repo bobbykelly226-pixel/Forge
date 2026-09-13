@@ -303,7 +303,8 @@
 }
 .forge-profile-theme a[href][data-text-link]:not([role="switch"]):not(:has(img)):hover { text-decoration: underline; }
 .forge-profile-theme [data-message-direction="received"] {
-  background-color: #FFFFFF;
+  /* Override the legacy bg-white mapping, including its :not specificity. */
+  background-color: #FFFFFF !important;
   color: #0B1C30;
   border-color: #C9CBCE;
 }
