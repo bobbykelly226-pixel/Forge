@@ -26,6 +26,28 @@ import {
 } from '../profile-photo';
 
 describe('profile photo processing rules', () => {
+  it('opens cropping in the browser modal layer with focus and scroll cleanup', () => {
+    const source = readFileSync(join(process.cwd(), 'components/profile/ProfilePhotoCropDialog.tsx'), 'utf8');
+    assert.match(source, /<dialog/);
+    assert.match(source, /dialog\.showModal\(\)/);
+    assert.match(source, /titleRef\.current\?\.focus\(\{ preventScroll: true \}\)/);
+    assert.match(source, /dialog\.close\(\)/);
+    assert.match(source, /document\.body\.style\.overflow = previousOverflow/);
+    assert.match(source, /100dvh/);
+    assert.match(source, /env\(safe-area-inset-bottom\)/);
+  });
+
+  it('reselects inside the dialog without discarding the current crop on picker cancellation', () => {
+    const dialog = readFileSync(join(process.cwd(), 'components/profile/ProfilePhotoCropDialog.tsx'), 'utf8');
+    const manager = readFileSync(join(process.cwd(), 'components/profile/ProfilePhotoManager.tsx'), 'utf8');
+    assert.match(dialog, /Choose another photo/);
+    assert.match(dialog, /if \(file\) onChooseFile\(file\)/);
+    assert.match(manager, /selectPhotoFile\(file, pendingCrop\.replaceId\)/);
+    assert.match(manager, /key=\{pendingCrop\.image\.objectUrl\}/);
+    assert.match(manager, /selectionError=\{error\}/);
+    assert.match(dialog, /const controlsDisabled = busy \|\| loading/);
+  });
+
   it('does not reject originals solely for exceeding 5 MB', () => {
     const largeJpeg = {
       name: 'phone.jpg',

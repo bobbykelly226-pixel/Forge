@@ -19,6 +19,9 @@ export type ProfilePhotoCropDialogProps = {
   fileName: string;
   onCancel: () => void;
   onConfirm: (file: File) => void;
+  onChooseFile: (file: File) => void;
+  loading?: boolean;
+  selectionError?: string | null;
 };
 
 /**
@@ -30,6 +33,9 @@ export default function ProfilePhotoCropDialog({
   fileName,
   onCancel,
   onConfirm,
+  onChooseFile,
+  loading = false,
+  selectionError = null,
 }: ProfilePhotoCropDialogProps) {
   const baseCrop = useMemo(
     () => centeredCropRect(image.width, image.height, PROFILE_PHOTO_CROP_ASPECT),
@@ -41,6 +47,25 @@ export default function ProfilePhotoCropDialog({
   const [error, setError] = useState<string | null>(null);
   const dragRef = useRef<{ x: number; y: number } | null>(null);
   const frameRef = useRef<HTMLDivElement>(null);
+  const dialogRef = useRef<HTMLDialogElement>(null);
+  const titleRef = useRef<HTMLHeadingElement>(null);
+  const chooseRef = useRef<HTMLInputElement>(null);
+  const controlsDisabled = busy || loading;
+
+  useEffect(() => {
+    const dialog = dialogRef.current;
+    if (!dialog) return;
+    const previousFocus = document.activeElement as HTMLElement | null;
+    const previousOverflow = document.body.style.overflow;
+    dialog.showModal();
+    document.body.style.overflow = 'hidden';
+    titleRef.current?.focus({ preventScroll: true });
+    return () => {
+      dialog.close();
+      document.body.style.overflow = previousOverflow;
+      if (previousFocus?.isConnected) previousFocus.focus({ preventScroll: true });
+    };
+  }, []);
 
   const crop: CropRect = useMemo(() => {
     const zoomed = zoomCropRect(baseCrop, zoom);
@@ -111,16 +136,22 @@ export default function ProfilePhotoCropDialog({
   };
 
   return (
-    <div
-      className="fixed inset-0 z-[90] flex items-end justify-center bg-[#0B2D5C]/45 px-3 pb-3 pt-10 sm:items-center sm:p-6"
-      role="dialog"
+    <dialog
+      ref={dialogRef}
+      onCancel={(event) => {
+        event.preventDefault();
+        if (!controlsDisabled) onCancel();
+      }}
+      className="fixed inset-0 m-auto max-h-[calc(100dvh-2rem)] w-[calc(100%-1.5rem)] max-w-md overflow-hidden rounded-[1.75rem] border-0 bg-white p-0 text-[#0B2D5C] shadow-xl backdrop:bg-[#0B2D5C]/45"
       aria-modal="true"
       aria-labelledby="photo-crop-title"
       data-testid="profile-photo-crop-dialog"
     >
-      <div className="flex max-h-[92vh] w-full max-w-md flex-col overflow-hidden rounded-[1.75rem] bg-white shadow-[0_24px_60px_rgba(11,45,92,0.22)]">
-        <div className="border-b border-[#0B2D5C]/08 px-5 py-4">
+      <div className="flex max-h-[calc(100dvh-2rem)] flex-col">
+        <div className="shrink-0 border-b border-[#0B2D5C]/08 px-5 py-3">
           <h2
+            ref={titleRef}
+            tabIndex={-1}
             id="photo-crop-title"
             className="text-lg text-[#0B2D5C]"
             style={{ fontFamily: 'var(--font-discovery-display), Georgia, serif' }}
@@ -132,10 +163,10 @@ export default function ProfilePhotoCropDialog({
           </p>
         </div>
 
-        <div className="space-y-4 overflow-y-auto px-5 py-4">
+        <div className="min-h-0 space-y-4 overflow-y-auto overscroll-contain px-5 py-4">
           <div
             ref={frameRef}
-            className="relative mx-auto aspect-[3/4] w-full max-w-[18rem] touch-none overflow-hidden rounded-[1.5rem] bg-[#0B2D5C]/10"
+            className="relative mx-auto aspect-[3/4] w-full max-w-[min(18rem,33dvh)] touch-none overflow-hidden rounded-[1.5rem] bg-[#0B2D5C]/10"
             style={previewBackground}
             onPointerDown={onPointerDown}
             onPointerMove={onPointerMove}
@@ -161,18 +192,38 @@ export default function ProfilePhotoCropDialog({
             />
           </label>
 
-          {error ? (
+          {error || selectionError ? (
             <p className="text-sm text-red-600" role="alert">
-              {error}
+              {error || selectionError}
             </p>
           ) : null}
         </div>
 
-        <div className="flex flex-col-reverse gap-2 border-t border-[#0B2D5C]/08 px-5 py-4 sm:flex-row sm:justify-end">
+        <div className="grid shrink-0 grid-cols-2 gap-2 border-t border-[#0B2D5C]/08 px-4 pt-3 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
+          <input
+            ref={chooseRef}
+            type="file"
+            accept="image/jpeg,image/jpg,image/png,image/webp,image/gif,.jpg,.jpeg,.png,.webp,.gif,.heic,.heif"
+            className="hidden"
+            disabled={controlsDisabled}
+            onChange={(event) => {
+              const file = event.target.files?.[0];
+              event.target.value = '';
+              if (file) onChooseFile(file);
+            }}
+          />
+          <button
+            type="button"
+            onClick={() => chooseRef.current?.click()}
+            disabled={controlsDisabled}
+            className="col-span-2 min-h-11 rounded-2xl border border-[#0B2D5C]/20 px-4 py-2 text-sm font-semibold disabled:opacity-60"
+          >
+            {loading ? 'Loading photo…' : 'Choose another photo'}
+          </button>
           <button
             type="button"
             onClick={onCancel}
-            disabled={busy}
+            disabled={controlsDisabled}
             className="rounded-2xl border border-[#0B2D5C]/20 bg-white px-5 py-3 text-sm font-semibold text-[#0B2D5C] disabled:opacity-60"
           >
             Cancel
@@ -180,13 +231,13 @@ export default function ProfilePhotoCropDialog({
           <button
             type="button"
             onClick={() => void handleConfirm()}
-            disabled={busy}
+            disabled={controlsDisabled}
             className="rounded-2xl bg-[#0B2D5C] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#0A2540] disabled:bg-gray-400"
           >
             {busy ? 'Preparing…' : 'Confirm photo'}
           </button>
         </div>
       </div>
-    </div>
+    </dialog>
   );
 }

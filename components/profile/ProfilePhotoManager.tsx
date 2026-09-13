@@ -138,9 +138,12 @@ export default function ProfilePhotoManager({
 
   const onFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
-    const replaceId = replaceTargetId;
     event.target.value = '';
     if (!file) return;
+    await selectPhotoFile(file, replaceTargetId);
+  };
+
+  const selectPhotoFile = async (file: File, replaceId: string | null) => {
 
     if (!replaceId && !canAddAnotherProfilePhoto(photos.length)) {
       setError(MAX_PROFILE_PHOTOS_MESSAGE);
@@ -381,8 +384,12 @@ export default function ProfilePhotoManager({
 
       {pendingCrop ? (
         <ProfilePhotoCropDialog
+          key={pendingCrop.image.objectUrl}
           image={pendingCrop.image}
           fileName={pendingCrop.fileName}
+          loading={busy}
+          selectionError={error}
+          onChooseFile={(file) => void selectPhotoFile(file, pendingCrop.replaceId)}
           onCancel={() => {
             setPendingCrop(null);
             setReplaceTargetId(null);
