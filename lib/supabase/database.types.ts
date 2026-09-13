@@ -815,10 +815,10 @@ export type Database = {
           faith_importance: string | null
           faith_other: string | null
           faith_tradition: string | null
-          favorite_music_genres: string[]
-          favorite_music_other: string | null
-          favorite_music_meaningful_song: string | null
           favorite_music_artists: string[]
+          favorite_music_genres: string[]
+          favorite_music_meaningful_song: string | null
+          favorite_music_other: string | null
           favorite_music_songs: string[]
           full_name: string | null
           has_children: string | null
@@ -868,10 +868,10 @@ export type Database = {
           faith_importance?: string | null
           faith_other?: string | null
           faith_tradition?: string | null
-          favorite_music_genres?: string[]
-          favorite_music_other?: string | null
-          favorite_music_meaningful_song?: string | null
           favorite_music_artists?: string[]
+          favorite_music_genres?: string[]
+          favorite_music_meaningful_song?: string | null
+          favorite_music_other?: string | null
           favorite_music_songs?: string[]
           full_name?: string | null
           has_children?: string | null
@@ -921,10 +921,10 @@ export type Database = {
           faith_importance?: string | null
           faith_other?: string | null
           faith_tradition?: string | null
-          favorite_music_genres?: string[]
-          favorite_music_other?: string | null
-          favorite_music_meaningful_song?: string | null
           favorite_music_artists?: string[]
+          favorite_music_genres?: string[]
+          favorite_music_meaningful_song?: string | null
+          favorite_music_other?: string | null
           favorite_music_songs?: string[]
           full_name?: string | null
           has_children?: string | null
@@ -1963,10 +1963,10 @@ export type Database = {
           faith_importance: string | null
           faith_other: string | null
           faith_tradition: string | null
-          favorite_music_genres: string[] | null
-          favorite_music_other: string | null
-          favorite_music_meaningful_song: string | null
           favorite_music_artists: string[] | null
+          favorite_music_genres: string[] | null
+          favorite_music_meaningful_song: string | null
+          favorite_music_other: string | null
           favorite_music_songs: string[] | null
           full_name: string | null
           has_children: string | null
@@ -1991,7 +1991,7 @@ export type Database = {
           things_i_enjoy: string[] | null
         }
         Insert: {
-          age?: number | null
+          age?: never
           career?: string | null
           children?: string | null
           children_count?: string | null
@@ -2001,10 +2001,10 @@ export type Database = {
           faith_importance?: string | null
           faith_other?: string | null
           faith_tradition?: string | null
-          favorite_music_genres?: string[] | null
-          favorite_music_other?: string | null
-          favorite_music_meaningful_song?: string | null
           favorite_music_artists?: string[] | null
+          favorite_music_genres?: string[] | null
+          favorite_music_meaningful_song?: string | null
+          favorite_music_other?: string | null
           favorite_music_songs?: string[] | null
           full_name?: string | null
           has_children?: string | null
@@ -2029,7 +2029,7 @@ export type Database = {
           things_i_enjoy?: string[] | null
         }
         Update: {
-          age?: number | null
+          age?: never
           career?: string | null
           children?: string | null
           children_count?: string | null
@@ -2039,10 +2039,10 @@ export type Database = {
           faith_importance?: string | null
           faith_other?: string | null
           faith_tradition?: string | null
-          favorite_music_genres?: string[] | null
-          favorite_music_other?: string | null
-          favorite_music_meaningful_song?: string | null
           favorite_music_artists?: string[] | null
+          favorite_music_genres?: string[] | null
+          favorite_music_meaningful_song?: string | null
+          favorite_music_other?: string | null
           favorite_music_songs?: string[] | null
           full_name?: string | null
           has_children?: string | null
@@ -2307,6 +2307,9 @@ export type Database = {
           faith_other: string | null
           faith_tradition: string | null
           favorite_music_artists: string[] | null
+          favorite_music_genres: string[] | null
+          favorite_music_meaningful_song: string | null
+          favorite_music_other: string | null
           favorite_music_songs: string[] | null
           full_name: string | null
           has_children: string | null
@@ -2369,6 +2372,9 @@ export type Database = {
           faith_other: string | null
           faith_tradition: string | null
           favorite_music_artists: string[] | null
+          favorite_music_genres: string[] | null
+          favorite_music_meaningful_song: string | null
+          favorite_music_other: string | null
           favorite_music_songs: string[] | null
           full_name: string | null
           has_children: string | null
