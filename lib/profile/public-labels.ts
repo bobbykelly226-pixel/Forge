@@ -170,20 +170,14 @@ function faithImportancePublicLabel(value: string | null | undefined): string | 
 export function collectStructuredPublicProfileDetails(
   profile: PublicProfileLabelSource
 ): Array<{ label: string; value: string }> {
-  const relationshipGoals = (
-    profile.relationship_goals?.length
-      ? profile.relationship_goals
-      : profile.relationship_goal
-        ? [profile.relationship_goal]
-        : []
-  )
-    .map((goal) => visibleStructuredLabel('relationship_goal', goal))
-    .filter((goal): goal is string => Boolean(goal));
+  const primaryIntention = visibleStructuredLabel(
+    'relationship_goal', profile.relationship_goal ?? profile.relationship_goals?.[0]
+  );
 
   const rows: Array<{ label: string; value: string | null }> = [
     {
-      label: relationshipGoals.length === 1 ? 'Relationship goal' : 'Relationship goals',
-      value: relationshipGoals.length > 0 ? relationshipGoals.join(', ') : null,
+      label: 'Relationship intention',
+      value: primaryIntention,
     },
     { label: 'Faith', value: faithPublicLabel(profile) },
     {

@@ -140,8 +140,7 @@ export function toDiscoveryFeedCard(profile: PublicDiscoveryProfile): DiscoveryF
     photoUrl: profile.profile_photo_url,
     filterData: {
       relationshipGoals:
-        profile.relationship_goals?.filter(Boolean) ??
-        (profile.relationship_goal ? [profile.relationship_goal] : []),
+        profile.relationship_goal ? [profile.relationship_goal] : profile.relationship_goals?.slice(0, 1) ?? [],
       faithIdentity: profile.faith_identity ?? null,
       faithImportance: profile.faith_importance,
       children: profile.children,

@@ -13,6 +13,7 @@ export const PREFER_NOT_TO_SAY = 'prefer_not_to_say' as const;
 /** Relationship goals — shared by onboarding intention and Profile Edit. */
 export const RELATIONSHIP_GOAL_VALUES = [
   'marriage',
+  'lifelong_partnership',
   'serious_relationship',
   'intentional_dating',
   'getting_to_know_someone',
@@ -20,11 +21,12 @@ export const RELATIONSHIP_GOAL_VALUES = [
 
 export type RelationshipGoalValue = (typeof RELATIONSHIP_GOAL_VALUES)[number];
 
-export const RELATIONSHIP_GOAL_OPTIONS: StructuredOption<RelationshipGoalValue>[] = [
-  { value: 'marriage', label: 'Marriage' },
-  { value: 'serious_relationship', label: 'Serious relationship' },
-  { value: 'intentional_dating', label: 'Intentional dating' },
-  { value: 'getting_to_know_someone', label: 'Getting to know someone' },
+export const RELATIONSHIP_GOAL_OPTIONS: (StructuredOption<RelationshipGoalValue> & { description: string })[] = [
+  { value: 'marriage', label: 'Marriage', description: 'Seeking a relationship intended to lead to marriage.' },
+  { value: 'lifelong_partnership', label: 'Lifelong partnership', description: 'Seeking a committed life partner; marriage is not required.' },
+  { value: 'serious_relationship', label: 'Long-term relationship', description: 'Looking for something serious and lasting.' },
+  { value: 'intentional_dating', label: 'Dating with intention', description: 'Open to commitment while allowing the relationship to develop naturally.' },
+  { value: 'getting_to_know_someone', label: 'Getting to know someone', description: 'Prefers to move slowly and build trust first.' },
 ];
 
 export function normalizeRelationshipGoalSelection(

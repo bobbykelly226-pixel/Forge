@@ -3,6 +3,7 @@
 type ChoiceOption = {
   value: string;
   label: string;
+  description?: string;
 };
 
 type ChoiceControlProps = {
@@ -11,6 +12,7 @@ type ChoiceControlProps = {
   options: readonly ChoiceOption[];
   value: string;
   onChange: (value: string) => void;
+  required?: boolean;
   hint?: string;
   optionalNote?: string;
   disabled?: boolean;
@@ -36,6 +38,7 @@ export function ChoiceChips({
   value,
   onChange,
   hint,
+  required = false,
   optionalNote = 'Optional — you can leave this unanswered.',
   disabled,
 }: ChoiceControlProps) {
@@ -64,17 +67,18 @@ export function ChoiceChips({
               <input
                 id={inputId}
                 type="radio"
+                required={required}
                 name={name}
                 value={option.value}
                 checked={selected}
                 onChange={() => onChange(option.value)}
                 onClick={() => {
                   // Allow clearing back to unanswered (optional fields).
-                  if (selected) onChange('');
+                  if (selected && !required) onChange('');
                 }}
                 className="sr-only"
               />
-              <span>{option.label}</span>
+              <span>{option.label}{option.description ? <span className="mt-1 block text-sm font-normal leading-relaxed">{option.description}</span> : null}</span>
             </label>
           );
         })}

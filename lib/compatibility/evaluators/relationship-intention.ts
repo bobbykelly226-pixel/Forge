@@ -9,9 +9,9 @@ function labelFor(goal: string): string {
     case 'marriage':
       return 'marriage';
     case 'serious_relationship':
-      return 'a serious relationship';
+      return 'a long-term relationship';
     case 'intentional_dating':
-      return 'intentional dating';
+      return 'dating with intention';
     case 'getting_to_know_someone':
       return 'getting to know someone';
     default:

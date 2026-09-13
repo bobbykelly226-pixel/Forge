@@ -230,15 +230,7 @@ export function summarizeProfileSection(
     case 'about':
       return resolveUnifiedAbout(profile.short_bio, profile.more_about) ?? 'Not added yet';
     case 'relationship':
-      return (
-        (profile.relationship_goals?.length
-          ? profile.relationship_goals
-              .map((goal) => structuredLabel('relationship_goal', goal))
-              .filter(Boolean)
-              .join(' · ')
-          : structuredLabel('relationship_goal', profile.relationship_goal)) ??
-        'Not added yet'
-      );
+      return structuredLabel('relationship_goal', profile.relationship_goal ?? profile.relationship_goals?.[0]) ?? 'Not added yet';
     case 'children': {
       const parts = [
         structuredLabel('has_children', profile.has_children),

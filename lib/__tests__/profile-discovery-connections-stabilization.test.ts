@@ -149,6 +149,7 @@ test('Discovery categorical filters expose every canonical option regardless of 
     ),
     [
       'marriage',
+      'lifelong_partnership',
       'serious_relationship',
       'intentional_dating',
       'getting_to_know_someone',

@@ -72,11 +72,13 @@ function ProgressBar({ step }: { step: number }) {
 
 function OptionButton({
   label,
+  description,
   selected,
   onClick,
   disabled,
 }: {
   label: string;
+  description?: string;
   selected: boolean;
   onClick: () => void;
   disabled?: boolean;
@@ -93,7 +95,8 @@ function OptionButton({
           : 'border-[#0B2D5C]/15 bg-white text-[#0B2D5C] hover:border-[#0B2D5C]/35'
       }`}
     >
-      {label}
+      <span className="block">{label}</span>
+      {description ? <span className="mt-2 block text-sm font-normal leading-relaxed">{description}</span> : null}
     </button>
   );
 }
@@ -577,6 +580,7 @@ export default function OnboardingShell({
                 <OptionButton
                   key={option.value}
                   label={option.label}
+                  description={option.description}
                   selected={intention === option.value}
                   disabled={isFinishing}
                   onClick={() => selectIntention(option.value)}

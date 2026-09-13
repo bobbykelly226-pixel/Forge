@@ -60,13 +60,11 @@ function parseEnjoySelection(formData: FormData): string[] {
 }
 
 function readRelationshipGoals(formData: FormData): string[] {
-  const selected = normalizeRelationshipGoalSelection(
-    formData.getAll('relationship_goals').map(String)
-  );
-  if (selected.length > 0) return selected;
+  const raw = formData.getAll('relationship_goals').map(String);
+  const values = raw.length ? raw : formData.getAll('relationship_goal').map(String);
+  if (values.length !== 1) return [];
+  return normalizeRelationshipGoalSelection(values);
 
-  const legacy = readOptionalString(formData, 'relationship_goal');
-  return normalizeRelationshipGoalSelection(legacy ? [legacy] : []);
 }
 
 function readMultiField(formData: FormData, key: string): string[] {
@@ -227,7 +225,10 @@ export async function saveProfile(formData: FormData): Promise<ProfileActionResu
   }
 
   const relationshipGoals = readRelationshipGoals(formData);
-  const primaryRelationshipGoal = relationshipGoals[0] ?? null;
+  if (relationshipGoals.length !== 1) {
+    return { success: false, message: 'Choose one valid relationship intention.' };
+  }
+  const primaryRelationshipGoal = relationshipGoals[0];
 
   const structuredReads: Array<{
     key: string;
@@ -829,6 +830,9 @@ export async function saveProfileSection(
 
   if (sectionId === 'relationship') {
     const relationshipGoals = readRelationshipGoals(formData);
+    if (relationshipGoals.length !== 1) {
+      return { success: false, message: 'Choose one valid relationship intention.' };
+    }
     fields.relationship_goals = relationshipGoals;
     fields.relationship_goal = relationshipGoals[0] ?? null;
     if (relationshipGoals.length > 0) answeredUnmapped.push('relationship_goal');

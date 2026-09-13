@@ -20,6 +20,7 @@ import {
   updateOnboardingProgress,
 } from '@/lib/data/profile';
 import { mapLegacyRelationshipGoal } from '@/lib/profile/legacy-mapping';
+import { isValidStructuredValue } from '@/lib/profile/structured-options';
 import { matchingPreferencesAreComplete } from '@/lib/profile/matching-preferences';
 
 const ALLOWED_KEYS = new Set<string>(Object.values(PROFILE_ANSWER_KEYS));
@@ -113,6 +114,11 @@ export async function upsertCurrentUserProfileAnswer(
     ? answerValue.map((item) => item.trim()).filter(Boolean)
     : answerValue.trim();
 
+  if (questionKey === PROFILE_ANSWER_KEYS.relationshipIntention &&
+      (typeof normalized !== 'string' || !isValidStructuredValue('relationship_goal', normalized))) {
+    return { success: false, message: 'Choose one valid relationship intention.' };
+  }
+
   if (
     (typeof normalized === 'string' && !normalized) ||
     (Array.isArray(normalized) && normalized.length === 0)
@@ -160,7 +166,7 @@ export async function upsertCurrentUserProfileAnswer(
     if (mapped.mapped) {
       const { error: profileError } = await supabase
         .from('profiles')
-        .update({ relationship_goal: mapped.mapped })
+        .update({ relationship_goal: mapped.mapped, relationship_goals: [mapped.mapped] })
         .eq('id', user.id);
       if (profileError) {
         console.error('sync relationship_goal:', profileError.message);

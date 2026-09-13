@@ -1,3 +1,4 @@
+import { mapLegacyRelationshipGoal } from '@/lib/profile/legacy-mapping';
 /**
  * Stable profile questionnaire keys (authoritative: profile_answers).
  * Mirrors the live onboarding questions — do not invent unused keys here.
@@ -75,7 +76,7 @@ export function deriveOnboardingStep(input: {
 
   const hasIntention =
     typeof input.answers.relationship_intention === 'string' &&
-    input.answers.relationship_intention.trim().length > 0;
+    Boolean(mapLegacyRelationshipGoal(input.answers.relationship_intention).mapped);
   const hasValues =
     Array.isArray(input.answers.core_values) &&
     input.answers.core_values.length > 0;
@@ -103,7 +104,7 @@ export function deriveOnboardingStep(input: {
 export function isOnboardingContentComplete(answers: ProfileAnswersMap): boolean {
   const hasIntention =
     typeof answers.relationship_intention === 'string' &&
-    answers.relationship_intention.trim().length > 0;
+    Boolean(mapLegacyRelationshipGoal(answers.relationship_intention).mapped);
   const hasValues =
     Array.isArray(answers.core_values) && answers.core_values.length > 0;
   return hasIntention && hasValues;
