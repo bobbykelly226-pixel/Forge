@@ -291,3 +291,19 @@
   background: #FFFFFF;
   color: #0B1C30;
 }
+
+/* Conversation links are text navigation, not filled action buttons. */
+.forge-profile-theme a[href][data-text-link]:not([role="switch"]):not(:has(img)),
+.forge-profile-theme a[href][data-text-link]:not([role="switch"]):not(:has(img)):hover {
+  --profile-text: #0B1C30;
+  background: transparent !important;
+  color: #0B1C30 !important;
+  border: 0;
+  box-shadow: none;
+}
+.forge-profile-theme a[href][data-text-link]:not([role="switch"]):not(:has(img)):hover { text-decoration: underline; }
+.forge-profile-theme [data-message-direction="received"] {
+  background-color: #FFFFFF;
+  color: #0B1C30;
+  border-color: #C9CBCE;
+}

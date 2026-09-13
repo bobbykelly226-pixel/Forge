@@ -48,6 +48,7 @@ export default function ConnectionsHubPrototype({
     isSavedRemoved,
     isSentWithdrawn,
   } = useConnectionsHub();
+  const isMessages = activeTab === 'conversations';
   const [desktopNote, setDesktopNote] = useState<string | null>(null);
 
   const flashNote = (message: string) => {
@@ -289,23 +290,23 @@ export default function ConnectionsHubPrototype({
               className="mt-8 text-[1.85rem] leading-none tracking-[-0.02em] text-[#0B2D5C]"
               style={{ fontFamily: 'var(--font-discovery-display), Georgia, serif' }}
             >
-              Connections
+              {isMessages ? 'Messages' : 'Connections'}
             </h1>
 
             <p className="mt-4 text-[15px] leading-relaxed text-[#5A6575]">
-              Review conversations, mutual interest, and profiles you chose to revisit.
+              {isMessages ? 'Your conversations, all in one place.' : 'Review conversations, mutual interest, and profiles you chose to revisit.'}
             </p>
 
             <ForgeDesktopAppNav
               active={activeTab === 'conversations' ? 'messages' : 'connections'}
             />
 
-            <div className="mt-8 border-t border-[#0B2D5C]/08 pt-6">
+            {!isMessages && <div className="mt-8 border-t border-[#0B2D5C]/08 pt-6">
               <p className="mb-3 text-[11px] font-semibold uppercase tracking-[0.16em] text-[#D62828]">
                 Sections
               </p>
               <ConnectionsTabs layout="vertical" />
-            </div>
+            </div>}
           </div>
         }
       >
@@ -330,10 +331,10 @@ export default function ConnectionsHubPrototype({
               className="text-[2.1rem] leading-none tracking-[-0.02em] text-[#0B2D5C] sm:text-[2.45rem]"
               style={{ fontFamily: 'var(--font-discovery-display), Georgia, serif' }}
             >
-              Connections
+              {isMessages ? 'Messages' : 'Connections'}
             </h1>
             <p className="mt-3 max-w-md text-[15px] leading-relaxed text-[#5A6575] sm:text-base">
-              Review conversations, mutual interest, and profiles you chose to revisit.
+              {isMessages ? 'Your conversations, all in one place.' : 'Review conversations, mutual interest, and profiles you chose to revisit.'}
             </p>
           </header>
 
@@ -346,7 +347,7 @@ export default function ConnectionsHubPrototype({
             </p>
           )}
 
-          <div
+          {!isMessages && <div
             className="mt-6 shrink-0 lg:hidden"
             style={{
               animation: 'connectionsFadeUp 0.55s ease-out both',
@@ -354,12 +355,13 @@ export default function ConnectionsHubPrototype({
             }}
           >
             <ConnectionsTabs layout="horizontal" />
-          </div>
+          </div>}
 
           <div
-            role="tabpanel"
+            role={isMessages ? "region" : "tabpanel"}
             id={`connections-panel-${activeTab}`}
-            aria-labelledby={`connections-tab-${activeTab}`}
+            aria-label={isMessages ? "Messages" : undefined}
+            aria-labelledby={isMessages ? undefined : `connections-tab-${activeTab}`}
             className="mt-7 min-h-0 flex-1 lg:mt-0"
             style={{
               animation: 'connectionsFadeUp 0.55s ease-out both',
