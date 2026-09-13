@@ -356,3 +356,28 @@
 .forge-profile-theme [data-filter-count] { color: #FFFFFF !important; background: transparent !important; }
 .forge-profile-theme .feedback-selected { display: none; }
 .forge-profile-theme label:has(input[name="category"]:checked) .feedback-selected { display: inline; color: #FFFFFF; }
+
+/* Balanced page introductions: centered mark, heading, and supporting copy. */
+.forge-profile-theme img.forge-corner-logo { margin-inline: auto; }
+.forge-profile-theme header:has(.forge-corner-logo) { text-align: center; }
+.forge-profile-theme header:has(.forge-corner-logo) > div { justify-content: center; }
+.forge-profile-theme header:has(.forge-corner-logo) > p { margin-inline: auto; }
+.forge-profile-theme aside[data-profile-chrome] > div > :is(h1, p) { text-align: center; }
+.forge-profile-theme [data-feedback-workspace] > div:first-child {
+  flex-direction: column;
+  justify-content: center;
+}
+.forge-profile-theme [data-feedback-workspace] > section > div:first-child > div {
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+@media (max-width: 1023px) {
+  .forge-profile-theme .forge-mobile-brand-row {
+    grid-template-columns: repeat(2, auto);
+    justify-content: center;
+    text-align: center;
+  }
+  .forge-profile-theme .forge-mobile-brand-row > img { grid-column: 1 / -1; grid-row: 1; }
+  .forge-profile-theme .forge-mobile-brand-row > :is(a, button) { grid-column: auto; grid-row: 2; }
+}

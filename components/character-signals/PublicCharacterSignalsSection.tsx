@@ -1,6 +1,5 @@
 'use client';
 
-import { Info } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useCallback, useRef, useState } from 'react';
 
@@ -129,7 +128,7 @@ export default function PublicCharacterSignalsSection({
         className="mt-4 rounded-[1.75rem] border border-[#0B2D5C]/08 bg-white/90 p-4 sm:p-5"
         aria-labelledby="signals-title"
       >
-        <div className="flex items-center gap-1.5">
+        <div className="flex flex-wrap items-center gap-3">
           <h2
             ref={sectionHeadingRef}
             id="signals-title"
@@ -146,11 +145,9 @@ export default function PublicCharacterSignalsSection({
             aria-label="Learn about Character Signals"
             aria-haspopup="dialog"
             aria-expanded={infoOpen}
-            className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-[#6B7585] transition hover:bg-[#0B2D5C]/06 hover:text-[#0B2D5C] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0B2D5C]"
+            className="inline-flex min-h-10 shrink-0 items-center justify-center rounded-full text-[#6B7585] transition hover:bg-[#0B2D5C]/06 hover:text-[#0B2D5C] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0B2D5C]"
           >
-            <span className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-[#0B2D5C]/15 bg-white/80">
-              <Info className="h-4 w-4" strokeWidth={1.75} aria-hidden="true" />
-            </span>
+            <span className="text-xs font-semibold">Learn more</span>
           </button>
         </div>
         <p className="mt-1.5 text-sm leading-snug text-[#7A8494]">
