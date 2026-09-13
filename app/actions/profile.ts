@@ -1,4 +1,5 @@
 'use server';
+import { parseMusicPreferences } from '@/lib/profile/music';
 
 import { validCoreValues, normalizeCoreValues, CORE_VALUES_GUIDANCE } from '@/lib/profile/core-values';
 
@@ -922,6 +923,9 @@ export async function saveProfileSection(
   }
 
   if (sectionId === 'music') {
+    const music = parseMusicPreferences(formData);
+    if (!music.ok) return { success: false, message: music.message };
+    Object.assign(fields, music.fields);
     fields.favorite_music_artists = parseLineList(
       formData.get('favorite_music_artists') as string | null
     );

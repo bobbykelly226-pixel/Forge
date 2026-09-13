@@ -324,6 +324,9 @@ export function summarizeProfileSection(
       const artists = (profile.favorite_music_artists ?? []).filter((item) => hasText(item));
       const songs = (profile.favorite_music_songs ?? []).filter((item) => hasText(item));
       const parts = [
+        profile.favorite_music_genres?.filter(item => item !== 'Other').join(', '),
+        profile.favorite_music_other,
+        profile.favorite_music_meaningful_song ? `A song about me: ${profile.favorite_music_meaningful_song}` : null,
         artists.length ? `Artists: ${artists.join(', ')}` : null,
         songs.length ? `Songs: ${songs.join(', ')}` : null,
       ].filter(Boolean);

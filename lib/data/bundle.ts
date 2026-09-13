@@ -131,6 +131,9 @@ export type SelfProfilePreview = {
   career: string | null;
   relocation: string | null;
   things_i_enjoy: string[];
+  favorite_music_genres?: string[];
+  favorite_music_other?: string | null;
+  favorite_music_meaningful_song?: string | null;
   favorite_music_artists: string[];
   favorite_music_songs: string[];
   profile_photo_url: string | null;
@@ -196,6 +199,9 @@ export async function loadSelfProfilePreview(): Promise<
       career: profile.career,
       relocation: profile.relocation,
       things_i_enjoy: profile.things_i_enjoy ?? [],
+      favorite_music_genres: profile.favorite_music_genres ?? [],
+      favorite_music_other: profile.favorite_music_other,
+      favorite_music_meaningful_song: profile.favorite_music_meaningful_song,
       favorite_music_artists: profile.favorite_music_artists ?? [],
       favorite_music_songs: profile.favorite_music_songs ?? [],
       profile_photo_url: resolvedPhotoUrl,

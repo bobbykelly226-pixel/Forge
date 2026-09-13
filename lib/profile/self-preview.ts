@@ -26,6 +26,9 @@ type SelfPreviewContent = {
   career?: string | null;
   relocation?: string | null;
   things_i_enjoy?: string[] | null;
+  favorite_music_genres?: string[] | null;
+  favorite_music_other?: string | null;
+  favorite_music_meaningful_song?: string | null;
   favorite_music_artists?: string[] | null;
   favorite_music_songs?: string[] | null;
   profile_photo_url?: string | null;
@@ -74,6 +77,8 @@ export function selfPreviewHasVisibleContent(
       hasText(profile.career) ||
       hasText(profile.relocation) ||
       hasItems(profile.things_i_enjoy) ||
+      hasItems(profile.favorite_music_genres) ||
+      hasText(profile.favorite_music_meaningful_song) ||
       hasItems(profile.favorite_music_artists) ||
       hasItems(profile.favorite_music_songs) ||
       hasText(profile.profile_photo_url) ||

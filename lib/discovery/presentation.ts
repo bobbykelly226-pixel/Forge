@@ -44,6 +44,9 @@ export type PublicDiscoveryProfile = {
   career: string | null;
   relocation: string | null;
   things_i_enjoy: string[] | null;
+  favorite_music_genres?: string[] | null;
+  favorite_music_other?: string | null;
+  favorite_music_meaningful_song?: string | null;
   favorite_music_artists: string[] | null;
   favorite_music_songs: string[] | null;
   profile_photo_url: string | null;

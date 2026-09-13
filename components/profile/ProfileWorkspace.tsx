@@ -1,5 +1,6 @@
 'use client';
 
+import MusicFields from '@/components/profile/MusicFields';
 import CoreValuesFields from '@/components/profile/CoreValuesFields';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -123,6 +124,16 @@ export default function ProfileWorkspace({
   const [sectionStatus, setSectionStatus] = useState<Record<string, SectionStatus>>({});
   const [sectionMessage, setSectionMessage] = useState<Record<string, string>>({});
   const sectionRefs = useRef<Partial<Record<ProfileSectionId, HTMLElement | null>>>({});
+
+  const groupRefs = useRef<Record<string, HTMLElement | null>>({});
+  const scrollGroup = useRef(false);
+  useEffect(() => {
+    if (!openGroup || !scrollGroup.current) return;
+    scrollGroup.current = false;
+    const node = groupRefs.current[openGroup];
+    node?.focus({ preventScroll: true });
+    node?.scrollIntoView({ behavior: 'instant', block: 'start' });
+  }, [openGroup]);
 
   const returnSection = useRef<ProfileSectionId | null>(null);
   useEffect(() => {
@@ -281,7 +292,7 @@ export default function ProfileWorkspace({
               </p>
             </div>
             <Link
-              href="/profile/preview"
+              data-text-link href="/profile/preview"
               className="text-sm font-semibold text-[#0B2D5C] underline-offset-2 hover:underline"
             >
               View My Profile
@@ -333,7 +344,7 @@ export default function ProfileWorkspace({
         </div>
 
         {PROFILE_EDIT_GROUPS.map(group => (
-          <section key={group.id} className="overflow-hidden rounded-[6px] border border-[#0B2D5C] bg-[#E6E6E7]">
+          <section key={group.id} tabIndex={-1} style={{ scrollMarginTop: 24 }} ref={node => { groupRefs.current[group.id] = node; }} className="overflow-hidden rounded-[6px] border border-[#0B2D5C] bg-[#E6E6E7]">
             <div className="flex items-center justify-between gap-4 p-5">
               <div className="min-w-0">
                 <h3 className="text-xl font-semibold text-[#0B2D5C]">{group.title}</h3>
@@ -341,7 +352,7 @@ export default function ProfileWorkspace({
               </div>
               <button type="button" disabled={Object.values(sectionStatus).includes('saving')}
                 aria-label={`${openGroup === group.id ? 'Close' : 'Edit'} ${group.title}`} aria-expanded={openGroup === group.id} aria-controls={`group-${group.id}`}
-                onClick={() => { setOpenGroup(openGroup === group.id ? null : group.id); setOpenSection(null); }}
+                onClick={() => { scrollGroup.current = openGroup !== group.id; setOpenGroup(openGroup === group.id ? null : group.id); setOpenSection(null); }}
                 className="shrink-0 rounded-[6px] bg-[#0B2D5C] px-4 py-2 text-sm font-semibold text-white">
                 {openGroup === group.id ? 'Close' : 'Edit'}
               </button>
@@ -611,6 +622,7 @@ function SectionEditor({
 
       {sectionId === 'music' ? (
         <>
+          <MusicFields profile={profile} disabled={saving} />
           <label className="block text-sm font-medium text-[#0B2D5C]">
             Favorite artists
             <textarea

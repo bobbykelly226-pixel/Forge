@@ -64,8 +64,8 @@ export default function PublicProfilePresentation({
   const orderedPhotos = sortPhotosByDisplayOrder(profile.photos ?? []);
   const details = collectPublicProfileDetails(profile);
   const enjoy = nonEmptyStringList(profile.things_i_enjoy);
-  const musicArtists = nonEmptyStringList(profile.favorite_music_artists);
-  const musicSongs = nonEmptyStringList(profile.favorite_music_songs);
+  const musicArtists = [...(profile.favorite_music_genres ?? []).filter(item => item !== 'Other'), ...nonEmptyStringList(profile.favorite_music_other ? [profile.favorite_music_other] : []), ...nonEmptyStringList(profile.favorite_music_artists)];
+  const musicSongs = [...nonEmptyStringList(profile.favorite_music_songs), ...(profile.favorite_music_meaningful_song ? [`A song that says something about me: ${profile.favorite_music_meaningful_song}`] : [])];
   const hasMusic = musicArtists.length > 0 || musicSongs.length > 0;
   const locationLabel = resolvePublicLocation(profile);
   const aboutCopy = resolveUnifiedAbout(profile.short_bio, profile.more_about);

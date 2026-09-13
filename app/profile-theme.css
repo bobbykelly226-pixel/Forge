@@ -401,3 +401,14 @@
   font-weight: 600;
   letter-spacing: 0.14em;
 }
+
+/* Explicit colors for nested labels inside blue category actions. */
+.forge-profile-theme button[data-compatibility-category],
+.forge-profile-theme button[data-compatibility-category] span {
+  color: #FFFFFF !important;
+}
+.forge-profile-theme [data-photo-actions] button {
+  min-width: 0; min-height: 44px; padding: 8px 6px !important;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 12px !important; line-height: 1.3; white-space: normal;
+}

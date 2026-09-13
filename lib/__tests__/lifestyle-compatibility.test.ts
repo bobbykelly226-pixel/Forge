@@ -161,7 +161,7 @@ describe('lifestyle compatibility UI wiring', () => {
     assert.match(workspace, /SmokingFields/);
     assert.match(workspace, /DrinkingFields/);
     assert.match(fields, /Do you currently have pets\?/);
-    assert.match(fields, /Pet allergies affect what I can live with/);
+    assert.match(fields, /Do pet allergies affect which animals you can live with/);
     assert.match(fields, /Your own habits do not determine your answer here/);
     assert.match(fields, /smoking_product_types/);
     assert.match(fields, /drinking_partner_preferences/);
