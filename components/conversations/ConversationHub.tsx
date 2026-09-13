@@ -156,13 +156,14 @@ export default function ConversationHub({
 
   if (initialItems.length === 0) {
     return (
-      <section className="mx-auto w-full max-w-2xl px-4 py-14 text-center sm:px-5">
+      <section className="mx-auto w-full max-w-2xl rounded-xl bg-white/90 px-4 py-14 text-center sm:px-5">
         <p
           className="text-lg tracking-[-0.01em] text-[#0B2D5C]"
           style={{ fontFamily: 'var(--font-discovery-display), Georgia, serif' }}
         >
-          When a conversation begins, it will appear here.
+          No messages yet.
         </p>
+        <p className="mt-3 text-sm text-[#5A6575]">When a conversation begins, it will appear here.</p>
         {seedMode ? (
           <p className="mt-3 text-sm text-[#8A93A0]">Seed demo — mutual connections can appear once injected.</p>
         ) : null}

@@ -9,7 +9,7 @@ import {
   useState,
   type ReactNode,
 } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 
 import { ensureConversationAction } from '@/app/actions/conversations';
 import {
@@ -214,19 +214,29 @@ export function ConnectionsHubProvider({
   initialData,
   initialConversations = [],
   conversationsError = null,
-  initialTab,
   viewerUserId = null,
 }: {
   children: ReactNode;
   initialData: ConnectionsHubData;
   initialConversations?: ConversationListItem[];
   conversationsError?: string | null;
-  initialTab?: ConnectionsTabId;
   /** Signed-in user id for temporary Start Conversation QA logging. */
   viewerUserId?: string | null;
 }) {
   const router = useRouter();
-  const [activeTab, setActiveTab] = useState<ConnectionsTabId>(initialTab ?? 'forYou');
+  const searchParams = useSearchParams();
+  const requestedTab = searchParams.get('tab');
+  const validTabs: ConnectionsTabId[] = ['forYou', 'openToChat', 'interestedInYou', 'mutual', 'conversations', 'saved', 'sent'];
+  const activeTab: ConnectionsTabId = requestedTab && validTabs.includes(requestedTab as ConnectionsTabId)
+    ? requestedTab as ConnectionsTabId
+    : 'forYou';
+  const setActiveTab = useCallback((tab: ConnectionsTabId) => {
+    const params = new URLSearchParams(window.location.search);
+    if (tab === 'forYou') params.delete('tab');
+    else params.set('tab', tab);
+    const query = params.toString();
+    router.replace(`/connections${query ? `?${query}` : ''}`, { scroll: false });
+  }, [router]);
   const [openToChat, setOpenToChat] = useState(initialData.openToChat);
   const [interestReceived, setInterestReceived] = useState(initialData.interestReceived);
   const [mutual, setMutual] = useState(initialData.mutual);
@@ -404,7 +414,7 @@ export function ConnectionsHubProvider({
     setAcceptDrawer(null);
     setActiveTab('mutual');
     window.requestAnimationFrame(() => acceptTriggerRef.current?.focus());
-  }, []);
+  }, [setActiveTab]);
 
   const saveOpenToChatForLater = useCallback(
     async (profileId: string, profileName: string) => {
@@ -694,7 +704,7 @@ export function ConnectionsHubProvider({
       );
       router.push(`/connections/c/${conversationId}`);
     },
-    [announce, conversations, mutual, pending, router, viewerUserId]
+    [announce, conversations, mutual, pending, router, setActiveTab, viewerUserId]
   );
 
   const startConversationFromAcceptDrawer = useCallback(() => {
@@ -1014,6 +1024,7 @@ export function ConnectionsHubProvider({
     }),
     [
       activeTab,
+      setActiveTab,
       tabCounts,
       openToChat,
       interestReceived,

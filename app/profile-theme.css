@@ -1,4 +1,4 @@
-/* Profile review palette. Scoped to Profile and Character Signals only.
+/* Approved application palette, shared by every ForgeAppCanvas destination.
    Explicit legacy utility mappings bridge existing editors to shared theme tokens. */
 .forge-profile-theme {
   --profile-surface: #E6E6E7;
@@ -278,4 +278,16 @@
   border: 0;
   box-shadow: none;
   background-color: transparent !important;
+}
+
+/* Shared content surfaces retain the approved compact card treatment. */
+.forge-profile-theme :is(div, section, article)[class*="rounded-"][class*="bg-white/"]:not([data-profile-chrome] *) {
+  border-radius: 6px;
+  outline: 1px solid #0B1C30;
+  outline-offset: -1px;
+}
+.forge-profile-theme [role="tab"][aria-selected="true"] { box-shadow: inset 0 -2px #C92027; }
+.forge-profile-theme [role="tab"] > span[aria-label] {
+  background: #FFFFFF;
+  color: #0B1C30;
 }

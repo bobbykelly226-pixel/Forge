@@ -6,7 +6,6 @@ import { loadConnectionsHubAction } from '@/app/actions/relationships';
 import ConnectionsHubPrototype from '@/components/connections/ConnectionsHubPrototype';
 import {
   ConnectionsHubProvider,
-  type ConnectionsTabId,
 } from '@/components/connections/ConnectionsHubProvider';
 import ForgeAppCanvas from '@/components/ForgeAppCanvas';
 import NotificationsProvider from '@/components/notifications/NotificationsProvider';
@@ -61,16 +60,6 @@ const EMPTY_HUB: ConnectionsHubData = {
     sent: 0,
   },
 };
-
-const VALID_TABS: ConnectionsTabId[] = [
-  'forYou',
-  'openToChat',
-  'interestedInYou',
-  'mutual',
-  'conversations',
-  'saved',
-  'sent',
-];
 
 export default async function ConnectionsHubPage({
   searchParams,
@@ -132,10 +121,6 @@ export default async function ConnectionsHubPage({
     },
   };
 
-  const initialTab = VALID_TABS.includes(params.tab as ConnectionsTabId)
-    ? (params.tab as ConnectionsTabId)
-    : undefined;
-
   return (
     <ForgeAppCanvas
       desktopViewportLock
@@ -151,7 +136,6 @@ export default async function ConnectionsHubPage({
           initialData={initialData}
           initialConversations={conversations}
           conversationsError={conversationsError}
-          initialTab={initialTab}
           viewerUserId={user.id}
         >
           <ConnectionsHubPrototype

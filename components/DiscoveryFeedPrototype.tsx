@@ -157,9 +157,9 @@ export default function DiscoveryFeedPrototype({
         aside={
           <div className="rounded-[1.75rem] border border-[#0B2D5C]/08 bg-white/70 p-6 shadow-[0_16px_44px_rgba(11,45,92,0.05)] backdrop-blur-sm xl:p-7">
             <img
-              src="/Logos/forgedinlife-header-dark.png"
+              src="/Logos/forge-founder-transparent.png"
               alt="Forge"
-              className="h-12 w-auto"
+              className="forge-corner-logo h-12 w-auto"
             />
             <h1
               className="mt-8 text-[1.85rem] leading-none tracking-[-0.02em] text-[#0B2D5C]"
@@ -195,9 +195,9 @@ export default function DiscoveryFeedPrototype({
           >
             <div className="mb-5 flex items-center justify-between gap-3">
               <img
-                src="/Logos/forgedinlife-header-dark.png"
+                src="/Logos/forge-founder-transparent.png"
                 alt="Forge"
-                className="h-12 w-auto sm:h-14"
+                className="forge-corner-logo h-12 w-auto sm:h-14"
               />
             </div>
             <h1

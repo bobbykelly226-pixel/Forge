@@ -47,6 +47,12 @@ export default function ForgeAppBottomNav({
             <Link
               key={item.id}
               href={item.href}
+              onNavigate={() => {
+                window.scrollTo({ top: 0, behavior: 'instant' });
+                document.querySelectorAll<HTMLElement>('[data-forge-scroll-region]').forEach((region) => {
+                  region.scrollTo({ top: 0, behavior: 'instant' });
+                });
+              }}
               className={className}
               aria-current={isActive ? 'page' : undefined}
               aria-label={showUnread ? `${item.label}, unread` : item.label}
