@@ -37,7 +37,7 @@ describe('matching preference validation', () => {
     const profile = readFileSync(new URL('../../components/profile/MyProfileHub.tsx', import.meta.url), 'utf8');
     assert.match(drawer, /DiscoveryMatchingPreferences/);
     assert.doesNotMatch(profile, /MatchingPreferencesCard/);
-    assert.match(profile, /Manage in Discovery filters/);
+    assert.doesNotMatch(profile, /Manage in Discovery filters|\/discovery\?filters=open/);
   });
 
   it('accepts every supported picker age without changing it and rejects reversed bounds', () => {
