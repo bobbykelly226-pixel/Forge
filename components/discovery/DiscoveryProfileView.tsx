@@ -69,7 +69,7 @@ export default function DiscoveryProfileView({
           Introduction passed.
         </h1>
         <p className="mt-3 text-[#5A6575]">They will not be notified.</p>
-        <Link href="/discovery" className="mt-8 font-semibold text-[#D62828]">
+        <Link data-text-link href="/discovery" className="mt-8 font-semibold text-[#D62828]">
           Back to Discovery
         </Link>
       </div>
@@ -86,7 +86,7 @@ export default function DiscoveryProfileView({
           Introduction passed.
         </h1>
         <p className="mt-3 text-[#5A6575]">They will not be notified.</p>
-        <Link href="/discovery" className="mt-8 font-semibold text-[#D62828]">
+        <Link data-text-link href="/discovery" className="mt-8 font-semibold text-[#D62828]">
           Back to Discovery
         </Link>
       </div>

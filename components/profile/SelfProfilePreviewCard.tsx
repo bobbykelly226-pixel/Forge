@@ -78,7 +78,7 @@ export default function SelfProfilePreviewCard({ profile }: Props) {
       }
       footer={
         <div className="flex flex-col gap-3">
-          <Link
+          <Link data-text-link
             href="/profile"
             className="inline-flex w-full items-center justify-center rounded-2xl bg-[#0B2D5C] px-8 py-4 text-lg font-semibold text-white transition hover:bg-[#0A2540]"
           >

@@ -289,7 +289,7 @@ export default function OnboardingShell({
         Back
       </button>
     ) : (
-      <Link href="/app" className={secondaryButtonClassName}>
+      <Link data-text-link href="/app" className={secondaryButtonClassName}>
         Back to App
       </Link>
     );
@@ -307,7 +307,7 @@ export default function OnboardingShell({
 
   return (
     <div className="mx-auto w-full max-w-[1024px] px-5 pb-12 pt-6 sm:px-8 sm:pt-8">
-      <Link
+      <Link data-text-link
         href="/app"
         className="mb-6 inline-flex items-center text-sm font-medium text-[#0B2D5C] transition hover:text-[#D62828]"
       >

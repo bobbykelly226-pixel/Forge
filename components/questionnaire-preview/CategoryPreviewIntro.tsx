@@ -58,7 +58,7 @@ export default function CategoryPreviewIntro({
             {intro.primary}
           </button>
           {onBackToDirectory ? (
-            <button
+            <button data-text-link
               type="button"
               onClick={onBackToDirectory}
               className="inline-flex min-h-12 w-full items-center justify-center rounded-2xl border border-[color-mix(in_srgb,var(--forge-silver)_70%,transparent)] bg-white px-6 py-3 text-base font-semibold text-[var(--forge-navy)] transition hover:bg-[var(--forge-surface-soft)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--forge-navy)] sm:w-auto"
@@ -66,7 +66,7 @@ export default function CategoryPreviewIntro({
               {intro.secondary}
             </button>
           ) : (
-            <Link
+            <Link data-text-link
               href="/app"
               className="inline-flex min-h-12 w-full items-center justify-center rounded-2xl border border-[color-mix(in_srgb,var(--forge-silver)_70%,transparent)] bg-white px-6 py-3 text-base font-semibold text-[var(--forge-navy)] transition hover:bg-[var(--forge-surface-soft)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--forge-navy)] sm:w-auto"
             >

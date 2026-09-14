@@ -54,7 +54,7 @@ export default function PreviewContextPanel({
       />
       <PreviewNotice className="mt-5" />
       {onBackToDirectory ? (
-        <button
+        <button data-text-link
           type="button"
           onClick={onBackToDirectory}
           className="mt-5 inline-flex text-sm font-semibold text-[var(--forge-navy)] underline-offset-4 hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--forge-navy)]"
@@ -62,7 +62,7 @@ export default function PreviewContextPanel({
           Back to categories
         </button>
       ) : null}
-      <Link
+      <Link data-text-link
         href="/app"
         className={`${onBackToDirectory ? 'mt-3' : 'mt-5'} inline-flex text-sm font-semibold text-[var(--forge-navy)] underline-offset-4 hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--forge-navy)]`}
       >

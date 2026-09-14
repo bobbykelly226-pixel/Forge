@@ -78,7 +78,7 @@ export default function CharacterSignalsWorkspace() {
         </div>
 
         <div className="mx-auto flex w-full max-w-lg flex-col px-4 pb-[7.5rem] pt-5 sm:px-6 sm:pt-7 lg:mx-0 lg:max-w-2xl lg:px-0 lg:pb-10 lg:pt-0">
-          <Link href="/profile" className="mb-5 inline-flex min-h-11 items-center gap-2 self-start rounded-xl border border-[#0B2D5C]/20 px-4 py-2 text-sm font-semibold text-[#0B2D5C]">
+          <Link data-text-link href="/profile" className="mb-5 inline-flex min-h-11 items-center gap-2 self-start rounded-xl border border-[#0B2D5C]/20 px-4 py-2 text-sm font-semibold text-[#0B2D5C]">
             ← Back to Profile
           </Link>
           {/* Section 1 — intro */}

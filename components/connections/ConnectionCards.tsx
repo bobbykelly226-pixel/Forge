@@ -33,7 +33,7 @@ function ViewProfileLink({
   className?: string;
 }) {
   return (
-    <Link
+    <Link data-text-link
       href={`/discovery/profile/${profileId}`}
       className={`inline-flex items-center justify-center rounded-2xl border border-[#0B2D5C]/20 bg-white px-4 py-2.5 text-sm font-semibold text-[#0B2D5C] transition hover:border-[#0B2D5C]/35 hover:bg-[#FBF9F6] ${className}`}
     >
