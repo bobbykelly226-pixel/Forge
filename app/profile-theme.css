@@ -445,3 +445,18 @@
   outline: 2px solid #C92027;
   outline-offset: 4px;
 }
+.forge-profile-theme [data-profile-layout] [data-character-signals] {
+  padding-top: 28px;
+}
+.forge-profile-theme [data-profile-layout] [data-signal-card],
+.forge-profile-theme [data-profile-layout] [data-signal-card]:hover {
+  --profile-text: #0B2D5C;
+  --profile-muted: #000000;
+  align-items: center;
+  background: #F7F7F7 !important;
+  border: 1px solid #C9CBCE;
+  border-radius: 8px;
+  color: #0B2D5C !important;
+  padding: 16px;
+  box-shadow: none;
+}
