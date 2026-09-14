@@ -27,6 +27,7 @@ function toPublicProfile(profile: SelfProfilePreview): PublicDiscoveryProfile {
     faith_importance: profile.faith_importance,
     service_background: profile.service_background,
     service_backgrounds: profile.service_backgrounds,
+    service_background_other: profile.service_background_other,
     short_bio: profile.short_bio,
     more_about: profile.more_about,
     children: profile.children,

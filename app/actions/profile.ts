@@ -1,4 +1,5 @@
 'use server';
+import { parseServiceBackgroundOther } from '@/lib/profile/service-background';
 import { parseEducationOther } from '@/lib/profile/education';
 import { parseMusicPreferences } from '@/lib/profile/music';
 
@@ -919,6 +920,9 @@ export async function saveProfileSection(
         return { success: false, message: 'Please choose valid service background options.' };
       }
     }
+    const other = parseServiceBackgroundOther(serviceBackgrounds, formData.get('service_background_other'));
+    if (!other.ok) return { success: false, message: other.message };
+    fields.service_background_other = other.value;
     fields.service_backgrounds = serviceBackgrounds;
     fields.service_background = serviceBackgroundDisplayLabel(serviceBackgrounds);
     if (serviceBackgrounds.length > 0) answeredUnmapped.push('service_background');

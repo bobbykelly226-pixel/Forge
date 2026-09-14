@@ -35,6 +35,7 @@ export type PublicProfileLabelSource = {
   relocation?: string | null;
   service_background?: string | null;
   service_backgrounds?: string[] | null;
+  service_background_other?: string | null;
   location?: string | null;
   location_city?: string | null;
   location_region?: string | null;
@@ -222,8 +223,8 @@ export function collectStructuredPublicProfileDetails(
     {
       label: 'Service',
       value:
-        serviceBackgroundDisplayLabel(profile.service_backgrounds) ??
-        (profile.service_background && !isPreferNotToSay(profile.service_background)
+        serviceBackgroundDisplayLabel(profile.service_backgrounds, profile.service_background_other) ??
+        (!profile.service_backgrounds?.length && profile.service_background && !isPreferNotToSay(profile.service_background)
           ? profile.service_background.trim()
           : null),
     },

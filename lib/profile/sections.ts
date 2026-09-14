@@ -312,7 +312,7 @@ export function summarizeProfileSection(
       return line(profile.career) ?? 'Not added yet';
     case 'service':
       return (
-        serviceBackgroundDisplayLabel(profile.service_backgrounds) ??
+        serviceBackgroundDisplayLabel(profile.service_backgrounds, profile.service_background_other) ??
         line(profile.service_background) ??
         'Not added yet'
       );

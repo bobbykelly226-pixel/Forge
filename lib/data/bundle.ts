@@ -120,6 +120,7 @@ export type SelfProfilePreview = {
   faith_importance: string | null;
   service_background: string | null;
   service_backgrounds: string[];
+  service_background_other?: string | null;
   children: string | null;
   has_children: string | null;
   children_count: string | null;
@@ -189,6 +190,7 @@ export async function loadSelfProfilePreview(): Promise<
       faith_importance: profile.faith_importance,
       service_background: profile.service_background,
       service_backgrounds: profile.service_backgrounds ?? [],
+      service_background_other: profile.service_background_other,
       children: profile.children,
       has_children: profile.has_children,
       children_count: profile.children_count,

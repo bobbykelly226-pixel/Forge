@@ -29,6 +29,7 @@ export type PublicDiscoveryProfile = {
   faith_importance: string | null;
   service_background: string | null;
   service_backgrounds?: string[] | null;
+  service_background_other?: string | null;
   short_bio: string | null;
   more_about: string | null;
   children: string | null;

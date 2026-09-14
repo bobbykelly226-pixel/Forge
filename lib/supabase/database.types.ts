@@ -811,6 +811,7 @@ export type Database = {
           drinking: string | null
           drinking_partner_preferences: string[]
           education: string | null
+          service_background_other: string | null
           education_other: string | null
           faith_identity: string | null
           faith_importance: string | null
@@ -865,6 +866,7 @@ export type Database = {
           drinking?: string | null
           drinking_partner_preferences?: string[]
           education?: string | null
+          service_background_other?: string | null
           education_other?: string | null
           faith_identity?: string | null
           faith_importance?: string | null
@@ -919,6 +921,7 @@ export type Database = {
           drinking?: string | null
           drinking_partner_preferences?: string[]
           education?: string | null
+          service_background_other?: string | null
           education_other?: string | null
           faith_identity?: string | null
           faith_importance?: string | null
@@ -1962,6 +1965,7 @@ export type Database = {
           children_count: string | null
           drinking: string | null
           education: string | null
+          service_background_other: string | null
           education_other: string | null
           faith_identity: string | null
           faith_importance: string | null
@@ -2001,6 +2005,7 @@ export type Database = {
           children_count?: string | null
           drinking?: string | null
           education?: string | null
+          service_background_other?: string | null
           education_other?: string | null
           faith_identity?: string | null
           faith_importance?: string | null
@@ -2040,6 +2045,7 @@ export type Database = {
           children_count?: string | null
           drinking?: string | null
           education?: string | null
+          service_background_other?: string | null
           education_other?: string | null
           faith_identity?: string | null
           faith_importance?: string | null
@@ -2183,6 +2189,7 @@ export type Database = {
           drinking: string | null
           drinking_partner_preferences: string[]
           education: string | null
+          service_background_other: string | null
           education_other: string | null
           faith_identity: string | null
           faith_importance: string | null
@@ -2312,6 +2319,7 @@ export type Database = {
           children_count: string | null
           drinking: string | null
           education: string | null
+          service_background_other: string | null
           education_other: string | null
           faith_identity: string | null
           faith_importance: string | null
@@ -2378,6 +2386,7 @@ export type Database = {
           children_count: string | null
           drinking: string | null
           education: string | null
+          service_background_other: string | null
           education_other: string | null
           faith_identity: string | null
           faith_importance: string | null
@@ -2438,6 +2447,7 @@ export type Database = {
           children_count: string | null
           drinking: string | null
           education: string | null
+          service_background_other: string | null
           education_other: string | null
           faith_identity: string | null
           faith_importance: string | null

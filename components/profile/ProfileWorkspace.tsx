@@ -608,6 +608,7 @@ function SectionEditor({
       {sectionId === 'service' ? (
         <ServiceFields
           defaultValues={profile.service_backgrounds ?? []}
+          defaultOther={profile.service_background_other}
           disabled={saving}
         />
       ) : null}
@@ -868,13 +869,16 @@ function FaithFields({
 
 function ServiceFields({
   defaultValues,
+  defaultOther,
   disabled,
 }: {
   defaultValues: string[];
+  defaultOther?: string | null;
   disabled?: boolean;
 }) {
   const [values, setValues] = useState<string[]>(defaultValues);
   return (
+    <div className="space-y-4">
     <MultiChoiceChips
       name="service_backgrounds"
       legend="Service background"
@@ -883,5 +887,12 @@ function ServiceFields({
       onChange={setValues}
       disabled={disabled}
     />
+    {values.includes('other') ? <div className="space-y-2">
+      <label htmlFor="service-background-other" className="block text-sm font-medium">Please describe your service background.</label>
+      <input id="service-background-other" name="service_background_other"
+        defaultValue={defaultOther ?? ''} required maxLength={200} disabled={disabled}
+        className="w-full rounded-md border px-4 py-3 text-base" />
+    </div> : null}
+    </div>
   );
 }
