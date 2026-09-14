@@ -1,4 +1,5 @@
 'use server';
+import { parseEducationOther } from '@/lib/profile/education';
 import { parseMusicPreferences } from '@/lib/profile/music';
 
 import { validCoreValues, normalizeCoreValues, CORE_VALUES_GUIDANCE } from '@/lib/profile/core-values';
@@ -901,6 +902,11 @@ export async function saveProfileSection(
       const parsed = readStructuredField(formData, single.key, single.field);
       if (!parsed.ok) return { success: false, message: parsed.message };
       fields[single.key] = parsed.value;
+      if (single.id === 'education') {
+        const other = parseEducationOther(parsed.value, formData.get('education_other'));
+        if (!other.ok) return { success: false, message: other.message };
+        fields.education_other = other.value;
+      }
       if (parsed.value) answeredUnmapped.push(single.key);
     }
   }

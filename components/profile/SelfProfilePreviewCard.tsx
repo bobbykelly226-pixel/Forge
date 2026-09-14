@@ -34,6 +34,7 @@ function toPublicProfile(profile: SelfProfilePreview): PublicDiscoveryProfile {
     children_count: profile.children_count,
     open_to_partner_with_children: profile.open_to_partner_with_children,
     education: profile.education,
+    education_other: profile.education_other,
     pets: profile.pets,
     smoking: profile.smoking,
     drinking: profile.drinking,

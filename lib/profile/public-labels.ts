@@ -26,6 +26,7 @@ export type PublicProfileLabelSource = {
   children?: string | null;
   open_to_partner_with_children?: string | null;
   education?: string | null;
+  education_other?: string | null;
   career?: string | null;
   pets?: string | null;
   pets_types?: string[] | null;
@@ -202,7 +203,7 @@ export function collectStructuredPublicProfileDetails(
     },
     {
       label: 'Education',
-      value: visibleStructuredLabel('education', profile.education),
+      value: profile.education === 'other' ? (profile.education_other?.trim() || 'Other') : visibleStructuredLabel('education', profile.education),
     },
     {
       label: 'Career',

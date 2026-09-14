@@ -1,5 +1,6 @@
 'use client';
 
+import EducationFields from '@/components/profile/EducationFields';
 import MusicFields from '@/components/profile/MusicFields';
 import CoreValuesFields from '@/components/profile/CoreValuesFields';
 import Link from 'next/link';
@@ -25,7 +26,6 @@ import type { ManagedProfilePhoto } from '@/lib/profile-photo';
 import { resolveUnifiedAbout } from '@/lib/profile/unified-about';
 import {
   CHILDREN_COUNT_OPTIONS,
-  EDUCATION_OPTIONS,
   FAITH_IDENTITY_OPTIONS,
   FAITH_IMPORTANCE_OPTIONS,
   HAS_CHILDREN_OPTIONS,
@@ -579,13 +579,7 @@ function SectionEditor({
       {sectionId === 'smoking' ? <SmokingFields profile={profile} disabled={saving} /> : null}
       {sectionId === 'drinking' ? <DrinkingFields profile={profile} disabled={saving} /> : null}
       {sectionId === 'education' ? (
-        <SingleChoiceFields
-          name="education"
-          legend="Education"
-          options={EDUCATION_OPTIONS}
-          defaultValue={profile.education ?? ''}
-          disabled={saving}
-        />
+        <EducationFields education={profile.education} other={profile.education_other} disabled={saving} />
       ) : null}
       {sectionId === 'pets' ? <PetsFields profile={profile} disabled={saving} /> : null}
       {sectionId === 'relocation' ? (

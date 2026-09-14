@@ -288,7 +288,7 @@ export function summarizeProfileSection(
       return parts.length ? parts.join(' · ') : 'Not added yet';
     }
     case 'education':
-      return structuredLabel('education', profile.education) ?? 'Not added yet';
+      return (profile.education === 'other' ? profile.education_other?.trim() : null) || structuredLabel('education', profile.education) || 'Not added yet';
     case 'pets': {
       const identity = normalizePetsIdentity(profile.pets);
       const identityLabel =
