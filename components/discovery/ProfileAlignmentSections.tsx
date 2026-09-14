@@ -34,6 +34,7 @@ export type ProfileAlignmentSectionsProps = {
   /** Optional paragraph when list reasons are not available (e.g. incomplete assessment). */
   whySurfacedCopy?: string;
   cardClassName?: string;
+  view?: 'all' | 'summary' | 'details';
 };
 
 const WHY_SURFACED_PREVIEW_COUNT = 3;
@@ -108,6 +109,7 @@ export default function ProfileAlignmentSections({
   noFactorsCopy,
   whySurfacedCopy,
   cardClassName = 'border-t border-[#C9CBCE] py-5',
+  view = 'all',
 }: ProfileAlignmentSectionsProps) {
   const [alignmentOpen, setAlignmentOpen] = useState(false);
   const [factorsOpen, setFactorsOpen] = useState(false);
@@ -148,7 +150,7 @@ export default function ProfileAlignmentSections({
 
   return (
     <>
-      <section className={cardClassName} aria-labelledby="alignment-title">
+      {view !== 'details' ? <section className={cardClassName} aria-labelledby="alignment-title">
         <p
           id="alignment-title"
           className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[#D62828]"
@@ -185,9 +187,9 @@ export default function ProfileAlignmentSections({
             See Why You Align
           </button>
         ) : null}
-      </section>
+      </section> : null}
 
-      {hasFactors ? (
+      {view !== 'summary' && hasFactors ? (
         <button
           ref={factorsTriggerRef}
           data-profile-factor
@@ -220,7 +222,7 @@ export default function ProfileAlignmentSections({
             </div>
           </div>
         </button>
-      ) : noFactorsCopy ? (
+      ) : view !== 'summary' && noFactorsCopy ? (
         <section className={`${cardClassName} mt-4`}>
           <h2
             className="text-lg text-[#0B2D5C]"
@@ -232,7 +234,7 @@ export default function ProfileAlignmentSections({
         </section>
       ) : null}
 
-      {showWhySurfaced ? (
+      {view !== 'summary' && showWhySurfaced ? (
         <details className={`${cardClassName} mt-4`}>
           <summary className="min-h-11 cursor-pointer py-2 text-base font-semibold text-[#0B2D5C]">Why Forge Introduced You</summary>
           {whySurfacedCopy ? (
@@ -269,29 +271,31 @@ export default function ProfileAlignmentSections({
         </details>
       ) : null}
 
-      <PublicCharacterSignalsSection
-        cardClassName={cardClassName}
-        recognitionRecipient={recognitionRecipient}
-        signals={characterSignals ?? characterSignalIds.map((signalId) => ({
-          signalId,
-          confirmationCount: 3,
-        }))}
-        emptyCopy="No public Character Signals yet"
-      />
+      {view !== 'summary' ? (
+        <PublicCharacterSignalsSection
+          cardClassName={cardClassName}
+          recognitionRecipient={recognitionRecipient}
+          signals={characterSignals ?? characterSignalIds.map((signalId) => ({
+            signalId,
+            confirmationCount: 3,
+          }))}
+          emptyCopy="No public Character Signals yet"
+        />
+      ) : null}
 
-      <AlignmentDetailsDrawer
+      {view !== 'details' ? <AlignmentDetailsDrawer
         open={alignmentOpen}
         onClose={closeAlignment}
         profileName={profileName}
         content={drawerContent}
-      />
-      <ImportantAlignmentFactorsDrawer
+      /> : null}
+      {view !== 'summary' ? <ImportantAlignmentFactorsDrawer
         open={factorsOpen}
         onClose={closeFactors}
         profileName={profileName}
         factors={toFactorDetails(importantFactors)}
         reviewAnswerHref="/compatibility-profile"
-      />
+      /> : null}
     </>
   );
 }
