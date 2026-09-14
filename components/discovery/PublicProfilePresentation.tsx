@@ -1,6 +1,20 @@
 'use client';
 
 import Link from 'next/link';
+import { useState } from 'react';
+import {
+  BriefcaseBusiness,
+  Church,
+  Cigarette,
+  GraduationCap,
+  HeartHandshake,
+  House,
+  MapPin,
+  PawPrint,
+  Users,
+  Wine,
+  type LucideIcon,
+} from 'lucide-react';
 
 import ProfileAlignmentSections, {
   type ProfileAlignmentSectionsProps,
@@ -45,6 +59,23 @@ export type PublicProfilePresentationProps = {
   recognitionRecipient?: RecognitionRecipient | null;
 };
 
+const DETAIL_ICONS: Record<string, LucideIcon> = {
+  'Looking for': HeartHandshake,
+  Location: MapPin,
+  Faith: Church,
+  'Faith in daily life': Church,
+  Children: Users,
+  'Wants children': Users,
+  'Partner with children': Users,
+  Career: BriefcaseBusiness,
+  Education: GraduationCap,
+  Pets: PawPrint,
+  Smoking: Cigarette,
+  Drinking: Wine,
+  Relocation: House,
+  Service: BriefcaseBusiness,
+};
+
 /**
  * Responsive public profile presentation shared by Discovery and self-preview.
  * Mobile: stacked vertical layout. Desktop: photo + content side-by-side.
@@ -60,6 +91,7 @@ export default function PublicProfilePresentation({
   alignmentPresentation = null,
   recognitionRecipient = null,
 }: PublicProfilePresentationProps) {
+  const [showAllDetails, setShowAllDetails] = useState(false);
   const firstName = firstNameFromFullName(profile.full_name);
   const orderedPhotos = sortPhotosByDisplayOrder(profile.photos ?? []);
   const details = collectPublicProfileDetails(profile);
@@ -71,8 +103,15 @@ export default function PublicProfilePresentation({
   const locationLabel = resolvePublicLocation(profile);
   const aboutCopy = resolveUnifiedAbout(profile.short_bio, profile.more_about);
   const hasAbout = Boolean(aboutCopy);
-  const highlights = details.filter(row => ['Looking for', 'Faith', 'Faith in daily life'].includes(row.label));
-  const lifestyle = details.filter(row => !highlights.includes(row));
+  const lookingFor = details.find(row => row.label === 'Looking for');
+  const otherDetails = details.filter(row => row !== lookingFor);
+  const profileDetails = [
+    ...(lookingFor ? [lookingFor] : []),
+    ...(locationLabel ? [{ label: 'Location', value: locationLabel }] : []),
+    ...otherDetails,
+  ];
+  const visibleDetails = showAllDetails ? profileDetails : profileDetails.slice(0, 5);
+  const hasMoreDetails = profileDetails.length > 5;
   const headingClass = "text-2xl font-medium tracking-tight text-[#0B2D5C]";
   const headingStyle = { fontFamily: 'var(--font-discovery-display), Georgia, serif' };
   const useEnrichedAlignment = Boolean(alignmentPresentation) && showAlignmentCard;
@@ -84,6 +123,26 @@ export default function PublicProfilePresentation({
       data-testid={mode === 'self-preview' ? 'self-profile-preview' : 'discovery-profile'}
     >
       {header ? <div className="mb-5 lg:mb-8">{header}</div> : null}
+
+      {showAlignmentCard ? (
+        <div className="mb-6 rounded-xl border border-[#C9CBCE] bg-[#E6E6E7] p-5 text-black sm:p-7">
+          {useEnrichedAlignment && alignmentPresentation ? (
+            <ProfileAlignmentSections
+              profileName={firstName}
+              {...alignmentPresentation}
+              recognitionRecipient={recognitionRecipient}
+              cardClassName="p-0"
+              view="summary"
+            />
+          ) : (
+            <section aria-label="Relationship Alignment">
+              <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#C92027]">Relationship Alignment</p>
+              <h2 className="mt-2 text-2xl font-medium text-[#0B2D5C]" style={headingStyle}>{DISCOVERY_NEUTRAL_ALIGNMENT_LABEL}</h2>
+              <p className="mt-2 text-base leading-7 text-black">Complete more profile and compatibility answers to help Forge understand your alignment.</p>
+            </section>
+          )}
+        </div>
+      ) : null}
 
       <div className="lg:grid lg:grid-cols-[minmax(18rem,38%)_minmax(0,1fr)] lg:items-start lg:gap-10 xl:gap-12">
         <div className="lg:sticky lg:top-8">
@@ -108,16 +167,34 @@ export default function PublicProfilePresentation({
 
         <div className="mt-6 min-w-0 rounded-xl border border-[#C9CBCE] bg-[#E6E6E7] p-5 text-black sm:p-7 lg:mt-0 lg:p-8">
           <div className="space-y-7 [&>section+section]:border-t [&>section+section]:border-[#C9CBCE] [&>section+section]:pt-7">
-            {highlights.length > 0 ? (
-              <section aria-label="Relationship goals and faith">
+            {profileDetails.length > 0 ? (
+              <section aria-label={`${firstName}'s profile highlights`}>
                 <dl className="space-y-4">
-                  {highlights.map(row => (
-                    <div key={row.label}>
-                      <dt className="text-xs font-semibold uppercase tracking-widest text-[#0B2D5C]">{row.label}</dt>
-                      <dd className="mt-1 text-base leading-relaxed text-black">{row.value}</dd>
+                  {visibleDetails.map(row => {
+                    const Icon = DETAIL_ICONS[row.label] ?? HeartHandshake;
+                    return (
+                    <div key={row.label} className="grid grid-cols-[2rem_minmax(0,1fr)] items-start gap-3">
+                      <span data-icon-badge className="flex h-8 w-8 items-center justify-center rounded-md bg-white text-[#0B2D5C]" aria-hidden="true">
+                        <Icon className="h-4.5 w-4.5" />
+                      </span>
+                      <div>
+                        <dt className="text-xs font-semibold uppercase tracking-widest text-[#0B2D5C]">{row.label}</dt>
+                        <dd className="mt-0.5 break-words text-base leading-relaxed text-black">{row.value}</dd>
+                      </div>
                     </div>
-                  ))}
+                    );
+                  })}
                 </dl>
+                {hasMoreDetails ? (
+                  <button
+                    type="button"
+                    onClick={() => setShowAllDetails(open => !open)}
+                    className="mt-5 w-full"
+                    aria-expanded={showAllDetails}
+                  >
+                    {showAllDetails ? 'Show less' : `See more about ${firstName}`}
+                  </button>
+                ) : null}
               </section>
             ) : null}
 
@@ -138,25 +215,6 @@ export default function PublicProfilePresentation({
                     <p className="mt-2 break-words text-base leading-7 text-black">{enjoy.slice(6).join(' · ')}</p>
                   </details>
                 ) : null}
-              </section>
-            ) : null}
-
-            {lifestyle.length > 0 ? (
-              <section>
-                <details>
-                  <summary className="min-h-11 cursor-pointer py-2 text-xl font-medium text-[#0B2D5C]" style={headingStyle}>
-                    Life &amp; lifestyle
-                    <span className="mt-1 block text-sm font-normal text-black" style={{ fontFamily: 'var(--font-discovery-body), sans-serif' }}>Family, work, and everyday life</span>
-                  </summary>
-                  <dl className="mt-4 divide-y divide-[#C9CBCE]">
-                    {lifestyle.map(row => (
-                      <div key={row.label} className="grid gap-1 py-3 sm:grid-cols-[9rem_minmax(0,1fr)] sm:gap-4">
-                        <dt className="text-sm font-semibold text-[#0B2D5C]">{row.label}</dt>
-                        <dd className="break-words text-base leading-relaxed text-black">{row.value}</dd>
-                      </div>
-                    ))}
-                  </dl>
-                </details>
               </section>
             ) : null}
 
@@ -183,22 +241,15 @@ export default function PublicProfilePresentation({
               </section>
             ) : null}
 
-            {showAlignmentCard ? (
+            {showAlignmentCard && useEnrichedAlignment && alignmentPresentation ? (
               <section aria-label="Your alignment">
-                {useEnrichedAlignment && alignmentPresentation ? (
-                  <ProfileAlignmentSections
-                    profileName={firstName}
-                    {...alignmentPresentation}
-                    recognitionRecipient={recognitionRecipient}
-                    cardClassName="py-3"
-                  />
-                ) : (
-                  <>
-                    <h2 className={headingClass} style={headingStyle}>Relationship Alignment</h2>
-                    <p className="mt-3 font-semibold text-[#0B2D5C]">{DISCOVERY_NEUTRAL_ALIGNMENT_LABEL}</p>
-                    <p className="mt-2 text-base leading-7 text-black">Complete more profile and compatibility answers to help Forge understand your alignment.</p>
-                  </>
-                )}
+                <ProfileAlignmentSections
+                  profileName={firstName}
+                  {...alignmentPresentation}
+                  recognitionRecipient={recognitionRecipient}
+                  cardClassName="py-3"
+                  view="details"
+                />
               </section>
             ) : null}
 
