@@ -110,7 +110,7 @@ export default function DiscoveryProfileView({
             <PublicProfileBackLink href={backHref} label={backLabel} />
           </div>
         }
-        footer={
+        primaryAction={
           isMutualConnection ? (
             <DiscoveryProfileConversationCta
               profileId={profileId}
@@ -120,13 +120,16 @@ export default function DiscoveryProfileView({
               viewerUserId={viewerUserId}
               isSeed={isSeedMutual}
             />
-          ) : (
+          ) : null
+        }
+        footer={
+          !isMutualConnection ? (
             <DiscoveryActionTiles
               profileId={profileId}
               profileName={firstName}
               layout="profile-stack"
             />
-          )
+          ) : null
         }
       />
     </div>
