@@ -107,7 +107,7 @@ export default function ProfileAlignmentSections({
   incompleteAssessmentCopy,
   noFactorsCopy,
   whySurfacedCopy,
-  cardClassName = 'rounded-[1.75rem] border border-[#0B2D5C]/08 bg-white/90 p-6',
+  cardClassName = 'border-t border-[#C9CBCE] py-5',
 }: ProfileAlignmentSectionsProps) {
   const [alignmentOpen, setAlignmentOpen] = useState(false);
   const [factorsOpen, setFactorsOpen] = useState(false);
@@ -162,14 +162,12 @@ export default function ProfileAlignmentSections({
           {alignmentLabel}
         </h2>
         {incompleteAssessmentCopy ? (
-          <p className="mt-3 text-sm leading-relaxed text-[#5A6575]">
+          <p className="mt-3 text-sm leading-relaxed text-black">
             {incompleteAssessmentCopy}
           </p>
         ) : (
-          <p className="mt-3 text-sm leading-relaxed text-[#5A6575]">
-            Based on shared values, life goals, and completed profile answers. This is
-            qualitative guidance — not a numeric score, and missing answers are not treated as
-            mismatches.
+          <p className="mt-3 text-sm leading-relaxed text-black">
+            Based on your shared values, life goals, and profile answers.
           </p>
         )}
         {hasAlignmentReasons ? (
@@ -192,6 +190,7 @@ export default function ProfileAlignmentSections({
       {hasFactors ? (
         <button
           ref={factorsTriggerRef}
+          data-profile-factor
           type="button"
           onClick={() => {
             setAlignmentOpen(false);
@@ -199,7 +198,7 @@ export default function ProfileAlignmentSections({
           }}
           aria-haspopup="dialog"
           aria-expanded={factorsOpen}
-          className="mt-4 w-full rounded-[1.75rem] border-2 border-[#D62828] bg-[#FBF6EE] p-6 text-left shadow-[0_8px_28px_rgba(214,40,40,0.08)] transition hover:shadow-[0_10px_32px_rgba(214,40,40,0.12)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#D62828]"
+          className="mt-4 w-full rounded-lg border border-[#C9CBCE] border-l-4 border-l-[#C92027] bg-[#F7F7F7] p-4 text-left transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#D62828]"
         >
           <div className="flex gap-3">
             <span
@@ -212,7 +211,7 @@ export default function ProfileAlignmentSections({
               <span className="block text-lg font-semibold tracking-tight text-[#0B2D5C]">
                 Important Alignment Factors
               </span>
-              <p className="mt-2 text-[15px] leading-relaxed text-[#5A6575]">
+              <p className="mt-2 text-[15px] leading-relaxed text-black">
                 {importantFactorsSummary ?? 'Review meaningful preference differences.'}
               </p>
               <p className="mt-4 text-sm font-semibold text-[#0B2D5C] underline decoration-[#0B2D5C]/55 underline-offset-[5px]">
@@ -229,29 +228,23 @@ export default function ProfileAlignmentSections({
           >
             Important Alignment Factors
           </h2>
-          <p className="mt-3 text-[15px] leading-relaxed text-[#5A6575]">{noFactorsCopy}</p>
+          <p className="mt-3 text-[15px] leading-relaxed text-black">{noFactorsCopy}</p>
         </section>
       ) : null}
 
       {showWhySurfaced ? (
-        <section className={`${cardClassName} mt-4`} aria-labelledby="why-surfaced-heading">
-          <h2
-            id="why-surfaced-heading"
-            className="text-xl text-[#0B2D5C]"
-            style={{ fontFamily: 'var(--font-discovery-display), Georgia, serif' }}
-          >
-            Why Forge Introduced You
-          </h2>
+        <details className={`${cardClassName} mt-4`}>
+          <summary className="min-h-11 cursor-pointer py-2 text-base font-semibold text-[#0B2D5C]">Why Forge Introduced You</summary>
           {whySurfacedCopy ? (
-            <p className="mt-3 text-[15px] leading-relaxed text-[#5A6575]">{whySurfacedCopy}</p>
+            <p className="mt-3 text-[15px] leading-relaxed text-black">{whySurfacedCopy}</p>
           ) : (
             <>
-              <p className="mt-3 text-[15px] leading-relaxed text-[#5A6575]">{WHY_SURFACED_INTRO}</p>
+              <p className="mt-3 text-[15px] leading-relaxed text-black">{WHY_SURFACED_INTRO}</p>
               <ul className="mt-3 space-y-2.5">
                 {visibleStrengths.map((item) => (
                   <li
                     key={`${item.title}-${item.copy}`}
-                    className="flex items-start gap-2.5 text-[15px] leading-snug text-[#3D4654]"
+                    className="flex items-start gap-2.5 text-[15px] leading-snug text-black"
                   >
                     <span
                       className="mt-[0.55em] h-1.5 w-1.5 shrink-0 rounded-full bg-[#0B2D5C]"
@@ -273,7 +266,7 @@ export default function ProfileAlignmentSections({
               ) : null}
             </>
           )}
-        </section>
+        </details>
       ) : null}
 
       <PublicCharacterSignalsSection
