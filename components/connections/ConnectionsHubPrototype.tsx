@@ -16,7 +16,7 @@ import {
   SectionHeading,
   SentActivityCard,
 } from '@/components/connections/ConnectionCards';
-import ConnectionsTabs from '@/components/connections/ConnectionsTabs';
+import ConnectionsTabs, { ConnectionsSectionIntro } from '@/components/connections/ConnectionsTabs';
 import { useConnectionsHub } from '@/components/connections/ConnectionsHubProvider';
 import ConversationHub from '@/components/conversations/ConversationHub';
 import { resetAllSeedState } from '@/lib/seed/actions';
@@ -127,7 +127,7 @@ export default function ConnectionsHubPrototype({
           <>
             {forYouOpenToChat.length > 0 && (
               <section>
-                <SectionHeading>Open to Chat Requests</SectionHeading>
+                <SectionHeading>Chat Requests</SectionHeading>
                 <div className="flex flex-col gap-4">
                   {forYouOpenToChat.map((profile) => (
                     <ForYouOverviewCard
@@ -141,7 +141,7 @@ export default function ConnectionsHubPrototype({
             )}
             {visibleInterest.length > 0 && (
               <section>
-                <SectionHeading>Interest Received</SectionHeading>
+                <SectionHeading>Interested in You</SectionHeading>
                 <div className="flex flex-col gap-4">
                   {visibleInterest.map((profile) => (
                     <ForYouOverviewCard
@@ -155,7 +155,7 @@ export default function ConnectionsHubPrototype({
             )}
             {visibleMutual.length > 0 && (
               <section>
-                <SectionHeading>New Mutual Connection</SectionHeading>
+                <SectionHeading>Connected</SectionHeading>
                 <div className="flex flex-col gap-4">
                   {visibleMutual.map((profile) => (
                     <ForYouOverviewCard
@@ -176,7 +176,7 @@ export default function ConnectionsHubPrototype({
         {visibleOpenToChat.length === 0 ? (
           <div className="lg:col-span-2">
             <EmptyState
-              title="No new Open to Chat requests."
+              title="No new chat requests."
               description="When someone opens the door to a conversation, their request will appear here."
             />
           </div>
@@ -207,7 +207,7 @@ export default function ConnectionsHubPrototype({
       <div className="flex flex-col gap-6">
         {visibleMutual.length === 0 ? (
           <EmptyState
-            title="No mutual connections yet."
+            title="No connections yet."
             description="Thoughtful introductions take time."
           />
         ) : (
@@ -368,6 +368,7 @@ export default function ConnectionsHubPrototype({
               animationDelay: '80ms',
             }}
           >
+            {!isMessages ? <ConnectionsSectionIntro /> : null}
             {tabPanels[activeTab]}
           </div>
 
