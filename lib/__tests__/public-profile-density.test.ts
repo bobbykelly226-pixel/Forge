@@ -70,7 +70,7 @@ describe('public profile information density', () => {
       'utf8'
     );
     const alignmentCopyMatch = presentation.match(
-      /\{DISCOVERY_NEUTRAL_ALIGNMENT_LABEL\}<\/p>[\s\S]{0,400}?<\/p>/
+      /DISCOVERY_NEUTRAL_ALIGNMENT_LABEL[\s\S]{0,500}?Complete more profile and compatibility answers[\s\S]{0,200}?<\/p>/
     );
     assert.ok(alignmentCopyMatch, 'expected More to Discover supporting copy');
     const alignmentCopy = alignmentCopyMatch[0];
@@ -84,6 +84,21 @@ describe('public profile information density', () => {
     assert.doesNotMatch(alignmentCopy, /\bscores?\b/i);
     assert.doesNotMatch(alignmentCopy, /\bcalculat/i);
     assert.doesNotMatch(alignmentCopy, /\bplaceholder\b/i);
+  });
+
+  it('puts alignment before photos and limits profile highlights to five', () => {
+    const presentation = readFileSync(
+      join(process.cwd(), 'components/discovery/PublicProfilePresentation.tsx'),
+      'utf8'
+    );
+    assert.ok(
+      presentation.indexOf('Relationship Alignment') < presentation.indexOf('<ProfilePhotoGallery'),
+      'expected Relationship Alignment before the photo gallery'
+    );
+    assert.match(presentation, /profileDetails\.slice\(0, 5\)/);
+    assert.match(presentation, /See more about \$\{firstName\}/);
+    assert.match(presentation, /DETAIL_ICONS/);
+    assert.doesNotMatch(presentation, /Life &amp; lifestyle/);
   });
 
   it('simplifies See Why You Align into a compact Alignments list', () => {
