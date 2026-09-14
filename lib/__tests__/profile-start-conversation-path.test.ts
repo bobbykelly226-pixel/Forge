@@ -127,11 +127,11 @@ describe('profile-level Start Conversation production path', () => {
   it('mobile and desktop profile CTAs share one DiscoveryProfileConversationCta component', () => {
     const view = read('components/discovery/DiscoveryProfileView.tsx');
     const cta = read('components/discovery/DiscoveryProfileConversationCta.tsx');
-    // Single footer CTA; responsive layout only (flex-col / sm:flex-row), not separate handlers.
+    // One responsive CTA shared across viewport sizes, not separate handlers.
     assert.match(view, /import DiscoveryProfileConversationCta from/);
     assert.match(view, /<DiscoveryProfileConversationCta/);
     assert.doesNotMatch(view, /DesktopProfileConversationCta|MobileProfileConversationCta/);
-    assert.match(cta, /sm:flex-row/);
+    assert.match(cta, /inline-flex w-full items-center justify-center/);
     assert.match(cta, /planStartMutualConversation/);
     assert.match(cta, /ensureConversationAction\(plan\.connectionId\)/);
   });
