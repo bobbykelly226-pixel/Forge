@@ -90,7 +90,9 @@ describe('mobile structured controls', () => {
       'utf8'
     );
     const relationship = readFileSync(join(process.cwd(), 'components/profile/RelationshipPreferencesFields.tsx'), 'utf8');
-    const structuredSources = `${workspace}\n${lifestyle}\n${relationship}`;
+    const education = readFileSync(join(process.cwd(), 'components/profile/EducationFields.tsx'), 'utf8');
+    assert.match(workspace, /<EducationFields/);
+    const structuredSources = `${workspace}\n${lifestyle}\n${relationship}\n${education}`;
 
     assert.match(choices, /data-structured-control-type="single"/);
     assert.match(choices, /data-structured-control-type="multi"/);
