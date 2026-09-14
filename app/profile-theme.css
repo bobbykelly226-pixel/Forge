@@ -414,3 +414,34 @@
   display: flex; align-items: center; justify-content: center;
   font-size: 12px !important; line-height: 1.3; white-space: normal;
 }
+
+/* Public member profiles: a single reading surface and compact secondary controls. */
+.forge-profile-theme [data-profile-layout] [data-profile-factor],
+.forge-profile-theme [data-profile-layout] [data-profile-factor]:hover {
+  --profile-text: #0B2D5C;
+  --profile-muted: #000000;
+  background-color: #F7F7F7 !important;
+  color: #0B2D5C !important;
+  border-color: #C9CBCE;
+  border-left: 4px solid #C92027;
+  padding: 16px;
+  border-radius: 8px;
+  box-shadow: none;
+}
+.forge-profile-theme [data-profile-layout] section[aria-labelledby="signals-title"] {
+  background: transparent;
+  border: 0;
+  border-top: 1px solid #C9CBCE;
+  border-radius: 0;
+  outline: 0;
+  box-shadow: none;
+  padding: 20px 0 0;
+}
+.forge-profile-theme [data-profile-layout] summary {
+  color: #0B2D5C;
+  border-radius: 4px;
+}
+.forge-profile-theme [data-profile-layout] summary:focus-visible {
+  outline: 2px solid #C92027;
+  outline-offset: 4px;
+}
