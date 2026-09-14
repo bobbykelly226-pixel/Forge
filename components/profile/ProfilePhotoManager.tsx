@@ -314,10 +314,10 @@ export default function ProfilePhotoManager({
                     </button>
                   ) : (
                     <p className="py-2 text-center text-xs font-medium text-[#5A6575]">
-                      Shown as your main photo
+                      {photo.moderation_status === 'approved' ? 'Main photo' : photo.moderation_status === 'rejected' ? 'Photo needs replacement' : 'Main photo after approval'}
                     </p>
                   )}
-                  <div className="grid grid-cols-2 gap-1.5">
+                  <div data-photo-actions className="grid grid-cols-1 gap-2 sm:grid-cols-2">
                     <button
                       type="button"
                       disabled={disabled || busy}

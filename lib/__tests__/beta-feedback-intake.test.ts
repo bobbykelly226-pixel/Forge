@@ -112,7 +112,8 @@ describe('beta feedback intake', () => {
 
     assert.match(desktopNav, /Beta Feedback/);
     assert.match(utilityBar, /Send Beta Feedback/);
-    assert.match(profile, /Report a bug, ask for help, or share an idea/);
+    assert.match(profile, /DiscoveryDesktopTopBar/);
+    assert.doesNotMatch(profile, /Send Beta Feedback/);
     assert.doesNotMatch(bottomNav, /Beta Feedback/);
   });
 });

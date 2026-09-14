@@ -101,7 +101,7 @@ export default function PreviewOverallComplete({
             >
               {OVERALL_COMPLETE_COPY.restart}
             </button>
-            <Link
+            <Link data-text-link
               href="/app"
               className="inline-flex min-h-12 w-full items-center justify-center rounded-2xl px-6 py-3 text-base font-semibold text-[var(--forge-navy)] underline-offset-4 hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--forge-navy)]"
             >

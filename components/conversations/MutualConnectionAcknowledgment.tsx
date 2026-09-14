@@ -95,7 +95,7 @@ export default function MutualConnectionAcknowledgment({
               Start a conversation
             </Link>
           )}
-          <Link
+          <Link data-text-link
             href={profileHref}
             className="inline-flex w-full items-center justify-center rounded-2xl border border-[#0B2D5C]/20 bg-white px-6 py-3.5 text-base font-semibold text-[#0B2D5C] transition hover:bg-[#F8F6F2]"
           >

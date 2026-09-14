@@ -1,4 +1,9 @@
 'use server';
+import { parseServiceBackgroundOther } from '@/lib/profile/service-background';
+import { parseEducationOther } from '@/lib/profile/education';
+import { parseMusicPreferences } from '@/lib/profile/music';
+
+import { validCoreValues, normalizeCoreValues, CORE_VALUES_GUIDANCE } from '@/lib/profile/core-values';
 
 import { saveRelationshipPreferences } from './relationship-preferences';
 import { revalidatePath } from 'next/cache';
@@ -8,7 +13,6 @@ import {
   upsertCurrentUserProfile,
 } from '@/lib/data/profile';
 import { createClient } from '@/lib/supabase/server';
-import { CORE_VALUES_OPTIONS } from '@/lib/types/profile-answers';
 import {
   MAX_PROFILE_PHOTOS,
   MAX_PROFILE_PHOTOS_MESSAGE,
@@ -673,10 +677,8 @@ export async function saveProfileSection(
 
   if (sectionId === 'factors') {
     const selected = formData.getAll('core_values').map(String);
-    const allowed = new Set<string>(CORE_VALUES_OPTIONS);
-    const coreValues = CORE_VALUES_OPTIONS.filter((label) => selected.includes(label)).filter(
-      (label) => allowed.has(label)
-    );
+    if (!validCoreValues(selected)) return { success: false, message: CORE_VALUES_GUIDANCE };
+    const coreValues = normalizeCoreValues(selected);
 
     const { error } = await supabase.from('profile_answers').upsert(
       {
@@ -901,6 +903,11 @@ export async function saveProfileSection(
       const parsed = readStructuredField(formData, single.key, single.field);
       if (!parsed.ok) return { success: false, message: parsed.message };
       fields[single.key] = parsed.value;
+      if (single.id === 'education') {
+        const other = parseEducationOther(parsed.value, formData.get('education_other'));
+        if (!other.ok) return { success: false, message: other.message };
+        fields.education_other = other.value;
+      }
       if (parsed.value) answeredUnmapped.push(single.key);
     }
   }
@@ -913,6 +920,9 @@ export async function saveProfileSection(
         return { success: false, message: 'Please choose valid service background options.' };
       }
     }
+    const other = parseServiceBackgroundOther(serviceBackgrounds, formData.get('service_background_other'));
+    if (!other.ok) return { success: false, message: other.message };
+    fields.service_background_other = other.value;
     fields.service_backgrounds = serviceBackgrounds;
     fields.service_background = serviceBackgroundDisplayLabel(serviceBackgrounds);
     if (serviceBackgrounds.length > 0) answeredUnmapped.push('service_background');
@@ -923,6 +933,9 @@ export async function saveProfileSection(
   }
 
   if (sectionId === 'music') {
+    const music = parseMusicPreferences(formData);
+    if (!music.ok) return { success: false, message: music.message };
+    Object.assign(fields, music.fields);
     fields.favorite_music_artists = parseLineList(
       formData.get('favorite_music_artists') as string | null
     );

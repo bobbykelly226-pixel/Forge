@@ -811,11 +811,15 @@ export type Database = {
           drinking: string | null
           drinking_partner_preferences: string[]
           education: string | null
+          education_other: string | null
           faith_identity: string | null
           faith_importance: string | null
           faith_other: string | null
           faith_tradition: string | null
           favorite_music_artists: string[]
+          favorite_music_genres: string[]
+          favorite_music_meaningful_song: string | null
+          favorite_music_other: string | null
           favorite_music_songs: string[]
           full_name: string | null
           has_children: string | null
@@ -841,6 +845,7 @@ export type Database = {
           relationship_pace: string | null
           relocation: string | null
           service_background: string | null
+          service_background_other: string | null
           service_backgrounds: string[]
           short_bio: string | null
           smoking: string | null
@@ -861,11 +866,15 @@ export type Database = {
           drinking?: string | null
           drinking_partner_preferences?: string[]
           education?: string | null
+          education_other?: string | null
           faith_identity?: string | null
           faith_importance?: string | null
           faith_other?: string | null
           faith_tradition?: string | null
           favorite_music_artists?: string[]
+          favorite_music_genres?: string[]
+          favorite_music_meaningful_song?: string | null
+          favorite_music_other?: string | null
           favorite_music_songs?: string[]
           full_name?: string | null
           has_children?: string | null
@@ -891,6 +900,7 @@ export type Database = {
           relationship_pace?: string | null
           relocation?: string | null
           service_background?: string | null
+          service_background_other?: string | null
           service_backgrounds?: string[]
           short_bio?: string | null
           smoking?: string | null
@@ -911,11 +921,15 @@ export type Database = {
           drinking?: string | null
           drinking_partner_preferences?: string[]
           education?: string | null
+          education_other?: string | null
           faith_identity?: string | null
           faith_importance?: string | null
           faith_other?: string | null
           faith_tradition?: string | null
           favorite_music_artists?: string[]
+          favorite_music_genres?: string[]
+          favorite_music_meaningful_song?: string | null
+          favorite_music_other?: string | null
           favorite_music_songs?: string[]
           full_name?: string | null
           has_children?: string | null
@@ -941,6 +955,7 @@ export type Database = {
           relationship_pace?: string | null
           relocation?: string | null
           service_background?: string | null
+          service_background_other?: string | null
           service_backgrounds?: string[]
           short_bio?: string | null
           smoking?: string | null
@@ -1950,11 +1965,15 @@ export type Database = {
           children_count: string | null
           drinking: string | null
           education: string | null
+          education_other: string | null
           faith_identity: string | null
           faith_importance: string | null
           faith_other: string | null
           faith_tradition: string | null
           favorite_music_artists: string[] | null
+          favorite_music_genres: string[] | null
+          favorite_music_meaningful_song: string | null
+          favorite_music_other: string | null
           favorite_music_songs: string[] | null
           full_name: string | null
           has_children: string | null
@@ -1973,23 +1992,28 @@ export type Database = {
           relationship_pace: string | null
           relocation: string | null
           service_background: string | null
+          service_background_other: string | null
           service_backgrounds: string[] | null
           short_bio: string | null
           smoking: string | null
           things_i_enjoy: string[] | null
         }
         Insert: {
-          age?: number | null
+          age?: never
           career?: string | null
           children?: string | null
           children_count?: string | null
           drinking?: string | null
           education?: string | null
+          education_other?: string | null
           faith_identity?: string | null
           faith_importance?: string | null
           faith_other?: string | null
           faith_tradition?: string | null
           favorite_music_artists?: string[] | null
+          favorite_music_genres?: string[] | null
+          favorite_music_meaningful_song?: string | null
+          favorite_music_other?: string | null
           favorite_music_songs?: string[] | null
           full_name?: string | null
           has_children?: string | null
@@ -2008,23 +2032,28 @@ export type Database = {
           relationship_pace?: string | null
           relocation?: string | null
           service_background?: string | null
+          service_background_other?: string | null
           service_backgrounds?: string[] | null
           short_bio?: string | null
           smoking?: string | null
           things_i_enjoy?: string[] | null
         }
         Update: {
-          age?: number | null
+          age?: never
           career?: string | null
           children?: string | null
           children_count?: string | null
           drinking?: string | null
           education?: string | null
+          education_other?: string | null
           faith_identity?: string | null
           faith_importance?: string | null
           faith_other?: string | null
           faith_tradition?: string | null
           favorite_music_artists?: string[] | null
+          favorite_music_genres?: string[] | null
+          favorite_music_meaningful_song?: string | null
+          favorite_music_other?: string | null
           favorite_music_songs?: string[] | null
           full_name?: string | null
           has_children?: string | null
@@ -2043,6 +2072,7 @@ export type Database = {
           relationship_pace?: string | null
           relocation?: string | null
           service_background?: string | null
+          service_background_other?: string | null
           service_backgrounds?: string[] | null
           short_bio?: string | null
           smoking?: string | null
@@ -2159,11 +2189,15 @@ export type Database = {
           drinking: string | null
           drinking_partner_preferences: string[]
           education: string | null
+          education_other: string | null
           faith_identity: string | null
           faith_importance: string | null
           faith_other: string | null
           faith_tradition: string | null
           favorite_music_artists: string[]
+          favorite_music_genres: string[]
+          favorite_music_meaningful_song: string | null
+          favorite_music_other: string | null
           favorite_music_songs: string[]
           full_name: string | null
           has_children: string | null
@@ -2189,6 +2223,7 @@ export type Database = {
           relationship_pace: string | null
           relocation: string | null
           service_background: string | null
+          service_background_other: string | null
           service_backgrounds: string[]
           short_bio: string | null
           smoking: string | null
@@ -2284,11 +2319,15 @@ export type Database = {
           children_count: string | null
           drinking: string | null
           education: string | null
+          education_other: string | null
           faith_identity: string | null
           faith_importance: string | null
           faith_other: string | null
           faith_tradition: string | null
           favorite_music_artists: string[] | null
+          favorite_music_genres: string[] | null
+          favorite_music_meaningful_song: string | null
+          favorite_music_other: string | null
           favorite_music_songs: string[] | null
           full_name: string | null
           has_children: string | null
@@ -2307,6 +2346,7 @@ export type Database = {
           relationship_pace: string | null
           relocation: string | null
           service_background: string | null
+          service_background_other: string | null
           service_backgrounds: string[] | null
           short_bio: string | null
           smoking: string | null
@@ -2346,11 +2386,15 @@ export type Database = {
           children_count: string | null
           drinking: string | null
           education: string | null
+          education_other: string | null
           faith_identity: string | null
           faith_importance: string | null
           faith_other: string | null
           faith_tradition: string | null
           favorite_music_artists: string[] | null
+          favorite_music_genres: string[] | null
+          favorite_music_meaningful_song: string | null
+          favorite_music_other: string | null
           favorite_music_songs: string[] | null
           full_name: string | null
           has_children: string | null
@@ -2369,6 +2413,7 @@ export type Database = {
           relationship_pace: string | null
           relocation: string | null
           service_background: string | null
+          service_background_other: string | null
           service_backgrounds: string[] | null
           short_bio: string | null
           smoking: string | null
@@ -2402,11 +2447,16 @@ export type Database = {
           children_count: string | null
           drinking: string | null
           education: string | null
+          service_background_other: string | null
+          education_other: string | null
           faith_identity: string | null
           faith_importance: string | null
           faith_other: string | null
           faith_tradition: string | null
           favorite_music_artists: string[] | null
+          favorite_music_genres: string[] | null
+          favorite_music_meaningful_song: string | null
+          favorite_music_other: string | null
           favorite_music_songs: string[] | null
           full_name: string | null
           has_children: string | null

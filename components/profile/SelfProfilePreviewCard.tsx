@@ -27,6 +27,7 @@ function toPublicProfile(profile: SelfProfilePreview): PublicDiscoveryProfile {
     faith_importance: profile.faith_importance,
     service_background: profile.service_background,
     service_backgrounds: profile.service_backgrounds,
+    service_background_other: profile.service_background_other,
     short_bio: profile.short_bio,
     more_about: profile.more_about,
     children: profile.children,
@@ -34,12 +35,16 @@ function toPublicProfile(profile: SelfProfilePreview): PublicDiscoveryProfile {
     children_count: profile.children_count,
     open_to_partner_with_children: profile.open_to_partner_with_children,
     education: profile.education,
+    education_other: profile.education_other,
     pets: profile.pets,
     smoking: profile.smoking,
     drinking: profile.drinking,
     career: profile.career,
     relocation: profile.relocation,
     things_i_enjoy: profile.things_i_enjoy,
+    favorite_music_genres: profile.favorite_music_genres,
+    favorite_music_other: profile.favorite_music_other,
+    favorite_music_meaningful_song: profile.favorite_music_meaningful_song,
     favorite_music_artists: profile.favorite_music_artists,
     favorite_music_songs: profile.favorite_music_songs,
     profile_photo_url: profile.profile_photo_url,
@@ -75,7 +80,7 @@ export default function SelfProfilePreviewCard({ profile }: Props) {
       }
       footer={
         <div className="flex flex-col gap-3">
-          <Link
+          <Link data-text-link
             href="/profile"
             className="inline-flex w-full items-center justify-center rounded-2xl bg-[#0B2D5C] px-8 py-4 text-lg font-semibold text-white transition hover:bg-[#0A2540]"
           >

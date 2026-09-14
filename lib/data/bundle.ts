@@ -120,17 +120,22 @@ export type SelfProfilePreview = {
   faith_importance: string | null;
   service_background: string | null;
   service_backgrounds: string[];
+  service_background_other?: string | null;
   children: string | null;
   has_children: string | null;
   children_count: string | null;
   open_to_partner_with_children: string | null;
   education: string | null;
+  education_other?: string | null;
   pets: string | null;
   smoking: string | null;
   drinking: string | null;
   career: string | null;
   relocation: string | null;
   things_i_enjoy: string[];
+  favorite_music_genres?: string[];
+  favorite_music_other?: string | null;
+  favorite_music_meaningful_song?: string | null;
   favorite_music_artists: string[];
   favorite_music_songs: string[];
   profile_photo_url: string | null;
@@ -185,17 +190,22 @@ export async function loadSelfProfilePreview(): Promise<
       faith_importance: profile.faith_importance,
       service_background: profile.service_background,
       service_backgrounds: profile.service_backgrounds ?? [],
+      service_background_other: profile.service_background_other,
       children: profile.children,
       has_children: profile.has_children,
       children_count: profile.children_count,
       open_to_partner_with_children: profile.open_to_partner_with_children,
       education: profile.education,
+      education_other: profile.education_other,
       pets: profile.pets,
       smoking: profile.smoking,
       drinking: profile.drinking,
       career: profile.career,
       relocation: profile.relocation,
       things_i_enjoy: profile.things_i_enjoy ?? [],
+      favorite_music_genres: profile.favorite_music_genres ?? [],
+      favorite_music_other: profile.favorite_music_other,
+      favorite_music_meaningful_song: profile.favorite_music_meaningful_song,
       favorite_music_artists: profile.favorite_music_artists ?? [],
       favorite_music_songs: profile.favorite_music_songs ?? [],
       profile_photo_url: resolvedPhotoUrl,

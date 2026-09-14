@@ -10,6 +10,7 @@ export type ProfileCompatibilityCardProps = {
   completedQuestions: number;
   totalEligibleQuestions: number;
   action: 'start' | 'continue' | 'review';
+  compact?: boolean;
 };
 
 export default function ProfileCompatibilityCard({
@@ -18,6 +19,7 @@ export default function ProfileCompatibilityCard({
   completedQuestions,
   totalEligibleQuestions,
   action,
+  compact = false,
 }: ProfileCompatibilityCardProps) {
   const actionLabel =
     action === 'review'
@@ -37,12 +39,14 @@ export default function ProfileCompatibilityCard({
       >
         {PROFILE_CARD_COPY.heading}
       </h2>
+      {!compact ? <>
       <p className="mt-3 text-sm leading-relaxed text-[#5A6575]">
         {PROFILE_CARD_COPY.body}
       </p>
       <p className="mt-3 text-sm leading-relaxed text-[#7A8494]">
         {PROFILE_CARD_COPY.supporting}
       </p>
+      </> : null}
       <p className="mt-4 text-sm font-medium text-[#0B2D5C]">
         {completedCategories} of {totalCategories} categories complete
       </p>

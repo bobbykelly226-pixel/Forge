@@ -13,7 +13,7 @@ test('five approved intentions retain stable legacy values and explanatory copy'
   for (const option of RELATIONSHIP_GOAL_OPTIONS) {
     assert.ok(option.description.length > 20);
     assert.equal(mapLegacyRelationshipGoal(option.value).mapped, option.value);
-    assert.equal(isOnboardingContentComplete({relationship_intention: option.value, core_values: ['Faith']}), true);
+    assert.equal(isOnboardingContentComplete({relationship_intention: option.value, core_values: ['Faith', 'Family', 'Loyalty']}), true);
   }
   assert.equal(labelForStructuredValue('relationship_goal', 'serious_relationship'), 'Long-term relationship');
   assert.equal(labelForStructuredValue('relationship_goal', 'intentional_dating'), 'Dating with intention');
@@ -22,7 +22,7 @@ test('five approved intentions retain stable legacy values and explanatory copy'
 
 test('onboarding rejects arbitrary nonempty intentions', () => {
   for (const answer of ['invalid', '', [], ['marriage', 'invalid']]) {
-    assert.equal(isOnboardingContentComplete({relationship_intention: answer, core_values: ['Faith']}), false);
+    assert.equal(isOnboardingContentComplete({relationship_intention: answer, core_values: ['Faith', 'Family', 'Loyalty']}), false);
   }
 });
 

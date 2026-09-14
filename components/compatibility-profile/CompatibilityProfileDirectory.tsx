@@ -74,7 +74,7 @@ export default function CompatibilityProfileDirectory({
               <li key={category.id}>
                 <button
                   type="button"
-                  onClick={() => onOpenCategory(category.number)}
+                  data-compatibility-category onClick={() => onOpenCategory(category.number)}
                   className="flex w-full items-start justify-between gap-4 rounded-2xl border border-[color-mix(in_srgb,var(--forge-silver)_55%,transparent)] bg-white px-4 py-4 text-left transition hover:border-[color-mix(in_srgb,var(--forge-navy)_35%,var(--forge-silver))] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--forge-navy)]"
                 >
                   <span>
@@ -101,7 +101,7 @@ export default function CompatibilityProfileDirectory({
         </ul>
 
         <div className="mt-8">
-          <Link
+          <Link data-text-link
             href="/profile"
             className="inline-flex min-h-12 w-full items-center justify-center rounded-2xl border border-[color-mix(in_srgb,var(--forge-silver)_70%,transparent)] bg-white px-6 py-3 text-base font-semibold text-[var(--forge-navy)] transition hover:bg-[var(--forge-surface-soft)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--forge-navy)] sm:w-auto"
           >

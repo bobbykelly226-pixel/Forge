@@ -293,16 +293,18 @@
   color: var(--profile-navy, #0B2D5C);
 }
 
-/* Conversation links are text navigation, not filled action buttons. */
-.forge-profile-theme a[href][data-text-link]:not([role="switch"]):not(:has(img)),
-.forge-profile-theme a[href][data-text-link]:not([role="switch"]):not(:has(img)):hover {
+/* Navigation links use one text treatment; editing and state changes retain action buttons. */
+.forge-profile-theme :is(a[href], button)[data-text-link]:not([role="switch"]):not(:has(img)),
+.forge-profile-theme :is(a[href], button)[data-text-link]:not([role="switch"]):not(:has(img)):hover {
   --profile-text: var(--profile-navy, #0B2D5C);
   background: transparent !important;
   color: var(--profile-navy, #0B2D5C) !important;
-  border: 0;
-  box-shadow: none;
+  border: 0 !important;
+  box-shadow: none !important;
+  text-decoration: underline;
+  text-underline-offset: 4px;
 }
-.forge-profile-theme a[href][data-text-link]:not([role="switch"]):not(:has(img)):hover { text-decoration: underline; }
+.forge-profile-theme :is(a[href], button)[data-text-link]:not([role="switch"]):not(:has(img)):hover { text-decoration: underline; }
 .forge-profile-theme [data-message-direction="received"] {
   /* Override the legacy bg-white mapping, including its :not specificity. */
   background-color: #FFFFFF !important;
@@ -400,4 +402,15 @@
   line-height: 1;
   font-weight: 600;
   letter-spacing: 0.14em;
+}
+
+/* Explicit colors for nested labels inside blue category actions. */
+.forge-profile-theme button[data-compatibility-category],
+.forge-profile-theme button[data-compatibility-category] span {
+  color: #FFFFFF !important;
+}
+.forge-profile-theme [data-photo-actions] button {
+  min-width: 0; min-height: 44px; padding: 8px 6px !important;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 12px !important; line-height: 1.3; white-space: normal;
 }

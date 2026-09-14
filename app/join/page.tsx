@@ -91,7 +91,7 @@ export default function Join() {
               </Link>
             </p>
 
-            <Link
+            <Link data-text-link
               href="/"
               className="inline-block text-sm text-[#0B2D5C]/80 hover:text-[#D62828] font-medium transition py-2"
             >

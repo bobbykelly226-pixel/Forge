@@ -51,7 +51,7 @@ export default function AccountLifecyclePanel({
           <h1 className="mt-5 font-[family-name:var(--font-discovery-display)] text-4xl font-semibold tracking-[-0.03em] text-[#0B2D5C] sm:text-5xl">Account & Privacy</h1>
           <p className="mt-3 text-sm text-[#5A6575]">Signed in as {email}</p>
         </div>
-        <Link href="/profile" className="rounded-2xl border border-[#0B2D5C]/14 bg-white px-4 py-3 text-sm font-semibold text-[#0B2D5C]">Back to My Profile</Link>
+        <Link data-text-link href="/profile" className="rounded-2xl border border-[#0B2D5C]/14 bg-white px-4 py-3 text-sm font-semibold text-[#0B2D5C]">Back to My Profile</Link>
       </div>
 
       {loadError ? <p className="mt-7 rounded-2xl border border-[#B42318]/20 bg-[#FFF5F4] px-5 py-4 text-sm text-[#9B1C1C]">{loadError}</p> : null}

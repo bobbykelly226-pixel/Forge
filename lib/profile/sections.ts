@@ -1,3 +1,4 @@
+import { normalizeCoreValues } from '@/lib/profile/core-values';
 /**
  * Owner profile workspace sections — one catalog for hub summaries,
  * checklist routing, and section saves.
@@ -78,7 +79,7 @@ export const PROFILE_SECTIONS: ProfileSectionDefinition[] = [
   {
     id: 'relationship',
     title: 'Relationship preferences',
-    description: 'Your main goal, other possibilities, and preferred pace.',
+    description: 'What you are looking for in a relationship.',
     editable: true,
   },
   {
@@ -167,6 +168,14 @@ export const PROFILE_SECTIONS: ProfileSectionDefinition[] = [
     comingSoon: true,
     editable: false,
   },
+];
+
+/** Visual groups retain every existing focused editor and saved field. */
+export const PROFILE_EDIT_GROUPS: { id: string; title: string; sections: ProfileSectionId[] }[] = [
+  { id: 'basics', title: 'Profile basics', sections: ['photo', 'basics', 'location', 'about', 'relationship', 'children'] },
+  { id: 'values', title: 'Values & lifestyle', sections: ['factors', 'faith', 'smoking', 'drinking'] },
+  { id: 'plans', title: 'Life & plans', sections: ['pets', 'relocation', 'education', 'career', 'service'] },
+  { id: 'interests', title: 'Interests', sections: ['enjoy', 'music'] },
 ];
 
 function hasText(value: string | null | undefined): boolean {
@@ -279,7 +288,7 @@ export function summarizeProfileSection(
       return parts.length ? parts.join(' · ') : 'Not added yet';
     }
     case 'education':
-      return structuredLabel('education', profile.education) ?? 'Not added yet';
+      return (profile.education === 'other' ? profile.education_other?.trim() : null) || structuredLabel('education', profile.education) || 'Not added yet';
     case 'pets': {
       const identity = normalizePetsIdentity(profile.pets);
       const identityLabel =
@@ -303,7 +312,7 @@ export function summarizeProfileSection(
       return line(profile.career) ?? 'Not added yet';
     case 'service':
       return (
-        serviceBackgroundDisplayLabel(profile.service_backgrounds) ??
+        serviceBackgroundDisplayLabel(profile.service_backgrounds, profile.service_background_other) ??
         line(profile.service_background) ??
         'Not added yet'
       );
@@ -315,13 +324,16 @@ export function summarizeProfileSection(
       const artists = (profile.favorite_music_artists ?? []).filter((item) => hasText(item));
       const songs = (profile.favorite_music_songs ?? []).filter((item) => hasText(item));
       const parts = [
+        profile.favorite_music_genres?.filter(item => item !== 'Other').join(', '),
+        profile.favorite_music_other,
+        profile.favorite_music_meaningful_song ? `A song about me: ${profile.favorite_music_meaningful_song}` : null,
         artists.length ? `Artists: ${artists.join(', ')}` : null,
         songs.length ? `Songs: ${songs.join(', ')}` : null,
       ].filter(Boolean);
       return parts.length ? parts.join(' · ') : 'Not added yet';
     }
     case 'factors': {
-      const values = (extras?.coreValues ?? []).filter((item) => hasText(item));
+      const values = normalizeCoreValues(extras?.coreValues);
       return values.length ? values.join(', ') : 'Not added yet';
     }
     case 'voice':

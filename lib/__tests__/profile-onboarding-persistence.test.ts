@@ -66,7 +66,7 @@ describe('onboarding resume and completion', () => {
       savedStep: ONBOARDING_STEPS.values,
       answers: {
         [PROFILE_ANSWER_KEYS.relationshipIntention]: 'Marriage-minded',
-        [PROFILE_ANSWER_KEYS.coreValues]: ['Faith', 'Family'],
+        [PROFILE_ANSWER_KEYS.coreValues]: ['Faith', 'Family', 'Loyalty'],
       },
       hasAdultDateOfBirth: true,
       hasMatchingPreferences: true,
@@ -80,7 +80,7 @@ describe('onboarding resume and completion', () => {
       savedStep: ONBOARDING_STEPS.intention,
       answers: {
         [PROFILE_ANSWER_KEYS.relationshipIntention]: 'Marriage-minded',
-        [PROFILE_ANSWER_KEYS.coreValues]: ['Faith'],
+        [PROFILE_ANSWER_KEYS.coreValues]: ['Faith', 'Family', 'Loyalty'],
       },
       hasAdultDateOfBirth: false,
       hasMatchingPreferences: false,
@@ -99,7 +99,7 @@ describe('onboarding resume and completion', () => {
     assert.equal(
       isOnboardingContentComplete({
         [PROFILE_ANSWER_KEYS.relationshipIntention]: 'Marriage-minded',
-        [PROFILE_ANSWER_KEYS.coreValues]: ['Faith'],
+        [PROFILE_ANSWER_KEYS.coreValues]: ['Faith', 'Family', 'Loyalty'],
       }),
       true
     );

@@ -1,8 +1,8 @@
 'use client';
 
 import Link from 'next/link';
-import { useState } from 'react';
-import { Eye, MessageSquarePlus, ShieldCheck } from 'lucide-react';
+import { useRef, useState } from 'react';
+import { Eye } from 'lucide-react';
 
 import DiscoveryDesktopTopBar from '@/components/DiscoveryDesktopTopBar';
 import ForgeAppBottomNav from '@/components/ForgeAppBottomNav';
@@ -14,7 +14,7 @@ import ProfileCompatibilityCard, {
   type ProfileCompatibilityCardProps,
 } from '@/components/compatibility-profile/ProfileCompatibilityCard';
 import DiscoveryVisibilityToggle from '@/components/profile/DiscoveryVisibilityToggle';
-import ProfileWorkspace from '@/components/profile/ProfileWorkspace';
+import ProfileWorkspace, { type ProfileWorkspaceHandle } from '@/components/profile/ProfileWorkspace';
 import MatchingPreferencesCard from '@/components/profile/MatchingPreferencesCard';
 import type { ManagedProfilePhoto } from '@/lib/profile-photo';
 import type { Profile } from '@/lib/types/profile';
@@ -52,46 +52,10 @@ export type MyProfileHubProps = {
   compatibilityCard: ProfileCompatibilityCardProps;
 };
 
-function CompletionRing({ percent }: { percent: number }) {
-  const radius = 34;
-  const circumference = 2 * Math.PI * radius;
-  const offset = circumference * (1 - percent / 100);
-
-  return (
-    <div className="relative h-20 w-20 shrink-0" aria-hidden="true">
-      <svg viewBox="0 0 80 80" className="h-full w-full -rotate-90">
-        <circle
-          cx="40"
-          cy="40"
-          r={radius}
-          fill="none"
-          stroke="rgba(11,45,92,0.1)"
-          strokeWidth="6"
-        />
-        <circle
-          cx="40"
-          cy="40"
-          r={radius}
-          fill="none"
-          stroke="#D62828"
-          strokeWidth="6"
-          strokeLinecap="round"
-          strokeDasharray={circumference}
-          strokeDashoffset={offset}
-        />
-      </svg>
-      <div className="absolute inset-0 flex items-center justify-center">
-        <span className="text-sm font-bold text-[#0B2D5C]">{percent}%</span>
-      </div>
-    </div>
-  );
-}
-
 export default function MyProfileHub({
   displayName,
   location,
   photoUrl: initialPhotoUrl,
-  completionPercent: initialCompletionPercent,
   onboardingCompleted,
   discoveryVisibility,
   profile,
@@ -105,8 +69,7 @@ export default function MyProfileHub({
   compatibilityCard,
 }: MyProfileHubProps) {
   const [photoUrl, setPhotoUrl] = useState(initialPhotoUrl);
-  const [completionPercent, setCompletionPercent] = useState(initialCompletionPercent);
-  const showCompletionUi = completionPercent < 100;
+  const workspaceRef = useRef<ProfileWorkspaceHandle>(null);
 
   return (
     <>
@@ -119,6 +82,7 @@ export default function MyProfileHub({
 
       <ForgeAuthenticatedTwoColumnShell
         wide
+        documentScroll
         asideStyle={{ animation: 'profileHubFadeUp 0.45s ease-out both' }}
         aside={
           <div className="rounded-[1.75rem] border border-[#0B2D5C]/08 bg-white/70 p-6 shadow-[0_12px_32px_rgba(11,45,92,0.04)] backdrop-blur-sm xl:p-7">
@@ -137,9 +101,6 @@ export default function MyProfileHub({
               Review and update your profile in one place.
             </p>
             <ForgeDesktopAppNav active="profile" />
-            <div className="mt-8 border-t border-[#0B2D5C]/08 pt-6">
-              <LogoutButton className="w-full" />
-            </div>
           </div>
         }
       >
@@ -154,13 +115,7 @@ export default function MyProfileHub({
               alt="Forge"
               className="forge-corner-logo h-12 w-auto sm:h-14"
             />
-            <Link
-              href="/profile/preview"
-              className="rounded-full border border-[#0B2D5C]/12 bg-white/70 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.16em] text-[#0B2D5C]"
-            >
-              Preview
-            </Link>
-            <LogoutButton className="rounded-lg bg-[#0B2D5C] px-3 py-2 text-[10px] uppercase tracking-[0.14em] text-white" />
+
           </div>
 
           {!onboardingCompleted ? (
@@ -184,10 +139,10 @@ export default function MyProfileHub({
           ) : null}
 
           <div
-            className="lg:grid lg:grid-cols-[minmax(16rem,20rem)_minmax(0,1fr)] lg:items-start lg:gap-8 xl:gap-10"
+            className="space-y-5"
             style={{ animation: 'profileHubFadeUp 0.5s ease-out both' }}
           >
-            <div className="space-y-5 lg:sticky lg:top-0">
+            <div className="space-y-5">
               <section className="rounded-[1.75rem] border border-[#0B2D5C]/08 bg-white/90 p-6 shadow-[0_12px_40px_rgba(11,45,92,0.05)]">
                 <div className="flex items-center gap-4">
                   {photoUrl ? (
@@ -222,43 +177,31 @@ export default function MyProfileHub({
                   </div>
                 </div>
 
-                {showCompletionUi ? (
-                  <div
-                    className="mt-6 flex items-center gap-4 border-t border-[#0B2D5C]/06 pt-5"
-                    data-testid="profile-completion-summary"
-                  >
-                    <CompletionRing percent={completionPercent} />
-                    <div>
-                      <p className="text-xs font-semibold uppercase tracking-[0.14em] text-[#D62828]">
-                        Profile completion
-                      </p>
-                      <p className="mt-1.5 text-lg font-semibold text-[#0B2D5C]">
-                        {completionPercent}% Complete
-                      </p>
-                      <p className="mt-1 text-sm text-[#5A6575]">
-                        Encouragement only — never required for Discovery.
-                      </p>
-                    </div>
-                  </div>
-                ) : null}
-
-                <div
-                  className={`${showCompletionUi ? 'mt-5' : 'mt-6'} border-t border-[#0B2D5C]/06 pt-5`}
+                <button
+                  type="button"
+                  onClick={() => workspaceRef.current?.openPhotos()}
+                  className="mt-4 inline-flex min-h-11 w-full items-center justify-center rounded-md px-4 py-2 text-sm font-semibold focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
                 >
+                  Update photos
+                </button>
+
+                <div className="mt-5 border-t border-[#C9CBCE] pt-5">
+                  <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2">
                   <Link
-                    href="/profile/preview"
-                    className="inline-flex w-full items-center justify-center gap-2 rounded-2xl border border-[#0B2D5C]/20 bg-white px-5 py-3.5 text-sm font-semibold text-[#0B2D5C] transition hover:border-[#0B2D5C]/35 hover:bg-[#EEF2F7] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0B2D5C]"
+                    data-text-link href="/profile/preview"
+                    className="inline-flex min-h-11 items-center justify-center gap-2 text-sm font-semibold text-[#0B2D5C] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
                   >
                     <Eye className="h-4 w-4 shrink-0" strokeWidth={1.75} aria-hidden="true" />
                     View My Profile
                   </Link>
+                  <LogoutButton textLink className="min-h-11" />
+                  </div>
                   <p className="mt-2.5 text-center text-xs leading-relaxed text-[#7A8494]">
                     See your profile exactly as others see it.
                   </p>
                 </div>
               </section>
 
-              <ProfileCompatibilityCard {...compatibilityCard} />
 
               <DiscoveryVisibilityToggle
                 enabled={discoveryVisibility.enabled}
@@ -267,44 +210,12 @@ export default function MyProfileHub({
                 unmetRequirements={discoveryVisibility.unmetRequirements}
               />
 
-              <Link
-                href="/feedback"
-                className="group flex items-center gap-3 rounded-[1.5rem] border border-[#0B2D5C]/09 bg-white/80 p-4 text-[#0B2D5C] shadow-[0_10px_30px_rgba(11,45,92,0.04)] transition hover:border-[#0B2D5C]/20 hover:bg-white"
-              >
-                <span data-icon-badge className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-[#0B2D5C]/07 transition group-hover:bg-[#0B2D5C] group-hover:text-white">
-                  <MessageSquarePlus className="h-5 w-5" strokeWidth={1.75} aria-hidden="true" />
-                </span>
-                <span>
-                  <span className="block text-sm font-semibold">Send Beta Feedback</span>
-                  <span className="mt-1 block text-xs leading-relaxed text-[#6F7A89]">
-                    Report a bug, ask for help, or share an idea.
-                  </span>
-                </span>
-              </Link>
-
-              <Link
-                href="/profile/account"
-                className="group flex items-center gap-3 rounded-[1.5rem] border border-[#0B2D5C]/09 bg-white/80 p-4 text-[#0B2D5C] shadow-[0_10px_30px_rgba(11,45,92,0.04)] transition hover:border-[#0B2D5C]/20 hover:bg-white"
-              >
-                <span data-icon-badge className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-[#0B2D5C]/07 transition group-hover:bg-[#0B2D5C] group-hover:text-white">
-                  <ShieldCheck className="h-5 w-5" strokeWidth={1.75} aria-hidden="true" />
-                </span>
-                <span>
-                  <span className="block text-sm font-semibold">Account & Privacy</span>
-                  <span className="mt-1 block text-xs leading-relaxed text-[#6F7A89]">Pause, export, deactivate, or delete your account.</span>
-                </span>
-              </Link>
+              <Link data-text-link href="/profile/account" className="inline-block text-sm font-semibold text-[#0B2D5C] underline">Account & Privacy</Link>
             </div>
 
             <div className="mt-8 min-w-0 space-y-5 lg:mt-0">
-              <MatchingPreferencesCard
-                initialPreferences={preferences}
-                hasPrivateCoordinates={
-                  privateDetails?.latitude != null && privateDetails?.longitude != null
-                }
-              />
-              <CharacterSignalsProfileSection />
               <ProfileWorkspace
+                ref={workspaceRef}
                 initialProfile={profile}
                 privateDetails={privateDetails}
                 coreValues={coreValues}
@@ -313,8 +224,19 @@ export default function MyProfileHub({
                 initialPhotos={photos}
                 initialSection={initialSection}
                 onPrimaryPhotoChange={setPhotoUrl}
-                onCompletionPercentChange={setCompletionPercent}
+                compatibilityComplete={compatibilityCard.totalEligibleQuestions > 0 && compatibilityCard.completedQuestions >= compatibilityCard.totalEligibleQuestions}
               />
+              <section aria-label="Compatibility" className="space-y-3">
+                <ProfileCompatibilityCard {...compatibilityCard} compact />
+                <details className="rounded-[6px] border border-[#0B2D5C] bg-[#E6E6E7] p-5">
+                  <summary className="cursor-pointer font-semibold text-[#0B2D5C]">Character Signals</summary>
+                  <CharacterSignalsProfileSection />
+                </details>
+              </section>
+              <details className="rounded-[6px] border border-[#0B2D5C] bg-[#E6E6E7] p-5">
+                <summary className="cursor-pointer font-semibold text-[#0B2D5C]">Private matching preferences</summary>
+                <MatchingPreferencesCard initialPreferences={preferences} hasPrivateCoordinates={privateDetails?.latitude != null && privateDetails?.longitude != null} />
+              </details>
             </div>
           </div>
 

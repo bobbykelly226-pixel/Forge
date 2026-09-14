@@ -87,7 +87,7 @@ export default async function DiscoveryProfilePage({
             Profile unavailable
           </h1>
           <p className="mt-3 text-[#5A6575]">{result.message}</p>
-          <Link href="/discovery" className="mt-8 font-semibold text-[#D62828]">
+          <Link data-text-link href="/discovery" className="mt-8 font-semibold text-[#D62828]">
             Back to Discovery
           </Link>
         </div>
@@ -113,7 +113,7 @@ export default async function DiscoveryProfilePage({
           <p className="mt-3 text-[#5A6575]">
             This profile is not available in Discovery right now.
           </p>
-          <Link href="/discovery" className="mt-8 font-semibold text-[#D62828]">
+          <Link data-text-link href="/discovery" className="mt-8 font-semibold text-[#D62828]">
             Back to Discovery
           </Link>
         </div>

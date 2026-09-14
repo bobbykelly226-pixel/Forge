@@ -29,6 +29,7 @@ export type PublicDiscoveryProfile = {
   faith_importance: string | null;
   service_background: string | null;
   service_backgrounds?: string[] | null;
+  service_background_other?: string | null;
   short_bio: string | null;
   more_about: string | null;
   children: string | null;
@@ -36,6 +37,7 @@ export type PublicDiscoveryProfile = {
   children_count?: string | null;
   open_to_partner_with_children?: string | null;
   education: string | null;
+  education_other?: string | null;
   pets: string | null;
   /** Public pet types when available on discoverable profiles. */
   pets_types?: string[] | null;
@@ -44,6 +46,9 @@ export type PublicDiscoveryProfile = {
   career: string | null;
   relocation: string | null;
   things_i_enjoy: string[] | null;
+  favorite_music_genres?: string[] | null;
+  favorite_music_other?: string | null;
+  favorite_music_meaningful_song?: string | null;
   favorite_music_artists: string[] | null;
   favorite_music_songs: string[] | null;
   profile_photo_url: string | null;

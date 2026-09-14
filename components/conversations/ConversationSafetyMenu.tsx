@@ -478,7 +478,7 @@ export default function ConversationSafetyMenu({
           >
             {!blockedByViewer ? (
               <>
-                <Link
+                <Link data-text-link
                   href={profileHref}
                   role="menuitem"
                   className="block px-4 py-3 text-sm font-medium text-[#0B2D5C] transition hover:bg-[#F8F6F2]"

@@ -55,6 +55,8 @@ export type ProfileCompletionInput = {
     | 'location'
     | 'location_city'
   > & {
+    favorite_music_genres?: string[] | null;
+    favorite_music_meaningful_song?: string | null;
     relationship_goals?: Tables<'profiles'>['relationship_goals'];
   } | null;
   photoCount: number;
@@ -154,6 +156,8 @@ export function getProfileCompletionSections(
       id: 'music',
       label: 'Favorite Music',
       complete:
+        hasNonEmptyArray(profile?.favorite_music_genres) ||
+        hasText(profile?.favorite_music_meaningful_song) ||
         hasNonEmptyArray(profile?.favorite_music_artists) ||
         hasNonEmptyArray(profile?.favorite_music_songs),
     },

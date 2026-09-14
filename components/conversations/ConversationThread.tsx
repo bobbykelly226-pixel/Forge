@@ -771,7 +771,7 @@ export default function ConversationThread({
                   </p>
                 ) : null}
 
-                <Link
+                <Link data-text-link
                   href={profileHref}
                   className="inline-flex text-sm font-semibold text-[#0B2D5C] underline-offset-2 hover:underline"
                 >

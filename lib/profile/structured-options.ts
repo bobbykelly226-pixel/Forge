@@ -332,7 +332,8 @@ export function normalizeServiceBackgroundSelection(
 }
 
 export function serviceBackgroundDisplayLabel(
-  values: string[] | null | undefined
+  values: string[] | null | undefined,
+  other?: string | null
 ): string | null {
   if (!values || values.length === 0) return null;
   const normalized = normalizeServiceBackgroundSelection(values);
@@ -341,7 +342,7 @@ export function serviceBackgroundDisplayLabel(
     return null;
   }
   const labels = normalized
-    .map((value) => labelForStructuredValue('service_background', value))
+    .map((value) => value === 'other' && other?.trim() ? other.trim() : labelForStructuredValue('service_background', value))
     .filter((label): label is string => Boolean(label));
   if (labels.length === 0) return null;
   if (labels.length === 1) return `${labels[0]} background`;

@@ -6,8 +6,10 @@ import { createClient } from '@/lib/supabase/client';
 
 export default function LogoutButton({
   className = '',
+  textLink = false,
 }: {
   className?: string;
+  textLink?: boolean;
 }) {
   const [pending, setPending] = useState(false);
 
@@ -34,6 +36,7 @@ export default function LogoutButton({
   return (
     <button
       type="button"
+      data-text-link={textLink || undefined}
       onClick={handleLogout}
       disabled={pending}
       className={`rounded-2xl bg-[#0B2D5C] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#0A2540] disabled:bg-gray-400 ${className}`}

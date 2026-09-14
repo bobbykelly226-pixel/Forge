@@ -94,7 +94,7 @@ export function PetsFields({
 
           <ChoiceChips
             name="pets_allergy_constraint"
-            legend="Pet allergies affect what I can live with"
+            legend="Do pet allergies affect which animals you can live with?"
             options={[
               { value: 'yes', label: 'Yes' },
               { value: 'no', label: 'No' },
@@ -105,14 +105,14 @@ export function PetsFields({
               setAllergyConstraint(petsAllergyConstraintToFormValue(parsed));
               if (parsed !== true) setAllergyTypes([]);
             }}
-            optionalNote="Optional — this is a living constraint, not just a preference."
+            optionalNote="This helps identify important household compatibility."
             disabled={disabled}
           />
 
           {showAllergyTypes ? (
             <MultiChoiceChips
               name="pets_allergy_types"
-              legend="Which animals affect your allergies?"
+              legend="Which animals affect you?"
               hint="Select all that apply."
               optionalNote="Optional — select all that apply, or leave unanswered."
               options={PET_TYPE_OPTIONS}
