@@ -9,7 +9,6 @@ import {
   GraduationCap,
   HeartHandshake,
   House,
-  MapPin,
   PawPrint,
   Users,
   Wine,
@@ -43,6 +42,8 @@ export type PublicProfilePresentationProps = {
   header?: React.ReactNode;
   /** Optional footer (actions, edit CTAs). */
   footer?: React.ReactNode;
+  /** High-priority action shown immediately after the essential profile facts. */
+  primaryAction?: React.ReactNode;
   /** Show Relationship Alignment card for Discovery when enrichment is unavailable. */
   showAlignmentCard?: boolean;
   /** Show “Why Forge Introduced You” (Discovery only). */
@@ -61,7 +62,6 @@ export type PublicProfilePresentationProps = {
 
 const DETAIL_ICONS: Record<string, LucideIcon> = {
   'Looking for': HeartHandshake,
-  Location: MapPin,
   Faith: Church,
   'Faith in daily life': Church,
   Children: Users,
@@ -86,6 +86,7 @@ export default function PublicProfilePresentation({
   mode,
   header,
   footer,
+  primaryAction,
   showAlignmentCard = mode === 'discovery',
   showSurfacedReason = mode === 'discovery',
   alignmentPresentation = null,
@@ -103,15 +104,24 @@ export default function PublicProfilePresentation({
   const locationLabel = resolvePublicLocation(profile);
   const aboutCopy = resolveUnifiedAbout(profile.short_bio, profile.more_about);
   const hasAbout = Boolean(aboutCopy);
-  const lookingFor = details.find(row => row.label === 'Looking for');
-  const otherDetails = details.filter(row => row !== lookingFor);
-  const profileDetails = [
-    ...(lookingFor ? [lookingFor] : []),
-    ...(locationLabel ? [{ label: 'Location', value: locationLabel }] : []),
-    ...otherDetails,
-  ];
-  const visibleDetails = showAllDetails ? profileDetails : profileDetails.slice(0, 5);
-  const hasMoreDetails = profileDetails.length > 5;
+  const detailGroup = (label: string) => {
+    if (label === 'Looking for') return 'relationship';
+    if (label === 'Faith' || label === 'Faith in daily life') return 'faith';
+    if (['Children', 'Wants children', 'Partner with children'].includes(label)) return 'children';
+    return label;
+  };
+  const preferredLabels = ['Looking for', 'Faith', 'Career', 'Education', 'Service', 'Children', 'Pets', 'Smoking', 'Drinking', 'Relocation'];
+  const preferredDetails = preferredLabels
+    .map(label => details.find(row => row.label === label))
+    .filter((row): row is { label: string; value: string } => Boolean(row));
+  // Use a secondary answer only when its category has no primary answer.
+  // Every saved detail remains available in the expanded list.
+  const essentialDetails = [...preferredDetails, ...details]
+    .filter((row, index, rows) => rows.findIndex(candidate => detailGroup(candidate.label) === detailGroup(row.label)) === index)
+    .slice(0, 5);
+  const extraDetails = details.filter(row => !essentialDetails.includes(row));
+  const visibleDetails = showAllDetails ? [...essentialDetails, ...extraDetails] : essentialDetails;
+  const hasMoreDetails = extraDetails.length > 0;
   const headingClass = "text-2xl font-medium tracking-tight text-[#0B2D5C]";
   const headingStyle = { fontFamily: 'var(--font-discovery-display), Georgia, serif' };
   const useEnrichedAlignment = Boolean(alignmentPresentation) && showAlignmentCard;
@@ -167,14 +177,14 @@ export default function PublicProfilePresentation({
 
         <div className="mt-6 min-w-0 rounded-xl border border-[#C9CBCE] bg-[#E6E6E7] p-5 text-black sm:p-7 lg:mt-0 lg:p-8">
           <div className="space-y-7 [&>section+section]:border-t [&>section+section]:border-[#C9CBCE] [&>section+section]:pt-7">
-            {profileDetails.length > 0 ? (
+            {essentialDetails.length > 0 ? (
               <section aria-label={`${firstName}'s profile highlights`}>
                 <dl className="space-y-4">
                   {visibleDetails.map(row => {
                     const Icon = DETAIL_ICONS[row.label] ?? HeartHandshake;
                     return (
                     <div key={row.label} className="grid grid-cols-[2rem_minmax(0,1fr)] items-start gap-3">
-                      <span data-icon-badge className="flex h-8 w-8 items-center justify-center rounded-md bg-white text-[#0B2D5C]" aria-hidden="true">
+                      <span className="flex h-8 w-8 items-center justify-center text-[#0B2D5C]" aria-hidden="true">
                         <Icon className="h-4.5 w-4.5" />
                       </span>
                       <div>
@@ -197,6 +207,8 @@ export default function PublicProfilePresentation({
                 ) : null}
               </section>
             ) : null}
+
+            {primaryAction ? <section aria-label="Conversation action">{primaryAction}</section> : null}
 
             {hasAbout ? (
               <section>
