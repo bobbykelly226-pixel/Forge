@@ -450,13 +450,16 @@
 }
 .forge-profile-theme [data-profile-layout] [data-signal-card],
 .forge-profile-theme [data-profile-layout] [data-signal-card]:hover {
-  --profile-text: #0B2D5C;
-  --profile-muted: #000000;
+  --profile-text: #FFFFFF;
+  --profile-muted: #FFFFFF;
   align-items: center;
-  background: #F7F7F7 !important;
+  background: #0B2D5C !important;
   border: 1px solid #C9CBCE;
   border-radius: 8px;
-  color: #0B2D5C !important;
+  color: #FFFFFF !important;
   padding: 16px;
   box-shadow: none;
+}
+.forge-profile-theme [data-profile-layout] [data-signal-card] span {
+  color: #FFFFFF !important;
 }
