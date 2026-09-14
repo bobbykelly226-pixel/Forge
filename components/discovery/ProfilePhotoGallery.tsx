@@ -154,7 +154,7 @@ export default function ProfilePhotoGallery({
       }
     >
       <div
-        className="relative aspect-[3/4] w-full overflow-hidden rounded-[2rem] lg:aspect-[3/4] lg:rounded-[2.25rem]"
+        className="relative aspect-[3/4] w-full overflow-hidden rounded-md lg:aspect-[3/4]"
         style={{
           backgroundImage: typeof portrait === 'string' ? portrait : undefined,
           backgroundSize: 'cover',
