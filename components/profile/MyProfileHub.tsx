@@ -170,13 +170,6 @@ export default function MyProfileHub({
                     <p className="mt-2 text-sm text-[#5A6575]">
                       {location || 'Add your location'}
                     </p>
-                    <Link
-                      data-text-link
-                      href="/discovery?filters=open"
-                      className="mt-1 inline-block text-xs font-semibold text-[#0B2D5C]"
-                    >
-                      Manage in Discovery filters
-                    </Link>
                   </div>
                 </div>
 
