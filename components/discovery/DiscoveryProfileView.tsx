@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import ForgeAppBottomNav from '@/components/ForgeAppBottomNav';
 
 import DiscoveryActionTiles from '@/components/discovery/DiscoveryActionTiles';
 import DiscoveryProfileConversationCta from '@/components/discovery/DiscoveryProfileConversationCta';
@@ -61,7 +62,7 @@ export default function DiscoveryProfileView({
 
   if (passed && !isSeed) {
     return (
-      <div className="mx-auto flex min-h-screen max-w-lg flex-col items-center justify-center px-6 text-center">
+      <div className="mx-auto flex min-h-screen max-w-lg flex-col items-center justify-center px-6 pb-[calc(7rem+env(safe-area-inset-bottom))] text-center">
         <h1
           className="text-2xl text-[#0B2D5C]"
           style={{ fontFamily: 'var(--font-discovery-display), Georgia, serif' }}
@@ -72,13 +73,14 @@ export default function DiscoveryProfileView({
         <Link data-text-link href="/discovery" className="mt-8 font-semibold text-[#D62828]">
           Back to Discovery
         </Link>
+        <ForgeAppBottomNav active="discovery" />
       </div>
     );
   }
 
   if (passed && isSeed && !isMutualConnection) {
     return (
-      <div className="mx-auto flex min-h-screen max-w-lg flex-col items-center justify-center px-6 text-center">
+      <div className="mx-auto flex min-h-screen max-w-lg flex-col items-center justify-center px-6 pb-[calc(7rem+env(safe-area-inset-bottom))] text-center">
         <h1
           className="text-2xl text-[#0B2D5C]"
           style={{ fontFamily: 'var(--font-discovery-display), Georgia, serif' }}
@@ -89,6 +91,7 @@ export default function DiscoveryProfileView({
         <Link data-text-link href="/discovery" className="mt-8 font-semibold text-[#D62828]">
           Back to Discovery
         </Link>
+        <ForgeAppBottomNav active="discovery" />
       </div>
     );
   }
@@ -97,7 +100,7 @@ export default function DiscoveryProfileView({
   const backLabel = isMutualConnection ? '← Back to Connections' : '← Back to Discovery';
 
   return (
-    <div className="min-h-screen pb-28 pt-5 lg:pb-16 lg:pt-8">
+    <div className="min-h-screen pb-[calc(7rem+env(safe-area-inset-bottom))] pt-5 lg:pb-16 lg:pt-8">
       <PublicProfilePresentation
         profile={profile}
         mode="discovery"
@@ -132,6 +135,7 @@ export default function DiscoveryProfileView({
           ) : null
         }
       />
+      <ForgeAppBottomNav active={isMutualConnection ? 'connections' : 'discovery'} />
     </div>
   );
 }
