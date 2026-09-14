@@ -7,15 +7,27 @@ import {
   type ConnectionsTabId,
 } from '@/components/connections/ConnectionsHubProvider';
 
-const TAB_DEFS: { id: ConnectionsTabId; label: string }[] = [
-  { id: 'forYou', label: 'For You' },
-  { id: 'openToChat', label: 'Open to Chat' },
-  { id: 'interestedInYou', label: 'Interested in You' },
-  { id: 'mutual', label: 'Mutual' },
-  { id: 'conversations', label: 'Messages' },
-  { id: 'saved', label: 'Saved' },
-  { id: 'sent', label: 'Sent' },
+const TAB_DEFS: { id: ConnectionsTabId; label: string; description: string }[] = [
+  { id: 'forYou', label: 'Overview', description: 'A summary of incoming interest, chat requests, and people you have connected with.' },
+  { id: 'openToChat', label: 'Chat Requests', description: 'People who invited you to chat. Review a request and decide whether to connect.' },
+  { id: 'interestedInYou', label: 'Interested in You', description: 'People who expressed interest in you. Decide whether you are interested too.' },
+  { id: 'mutual', label: 'Connected', description: 'You both chose to connect through mutual interest or an accepted chat request. Start or continue a conversation.' },
+  { id: 'conversations', label: 'Messages', description: 'Your conversations and message history.' },
+  { id: 'saved', label: 'Saved', description: 'Profiles you saved privately to revisit. Saving does not send interest or a chat request.' },
+  { id: 'sent', label: 'Sent by You', description: 'Interest and chat requests you have sent to other people.' },
 ];
+
+export function ConnectionsSectionIntro() {
+  const { activeTab } = useConnectionsHub();
+  const tab = TAB_DEFS.find(item => item.id === activeTab);
+  if (!tab) return null;
+  return (
+    <header className="mb-5">
+      <h2 className="text-xl font-semibold text-[#0B2D5C]">{tab.label}</h2>
+      <p className="mt-2 text-sm leading-6 text-black">{tab.description}</p>
+    </header>
+  );
+}
 
 type ConnectionsTabsProps = {
   layout?: 'horizontal' | 'vertical';
