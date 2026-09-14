@@ -70,15 +70,15 @@ describe('public profile information density', () => {
       'utf8'
     );
     const alignmentCopyMatch = presentation.match(
-      /\{DISCOVERY_NEUTRAL_ALIGNMENT_LABEL\}[\s\S]{0,400}?<\/p>/
+      /\{DISCOVERY_NEUTRAL_ALIGNMENT_LABEL\}<\/p>[\s\S]{0,400}?<\/p>/
     );
     assert.ok(alignmentCopyMatch, 'expected More to Discover supporting copy');
     const alignmentCopy = alignmentCopyMatch[0];
     assert.match(
       alignmentCopy,
-      /Forge needs a little more information before it can confidently evaluate your/
+      /Complete more profile and compatibility answers/
     );
-    assert.match(alignmentCopy, /your alignment will become more personalized/);
+    assert.match(alignmentCopy, /help Forge understand your alignment/);
     assert.doesNotMatch(alignmentCopy, /Matching scores are not calculated yet/);
     assert.doesNotMatch(alignmentCopy, /neutral placeholder/i);
     assert.doesNotMatch(alignmentCopy, /\bscores?\b/i);
