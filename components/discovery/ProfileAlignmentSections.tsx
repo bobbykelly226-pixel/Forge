@@ -189,7 +189,7 @@ export default function ProfileAlignmentSections({
         ) : null}
       </section> : null}
 
-      {view !== 'summary' && hasFactors ? (
+      {view !== 'details' && hasFactors ? (
         <button
           ref={factorsTriggerRef}
           data-profile-factor
@@ -222,7 +222,7 @@ export default function ProfileAlignmentSections({
             </div>
           </div>
         </button>
-      ) : view !== 'summary' && noFactorsCopy ? (
+      ) : view !== 'details' && noFactorsCopy ? (
         <section className={`${cardClassName} mt-4`}>
           <h2
             className="text-lg text-[#0B2D5C]"
@@ -289,7 +289,7 @@ export default function ProfileAlignmentSections({
         profileName={profileName}
         content={drawerContent}
       /> : null}
-      {view !== 'summary' ? <ImportantAlignmentFactorsDrawer
+      {view !== 'details' ? <ImportantAlignmentFactorsDrawer
         open={factorsOpen}
         onClose={closeFactors}
         profileName={profileName}
