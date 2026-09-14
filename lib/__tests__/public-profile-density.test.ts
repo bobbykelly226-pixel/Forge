@@ -95,7 +95,9 @@ describe('public profile information density', () => {
       presentation.indexOf('Relationship Alignment') < presentation.indexOf('<ProfilePhotoGallery'),
       'expected Relationship Alignment before the photo gallery'
     );
-    assert.match(presentation, /profileDetails\.slice\(0, 5\)/);
+    assert.match(presentation, /essentialDetails[\s\S]*?\.slice\(0, 5\)/);
+    assert.doesNotMatch(presentation, /label: 'Location'/);
+    assert.match(presentation, /detailGroup/);
     assert.match(presentation, /See more about \$\{firstName\}/);
     assert.match(presentation, /DETAIL_ICONS/);
     assert.doesNotMatch(presentation, /Life &amp; lifestyle/);
@@ -170,7 +172,8 @@ describe('public profile information density', () => {
     );
     assert.match(signals, /Confirmed by \{entry\.confirmationCount\} people/);
     assert.match(signals, /getSignalDefinition\(entry\.signalId\)/);
-    assert.match(signals, /space-y-2/);
-    assert.match(signals, /h-7 w-7/);
+    assert.match(signals, /space-y-3/);
+    assert.match(signals, /h-10 w-10/);
+    assert.match(signals, /data-signal-card/);
   });
 });
