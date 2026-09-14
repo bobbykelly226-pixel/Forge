@@ -101,9 +101,6 @@ export default function MyProfileHub({
               Review and update your profile in one place.
             </p>
             <ForgeDesktopAppNav active="profile" />
-            <div className="mt-8 border-t border-[#0B2D5C]/08 pt-6">
-              <LogoutButton className="w-full" />
-            </div>
           </div>
         }
       >
@@ -118,13 +115,7 @@ export default function MyProfileHub({
               alt="Forge"
               className="forge-corner-logo h-12 w-auto sm:h-14"
             />
-            <Link
-              data-text-link href="/profile/preview"
-              className="rounded-full border border-[#0B2D5C]/12 bg-white/70 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.16em] text-[#0B2D5C]"
-            >
-              Preview
-            </Link>
-            <LogoutButton className="rounded-lg bg-[#0B2D5C] px-3 py-2 text-[10px] uppercase tracking-[0.14em] text-white" />
+
           </div>
 
           {!onboardingCompleted ? (
@@ -195,13 +186,16 @@ export default function MyProfileHub({
                 </button>
 
                 <div className="mt-5 border-t border-[#C9CBCE] pt-5">
+                  <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2">
                   <Link
                     data-text-link href="/profile/preview"
-                    className="inline-flex w-full items-center justify-center gap-2 rounded-2xl border border-[#0B2D5C]/20 bg-white px-5 py-3.5 text-sm font-semibold text-[#0B2D5C] transition hover:border-[#0B2D5C]/35 hover:bg-[#EEF2F7] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0B2D5C]"
+                    className="inline-flex min-h-11 items-center justify-center gap-2 text-sm font-semibold text-[#0B2D5C] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
                   >
                     <Eye className="h-4 w-4 shrink-0" strokeWidth={1.75} aria-hidden="true" />
                     View My Profile
                   </Link>
+                  <LogoutButton textLink className="min-h-11" />
+                  </div>
                   <p className="mt-2.5 text-center text-xs leading-relaxed text-[#7A8494]">
                     See your profile exactly as others see it.
                   </p>
