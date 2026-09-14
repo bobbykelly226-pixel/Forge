@@ -97,6 +97,8 @@ export default function PublicProfilePresentation({
   const orderedPhotos = sortPhotosByDisplayOrder(profile.photos ?? []);
   const details = collectPublicProfileDetails(profile);
   const enjoy = nonEmptyStringList(profile.things_i_enjoy);
+  const visibleInterests = enjoy.slice(0, 12);
+  const extraInterests = enjoy.slice(12);
   const musicGenres = [...(profile.favorite_music_genres ?? []).filter(item => item !== 'Other'), ...nonEmptyStringList(profile.favorite_music_other ? [profile.favorite_music_other] : [])];
   const musicArtists = nonEmptyStringList(profile.favorite_music_artists);
   const musicSongs = [...nonEmptyStringList(profile.favorite_music_songs), ...(profile.favorite_music_meaningful_song ? [`A song that says something about me: ${profile.favorite_music_meaningful_song}`] : [])];
@@ -220,11 +222,22 @@ export default function PublicProfilePresentation({
             {enjoy.length > 0 ? (
               <section>
                 <h2 className={headingClass} style={headingStyle}>Things I Enjoy</h2>
-                <p className="mt-3 break-words text-base leading-7 text-black">{enjoy.slice(0, 6).join(' · ')}</p>
-                {enjoy.length > 6 ? (
+                <ul
+                  className="mt-3 grid grid-flow-col grid-cols-2 gap-x-6 gap-y-2 text-base leading-7 text-black"
+                  style={{ gridTemplateRows: `repeat(${Math.ceil(visibleInterests.length / 2)}, auto)` }}
+                >
+                  {visibleInterests.map((interest, index) => (
+                    <li key={`${interest}-${index}`} className="min-w-0 break-words">{interest}</li>
+                  ))}
+                </ul>
+                {extraInterests.length > 0 ? (
                   <details className="mt-2">
                     <summary className="min-h-11 cursor-pointer py-2 text-sm font-semibold text-[#0B2D5C] underline underline-offset-4">More interests</summary>
-                    <p className="mt-2 break-words text-base leading-7 text-black">{enjoy.slice(6).join(' · ')}</p>
+                    <ul className="mt-2 grid grid-cols-2 gap-x-6 gap-y-2 text-base leading-7 text-black">
+                      {extraInterests.map((interest, index) => (
+                        <li key={`${interest}-${index}`} className="min-w-0 break-words">{interest}</li>
+                      ))}
+                    </ul>
                   </details>
                 ) : null}
               </section>
