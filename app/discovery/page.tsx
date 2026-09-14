@@ -16,7 +16,11 @@ import {
 } from '@/lib/seed/inject-discovery';
 import { createEmptyActionState } from '@/lib/discovery-actions-types';
 import { createClient } from '@/lib/supabase/server';
-import { getCurrentUserProfile } from '@/lib/data/profile';
+import {
+  getCurrentUserPreferences,
+  getCurrentUserPrivateDetails,
+  getCurrentUserProfile,
+} from '@/lib/data/profile';
 import { firstNameFromFullName } from '@/lib/discovery/presentation';
 
 const display = Fraunces({
@@ -43,7 +47,7 @@ export const metadata = {
 export default async function DiscoveryFeedPage({
   searchParams,
 }: {
-  searchParams?: Promise<{ seed?: string; demo?: string }>;
+  searchParams?: Promise<{ seed?: string; demo?: string; filters?: string }>;
 }) {
   const supabase = await createClient();
   const {
@@ -54,10 +58,12 @@ export default async function DiscoveryFeedPage({
     redirect('/login?redirectTo=/discovery');
   }
 
-  const [feed, education, profile] = await Promise.all([
+  const [feed, education, profile, preferences, privateDetails] = await Promise.all([
     fetchDiscoveryFeedAction(),
     getOpenToChatEducationSeenAction(),
     getCurrentUserProfile(),
+    getCurrentUserPreferences(),
+    getCurrentUserPrivateDetails(),
   ]);
 
   const params = searchParams ? await searchParams : {};
@@ -118,6 +124,19 @@ export default async function DiscoveryFeedPage({
             loadError={feed.success ? null : feed.message}
             seedProfilesInjected={seedProfilesInjected}
             showSeedReset={seedFlags.showReset}
+            initialPreferences={preferences.success ? preferences.data : null}
+            initialLocation={{
+              city: profile.success ? profile.data?.location_city ?? '' : '',
+              region: profile.success ? profile.data?.location_region ?? '' : '',
+              country: profile.success ? profile.data?.location_country ?? '' : '',
+              postalCode: privateDetails.success ? privateDetails.data?.postal_code ?? '' : '',
+              latitude: privateDetails.success && privateDetails.data?.latitude != null ? String(privateDetails.data.latitude) : '',
+              longitude: privateDetails.success && privateDetails.data?.longitude != null ? String(privateDetails.data.longitude) : '',
+              placeId: privateDetails.success ? privateDetails.data?.location_place_id ?? '' : '',
+              provider: privateDetails.success ? privateDetails.data?.location_provider ?? '' : '',
+              label: profile.success ? profile.data?.location ?? '' : '',
+            }}
+            initialFiltersOpen={params.filters === 'open'}
           />
         </DiscoveryActionsProvider>
       </NotificationsProvider>

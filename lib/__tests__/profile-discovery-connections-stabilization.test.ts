@@ -87,13 +87,10 @@ test('Things I Enjoy removes duplicates and safely bounds saved entries', () => 
   assert.equal(values.length, 30);
 });
 
-test('Discovery filters combine age, location, alignment, goals, and lifestyle fields', () => {
+test('Discovery supplemental filters combine alignment, goals, and lifestyle fields', () => {
   assert.equal(
     profileMatchesDiscoveryFilters(card, {
       ...EMPTY_DISCOVERY_FILTERS,
-      minAge: 30,
-      maxAge: 40,
-      locationQuery: 'denver',
       alignment: ['Promising Alignment'],
       relationshipGoals: ['marriage'],
       faithIdentity: ['christian'],
@@ -104,14 +101,7 @@ test('Discovery filters combine age, location, alignment, goals, and lifestyle f
   );
 });
 
-test('Discovery excludes profiles that do not match an active real filter', () => {
-  assert.equal(
-    profileMatchesDiscoveryFilters(card, {
-      ...EMPTY_DISCOVERY_FILTERS,
-      maxAge: 30,
-    }),
-    false
-  );
+test('Discovery excludes profiles that do not match an active supplemental filter', () => {
   assert.equal(
     profileMatchesDiscoveryFilters(card, {
       ...EMPTY_DISCOVERY_FILTERS,
@@ -125,11 +115,9 @@ test('Discovery reports active filter selections for the filter button', () => {
   assert.equal(
     countActiveDiscoveryFilters({
       ...EMPTY_DISCOVERY_FILTERS,
-      minAge: 28,
-      maxAge: 45,
       relationshipGoals: ['marriage', 'serious_relationship'],
     }),
-    4
+    2
   );
 });
 

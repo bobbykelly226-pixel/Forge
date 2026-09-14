@@ -31,6 +31,10 @@ type SearchHit = {
 
 type LocationPickerProps = {
   initial: LocationPickerValue;
+  label?: string;
+  description?: string;
+  optional?: boolean;
+  allowManual?: boolean;
 };
 
 const inputClassName =
@@ -50,7 +54,13 @@ function emptyValue(): LocationPickerValue {
   };
 }
 
-export default function LocationPicker({ initial }: LocationPickerProps) {
+export default function LocationPicker({
+  initial,
+  label = 'Location',
+  description = 'Search for a city, state, or postal code. Only city and state appear on your public profile.',
+  optional = true,
+  allowManual = true,
+}: LocationPickerProps) {
   const listId = useId();
   const [query, setQuery] = useState(initial.label || initial.city || '');
   const [value, setValue] = useState<LocationPickerValue>(initial);
@@ -180,13 +190,14 @@ export default function LocationPicker({ initial }: LocationPickerProps) {
     <div className="space-y-4">
       <div>
         <label htmlFor="location_search" className="block text-sm font-medium text-[#0B2D5C] mb-2">
-          Location
+          {label}
         </label>
         <p className="text-sm text-[#666666] mb-2">
-          Search for a city, state, or postal code. Only city and state appear on your public
-          profile.
+          {description}
         </p>
-        <p className="text-xs text-[#888888] mb-3">Optional — you can leave location unanswered.</p>
+        {optional ? (
+          <p className="text-xs text-[#888888] mb-3">Optional — you can leave location unanswered.</p>
+        ) : null}
 
         <input
           id="location_search"
@@ -240,13 +251,15 @@ export default function LocationPicker({ initial }: LocationPickerProps) {
           >
             {locating ? 'Locating…' : 'Use current location'}
           </button>
-          <button
-            type="button"
-            onClick={() => setManualMode((current) => !current)}
-            className="rounded-2xl border border-[#0B2D5C]/20 bg-white px-4 py-2 text-sm font-semibold text-[#0B2D5C] hover:bg-[#EEF2F7]"
-          >
-            {manualMode ? 'Hide manual entry' : 'Enter city and state'}
-          </button>
+          {allowManual ? (
+            <button
+              type="button"
+              onClick={() => setManualMode((current) => !current)}
+              className="rounded-2xl border border-[#0B2D5C]/20 bg-white px-4 py-2 text-sm font-semibold text-[#0B2D5C] hover:bg-[#EEF2F7]"
+            >
+              {manualMode ? 'Hide manual entry' : 'Enter city and state'}
+            </button>
+          ) : null}
           {(value.city || value.region || query) && (
             <button
               type="button"
@@ -266,7 +279,7 @@ export default function LocationPicker({ initial }: LocationPickerProps) {
         ) : null}
       </div>
 
-      {manualMode ? (
+      {allowManual && manualMode ? (
         <div className="grid gap-4 sm:grid-cols-2">
           <div>
             <label htmlFor="manual_city" className="block text-sm font-medium text-[#0B2D5C] mb-2">
