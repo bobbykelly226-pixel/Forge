@@ -173,20 +173,20 @@ export default function PublicCharacterSignalsSection({
                     }}
                     type="button"
                     onClick={() => openDetail(entry.signalId, entry.confirmationCount)}
-                    className="flex min-h-11 w-full items-center gap-4 rounded-lg border border-[#C9CBCE] bg-[#F7F7F7] p-4 text-left transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0B2D5C]"
+                    className="flex min-h-11 w-full items-center gap-4 rounded-lg border border-[#C9CBCE] bg-[#0B2D5C] p-4 text-left text-white transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0B2D5C]"
                     aria-haspopup="dialog"
                   >
                     <span className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-[#557A67] text-white">
                       <CharacterSignalIcon signalId={entry.signalId} className="h-5 w-5" />
                     </span>
                     <span className="min-w-0 flex-1 break-words">
-                      <span className="block text-base font-semibold leading-6 text-[#0B2D5C]">
+                      <span className="block text-base font-semibold leading-6 text-white">
                         {signal.title}
                       </span>
-                      <span className="mt-1 block text-sm leading-5 text-black">
+                      <span className="mt-1 block text-sm leading-5 text-white">
                         {signal.shortDescription}
                       </span>
-                      <span className="mt-2 block text-sm font-medium leading-5 text-[#0B2D5C]">
+                      <span className="mt-2 block text-sm font-medium leading-5 text-white">
                         Confirmed by {entry.confirmationCount} people
                       </span>
                     </span>
