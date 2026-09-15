@@ -335,7 +335,7 @@ export default function ProfileWorkspace({
                   </span>
                   <span className={item.complete ? '' : 'text-[#5A6575]'}>{item.label}</span>
                   {!item.complete ? (
-                    <span className="ml-auto text-xs font-semibold uppercase tracking-[0.12em] text-[#D62828]">
+                    <span className="ml-auto text-xs font-semibold uppercase tracking-[0.12em] text-white">
                       {item.label.split(' ')[0]}
                     </span>
                   ) : null}
@@ -651,7 +651,7 @@ function SectionEditor({
             <textarea
               name="favorite_music_songs"
               rows={3}
-              defaultValue={(profile.favorite_music_songs ?? []).join('\n')}
+              defaultValue={[...new Set([...(profile.favorite_music_songs ?? []), profile.favorite_music_meaningful_song].filter(Boolean))].join('\n')}
               placeholder="One song per line"
               className={`${inputClassName} mt-2 resize-y`}
               disabled={saving}

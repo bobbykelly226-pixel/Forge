@@ -19,8 +19,5 @@ export default function MusicFields({ profile, disabled }: { profile: Profile; d
     {genres.includes('Other') && <label className="block text-sm text-black">Other music you enjoy
       <input name="favorite_music_other" defaultValue={profile.favorite_music_other ?? ''} required maxLength={100} className="mt-2 w-full rounded-[6px] border p-3" />
     </label>}
-    <label className="block text-sm text-black">A song that says something about me <span>(optional)</span>
-      <input name="favorite_music_meaningful_song" defaultValue={profile.favorite_music_meaningful_song ?? ''} maxLength={300} placeholder="Song title and artist" className="mt-2 w-full rounded-[6px] border p-3" />
-    </label>
   </fieldset>;
 }

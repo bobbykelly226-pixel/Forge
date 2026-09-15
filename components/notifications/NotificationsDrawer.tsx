@@ -97,11 +97,12 @@ export default function NotificationsDrawer({
 
   return (
     <div
-      className="fixed inset-0 z-[90] flex items-end justify-center sm:items-stretch sm:justify-end"
+      className="fixed inset-0 z-[90] flex items-end justify-center sm:items-center sm:p-6"
       role="presentation"
     >
       <div
-        className="absolute inset-0 bg-[#0B2D5C]/45 backdrop-blur-[2px]"
+        className="absolute inset-0"
+        style={{ backgroundColor: 'rgba(11, 45, 92, 0.28)' }}
         aria-hidden="true"
         onClick={onClose}
       />
@@ -114,7 +115,7 @@ export default function NotificationsDrawer({
         aria-describedby={descriptionId}
         tabIndex={-1}
         onKeyDown={onKeyDown}
-        className="relative z-[91] flex h-[min(88vh,40rem)] w-full max-w-md flex-col overflow-hidden rounded-t-[1.75rem] bg-[#F8F6F2] shadow-[0_-18px_60px_rgba(11,45,92,0.22)] outline-none sm:h-full sm:max-h-none sm:rounded-none sm:rounded-l-[1.75rem]"
+        className="relative z-[91] flex h-[min(88vh,40rem)] w-full max-w-md flex-col overflow-hidden rounded-t-[1.75rem] bg-[#F8F6F2] shadow-[0_-18px_60px_rgba(11,45,92,0.22)] outline-none sm:h-auto sm:max-h-[min(80dvh,40rem)] sm:max-w-xl sm:rounded-xl"
       >
         <div data-profile-chrome="header" className="flex shrink-0 items-start justify-between gap-3 border-b border-[#0B2D5C]/08 px-5 py-5 sm:px-6">
           <div className="min-w-0">

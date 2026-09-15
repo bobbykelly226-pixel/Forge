@@ -83,7 +83,7 @@ export default function MyProfileHub({
         aside={
           <div className="rounded-[1.75rem] border border-[#0B2D5C]/08 bg-white/70 p-6 shadow-[0_12px_32px_rgba(11,45,92,0.04)] backdrop-blur-sm xl:p-7">
             <img
-              src="/Logos/forge-founder-transparent.png"
+              src="/Logos/forgedinlife-simple-light.png"
               alt="Forge"
               className="forge-corner-logo h-12 w-auto"
             />
