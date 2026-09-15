@@ -7,6 +7,7 @@ import {
   useMemo,
   useRef,
   useState,
+  useSyncExternalStore,
   type ReactNode,
 } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
@@ -84,6 +85,8 @@ type ConnectionsHubContextValue = {
   activeTab: ConnectionsTabId;
   setActiveTab: (tab: ConnectionsTabId) => void;
   tabCounts: ConnectionsHubData['tabCounts'];
+  isNewActivity: (key: string) => boolean;
+  markActivitySeen: (key: string) => void;
   openToChat: IncomingOpenToChatItem[];
   interestReceived: IncomingInterestItem[];
   mutual: MutualConnectionItem[];
@@ -126,6 +129,21 @@ const EMPTY_SAVED_ACTION: SavedProfileActionState = {
   openToChatSent: false,
   openToChatNote: null,
 };
+
+const activityMemory = new Map<string, string>();
+function subscribeActivity(listener: () => void) {
+  window.addEventListener('storage', listener);
+  window.addEventListener('forge-activity-seen', listener);
+  return () => {
+    window.removeEventListener('storage', listener);
+    window.removeEventListener('forge-activity-seen', listener);
+  };
+}
+function activitySnapshot(key: string) {
+  try { return window.localStorage.getItem(key) ?? activityMemory.get(key) ?? '[]'; }
+  catch { return activityMemory.get(key) ?? '[]'; }
+}
+const serverActivitySnapshot = () => '[]';
 
 const ConnectionsHubContext = createContext<ConnectionsHubContextValue | null>(null);
 
@@ -223,6 +241,25 @@ export function ConnectionsHubProvider({
   /** Signed-in user id for temporary Start Conversation QA logging. */
   viewerUserId?: string | null;
 }) {
+  const activityStorageKey = `forge:connections:seen:v1:${viewerUserId ?? 'preview'}`;
+  const snapshot = useSyncExternalStore(subscribeActivity, () => activitySnapshot(activityStorageKey), serverActivitySnapshot);
+  const seenActivity = useMemo<Set<string>>(() => {
+    try {
+      const parsed: unknown = JSON.parse(snapshot);
+      return new Set(Array.isArray(parsed) ? parsed.filter((key): key is string => typeof key === 'string') : []);
+    } catch { return new Set(); }
+  }, [snapshot]);
+  const isNewActivity = useCallback((key: string) => !seenActivity.has(key), [seenActivity]);
+  const markActivitySeen = useCallback((key: string) => {
+    let current: unknown;
+    try { current = JSON.parse(activitySnapshot(activityStorageKey)); } catch { current = []; }
+    const keys = new Set<string>(Array.isArray(current) ? current.filter((value): value is string => typeof value === 'string') : []);
+    keys.add(key);
+    const next = JSON.stringify([...keys]);
+    activityMemory.set(activityStorageKey, next);
+    try { window.localStorage.setItem(activityStorageKey, next); } catch { /* Keep this session usable when storage is unavailable. */ }
+    window.dispatchEvent(new Event('forge-activity-seen'));
+  }, [activityStorageKey]);
   const router = useRouter();
   const searchParams = useSearchParams();
   const requestedTab = searchParams.get('tab');
@@ -968,6 +1005,8 @@ export function ConnectionsHubProvider({
       activeTab,
       setActiveTab,
       tabCounts,
+      isNewActivity,
+      markActivitySeen,
       openToChat,
       interestReceived,
       mutual,
@@ -1025,6 +1064,8 @@ export function ConnectionsHubProvider({
     [
       activeTab,
       setActiveTab,
+      isNewActivity,
+      markActivitySeen,
       tabCounts,
       openToChat,
       interestReceived,
