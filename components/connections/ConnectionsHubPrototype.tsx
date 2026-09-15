@@ -34,6 +34,7 @@ export default function ConnectionsHubPrototype({
 }) {
   const {
     activeTab,
+    setActiveTab,
     openToChat,
     interestReceived,
     mutual,
@@ -281,7 +282,7 @@ export default function ConnectionsHubPrototype({
           </div>}
 
           <div
-            role={activeTab === 'openToChat' || activeTab === 'sent' ? "region" : "tabpanel"}
+            role={activeTab === 'openToChat' ? "region" : "tabpanel"}
             id={`connections-panel-${activeTab}`}
             aria-label={{ mutual: 'Connected', interestedInYou: 'Interested', conversations: 'Messages', saved: 'Saved', openToChat: 'Chat requests', sent: 'Sent activity', forYou: 'Connected' }[activeTab]}
             className="mt-7 min-h-0 flex-1 lg:mt-0"
@@ -290,8 +291,14 @@ export default function ConnectionsHubPrototype({
               animationDelay: '80ms',
             }}
           >
-            {activeTab === 'openToChat' || activeTab === 'sent' ? (
-              <h2 className="mb-4 text-xl font-semibold text-[#0B2D5C]">{activeTab === 'sent' ? 'Sent activity' : 'Chat requests'}</h2>
+            {activeTab === 'interestedInYou' || activeTab === 'sent' ? (
+              <div data-interest-selector role="group" aria-label="Interest activity" className="mb-6 inline-flex gap-1 rounded-full p-1">
+                <button type="button" aria-pressed={activeTab === 'interestedInYou'} onClick={() => setActiveTab('interestedInYou')}>Received</button>
+                <button type="button" aria-pressed={activeTab === 'sent'} onClick={() => setActiveTab('sent')}>Sent</button>
+              </div>
+            ) : null}
+            {activeTab === 'openToChat' ? (
+              <h2 className="mb-4 text-xl font-semibold text-[#0B2D5C]">Chat requests</h2>
             ) : null}
             {tabPanels[activeTab === 'forYou' ? 'mutual' : activeTab]}
           </div>
