@@ -1047,7 +1047,7 @@ export async function saveProfileSection(
   return {
     success: true,
     message: 'Saved.',
-    profile: fields,
+    profile: Object.fromEntries(Object.keys(fields).map(key => [key, result.data[key as keyof typeof result.data]])),
     profilePhotoUrl: result.data.profile_photo_url,
   };
 }

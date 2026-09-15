@@ -651,7 +651,7 @@ function SectionEditor({
             <textarea
               name="favorite_music_songs"
               rows={3}
-              defaultValue={(profile.favorite_music_songs ?? []).join('\n')}
+              defaultValue={[...new Set([...(profile.favorite_music_songs ?? []), profile.favorite_music_meaningful_song].filter(Boolean))].join('\n')}
               placeholder="One song per line"
               className={`${inputClassName} mt-2 resize-y`}
               disabled={saving}
