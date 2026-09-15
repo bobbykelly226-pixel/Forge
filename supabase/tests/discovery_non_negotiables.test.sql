@@ -53,9 +53,9 @@ update public.profiles set smoking='regularly' where id='16161616-1616-4616-8616
 select set_config('request.jwt.claim.sub','15151515-1515-4515-8515-151515151515',true);
 set local role authenticated;
 select is((select count(*)::integer from public.get_eligible_discovery_profile('16161616-1616-4616-8616-161616161616')),0,'unconnected mismatch is not accessible through Discovery');
-select is((with changed as (
+with changed as (
 update public.profile_preferences set non_negotiables='{"smokeFree":false,"faith":[],"children":[]}' where user_id='16161616-1616-4616-8616-161616161616' returning user_id
-) select count(*)::integer from changed),0,'member cannot change another member requirements');
+) select is((select count(*)::integer from changed),0,'member cannot change another member requirements');
 select lives_ok($$update public.profile_preferences set non_negotiables='{"smokeFree":true,"faith":[],"children":[]}' where user_id='15151515-1515-4515-8515-151515151515'$$,'member may save their own requirements');
 reset role;
 insert into public.connections(user_a_id,user_b_id,source,status) values('15151515-1515-4515-8515-151515151515','16161616-1616-4616-8616-161616161616','mutual_interest','active');
