@@ -116,13 +116,14 @@ declare
   v_uid uuid := auth.uid();
   v_count integer;
   v_third_newest_send timestamptz;
+  v_last_sent_at timestamptz;
 begin
   if v_uid is null then raise exception 'Authentication required'; end if;
 
   -- Existing members may have more than three sends when limits are activated.
   -- A slot opens when fewer than three remain, not when the oldest one expires.
-  select count(*)::integer, (array_agg(r.created_at order by r.created_at desc))[3]
-  into v_count, v_third_newest_send
+  select count(*)::integer, (array_agg(r.created_at order by r.created_at desc))[3], max(r.created_at)
+  into v_count, v_third_newest_send, v_last_sent_at
   from public.open_to_chat_requests r
   where r.sender_id = v_uid
     and r.created_at > now() - interval '24 hours';
@@ -133,7 +134,9 @@ begin
     'premium_daily_limit', 5,
     'remaining', greatest(0, 3 - v_count),
     'next_available_at', case
-      when v_count >= 3 then v_third_newest_send + interval '24 hours'
+      when v_count >= 3 then greatest(
+        v_third_newest_send + interval '24 hours', v_last_sent_at + interval '60 seconds'
+      )
       else null
     end
   );
@@ -232,16 +235,6 @@ begin
   from public.open_to_chat_requests r
   where r.sender_id = v_uid;
 
-  if v_last_sent_at is not null
-     and v_last_sent_at > v_now - interval '60 seconds' then
-    return jsonb_build_object(
-      'ok', false,
-      'reason', 'send_cooldown',
-      'message', 'Please take a moment before sending another Open to Chat request.',
-      'retry_at', v_last_sent_at + interval '60 seconds'
-    );
-  end if;
-
   select count(*)::integer, (array_agg(r.created_at order by r.created_at desc))[3]
   into v_daily_count, v_third_newest_send
   from public.open_to_chat_requests r
@@ -249,7 +242,9 @@ begin
     and r.created_at > v_now - interval '24 hours';
 
   if v_daily_count >= 3 then
-    v_next_available_at := v_third_newest_send + interval '24 hours';
+    v_next_available_at := greatest(
+      v_third_newest_send + interval '24 hours', v_last_sent_at + interval '60 seconds'
+    );
     return jsonb_build_object(
       'ok', false,
       'reason', 'daily_limit',
@@ -257,6 +252,16 @@ begin
       'daily_limit', 3,
       'remaining', 0,
       'retry_at', v_next_available_at
+    );
+  end if;
+
+  if v_last_sent_at is not null
+     and v_last_sent_at > v_now - interval '60 seconds' then
+    return jsonb_build_object(
+      'ok', false,
+      'reason', 'send_cooldown',
+      'message', 'Please take a moment before sending another Open to Chat request.',
+      'retry_at', v_last_sent_at + interval '60 seconds'
     );
   end if;
 
@@ -329,7 +334,9 @@ begin
 
   v_remaining := greatest(0, 3 - v_daily_count);
   v_next_available_at := case
-    when v_remaining = 0 then v_third_newest_send + interval '24 hours'
+    when v_remaining = 0 then greatest(
+      v_third_newest_send + interval '24 hours', v_now + interval '60 seconds'
+    )
     else null
   end;
 

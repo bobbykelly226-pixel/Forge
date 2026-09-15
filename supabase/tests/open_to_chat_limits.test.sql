@@ -97,10 +97,17 @@ select public.ensure_foundational_user_records(pg_temp.otc_user(n))
 from generate_series(1, 8) n;
 
 select set_config('forge.allow_system_writes', 'on', true);
-update public.profile_private_details set date_of_birth = date '1990-01-01'
+update public.profile_private_details set date_of_birth = date '1990-01-01',
+  latitude = 39.7392, longitude = -104.9903
+where user_id in (select pg_temp.otc_user(n) from generate_series(1, 8) n);
+update public.profile_preferences set gender_identity = 'man', interested_in = array['everyone'],
+  preferred_age_min = 18, preferred_age_max = 100, max_distance_miles = 50
 where user_id in (select pg_temp.otc_user(n) from generate_series(1, 8) n);
 update public.profiles set status = 'active', is_discoverable = true, full_name = 'Test Member'
 where id in (select pg_temp.otc_user(n) from generate_series(1, 8) n);
+select is((select count(*)::integer from public.discoverable_profiles
+  where id in (select pg_temp.otc_user(n) from generate_series(1, 8) n)),
+  8, 'fixture members satisfy the real Discovery eligibility rules');
 
 create temporary table otc_results (label text primary key, result jsonb not null);
 grant select, insert on otc_results to authenticated;
@@ -179,6 +186,8 @@ set local role authenticated;
 insert into otc_results values ('third', public.send_open_to_chat(pg_temp.otc_user(4)));
 select is((select result->>'remaining' from otc_results where label = 'third'), '0',
   'the third successful send uses the final slot');
+select is(public.send_open_to_chat(pg_temp.otc_user(5))->>'reason', 'daily_limit',
+  'an immediate fourth send reports the quota instead of suggesting a one-minute retry');
 reset role;
 update public.open_to_chat_requests set created_at = now() - interval '2 minutes'
 where sender_id = pg_temp.otc_user(1);
@@ -214,6 +223,17 @@ select is((public.send_open_to_chat(pg_temp.otc_user(6))->>'retry_at')::timestam
 reset role;
 
 -- Resending is possible only after seven days, with a fresh allowance/expiry.
+update public.open_to_chat_requests set created_at = now() - interval '24 hours' + interval '30 seconds'
+where sender_id = pg_temp.otc_user(1);
+update public.open_to_chat_requests set created_at = now()
+where sender_id = pg_temp.otc_user(1) and recipient_id = pg_temp.otc_user(2);
+set local role authenticated;
+select is((public.get_open_to_chat_allowance()->>'next_available_at')::timestamptz,
+  now() + interval '60 seconds', 'allowance also respects cooldown when the quota clears sooner');
+select is((public.send_open_to_chat(pg_temp.otc_user(6))->>'retry_at')::timestamptz,
+  now() + interval '60 seconds', 'retry time respects both quota and cooldown');
+reset role;
+
 update public.open_to_chat_requests set created_at = now() - interval '8 days',
   expires_at = now() - interval '1 day'
 where sender_id = pg_temp.otc_user(1);
@@ -234,6 +254,13 @@ reset role;
 select is((select count(*)::integer from public.notifications where actor_user_id = pg_temp.otc_user(1)
   and recipient_user_id = pg_temp.otc_user(2) and notification_type = 'open_to_chat_received'),
   1, 'resend reactivates the notification without duplicates');
+
+select set_config('request.jwt.claim.sub', pg_temp.otc_user(2)::text, true);
+set local role authenticated;
+select is(public.respond_open_to_chat((select id from public.open_to_chat_requests
+  where sender_id = pg_temp.otc_user(1) and recipient_id = pg_temp.otc_user(2)), 'accept')->>'ok',
+  'true', 'recipient response RPC still works after direct table writes are revoked');
+reset role;
 
 select * from finish();
 rollback;
