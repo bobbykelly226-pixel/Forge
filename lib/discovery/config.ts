@@ -1,14 +1,12 @@
-/**
- * Open to Chat product configuration.
- *
- * No numeric daily send limit has been formally established in product docs.
- * Server-side counting exists via `count_open_to_chat_sent_today`.
- * Keep this null until Bobby / product sets an explicit number.
- */
-export const OPEN_TO_CHAT_DAILY_LIMIT: number | null = null;
+/** FIX-011: approved Open to Chat allowance and anti-spam contract. */
+export const OPEN_TO_CHAT_DAILY_LIMIT = 3;
+export const OPEN_TO_CHAT_PREMIUM_DAILY_LIMIT = 5;
+export const OPEN_TO_CHAT_ROLLING_WINDOW_HOURS = 24;
+export const OPEN_TO_CHAT_RECIPIENT_COOLDOWN_DAYS = 7;
+export const OPEN_TO_CHAT_SEND_COOLDOWN_SECONDS = 60;
 
 export const OPEN_TO_CHAT_DAILY_LIMIT_STATUS =
-  'Product decision pending — reusable daily-count infrastructure is ready; no numeric limit is enforced.' as const;
+  'Three successful requests per rolling 24 hours; no carryover or add-on requests.' as const;
 
 /** Neutral Discovery alignment label when more profile context is still needed. */
 export const DISCOVERY_NEUTRAL_ALIGNMENT_LABEL = 'More to Discover';

@@ -11,14 +11,38 @@ import {
 import { Check, MessageCircle, Send } from 'lucide-react';
 
 import { OPEN_TO_CHAT_NOTE_MAX_LENGTH } from '@/lib/discovery-actions-types';
+import {
+  OPEN_TO_CHAT_DAILY_LIMIT,
+  OPEN_TO_CHAT_RECIPIENT_COOLDOWN_DAYS,
+  OPEN_TO_CHAT_ROLLING_WINDOW_HOURS,
+} from '@/lib/discovery/config';
 
 export type OpenToChatDrawerStep = 'educate' | 'note' | 'success';
+
+export type OpenToChatSendFeedback = {
+  success: boolean;
+  message?: string;
+  code?: string;
+  retryAt?: string;
+  remaining?: number;
+  dailyLimit?: number;
+  nextAvailableAt?: string;
+};
+
+export type OpenToChatAllowance = Pick<
+  OpenToChatSendFeedback,
+  'success' | 'message' | 'remaining' | 'dailyLimit' | 'nextAvailableAt'
+>;
 
 type OpenToChatDrawerProps = {
   open: boolean;
   onClose: () => void;
   /** Called when the request is sent. Return false to keep the note step (failed write). */
-  onSent?: (note: string | null) => void | boolean | Promise<void | boolean>;
+  onSent?: (
+    note: string | null
+  ) => void | boolean | OpenToChatSendFeedback | Promise<void | boolean | OpenToChatSendFeedback>;
+  /** Loads the authoritative server balance when the drawer opens. */
+  onAllowanceRequested?: () => Promise<OpenToChatAllowance>;
   /** Called when the user continues past first-use education */
   onEducationContinued?: () => void;
   profileName?: string;
@@ -43,10 +67,23 @@ function trimNote(value: string): string {
   return value.replace(/^\s+|\s+$/g, '');
 }
 
+function formatAvailability(value: string | undefined): string | null {
+  if (!value) return null;
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return null;
+  return new Intl.DateTimeFormat(undefined, {
+    month: 'short',
+    day: 'numeric',
+    hour: 'numeric',
+    minute: '2-digit',
+  }).format(date);
+}
+
 export default function OpenToChatDrawer({
   open,
   onClose,
   onSent,
+  onAllowanceRequested,
   onEducationContinued,
   profileName = 'Jessica',
   initialStep = 'educate',
@@ -67,6 +104,10 @@ export default function OpenToChatDrawer({
   const [noteDraft, setNoteDraft] = useState('');
   const [sentNote, setSentNote] = useState<string | null>(null);
   const [limitReached, setLimitReached] = useState(false);
+  const [sendError, setSendError] = useState<string | null>(null);
+  const [remainingRequests, setRemainingRequests] = useState<number | null>(null);
+  const [dailyLimit, setDailyLimit] = useState(OPEN_TO_CHAT_DAILY_LIMIT);
+  const [nextAvailableAt, setNextAvailableAt] = useState<string | null>(null);
 
   const [sending, setSending] = useState(false);
 
@@ -141,10 +182,31 @@ export default function OpenToChatDrawer({
     return () => window.clearTimeout(focusTimer);
   }, [open, step]);
 
+  useEffect(() => {
+    if (!open || !onAllowanceRequested) return;
+    let active = true;
+
+    void onAllowanceRequested().then((result) => {
+      if (!active || !result.success) return;
+      setRemainingRequests(
+        typeof result.remaining === 'number' ? result.remaining : null
+      );
+      setDailyLimit(
+        typeof result.dailyLimit === 'number' ? result.dailyLimit : OPEN_TO_CHAT_DAILY_LIMIT
+      );
+      setNextAvailableAt(result.nextAvailableAt ?? null);
+    });
+
+    return () => {
+      active = false;
+    };
+  }, [open, onAllowanceRequested]);
+
   if (!open) return null;
 
   const characterCount = noteDraft.length;
   const nearLimit = characterCount >= OPEN_TO_CHAT_NOTE_MAX_LENGTH;
+  const formattedNextAvailability = formatAvailability(nextAvailableAt ?? undefined);
 
   const goToNote = () => setStep('note');
 
@@ -163,11 +225,32 @@ export default function OpenToChatDrawer({
     if (sending) return;
     const trimmed = trimNote(raw);
     const note = trimmed.length > 0 ? trimmed : null;
+    setSendError(null);
     setSending(true);
     try {
       const result = await onSent?.(note);
       if (result === false) {
         return;
+      }
+      if (result && typeof result === 'object') {
+        if (!result.success) {
+          const available = formatAvailability(result.retryAt);
+          setSendError(
+            `${result.message || 'Open to Chat is unavailable right now.'}${
+              available ? ` Available again ${available}.` : ''
+            }`
+          );
+          return;
+        }
+        setRemainingRequests(
+          typeof result.remaining === 'number' ? result.remaining : null
+        );
+        setDailyLimit(
+          typeof result.dailyLimit === 'number'
+            ? result.dailyLimit
+            : OPEN_TO_CHAT_DAILY_LIMIT
+        );
+        setNextAvailableAt(result.nextAvailableAt ?? null);
       }
       setSentNote(note);
       setStep('success');
@@ -268,7 +351,14 @@ export default function OpenToChatDrawer({
                 A conversation opens only if they accept. Otherwise, the request expires after seven
                 days.
               </p>
-              <p>You can send one active Open to Chat request to each person.</p>
+              <p>
+                You can send up to {OPEN_TO_CHAT_DAILY_LIMIT} requests in a rolling{' '}
+                {OPEN_TO_CHAT_ROLLING_WINDOW_HOURS}-hour period. Requests do not carry over.
+              </p>
+              <p>
+                You can reach out to the same person once every{' '}
+                {OPEN_TO_CHAT_RECIPIENT_COOLDOWN_DAYS} days.
+              </p>
               <p>Blocking and other safety tools remain available at any time.</p>
             </div>
           )}
@@ -278,6 +368,15 @@ export default function OpenToChatDrawer({
               <p id={descriptionId} className="text-[15px] leading-relaxed text-[#3D4654]">
                 A short introduction can make your request feel more personal.
               </p>
+
+              {sendError && (
+                <div
+                  role="alert"
+                  className="mt-4 rounded-2xl border border-[#D62828]/25 bg-[#D62828]/[0.06] px-4 py-3 text-sm leading-relaxed text-[#8A1C1C]"
+                >
+                  {sendError}
+                </div>
+              )}
 
               <label
                 id={noteLabelId}
@@ -323,6 +422,14 @@ export default function OpenToChatDrawer({
               <p className="mt-4 text-sm leading-relaxed text-[#5A6575]">
                 Optional. You can send Open to Chat without writing anything.
               </p>
+              <p className="mt-2 text-xs leading-relaxed text-[#6B7585]">
+                {remainingRequests == null
+                  ? `Limit: ${OPEN_TO_CHAT_DAILY_LIMIT} requests in any ${OPEN_TO_CHAT_ROLLING_WINDOW_HOURS}-hour period.`
+                  : `${remainingRequests} of ${dailyLimit} requests remain in your rolling ${OPEN_TO_CHAT_ROLLING_WINDOW_HOURS}-hour window.`}
+                {remainingRequests === 0 && formattedNextAvailability
+                  ? ` Your next request becomes available ${formattedNextAvailability}.`
+                  : ''}
+              </p>
             </>
           )}
 
@@ -340,6 +447,15 @@ export default function OpenToChatDrawer({
                 {profileName} can choose whether to accept. If they do, you can start a
                 conversation from Mutual Connections or their profile.
               </p>
+              {remainingRequests != null && (
+                <p className="mt-3 text-sm font-semibold leading-relaxed text-[#0B2D5C]">
+                  {remainingRequests} of {dailyLimit} Open to Chat requests remain in your rolling{' '}
+                  {OPEN_TO_CHAT_ROLLING_WINDOW_HOURS}-hour window.
+                  {remainingRequests === 0 && formattedNextAvailability
+                    ? ` Your next request becomes available ${formattedNextAvailability}.`
+                    : ''}
+                </p>
+              )}
             </>
           )}
         </div>
@@ -374,15 +490,17 @@ export default function OpenToChatDrawer({
                 ref={primaryActionRef}
                 type="button"
                 onClick={handleSendRequest}
-                className="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-[#D62828] px-8 py-4 text-lg font-semibold text-white shadow-[0_10px_28px_rgba(214,40,40,0.22)] transition hover:bg-[#A61F1F]"
+                disabled={sending}
+                className="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-[#D62828] px-8 py-4 text-lg font-semibold text-white shadow-[0_10px_28px_rgba(214,40,40,0.22)] transition hover:bg-[#A61F1F] disabled:cursor-wait disabled:opacity-60"
               >
                 <Send className="h-4 w-4" strokeWidth={1.75} aria-hidden="true" />
-                Send Request
+                {sending ? 'Sending…' : 'Send Request'}
               </button>
               <button
                 type="button"
                 onClick={handleContinueWithoutNote}
-                className="mt-3 inline-flex w-full items-center justify-center gap-2 rounded-2xl border border-[#0B2D5C]/20 bg-white px-8 py-3.5 text-base font-semibold text-[#0B2D5C] transition hover:bg-[#F8F6F2]"
+                disabled={sending}
+                className="mt-3 inline-flex w-full items-center justify-center gap-2 rounded-2xl border border-[#0B2D5C]/20 bg-white px-8 py-3.5 text-base font-semibold text-[#0B2D5C] transition hover:bg-[#F8F6F2] disabled:cursor-wait disabled:opacity-60"
               >
                 <MessageCircle className="h-4 w-4" strokeWidth={1.75} aria-hidden="true" />
                 Continue Without a Note

@@ -416,9 +416,11 @@
   font-size: 12px !important; line-height: 1.3; white-space: normal;
 }
 
-/* Public member profiles: a single reading surface and compact secondary controls. */
-.forge-profile-theme [data-profile-layout] [data-profile-factor],
-.forge-profile-theme [data-profile-layout] [data-profile-factor]:hover {
+/* Alignment factors are reading panels, including outside the profile layout.
+   Match the shared button selector's specificity so navy action styles cannot
+   override the light surface or its nested text colors. */
+.forge-profile-theme button[data-profile-factor]:not([role="switch"]):not(:has(img)),
+.forge-profile-theme button[data-profile-factor]:not([role="switch"]):not(:has(img)):hover {
   --profile-text: #0B2D5C;
   --profile-muted: #000000;
   background-color: #F7F7F7 !important;
@@ -429,6 +431,7 @@
   border-radius: 8px;
   box-shadow: none;
 }
+/* Public member profiles: a single reading surface and compact secondary controls. */
 .forge-profile-theme [data-profile-layout] section[aria-labelledby="signals-title"] {
   background: transparent;
   border: 0;

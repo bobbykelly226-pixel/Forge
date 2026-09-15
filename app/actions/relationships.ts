@@ -2,6 +2,7 @@
 
 import { loadConnectionsHub } from '@/lib/data/connections-hub';
 import {
+  getOpenToChatAllowance,
   getOpenToChatEducationSeen,
   markOpenToChatEducationSeen,
   passOnProfile,
@@ -35,6 +36,10 @@ export async function withdrawInterestAction(profileId: string) {
 
 export async function sendOpenToChatAction(profileId: string, note: string | null) {
   return sendOpenToChat(profileId, note);
+}
+
+export async function getOpenToChatAllowanceAction() {
+  return getOpenToChatAllowance();
 }
 
 export async function respondOpenToChatAction(

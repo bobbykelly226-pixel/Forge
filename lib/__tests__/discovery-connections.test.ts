@@ -146,9 +146,9 @@ describe('discovery relationship rules', () => {
     assert.doesNotMatch(DISCOVERY_SURFACED_REASON, /compatible|miles away|score/i);
   });
 
-  it('daily Open to Chat limit remains a product decision', () => {
-    assert.equal(OPEN_TO_CHAT_DAILY_LIMIT, null);
-    assert.match(OPEN_TO_CHAT_DAILY_LIMIT_STATUS, /product decision/i);
+  it('uses the approved Founding Beta Open to Chat limit', () => {
+    assert.equal(OPEN_TO_CHAT_DAILY_LIMIT, 3);
+    assert.match(OPEN_TO_CHAT_DAILY_LIMIT_STATUS, /rolling 24 hours/i);
   });
 
   it('maps public profiles to feed cards without claiming compatibility', () => {
