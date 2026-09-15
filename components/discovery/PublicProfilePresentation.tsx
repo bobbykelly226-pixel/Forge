@@ -1,7 +1,16 @@
 'use client';
 
 import Link from 'next/link';
-import { useState } from 'react';
+import { useState, useSyncExternalStore } from 'react';
+
+const desktopQuery = '(min-width: 1024px)';
+function subscribeDesktop(callback: () => void) {
+  const query = window.matchMedia(desktopQuery);
+  query.addEventListener('change', callback);
+  return () => query.removeEventListener('change', callback);
+}
+const getDesktopSnapshot = () => window.matchMedia(desktopQuery).matches;
+const getServerDesktopSnapshot = () => false;
 import {
   BriefcaseBusiness,
   Church,
@@ -93,6 +102,8 @@ export default function PublicProfilePresentation({
   recognitionRecipient = null,
 }: PublicProfilePresentationProps) {
   const [showAllDetails, setShowAllDetails] = useState(false);
+  const isDesktop = useSyncExternalStore(subscribeDesktop, getDesktopSnapshot, getServerDesktopSnapshot);
+  const photoActions = mode === 'discovery' && isDesktop ? footer : null;
   const firstName = firstNameFromFullName(profile.full_name);
   const orderedPhotos = sortPhotosByDisplayOrder(profile.photos ?? []);
   const details = collectPublicProfileDetails(profile);
@@ -175,6 +186,7 @@ export default function PublicProfilePresentation({
               ) : null
             }
           />
+          {photoActions ? <div className="mt-5" aria-label="Discovery actions">{photoActions}</div> : null}
         </div>
 
         <div className="mt-6 min-w-0 rounded-xl border border-[#C9CBCE] bg-[#E6E6E7] p-5 text-black sm:p-7 lg:mt-0 lg:p-8">
@@ -287,7 +299,7 @@ export default function PublicProfilePresentation({
               </section>
             ) : null}
           </div>
-          {footer ? <div className="mt-7 border-t border-[#C9CBCE] pt-6">{footer}</div> : null}
+          {footer && !photoActions ? <div className="mt-7 border-t border-[#C9CBCE] pt-6">{footer}</div> : null}
         </div>
       </div>
     </div>
