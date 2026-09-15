@@ -3,8 +3,78 @@
 -- Future Premium ceiling: 5 per rolling 24 hours (not activated by this migration).
 -- Same recipient: once per 7 days. No carryover or purchased/earned extras.
 
+-- All member writes must pass through the authenticated RPCs. The original
+-- sender INSERT policy alone did not enforce the allowance or cooldowns.
+revoke insert, update, delete, truncate, references, trigger
+  on public.open_to_chat_requests from public, anon, authenticated;
+
 create index if not exists open_to_chat_sender_created_at_idx
   on public.open_to_chat_requests (sender_id, created_at);
+
+-- Keep expiry anchored to the actual send time recorded after the sender lock.
+create or replace function public.protect_open_to_chat_system_columns()
+returns trigger
+language plpgsql
+set search_path to pg_catalog, public
+as $$
+begin
+  if coalesce(current_setting('forge.allow_system_writes', true), 'off') = 'on' then
+    if tg_op = 'INSERT' then
+      if new.sender_id = new.recipient_id then
+        raise exception 'open_to_chat_requests: cannot request yourself';
+      end if;
+      if new.note is not null and char_length(new.note) > 200 then
+        raise exception 'open_to_chat_requests: note exceeds 200 characters';
+      end if;
+      new.expires_at := new.created_at + interval '7 days';
+      return new;
+    end if;
+    if new.sender_id is distinct from old.sender_id
+       or new.recipient_id is distinct from old.recipient_id then
+      raise exception 'open_to_chat_requests: participant ids are immutable';
+    end if;
+    if new.note is not null and char_length(new.note) > 200 then
+      raise exception 'open_to_chat_requests: note exceeds 200 characters';
+    end if;
+    return new;
+  end if;
+
+  if tg_op = 'INSERT' then
+    if auth.uid() is not null then
+      new.sender_id := auth.uid();
+      new.status := 'pending';
+      new.responded_at := null;
+    end if;
+    if new.sender_id = new.recipient_id then
+      raise exception 'open_to_chat_requests: cannot request yourself';
+    end if;
+    if new.note is not null and char_length(new.note) > 200 then
+      raise exception 'open_to_chat_requests: note exceeds 200 characters';
+    end if;
+    new.expires_at := now() + interval '7 days';
+    return new;
+  end if;
+
+  if new.sender_id is distinct from old.sender_id
+     or new.recipient_id is distinct from old.recipient_id then
+    raise exception 'open_to_chat_requests: participant ids are immutable';
+  end if;
+
+  new.created_at := old.created_at;
+
+  if auth.uid() is not null
+     and (
+       new.status is distinct from old.status
+       or new.responded_at is distinct from old.responded_at
+       or new.expires_at is distinct from old.expires_at
+       or new.note is distinct from old.note
+     ) then
+    raise exception 'open_to_chat_requests: status fields are system-managed';
+  end if;
+
+  return new;
+end;
+$$;
 
 create or replace function public.count_open_to_chat_sent_today(p_user_id uuid default null)
 returns integer
@@ -45,12 +115,14 @@ as $$
 declare
   v_uid uuid := auth.uid();
   v_count integer;
-  v_oldest_window_send timestamptz;
+  v_third_newest_send timestamptz;
 begin
   if v_uid is null then raise exception 'Authentication required'; end if;
 
-  select count(*)::integer, min(r.created_at)
-  into v_count, v_oldest_window_send
+  -- Existing members may have more than three sends when limits are activated.
+  -- A slot opens when fewer than three remain, not when the oldest one expires.
+  select count(*)::integer, (array_agg(r.created_at order by r.created_at desc))[3]
+  into v_count, v_third_newest_send
   from public.open_to_chat_requests r
   where r.sender_id = v_uid
     and r.created_at > now() - interval '24 hours';
@@ -61,7 +133,7 @@ begin
     'premium_daily_limit', 5,
     'remaining', greatest(0, 3 - v_count),
     'next_available_at', case
-      when v_count >= 3 then v_oldest_window_send + interval '24 hours'
+      when v_count >= 3 then v_third_newest_send + interval '24 hours'
       else null
     end
   );
@@ -87,10 +159,10 @@ declare
   v_expires_at timestamptz;
   v_actor_name text;
   v_reactivated boolean := false;
-  v_now timestamptz := now();
+  v_now timestamptz;
   v_daily_count integer := 0;
   v_remaining integer := 0;
-  v_oldest_window_send timestamptz;
+  v_third_newest_send timestamptz;
   v_last_sent_at timestamptz;
   v_recipient_last_sent_at timestamptz;
   v_next_available_at timestamptz;
@@ -113,6 +185,8 @@ begin
   perform pg_catalog.pg_advisory_xact_lock(
     pg_catalog.hashtextextended(v_uid::text, 11011)
   );
+  -- Use actual send time after waiting for the lock, not transaction start time.
+  v_now := clock_timestamp();
 
   perform set_config('forge.allow_system_writes', 'on', true);
 
@@ -122,18 +196,6 @@ begin
     and r.recipient_id = p_recipient_id
     and r.status in ('pending', 'deferred')
     and coalesce(r.expires_at, r.created_at + interval '7 days') <= v_now;
-
-  if exists (
-    select 1 from public.open_to_chat_requests r
-    where r.sender_id = v_uid and r.recipient_id = p_recipient_id
-      and r.status in ('pending', 'deferred', 'accepted')
-  ) then
-    return jsonb_build_object(
-      'ok', false,
-      'reason', 'existing_request',
-      'message', 'You already sent an Open to Chat request to this person.'
-    );
-  end if;
 
   select r.created_at
   into v_recipient_last_sent_at
@@ -148,6 +210,20 @@ begin
       'reason', 'recipient_cooldown',
       'message', 'Open to Chat can be sent to the same person once every seven days.',
       'retry_at', v_recipient_last_sent_at + interval '7 days'
+    );
+  end if;
+
+  -- Recent requests return the same response regardless of the recipient's
+  -- private decision. Older accepted or still-active requests cannot repeat.
+  if exists (
+    select 1 from public.open_to_chat_requests r
+    where r.sender_id = v_uid and r.recipient_id = p_recipient_id
+      and r.status in ('pending', 'deferred', 'accepted')
+  ) then
+    return jsonb_build_object(
+      'ok', false,
+      'reason', 'existing_request',
+      'message', 'You already sent an Open to Chat request to this person.'
     );
   end if;
 
@@ -166,14 +242,14 @@ begin
     );
   end if;
 
-  select count(*)::integer, min(r.created_at)
-  into v_daily_count, v_oldest_window_send
+  select count(*)::integer, (array_agg(r.created_at order by r.created_at desc))[3]
+  into v_daily_count, v_third_newest_send
   from public.open_to_chat_requests r
   where r.sender_id = v_uid
     and r.created_at > v_now - interval '24 hours';
 
   if v_daily_count >= 3 then
-    v_next_available_at := v_oldest_window_send + interval '24 hours';
+    v_next_available_at := v_third_newest_send + interval '24 hours';
     return jsonb_build_object(
       'ok', false,
       'reason', 'daily_limit',
@@ -195,9 +271,10 @@ begin
     recipient_id,
     note,
     status,
+    created_at,
     expires_at
   )
-  values (v_uid, p_recipient_id, v_note, 'pending', v_now + interval '7 days')
+  values (v_uid, p_recipient_id, v_note, 'pending', v_now, v_now + interval '7 days')
   on conflict (sender_id, recipient_id) do update
     set note = excluded.note,
         status = 'pending',
@@ -244,15 +321,15 @@ begin
       and entity_id = v_id;
   end if;
 
-  select count(*)::integer, min(r.created_at)
-  into v_daily_count, v_oldest_window_send
+  select count(*)::integer, (array_agg(r.created_at order by r.created_at desc))[3]
+  into v_daily_count, v_third_newest_send
   from public.open_to_chat_requests r
   where r.sender_id = v_uid
     and r.created_at > v_now - interval '24 hours';
 
   v_remaining := greatest(0, 3 - v_daily_count);
   v_next_available_at := case
-    when v_remaining = 0 then v_oldest_window_send + interval '24 hours'
+    when v_remaining = 0 then v_third_newest_send + interval '24 hours'
     else null
   end;
 
