@@ -16,6 +16,7 @@ import type { DiscoveryFeedCardModel } from '@/lib/discovery/presentation';
 import DiscoveryMatchingPreferences, {
   type DiscoveryMatchingLocation,
 } from '@/components/discovery/DiscoveryMatchingPreferences';
+import DiscoveryNonNegotiables from '@/components/discovery/DiscoveryNonNegotiables';
 import type { Tables } from '@/lib/supabase/database.types';
 
 type StringArrayKey = {
@@ -173,6 +174,8 @@ export default function DiscoveryFiltersDrawer({
             initialLocation={initialLocation}
           />
 
+          <DiscoveryNonNegotiables initialValue={initialPreferences?.non_negotiables} />
+
           <div className="space-y-3">
             <div>
               <h3 className="text-lg font-semibold text-[#0B2D5C]">More filters</h3>
@@ -249,7 +252,7 @@ export default function DiscoveryFiltersDrawer({
             onClick={() => onChange({ ...EMPTY_DISCOVERY_FILTERS })}
             className="flex-1 rounded-2xl border border-[#0B2D5C]/20 bg-white px-4 py-3 text-sm font-semibold text-[#0B2D5C]"
           >
-            Clear all
+            Clear more filters
           </button>
           <button
             type="button"
