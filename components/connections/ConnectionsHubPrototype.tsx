@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useMemo, useState, type ReactNode } from 'react';
 
 import DiscoveryDesktopTopBar from '@/components/DiscoveryDesktopTopBar';
 import ForgeAppBottomNav from '@/components/ForgeAppBottomNav';
@@ -18,6 +18,16 @@ import ConnectionsTabs from '@/components/connections/ConnectionsTabs';
 import { useConnectionsHub } from '@/components/connections/ConnectionsHubProvider';
 import ConversationHub from '@/components/conversations/ConversationHub';
 import { resetAllSeedState } from '@/lib/seed/actions';
+
+function ActivityCard({ activityKey, children }: { activityKey: string; children: ReactNode }) {
+  const { isNewActivity, markActivitySeen } = useConnectionsHub();
+  return (
+    <div className="relative" onClickCapture={() => markActivitySeen(activityKey)}>
+      {isNewActivity(activityKey) ? <span data-new-activity data-card-new role="img" aria-label="New profile activity" /> : null}
+      {children}
+    </div>
+  );
+}
 
 export default function ConnectionsHubPrototype({
   loadError = null,
@@ -118,7 +128,7 @@ export default function ConnectionsHubPrototype({
           </div>
         ) : (
           visibleOpenToChat.map((profile) => (
-            <OpenToChatRequestCard key={profile.id} profile={profile} />
+            <ActivityCard key={profile.id} activityKey={'request:' + profile.requestId}><OpenToChatRequestCard profile={profile} /></ActivityCard>
           ))
         )}
       </div>
@@ -134,7 +144,7 @@ export default function ConnectionsHubPrototype({
           </div>
         ) : (
           visibleInterest.map((profile) => (
-            <InterestReceivedCard key={profile.id} profile={profile} />
+            <ActivityCard key={profile.id} activityKey={'interest:' + profile.interestId}><InterestReceivedCard profile={profile} /></ActivityCard>
           ))
         )}
       </div>
@@ -149,7 +159,7 @@ export default function ConnectionsHubPrototype({
         ) : (
           <>
             {visibleMutual.map((profile) => (
-              <MutualConnectionCard key={profile.id} profile={profile} />
+              <ActivityCard key={profile.id} activityKey={'connection:' + ('connectionId' in profile ? profile.connectionId : profile.interestId)}><MutualConnectionCard profile={profile} /></ActivityCard>
             ))}
             {seedResetControl}
           </>
@@ -174,7 +184,7 @@ export default function ConnectionsHubPrototype({
         ) : (
           <div className="flex flex-col gap-6">
             {visibleSaved.map((profile) => (
-              <SavedProfileCard key={profile.id} profile={profile} />
+              <ActivityCard key={profile.id} activityKey={'saved:' + profile.id}><SavedProfileCard profile={profile} /></ActivityCard>
             ))}
           </div>
         )}
@@ -291,9 +301,10 @@ export default function ConnectionsHubPrototype({
               animationDelay: '80ms',
             }}
           >
-            {activeTab === 'interestedInYou' || activeTab === 'sent' ? (
-              <div data-interest-selector role="group" aria-label="Interest activity" className="mb-6 inline-flex gap-1 rounded-full p-1">
+            {activeTab === 'interestedInYou' || activeTab === 'sent' || activeTab === 'openToChat' ? (
+              <div data-interest-selector role="group" aria-label="Interest activity" className="mb-6 inline-flex flex-wrap gap-1 rounded-full p-1">
                 <button type="button" aria-pressed={activeTab === 'interestedInYou'} onClick={() => setActiveTab('interestedInYou')}>Received</button>
+                {visibleOpenToChat.length > 0 || activeTab === 'openToChat' ? <button type="button" aria-pressed={activeTab === 'openToChat'} onClick={() => setActiveTab('openToChat')}>Chat requests</button> : null}
                 <button type="button" aria-pressed={activeTab === 'sent'} onClick={() => setActiveTab('sent')}>Sent</button>
               </div>
             ) : null}
