@@ -121,6 +121,9 @@ describe('Notifications & Conversation Polish V1', () => {
     assert.match(drawer, /Notifications/);
     assert.match(drawer, /Mark all as read/);
     assert.match(drawer, /No notifications yet/);
+    assert.match(drawer, /rgba\(5, 16, 30, 0\.65\)/);
+    assert.match(drawer, /backdropFilter: 'blur\(3px\)'/);
+    assert.match(drawer, /border-2 border-white/);
     assert.match(provider, /markNotificationReadAction/);
     assert.match(provider, /markAllNotificationsReadAction/);
     assert.match(provider, /listMyNotificationsAction/);
