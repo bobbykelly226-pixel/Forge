@@ -465,7 +465,7 @@
 }
 
 /* Four equal-width connection tabs stay visible on small screens. */
-.forge-profile-theme [data-connection-tabs] > button[role="tab"] {
+.forge-profile-theme [data-connection-tabs] > button[type="button"][role="tab"] {
   padding: 10px 2px;
   min-width: 0;
   border-radius: 8px;
@@ -475,10 +475,32 @@
   border: 0;
   box-shadow: none;
 }
-.forge-profile-theme [data-connection-tabs] > button[role="tab"][aria-selected="true"] {
+.forge-profile-theme [data-connection-tabs] > button[type="button"][role="tab"][aria-selected="true"] {
   background: #0B2D5C !important;
   color: #FFFFFF !important;
   --profile-text: #FFFFFF;
+}
+
+/* A secondary selector keeps outgoing activity inside Interested. */
+.forge-profile-theme [data-interest-selector] {
+  background: #D4D5D7;
+  border: 1px solid #C9CBCE;
+}
+.forge-profile-theme [data-interest-selector] > button[type="button"][aria-pressed] {
+  background: transparent !important;
+  color: #0B2D5C !important;
+  border: 0;
+  border-radius: 999px;
+  box-shadow: none;
+  padding: 10px 22px;
+  min-height: 44px;
+  font-size: 14px;
+  font-weight: 600;
+  text-decoration: none;
+}
+.forge-profile-theme [data-interest-selector] > button[type="button"][aria-pressed="true"] {
+  background: #0B2D5C !important;
+  color: #FFFFFF !important;
 }
 
 /* Counts are quiet text, without a separate badge behind the number. */
