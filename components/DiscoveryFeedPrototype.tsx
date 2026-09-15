@@ -16,6 +16,8 @@ import {
   profileMatchesDiscoveryFilters,
 } from '@/lib/discovery/filters';
 import type { DiscoveryFeedCardModel } from '@/lib/discovery/presentation';
+import type { Tables } from '@/lib/supabase/database.types';
+import type { DiscoveryMatchingLocation } from '@/components/discovery/DiscoveryMatchingPreferences';
 
 function getTimeGreeting(date = new Date()): string {
   const hour = date.getHours();
@@ -60,6 +62,9 @@ type DiscoveryFeedProps = {
   loadError?: string | null;
   seedProfilesInjected?: boolean;
   showSeedReset?: boolean;
+  initialPreferences: Tables<'profile_preferences'> | null;
+  initialLocation: DiscoveryMatchingLocation;
+  initialFiltersOpen?: boolean;
 };
 
 export default function DiscoveryFeedPrototype({
@@ -67,9 +72,12 @@ export default function DiscoveryFeedPrototype({
   viewerName,
   loadError = null,
   showSeedReset = false,
+  initialPreferences,
+  initialLocation,
+  initialFiltersOpen = false,
 }: DiscoveryFeedProps) {
   const [filters, setFilters] = useState(EMPTY_DISCOVERY_FILTERS);
-  const [filtersOpen, setFiltersOpen] = useState(false);
+  const [filtersOpen, setFiltersOpen] = useState(initialFiltersOpen);
   const { isPassed, resetSeedState } = useDiscoveryActions();
 
   const visibleProfiles = profiles.filter(
@@ -237,6 +245,8 @@ export default function DiscoveryFeedPrototype({
         filters={filters}
         onChange={setFilters}
         onClose={() => setFiltersOpen(false)}
+        initialPreferences={initialPreferences}
+        initialLocation={initialLocation}
       />
     </>
   );

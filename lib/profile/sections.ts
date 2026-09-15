@@ -68,7 +68,7 @@ export const PROFILE_SECTIONS: ProfileSectionDefinition[] = [
     id: 'location',
     title: 'Location',
     description: 'City and state shown publicly. Precise details stay private.',
-    editable: true,
+    editable: false,
   },
   {
     id: 'about',
@@ -172,7 +172,7 @@ export const PROFILE_SECTIONS: ProfileSectionDefinition[] = [
 
 /** Visual groups retain every existing focused editor and saved field. */
 export const PROFILE_EDIT_GROUPS: { id: string; title: string; sections: ProfileSectionId[] }[] = [
-  { id: 'basics', title: 'Profile basics', sections: ['photo', 'basics', 'location', 'about', 'relationship', 'children'] },
+  { id: 'basics', title: 'Profile basics', sections: ['photo', 'basics', 'about', 'relationship', 'children'] },
   { id: 'values', title: 'Values & lifestyle', sections: ['factors', 'faith', 'smoking', 'drinking'] },
   { id: 'plans', title: 'Life & plans', sections: ['pets', 'relocation', 'education', 'career', 'service'] },
   { id: 'interests', title: 'Interests', sections: ['enjoy', 'music'] },
@@ -346,7 +346,6 @@ export function summarizeProfileSection(
 
 const DETAILS_SECTION_ORDER: ProfileSectionId[] = [
   'basics',
-  'location',
   'children',
   'faith',
   'smoking',

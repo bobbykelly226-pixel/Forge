@@ -414,3 +414,113 @@
   display: flex; align-items: center; justify-content: center;
   font-size: 12px !important; line-height: 1.3; white-space: normal;
 }
+
+/* Public member profiles: a single reading surface and compact secondary controls. */
+.forge-profile-theme [data-profile-layout] [data-profile-factor],
+.forge-profile-theme [data-profile-layout] [data-profile-factor]:hover {
+  --profile-text: #0B2D5C;
+  --profile-muted: #000000;
+  background-color: #F7F7F7 !important;
+  color: #0B2D5C !important;
+  border-color: #C9CBCE;
+  border-left: 4px solid #C92027;
+  padding: 16px;
+  border-radius: 8px;
+  box-shadow: none;
+}
+.forge-profile-theme [data-profile-layout] section[aria-labelledby="signals-title"] {
+  background: transparent;
+  border: 0;
+  border-top: 1px solid #C9CBCE;
+  border-radius: 0;
+  outline: 0;
+  box-shadow: none;
+  padding: 20px 0 0;
+}
+.forge-profile-theme [data-profile-layout] summary {
+  color: #0B2D5C;
+  border-radius: 4px;
+}
+.forge-profile-theme [data-profile-layout] summary:focus-visible {
+  outline: 2px solid #C92027;
+  outline-offset: 4px;
+}
+.forge-profile-theme [data-profile-layout] [data-character-signals] {
+  padding-top: 28px;
+}
+.forge-profile-theme [data-profile-layout] [data-signal-card],
+.forge-profile-theme [data-profile-layout] [data-signal-card]:hover {
+  --profile-text: #FFFFFF;
+  --profile-muted: #FFFFFF;
+  align-items: center;
+  background: #0B2D5C !important;
+  border: 1px solid #C9CBCE;
+  border-radius: 8px;
+  color: #FFFFFF !important;
+  padding: 16px;
+  box-shadow: none;
+}
+.forge-profile-theme [data-profile-layout] [data-signal-card] span {
+  color: #FFFFFF !important;
+}
+
+/* Three equal-width connection tabs stay visible on small screens. */
+.forge-profile-theme [data-connection-tabs] > button[type="button"][role="tab"] {
+  padding: 10px 2px;
+  min-width: 0;
+  border-radius: 8px;
+  background: transparent !important;
+  color: #0B2D5C !important;
+  --profile-text: #0B2D5C;
+  border: 0;
+  box-shadow: none;
+}
+.forge-profile-theme [data-connection-tabs] > button[type="button"][role="tab"][aria-selected="true"] {
+  background: #0B2D5C !important;
+  color: #FFFFFF !important;
+  --profile-text: #FFFFFF;
+}
+
+/* A secondary selector keeps outgoing activity inside Interested. */
+.forge-profile-theme [data-interest-selector] {
+  background: #D4D5D7;
+  border: 1px solid #C9CBCE;
+  border-radius: 999px;
+  padding: 4px;
+  align-items: stretch;
+}
+.forge-profile-theme [data-interest-selector] > button[type="button"][aria-pressed] {
+  background: transparent !important;
+  color: #0B2D5C !important;
+  border: 0;
+  border-radius: 999px !important;
+  box-shadow: none;
+  padding: 10px 22px;
+  min-height: 44px;
+  font-size: 14px;
+  font-weight: 600;
+  text-decoration: none;
+}
+.forge-profile-theme [data-interest-selector] > button[type="button"][aria-pressed="true"] {
+  background: #0B2D5C !important;
+  color: #FFFFFF !important;
+}
+
+.forge-profile-theme [data-new-activity] {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  min-width: 8px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  background: #C92027 !important;
+}
+.forge-profile-theme [data-card-new] {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  z-index: 2;
+  width: 10px;
+  height: 10px;
+  box-shadow: 0 0 0 3px #E6E6E7;
+}

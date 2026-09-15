@@ -15,10 +15,8 @@ import ProfileCompatibilityCard, {
 } from '@/components/compatibility-profile/ProfileCompatibilityCard';
 import DiscoveryVisibilityToggle from '@/components/profile/DiscoveryVisibilityToggle';
 import ProfileWorkspace, { type ProfileWorkspaceHandle } from '@/components/profile/ProfileWorkspace';
-import MatchingPreferencesCard from '@/components/profile/MatchingPreferencesCard';
 import type { ManagedProfilePhoto } from '@/lib/profile-photo';
 import type { Profile } from '@/lib/types/profile';
-import type { Tables } from '@/lib/supabase/database.types';
 
 type PrivateProfileSeed = {
   date_of_birth: string | null;
@@ -43,7 +41,6 @@ export type MyProfileHubProps = {
   };
   profile: Profile;
   privateDetails: PrivateProfileSeed | null;
-  preferences: Tables<'profile_preferences'> | null;
   coreValues: string[];
   hasRelationshipAlignment: boolean;
   hasImportantAlignmentFactors: boolean;
@@ -60,7 +57,6 @@ export default function MyProfileHub({
   discoveryVisibility,
   profile,
   privateDetails,
-  preferences,
   coreValues,
   hasRelationshipAlignment,
   hasImportantAlignmentFactors,
@@ -233,10 +229,6 @@ export default function MyProfileHub({
                   <CharacterSignalsProfileSection />
                 </details>
               </section>
-              <details className="rounded-[6px] border border-[#0B2D5C] bg-[#E6E6E7] p-5">
-                <summary className="cursor-pointer font-semibold text-[#0B2D5C]">Private matching preferences</summary>
-                <MatchingPreferencesCard initialPreferences={preferences} hasPrivateCoordinates={privateDetails?.latitude != null && privateDetails?.longitude != null} />
-              </details>
             </div>
           </div>
 

@@ -215,7 +215,6 @@ export default async function MyProfileHubPage({ searchParams }: PageProps) {
           }}
           profile={profileForWorkspace}
           privateDetails={privateDetailsResult.data ?? null}
-          preferences={preferencesResult.success ? preferencesResult.data : null}
           coreValues={coreValues}
           hasRelationshipAlignment={hasRelationshipAlignment}
           hasImportantAlignmentFactors={hasImportantAlignmentFactors}

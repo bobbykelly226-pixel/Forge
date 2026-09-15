@@ -70,20 +70,37 @@ describe('public profile information density', () => {
       'utf8'
     );
     const alignmentCopyMatch = presentation.match(
-      /\{DISCOVERY_NEUTRAL_ALIGNMENT_LABEL\}[\s\S]{0,400}?<\/p>/
+      /DISCOVERY_NEUTRAL_ALIGNMENT_LABEL[\s\S]{0,500}?Complete more profile and compatibility answers[\s\S]{0,200}?<\/p>/
     );
     assert.ok(alignmentCopyMatch, 'expected More to Discover supporting copy');
     const alignmentCopy = alignmentCopyMatch[0];
     assert.match(
       alignmentCopy,
-      /Forge needs a little more information before it can confidently evaluate your/
+      /Complete more profile and compatibility answers/
     );
-    assert.match(alignmentCopy, /your alignment will become more personalized/);
+    assert.match(alignmentCopy, /help Forge understand your alignment/);
     assert.doesNotMatch(alignmentCopy, /Matching scores are not calculated yet/);
     assert.doesNotMatch(alignmentCopy, /neutral placeholder/i);
     assert.doesNotMatch(alignmentCopy, /\bscores?\b/i);
     assert.doesNotMatch(alignmentCopy, /\bcalculat/i);
     assert.doesNotMatch(alignmentCopy, /\bplaceholder\b/i);
+  });
+
+  it('puts alignment before photos and limits profile highlights to five', () => {
+    const presentation = readFileSync(
+      join(process.cwd(), 'components/discovery/PublicProfilePresentation.tsx'),
+      'utf8'
+    );
+    assert.ok(
+      presentation.indexOf('Relationship Alignment') < presentation.indexOf('<ProfilePhotoGallery'),
+      'expected Relationship Alignment before the photo gallery'
+    );
+    assert.match(presentation, /essentialDetails[\s\S]*?\.slice\(0, 5\)/);
+    assert.doesNotMatch(presentation, /label: 'Location'/);
+    assert.match(presentation, /detailGroup/);
+    assert.match(presentation, /See more about \$\{firstName\}/);
+    assert.match(presentation, /DETAIL_ICONS/);
+    assert.doesNotMatch(presentation, /Life &amp; lifestyle/);
   });
 
   it('simplifies See Why You Align into a compact Alignments list', () => {
@@ -155,7 +172,8 @@ describe('public profile information density', () => {
     );
     assert.match(signals, /Confirmed by \{entry\.confirmationCount\} people/);
     assert.match(signals, /getSignalDefinition\(entry\.signalId\)/);
-    assert.match(signals, /space-y-2/);
-    assert.match(signals, /h-7 w-7/);
+    assert.match(signals, /space-y-3/);
+    assert.match(signals, /h-10 w-10/);
+    assert.match(signals, /data-signal-card/);
   });
 });

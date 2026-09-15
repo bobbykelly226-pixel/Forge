@@ -22,14 +22,22 @@ const valid = {
 };
 
 describe('matching preference validation', () => {
-  it('uses labeled native age selectors on Profile instead of number inputs', () => {
-    const source = readFileSync(new URL('../../components/profile/MatchingPreferencesCard.tsx', import.meta.url), 'utf8');
+  it('uses labeled native age selectors in Discovery instead of number inputs', () => {
+    const source = readFileSync(new URL('../../components/discovery/DiscoveryMatchingPreferences.tsx', import.meta.url), 'utf8');
     for (const bound of ['minimumAge', 'maximumAge']) {
-      assert.match(source, new RegExp(`<select\\s+value=\\{${bound}\\}`));
+      assert.match(source, new RegExp(`value=\\{${bound}\\}`));
     }
     assert.doesNotMatch(source, /type="number"/);
     assert.match(source, /length: MAX_MATCH_AGE - MIN_MATCH_AGE \+ 1/);
     assert.match(source, /MIN_MATCH_AGE \+ index/);
+  });
+
+  it('keeps persistent matching controls in Discovery and removes the duplicate Profile card', () => {
+    const drawer = readFileSync(new URL('../../components/discovery/DiscoveryFiltersDrawer.tsx', import.meta.url), 'utf8');
+    const profile = readFileSync(new URL('../../components/profile/MyProfileHub.tsx', import.meta.url), 'utf8');
+    assert.match(drawer, /DiscoveryMatchingPreferences/);
+    assert.doesNotMatch(profile, /MatchingPreferencesCard/);
+    assert.doesNotMatch(profile, /Manage in Discovery filters|\/discovery\?filters=open/);
   });
 
   it('accepts every supported picker age without changing it and rejects reversed bounds', () => {

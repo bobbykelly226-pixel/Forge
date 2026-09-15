@@ -66,9 +66,9 @@ export function OpenToChatRequestCard({ profile }: { profile: IncomingOpenToChat
 
   return (
     <article className={cardShell}>
-      <div className="flex flex-col gap-5 p-5 sm:flex-row sm:p-6 lg:gap-6 lg:p-7">
-        <ConnectionPortrait profile={profile} size="md" />
-        <div className="min-w-0 flex-1">
+      <div className="flex flex-col lg:grid lg:grid-cols-[minmax(12rem,28%)_minmax(0,1fr)] lg:gap-6">
+        <ConnectionPortrait profile={profile} size="lg" />
+        <div className="min-w-0 flex-1 p-5 sm:p-6 lg:p-7 lg:pl-0">
           <ConnectionIdentity profile={profile} />
           <ConnectionAlignment profile={profile} />
           {profile.aboutPreview ? (
@@ -181,10 +181,10 @@ export function InterestReceivedCard({ profile }: { profile: IncomingInterestIte
 
   return (
     <article className={cardShell}>
-      <div className="p-5 sm:p-6 lg:p-7">
-        <div className="flex gap-4">
-          <ConnectionPortrait profile={profile} size="md" />
-          <div>
+      <div>
+        <div className="flex flex-col lg:grid lg:grid-cols-[minmax(12rem,28%)_minmax(0,1fr)] lg:gap-6">
+          <ConnectionPortrait profile={profile} size="lg" />
+          <div className="min-w-0 p-5 sm:p-6 lg:p-7 lg:pl-0">
             <ConnectionIdentity profile={profile} />
             <p className="mt-3 text-[15px] leading-relaxed text-[#5A6575]">
               {profile.firstName} expressed interest in connecting if the feeling is mutual.
@@ -197,7 +197,7 @@ export function InterestReceivedCard({ profile }: { profile: IncomingInterestIte
           </div>
         </div>
         {!isMutual && (
-          <div className="mt-5 flex flex-col gap-2 sm:flex-row sm:flex-wrap" onClick={(e) => e.stopPropagation()}>
+          <div className="flex flex-col gap-2 px-5 pb-5 sm:flex-row sm:flex-wrap" onClick={(e) => e.stopPropagation()}>
             <button
               type="button"
               onClick={() => expressMutualInterest(profile.id, profile.firstName)}
@@ -342,9 +342,9 @@ export function SavedProfileCard({ profile }: { profile: SavedHubItem }) {
 
   return (
     <article className={cardShell}>
-      <div className="flex flex-col sm:flex-row">
-        <ConnectionPortrait profile={profile} size="md" />
-        <div className="flex-1 p-5 sm:p-6">
+      <div className="flex flex-col lg:grid lg:grid-cols-[minmax(12rem,28%)_minmax(0,1fr)] lg:gap-6">
+        <ConnectionPortrait profile={profile} size="lg" />
+        <div className="min-w-0 flex-1 p-5 sm:p-6 lg:p-7 lg:pl-0">
           <ConnectionIdentity profile={profile} />
           <ConnectionAlignment profile={profile} />
           <ImportantFactorsBadge profile={profile} />

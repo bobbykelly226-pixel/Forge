@@ -1,9 +1,6 @@
 import type { DiscoveryFeedCardModel } from '@/lib/discovery/presentation';
 
 export type DiscoveryFilters = {
-  minAge: number | null;
-  maxAge: number | null;
-  locationQuery: string;
   alignment: string[];
   relationshipGoals: string[];
   faithIdentity: string[];
@@ -17,9 +14,6 @@ export type DiscoveryFilters = {
 };
 
 export const EMPTY_DISCOVERY_FILTERS: DiscoveryFilters = {
-  minAge: null,
-  maxAge: null,
-  locationQuery: '',
   alignment: [],
   relationshipGoals: [],
   faithIdentity: [],
@@ -55,21 +49,6 @@ export function profileMatchesDiscoveryFilters(
   filters: DiscoveryFilters
 ): boolean {
   const filterData = profile.filterData ?? EMPTY_FILTER_DATA;
-  if (filters.minAge != null && (profile.age == null || profile.age < filters.minAge)) {
-    return false;
-  }
-  if (filters.maxAge != null && (profile.age == null || profile.age > filters.maxAge)) {
-    return false;
-  }
-
-  const locationQuery = filters.locationQuery.trim().toLocaleLowerCase();
-  if (
-    locationQuery &&
-    !profile.location?.toLocaleLowerCase().includes(locationQuery)
-  ) {
-    return false;
-  }
-
   return (
     includesAny(filters.alignment, profile.alignmentLabel) &&
     includesAny(filters.relationshipGoals, filterData.relationshipGoals) &&
@@ -86,9 +65,6 @@ export function profileMatchesDiscoveryFilters(
 
 export function countActiveDiscoveryFilters(filters: DiscoveryFilters): number {
   return [
-    filters.minAge,
-    filters.maxAge,
-    filters.locationQuery.trim() || null,
     ...filters.alignment,
     ...filters.relationshipGoals,
     ...filters.faithIdentity,

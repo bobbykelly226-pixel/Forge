@@ -134,7 +134,7 @@ export default function AcceptChatDrawer({
               <>
                 <p>You and {profileName} are connected.</p>
                 <p className="text-sm text-[#5A6575]">
-                  You can start a conversation now, or find this connection under Mutual.
+                  You can start a conversation now, or find this person in the Connected tab.
                 </p>
               </>
             ) : (
@@ -174,7 +174,7 @@ export default function AcceptChatDrawer({
                       : 'bg-[#0B2D5C] text-white hover:bg-[#0A2540]'
                   }`}
                 >
-                  View Mutual Connections
+                  View Connections
                 </button>
               </>
             ) : (

@@ -125,32 +125,34 @@ export default function PublicCharacterSignalsSection({
   return (
     <>
       <section
-        className="mt-4 rounded-[1.75rem] border border-[#0B2D5C]/08 bg-white/90 p-4 sm:p-5"
+        data-character-signals
+        className="mt-4 border-t border-[#C9CBCE] pt-7"
         aria-labelledby="signals-title"
       >
-        <div className="flex flex-wrap items-center gap-3">
+        <div className="flex flex-col items-center gap-2 text-center">
           <h2
             ref={sectionHeadingRef}
             id="signals-title"
             tabIndex={-1}
-            className="text-lg tracking-[-0.01em] text-[#0B2D5C] sm:text-xl"
+            className="w-full text-2xl leading-tight tracking-[-0.01em] text-[#0B2D5C]"
             style={{ fontFamily: 'var(--font-discovery-display), Georgia, serif' }}
           >
             Character Signals
           </h2>
           <button
             ref={infoTriggerRef}
+            data-text-link
             type="button"
             onClick={openInfo}
             aria-label="Learn about Character Signals"
             aria-haspopup="dialog"
             aria-expanded={infoOpen}
-            className="inline-flex min-h-10 shrink-0 items-center justify-center rounded-full text-[#6B7585] transition hover:bg-[#0B2D5C]/06 hover:text-[#0B2D5C] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0B2D5C]"
+            className="inline-flex min-h-10 shrink-0 items-center justify-center text-[#0B2D5C] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0B2D5C]"
           >
-            <span className="text-xs font-semibold">Learn more</span>
+            <span className="text-sm font-semibold">Learn more</span>
           </button>
         </div>
-        <p className="mt-1.5 text-sm leading-snug text-[#7A8494]">
+        <p className="mx-auto mt-2 max-w-md text-center text-sm leading-6 text-black">
           Positive qualities recognized through meaningful interactions on Forge.
         </p>
 
@@ -159,31 +161,32 @@ export default function PublicCharacterSignalsSection({
             {emptyCopy ?? 'No public Character Signals yet'}
           </p>
         ) : (
-          <ul className="mt-3 space-y-2">
+          <ul className="mt-5 space-y-3">
             {list.map((entry) => {
               const signal = getSignalDefinition(entry.signalId);
               return (
                 <li key={entry.signalId}>
                   <button
+                    data-signal-card
                     ref={(node) => {
                       triggers.current[entry.signalId] = node;
                     }}
                     type="button"
                     onClick={() => openDetail(entry.signalId, entry.confirmationCount)}
-                    className="flex min-h-11 w-full items-center gap-2.5 rounded-xl border border-[#0B2D5C]/08 border-l-[3px] border-l-[#557A67] bg-[#EDF4EF]/35 px-3 py-2.5 text-left transition hover:border-[#0B2D5C]/18 hover:bg-[#EDF4EF]/55 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0B2D5C]"
+                    className="flex min-h-11 w-full items-center gap-4 rounded-lg border border-[#C9CBCE] bg-[#0B2D5C] p-4 text-left text-white transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0B2D5C]"
                     aria-haspopup="dialog"
                   >
-                    <span className="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-[#557A67] text-white">
-                      <CharacterSignalIcon signalId={entry.signalId} className="h-3.5 w-3.5" />
+                    <span className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-[#557A67] text-white">
+                      <CharacterSignalIcon signalId={entry.signalId} className="h-5 w-5" />
                     </span>
-                    <span className="min-w-0 flex-1">
-                      <span className="block text-sm font-semibold leading-snug text-[#0B2D5C]">
+                    <span className="min-w-0 flex-1 break-words">
+                      <span className="block text-base font-semibold leading-6 text-white">
                         {signal.title}
                       </span>
-                      <span className="mt-0.5 block text-xs leading-snug text-[#5A6575]">
+                      <span className="mt-1 block text-sm leading-5 text-white">
                         {signal.shortDescription}
                       </span>
-                      <span className="mt-1 block text-xs font-medium text-[#0B2D5C]">
+                      <span className="mt-2 block text-sm font-medium leading-5 text-white">
                         Confirmed by {entry.confirmationCount} people
                       </span>
                     </span>

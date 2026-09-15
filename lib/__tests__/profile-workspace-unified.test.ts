@@ -55,10 +55,10 @@ function minimalProfile(overrides: Partial<Profile> = {}): Profile {
 }
 
 describe('unified My Profile workspace', () => {
-  it('defines editable profile sections without Voice/Video as editable', () => {
+  it('keeps matching location out of Profile while preserving its other editors', () => {
     const editable = PROFILE_SECTIONS.filter((section) => section.editable);
     assert.ok(editable.some((section) => section.id === 'relationship'));
-    assert.ok(editable.some((section) => section.id === 'location'));
+    assert.ok(!editable.some((section) => section.id === 'location'));
     assert.ok(editable.some((section) => section.id === 'faith'));
     assert.equal(
       PROFILE_SECTIONS.find((section) => section.id === 'voice')?.comingSoon,

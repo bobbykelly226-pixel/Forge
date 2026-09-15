@@ -1,129 +1,61 @@
 'use client';
 
-import { useCallback, useRef, type KeyboardEvent } from 'react';
+import { useRef, type KeyboardEvent } from 'react';
+import { useConnectionsHub, type ConnectionsTabId } from '@/components/connections/ConnectionsHubProvider';
 
-import {
-  useConnectionsHub,
-  type ConnectionsTabId,
-} from '@/components/connections/ConnectionsHubProvider';
-
-const TAB_DEFS: { id: ConnectionsTabId; label: string }[] = [
-  { id: 'forYou', label: 'For You' },
-  { id: 'openToChat', label: 'Open to Chat' },
-  { id: 'interestedInYou', label: 'Interested in You' },
-  { id: 'mutual', label: 'Mutual' },
-  { id: 'conversations', label: 'Messages' },
+const TABS: { id: ConnectionsTabId; label: string }[] = [
+  { id: 'mutual', label: 'Connections' },
+  { id: 'interestedInYou', label: 'Interested' },
   { id: 'saved', label: 'Saved' },
-  { id: 'sent', label: 'Sent' },
 ];
 
-type ConnectionsTabsProps = {
-  layout?: 'horizontal' | 'vertical';
-};
-
-export default function ConnectionsTabs({ layout = 'horizontal' }: ConnectionsTabsProps) {
-  const { activeTab, setActiveTab, tabCounts } = useConnectionsHub();
+export default function ConnectionsTabs({ layout = 'horizontal' }: { layout?: 'horizontal' | 'vertical' }) {
+  const { activeTab, setActiveTab, openToChat, getOpenToChatStatus, mutual, interestReceived, saved, getInterestStatus, isSavedRemoved, isNewActivity } = useConnectionsHub();
   const tabListRef = useRef<HTMLDivElement>(null);
-
-  const tabs = TAB_DEFS.map((tab) => ({
-    ...tab,
-    count: tabCounts[tab.id],
-  }));
-
-  const selectTab = setActiveTab;
-
-  const focusTab = useCallback((tabId: ConnectionsTabId) => {
-    const button = tabListRef.current?.querySelector<HTMLButtonElement>(
-      `[data-tab-id="${tabId}"]`
-    );
-    button?.focus();
-  }, []);
-
-  const handleKeyDown = useCallback(
-    (event: KeyboardEvent<HTMLDivElement>) => {
-      const currentIndex = tabs.findIndex((tab) => tab.id === activeTab);
-      if (currentIndex === -1) return;
-
-      let nextIndex = currentIndex;
-
-      if (event.key === 'ArrowRight' || event.key === 'ArrowDown') {
-        event.preventDefault();
-        nextIndex = (currentIndex + 1) % tabs.length;
-      } else if (event.key === 'ArrowLeft' || event.key === 'ArrowUp') {
-        event.preventDefault();
-        nextIndex = (currentIndex - 1 + tabs.length) % tabs.length;
-      } else if (event.key === 'Home') {
-        event.preventDefault();
-        nextIndex = 0;
-      } else if (event.key === 'End') {
-        event.preventDefault();
-        nextIndex = tabs.length - 1;
-      } else {
-        return;
-      }
-
-      const nextTab = tabs[nextIndex];
-      selectTab(nextTab.id);
-      focusTab(nextTab.id);
-    },
-    [activeTab, focusTab, selectTab, tabs]
-  );
-
+  const hasNew: Partial<Record<ConnectionsTabId, boolean>> = {
+    mutual: mutual.some(profile => isNewActivity('connection:' + profile.connectionId))
+      || interestReceived.some(profile => getInterestStatus(profile.id) === 'mutual' && isNewActivity('connection:' + profile.interestId)),
+    interestedInYou: interestReceived.some(profile => getInterestStatus(profile.id) === 'pending' && isNewActivity('interest:' + profile.interestId))
+      || openToChat.some(profile => ['pending', 'saved_later'].includes(getOpenToChatStatus(profile.id)) && isNewActivity('request:' + profile.requestId)),
+    saved: saved.some(profile => !isSavedRemoved(profile.id) && isNewActivity('saved:' + profile.id)),
+  };
   const isVertical = layout === 'vertical';
+  const selectedTab = (activeTab === 'sent' || activeTab === 'openToChat') ? 'interestedInYou' : activeTab;
+  const activeIndex = TABS.findIndex(tab => tab.id === selectedTab);
+
+  function handleKeyDown(event: KeyboardEvent<HTMLDivElement>) {
+    const current = Math.max(0, activeIndex);
+    let next: number;
+    if (event.key === 'Home') next = 0;
+    else if (event.key === 'End') next = TABS.length - 1;
+    else if (event.key === (isVertical ? 'ArrowDown' : 'ArrowRight')) next = (current + 1) % TABS.length;
+    else if (event.key === (isVertical ? 'ArrowUp' : 'ArrowLeft')) next = (current + TABS.length - 1) % TABS.length;
+    else return;
+    event.preventDefault();
+    setActiveTab(TABS[next].id);
+    tabListRef.current?.querySelector<HTMLButtonElement>(`[data-tab-id="${TABS[next].id}"]`)?.focus();
+  }
 
   return (
-    <div
-      ref={tabListRef}
-      role="tablist"
-      aria-label="Connections sections"
-      onKeyDown={handleKeyDown}
-      className={
-        isVertical
-          ? 'flex flex-col gap-2'
-          : 'scrollbar-none -mx-1 flex gap-2 overflow-x-auto px-1 pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden'
-      }
-    >
-      {tabs.map((tab) => {
-        const isActive = tab.id === activeTab;
-        return (
-          <button
-            key={tab.id}
-            type="button"
-            role="tab"
-            id={`connections-tab-${tab.id}`}
-            data-tab-id={tab.id}
-            aria-selected={isActive}
-            aria-controls={`connections-panel-${tab.id}`}
-            tabIndex={isActive ? 0 : -1}
-            onClick={() => selectTab(tab.id)}
-            className={
-              isVertical
-                ? `inline-flex w-full items-center justify-between gap-3 rounded-2xl px-4 py-3 text-left text-sm font-semibold transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0B2D5C] ${
-                    isActive
-                      ? 'bg-[#0B2D5C] text-white shadow-[0_8px_20px_rgba(11,45,92,0.18)]'
-                      : 'border border-[#0B2D5C]/10 bg-white/70 text-[#0B2D5C] hover:border-[#0B2D5C]/25 hover:bg-white'
-                  }`
-                : `inline-flex shrink-0 items-center gap-2 rounded-full px-4 py-2 text-sm font-semibold transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0B2D5C] ${
-                    isActive
-                      ? 'bg-[#0B2D5C] text-white shadow-[0_8px_20px_rgba(11,45,92,0.18)]'
-                      : 'border border-[#0B2D5C]/12 bg-white/70 text-[#0B2D5C] hover:border-[#0B2D5C]/25'
-                  }`
-            }
-          >
+    <div>
+      <div ref={tabListRef} role="tablist" aria-label="Connections sections"
+        aria-orientation={isVertical ? 'vertical' : 'horizontal'}
+        onKeyDown={handleKeyDown}
+        data-connection-tabs
+        className={isVertical ? 'flex flex-col gap-2' : 'grid grid-cols-3 gap-1'}>
+        {TABS.map((tab, index) => (
+          <button key={tab.id} type="button" role="tab"
+            id={`connections-tab-${layout}-${tab.id}`}
+            data-tab-id={tab.id} aria-selected={selectedTab === tab.id}
+            aria-controls={selectedTab === tab.id ? `connections-panel-${activeTab}` : undefined}
+            tabIndex={selectedTab === tab.id || (activeIndex < 0 && index === 0) ? 0 : -1}
+            onClick={() => setActiveTab(tab.id)}
+            className="flex min-w-0 flex-row items-center justify-center gap-2 rounded-lg px-1 py-3 text-xs font-semibold focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#C92027]">
             <span>{tab.label}</span>
-            <span
-              className={`inline-flex min-w-[1.5rem] items-center justify-center rounded-full px-2 py-0.5 text-xs font-bold ${
-                isActive
-                  ? 'bg-white/20 text-white'
-                  : 'bg-[#E8EEF6] text-[#0B2D5C]'
-              }`}
-              aria-label={`${tab.count} items`}
-            >
-              {tab.count}
-            </span>
+            {hasNew[tab.id] ? <span data-new-activity role="img" aria-label="New activity" /> : null}
           </button>
-        );
-      })}
+        ))}
+      </div>
     </div>
   );
 }
