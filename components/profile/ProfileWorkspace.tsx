@@ -335,7 +335,7 @@ export default function ProfileWorkspace({
                   </span>
                   <span className={item.complete ? '' : 'text-[#5A6575]'}>{item.label}</span>
                   {!item.complete ? (
-                    <span className="ml-auto text-xs font-semibold uppercase tracking-[0.12em] text-[#D62828]">
+                    <span className="ml-auto text-xs font-semibold uppercase tracking-[0.12em] text-white">
                       {item.label.split(' ')[0]}
                     </span>
                   ) : null}
