@@ -8,15 +8,13 @@ import ForgeAuthenticatedTwoColumnShell from '@/components/ForgeAuthenticatedTwo
 import ForgeDesktopAppNav from '@/components/ForgeDesktopAppNav';
 import {
   EmptyState,
-  ForYouOverviewCard,
   InterestReceivedCard,
   MutualConnectionCard,
   OpenToChatRequestCard,
   SavedProfileCard,
-  SectionHeading,
   SentActivityCard,
 } from '@/components/connections/ConnectionCards';
-import ConnectionsTabs, { ConnectionsSectionIntro } from '@/components/connections/ConnectionsTabs';
+import ConnectionsTabs from '@/components/connections/ConnectionsTabs';
 import { useConnectionsHub } from '@/components/connections/ConnectionsHubProvider';
 import ConversationHub from '@/components/conversations/ConversationHub';
 import { resetAllSeedState } from '@/lib/seed/actions';
@@ -66,7 +64,7 @@ export default function ConnectionsHubPrototype({
   };
 
   const visibleOpenToChat = useMemo(
-    () => openToChat.filter((profile) => getOpenToChatStatus(profile.id) !== 'declined'),
+    () => openToChat.filter((profile) => ['pending', 'saved_later'].includes(getOpenToChatStatus(profile.id))),
     [getOpenToChatStatus, openToChat]
   );
 
@@ -95,14 +93,6 @@ export default function ConnectionsHubPrototype({
     [isSentWithdrawn, sent]
   );
 
-  const forYouOpenToChat = visibleOpenToChat
-    .filter((profile) => getOpenToChatStatus(profile.id) === 'pending')
-    .slice(0, 2);
-  const hasForYouContent =
-    forYouOpenToChat.length > 0 ||
-    visibleInterest.length > 0 ||
-    visibleMutual.length > 0;
-
   const seedResetControl = showSeedReset ? (
     <div className="flex justify-center pt-2">
       <button
@@ -116,63 +106,8 @@ export default function ConnectionsHubPrototype({
   ) : null;
 
   const tabPanels = {
-    forYou: (
-      <div className="flex flex-col gap-8">
-        {!hasForYouContent ? (
-          <EmptyState
-            title="Nothing needs your attention right now."
-            description="We'll let you know when someone expresses interest or opens the door to a conversation."
-          />
-        ) : (
-          <>
-            {forYouOpenToChat.length > 0 && (
-              <section>
-                <SectionHeading>Chat Requests</SectionHeading>
-                <div className="flex flex-col gap-4">
-                  {forYouOpenToChat.map((profile) => (
-                    <ForYouOverviewCard
-                      key={profile.id}
-                      profile={profile}
-                      variant="open_to_chat"
-                    />
-                  ))}
-                </div>
-              </section>
-            )}
-            {visibleInterest.length > 0 && (
-              <section>
-                <SectionHeading>Interested in You</SectionHeading>
-                <div className="flex flex-col gap-4">
-                  {visibleInterest.map((profile) => (
-                    <ForYouOverviewCard
-                      key={profile.id}
-                      profile={profile}
-                      variant="interest"
-                    />
-                  ))}
-                </div>
-              </section>
-            )}
-            {visibleMutual.length > 0 && (
-              <section>
-                <SectionHeading>Connected</SectionHeading>
-                <div className="flex flex-col gap-4">
-                  {visibleMutual.map((profile) => (
-                    <ForYouOverviewCard
-                      key={profile.id}
-                      profile={profile}
-                      variant="mutual"
-                    />
-                  ))}
-                </div>
-              </section>
-            )}
-          </>
-        )}
-      </div>
-    ),
     openToChat: (
-      <div className="flex flex-col gap-4 lg:grid lg:grid-cols-2 lg:gap-6 xl:gap-8">
+      <div className="flex flex-col gap-6">
         {visibleOpenToChat.length === 0 ? (
           <div className="lg:col-span-2">
             <EmptyState
@@ -188,7 +123,7 @@ export default function ConnectionsHubPrototype({
       </div>
     ),
     interestedInYou: (
-      <div className="flex flex-col gap-4 lg:grid lg:grid-cols-2 lg:gap-6 xl:gap-8">
+      <div className="flex flex-col gap-6">
         {visibleInterest.length === 0 ? (
           <div className="lg:col-span-2">
             <EmptyState
@@ -230,16 +165,13 @@ export default function ConnectionsHubPrototype({
     ),
     saved: (
       <div className="flex flex-col gap-6">
-        <p className="rounded-2xl border border-[#0B2D5C]/08 bg-white/60 px-4 py-3 text-sm text-[#5A6575]">
-          Only you can see the profiles you save.
-        </p>
         {visibleSaved.length === 0 ? (
           <EmptyState
             title="No saved profiles yet."
             description="Profiles you save privately will appear here."
           />
         ) : (
-          <div className="flex flex-col gap-4 lg:grid lg:grid-cols-2 lg:gap-6">
+          <div className="flex flex-col gap-6">
             {visibleSaved.map((profile) => (
               <SavedProfileCard key={profile.id} profile={profile} />
             ))}
@@ -293,18 +225,12 @@ export default function ConnectionsHubPrototype({
               {isMessages ? 'Messages' : 'Connections'}
             </h1>
 
-            <p className="mt-4 text-[15px] leading-relaxed text-[#5A6575]">
-              {isMessages ? 'Your conversations, all in one place.' : 'Review conversations, mutual interest, and profiles you chose to revisit.'}
-            </p>
 
             <ForgeDesktopAppNav
               active={activeTab === 'conversations' ? 'messages' : 'connections'}
             />
 
-            {!isMessages && <div className="mt-8 border-t border-[#0B2D5C]/08 pt-6">
-              <p className="mb-3 text-[11px] font-semibold uppercase tracking-[0.16em] text-[#D62828]">
-                Sections
-              </p>
+            {<div className="mt-8 border-t border-[#0B2D5C]/08 pt-6">
               <ConnectionsTabs layout="vertical" />
             </div>}
           </div>
@@ -333,9 +259,6 @@ export default function ConnectionsHubPrototype({
             >
               {isMessages ? 'Messages' : 'Connections'}
             </h1>
-            <p className="mt-3 max-w-md text-[15px] leading-relaxed text-[#5A6575] sm:text-base">
-              {isMessages ? 'Your conversations, all in one place.' : 'Review conversations, mutual interest, and profiles you chose to revisit.'}
-            </p>
           </header>
 
           {loadError && (
@@ -347,7 +270,7 @@ export default function ConnectionsHubPrototype({
             </p>
           )}
 
-          {!isMessages && <div
+          {<div
             className="mt-6 shrink-0 lg:hidden"
             style={{
               animation: 'connectionsFadeUp 0.55s ease-out both',
@@ -358,18 +281,19 @@ export default function ConnectionsHubPrototype({
           </div>}
 
           <div
-            role={isMessages ? "region" : "tabpanel"}
+            role={activeTab === 'openToChat' || activeTab === 'sent' ? "region" : "tabpanel"}
             id={`connections-panel-${activeTab}`}
-            aria-label={isMessages ? "Messages" : undefined}
-            aria-labelledby={isMessages ? undefined : `connections-tab-${activeTab}`}
+            aria-label={{ mutual: 'Connected', interestedInYou: 'Interested', conversations: 'Messages', saved: 'Saved', openToChat: 'Chat requests', sent: 'Sent activity', forYou: 'Connected' }[activeTab]}
             className="mt-7 min-h-0 flex-1 lg:mt-0"
             style={{
               animation: 'connectionsFadeUp 0.55s ease-out both',
               animationDelay: '80ms',
             }}
           >
-            {!isMessages ? <ConnectionsSectionIntro /> : null}
-            {tabPanels[activeTab]}
+            {activeTab === 'openToChat' || activeTab === 'sent' ? (
+              <h2 className="mb-4 text-xl font-semibold text-[#0B2D5C]">{activeTab === 'sent' ? 'Sent activity' : 'Chat requests'}</h2>
+            ) : null}
+            {tabPanels[activeTab === 'forYou' ? 'mutual' : activeTab]}
           </div>
 
           {desktopNote && (
