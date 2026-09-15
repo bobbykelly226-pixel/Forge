@@ -480,3 +480,14 @@
   color: #FFFFFF !important;
   --profile-text: #FFFFFF;
 }
+
+/* Counts are quiet text, without a separate badge behind the number. */
+.forge-profile-theme [data-connection-tabs] > button[role="tab"] > span[aria-label] {
+  background: transparent !important;
+  color: inherit !important;
+  border: 0;
+  box-shadow: none;
+  padding: 0;
+  font-weight: 400;
+  font-variant-numeric: tabular-nums;
+}
