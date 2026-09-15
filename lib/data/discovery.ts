@@ -308,7 +308,8 @@ export async function loadActionStateForProfiles(
       .select('id, recipient_id, note, status')
       .eq('sender_id', user.id)
       .in('recipient_id', uniqueIds)
-      .in('status', ['pending', 'deferred', 'accepted']),
+      .in('status', ['pending', 'deferred', 'accepted'])
+      .or(`status.eq.accepted,expires_at.gt.${new Date().toISOString()}`),
     supabase
       .from('connections')
       .select('user_a_id, user_b_id, status')

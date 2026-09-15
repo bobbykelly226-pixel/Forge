@@ -192,9 +192,10 @@ export async function loadConnectionsHub(): Promise<DataAccessResult<Connections
       .maybeSingle(),
     supabase
       .from('open_to_chat_requests')
-      .select('id, sender_id, note, status, created_at')
+      .select('id, sender_id, note, status, created_at, expires_at')
       .eq('recipient_id', user.id)
       .in('status', ['pending', 'deferred'])
+      .gt('expires_at', new Date().toISOString())
       .order('created_at', { ascending: false }),
     supabase
       .from('interests')
@@ -221,9 +222,10 @@ export async function loadConnectionsHub(): Promise<DataAccessResult<Connections
       .order('created_at', { ascending: false }),
     supabase
       .from('open_to_chat_requests')
-      .select('id, recipient_id, note, status, created_at')
+      .select('id, recipient_id, note, status, created_at, expires_at')
       .eq('sender_id', user.id)
       .in('status', ['pending', 'deferred'])
+      .gt('expires_at', new Date().toISOString())
       .order('created_at', { ascending: false }),
   ]);
 
