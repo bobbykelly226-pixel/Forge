@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo } from 'react';
+import { useEffect, useMemo, useRef } from 'react';
 import { ChevronDown, SlidersHorizontal, X } from 'lucide-react';
 
 import {
@@ -16,6 +16,7 @@ import type { DiscoveryFeedCardModel } from '@/lib/discovery/presentation';
 import DiscoveryMatchingPreferences, {
   type DiscoveryMatchingLocation,
 } from '@/components/discovery/DiscoveryMatchingPreferences';
+import DiscoveryNonNegotiables from '@/components/discovery/DiscoveryNonNegotiables';
 import type { Tables } from '@/lib/supabase/database.types';
 
 type StringArrayKey = {
@@ -111,13 +112,28 @@ export default function DiscoveryFiltersDrawer({
   initialPreferences: Tables<'profile_preferences'> | null;
   initialLocation: DiscoveryMatchingLocation;
 }) {
+  const panelRef = useRef<HTMLElement>(null);
   useEffect(() => {
     if (!open) return;
+    const previousFocus = document.activeElement as HTMLElement | null;
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    panelRef.current?.focus();
     const onKeyDown = (event: KeyboardEvent) => {
       if (event.key === 'Escape') onClose();
+      if (event.key === 'Tab') {
+        const controls = Array.from(panelRef.current?.querySelectorAll<HTMLElement>('button:not(:disabled), input:not(:disabled), select:not(:disabled), summary, [tabindex="0"]') ?? []).filter(el => el.getClientRects().length > 0);
+        const first = controls[0], last = controls[controls.length - 1];
+        if (event.shiftKey && (document.activeElement === first || document.activeElement === panelRef.current)) { event.preventDefault(); last?.focus(); }
+        else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first?.focus(); }
+      }
     };
     document.addEventListener('keydown', onKeyDown);
-    return () => document.removeEventListener('keydown', onKeyDown);
+    return () => {
+      document.removeEventListener('keydown', onKeyDown);
+      document.body.style.overflow = previousOverflow;
+      previousFocus?.focus();
+    };
   }, [onClose, open]);
 
   const thingsIEnjoyOptions = useMemo(
@@ -131,21 +147,23 @@ export default function DiscoveryFiltersDrawer({
     onChange({ ...filters, [key]: values });
 
   return (
-    <div className="fixed inset-0 z-50 flex justify-end bg-[#071C38]/45" role="presentation">
-      <button
-        type="button"
-        className="absolute inset-0 cursor-default"
-        aria-label="Close filters"
+    <div className="fixed inset-0 z-[90] flex items-end justify-center sm:items-center sm:p-6" role="presentation">
+      <div
+        className="absolute inset-0"
+        style={{ backgroundColor: 'rgba(5, 16, 30, 0.65)', backdropFilter: 'blur(3px)' }}
+        aria-hidden="true"
         onClick={onClose}
       />
       <section
+        ref={panelRef}
+        tabIndex={-1}
         data-discovery-filters
         role="dialog"
         aria-modal="true"
         aria-labelledby="discovery-filter-title"
-        className="relative h-full w-full max-w-xl overflow-y-auto bg-[#FBF9F6] shadow-[-20px_0_60px_rgba(7,28,56,0.22)]"
+        className="relative flex w-full max-w-2xl max-h-[92dvh] flex-col overflow-hidden rounded-t-xl bg-[#E6E6E7] shadow-2xl outline-none sm:max-h-[88dvh] sm:rounded-xl"
       >
-        <header data-profile-chrome="header" className="sticky top-0 z-10 flex items-center justify-between border-b border-[#0B2D5C]/08 bg-[#FBF9F6]/95 px-5 py-4 backdrop-blur sm:px-7">
+        <header data-profile-chrome="header" className="shrink-0 z-10 flex items-center justify-between border-b border-[#0B2D5C]/08 bg-[#FBF9F6]/95 px-5 py-4 backdrop-blur sm:px-7">
           <div className="flex items-center gap-3">
             <SlidersHorizontal className="h-5 w-5 text-[#D62828]" aria-hidden="true" />
             <div>
@@ -167,11 +185,13 @@ export default function DiscoveryFiltersDrawer({
           </button>
         </header>
 
-        <div className="space-y-7 px-5 py-6 sm:px-7">
+        <div className="min-h-0 overflow-y-auto space-y-7 px-5 py-6 sm:px-7">
           <DiscoveryMatchingPreferences
             initialPreferences={initialPreferences}
             initialLocation={initialLocation}
           />
+
+          <DiscoveryNonNegotiables initialValue={initialPreferences?.non_negotiables} />
 
           <div className="space-y-3">
             <div>
@@ -243,13 +263,13 @@ export default function DiscoveryFiltersDrawer({
           </div>
         </div>
 
-        <footer className="sticky bottom-0 flex gap-3 border-t border-[#0B2D5C]/08 bg-[#FBF9F6]/95 px-5 py-4 backdrop-blur sm:px-7">
+        <footer className="shrink-0 flex gap-3 border-t border-[#0B2D5C]/08 bg-[#FBF9F6]/95 px-5 py-4 backdrop-blur sm:px-7">
           <button
             type="button"
             onClick={() => onChange({ ...EMPTY_DISCOVERY_FILTERS })}
             className="flex-1 rounded-2xl border border-[#0B2D5C]/20 bg-white px-4 py-3 text-sm font-semibold text-[#0B2D5C]"
           >
-            Clear all
+            Clear more filters
           </button>
           <button
             type="button"

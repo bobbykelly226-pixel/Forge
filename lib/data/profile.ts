@@ -273,7 +273,8 @@ export async function upsertCurrentUserPreferences(
 
   const { data, error } = await ctx.supabase
     .from('profile_preferences')
-    .upsert({ user_id: ctx.user.id, ...fields }, { onConflict: 'user_id' })
+    .update(fields)
+    .eq('user_id', ctx.user.id)
     .select('*')
     .single();
 

@@ -720,6 +720,7 @@ export type Database = {
       profile_preferences: {
         Row: {
           created_at: string
+          non_negotiables: Json
           discovery_enabled: boolean
           gender_identity: string | null
           interested_in: string[]
@@ -732,6 +733,7 @@ export type Database = {
         }
         Insert: {
           created_at?: string
+          non_negotiables?: Json
           discovery_enabled?: boolean
           gender_identity?: string | null
           interested_in?: string[]
@@ -744,6 +746,7 @@ export type Database = {
         }
         Update: {
           created_at?: string
+          non_negotiables?: Json
           discovery_enabled?: boolean
           gender_identity?: string | null
           interested_in?: string[]

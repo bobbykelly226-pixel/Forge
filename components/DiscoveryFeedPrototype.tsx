@@ -15,6 +15,7 @@ import {
   countActiveDiscoveryFilters,
   profileMatchesDiscoveryFilters,
 } from '@/lib/discovery/filters';
+import { countNonNegotiables, validateNonNegotiables, EMPTY_NON_NEGOTIABLES } from '@/lib/discovery/non-negotiables';
 import type { DiscoveryFeedCardModel } from '@/lib/discovery/presentation';
 import type { Tables } from '@/lib/supabase/database.types';
 import type { DiscoveryMatchingLocation } from '@/components/discovery/DiscoveryMatchingPreferences';
@@ -85,7 +86,7 @@ export default function DiscoveryFeedPrototype({
       !isPassed(profile.id) && profileMatchesDiscoveryFilters(profile, filters)
   );
   const greeting = useMemo(() => getTimeGreeting(), []);
-  const activeFilterCount = countActiveDiscoveryFilters(filters);
+  const activeFilterCount = countActiveDiscoveryFilters(filters) + countNonNegotiables(validateNonNegotiables(initialPreferences?.non_negotiables) ?? EMPTY_NON_NEGOTIABLES);
 
   const feedContent = loadError ? (
     <section
@@ -124,6 +125,7 @@ export default function DiscoveryFeedPrototype({
           ? 'Try widening or clearing your filters to see more eligible profiles.'
           : 'When eligible Forge members show themselves in Discovery, they will appear here.'}
       </p>
+      <button type="button" onClick={() => setFiltersOpen(true)} className="mt-5 rounded-md bg-[#0B2D5C] px-5 py-3 text-white">Edit filters</button>
     </section>
   ) : (
     <div

@@ -102,7 +102,10 @@ export default function NotificationsDrawer({
     >
       <div
         className="absolute inset-0"
-        style={{ backgroundColor: 'rgba(11, 45, 92, 0.28)' }}
+        style={{
+          backgroundColor: 'rgba(5, 16, 30, 0.65)',
+          backdropFilter: 'blur(3px)',
+        }}
         aria-hidden="true"
         onClick={onClose}
       />
@@ -115,7 +118,7 @@ export default function NotificationsDrawer({
         aria-describedby={descriptionId}
         tabIndex={-1}
         onKeyDown={onKeyDown}
-        className="relative z-[91] flex h-[min(88vh,40rem)] w-full max-w-md flex-col overflow-hidden rounded-t-[1.75rem] bg-[#F8F6F2] shadow-[0_-18px_60px_rgba(11,45,92,0.22)] outline-none sm:h-auto sm:max-h-[min(80dvh,40rem)] sm:max-w-xl sm:rounded-xl"
+        className="relative z-[91] flex h-[min(88vh,40rem)] w-full max-w-md flex-col overflow-hidden rounded-t-xl border-2 border-white bg-[#E6E6E7] shadow-[0_24px_80px_rgba(0,0,0,0.55)] outline-none sm:h-auto sm:max-h-[min(80dvh,40rem)] sm:max-w-xl sm:rounded-xl"
       >
         <div data-profile-chrome="header" className="flex shrink-0 items-start justify-between gap-3 border-b border-[#0B2D5C]/08 px-5 py-5 sm:px-6">
           <div className="min-w-0">

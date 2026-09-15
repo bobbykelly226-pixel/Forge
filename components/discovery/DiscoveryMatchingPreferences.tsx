@@ -95,6 +95,7 @@ export default function DiscoveryMatchingPreferences({
               <button
                 key={option.value}
                 type="button"
+                data-matching-interest
                 aria-pressed={selected}
                 disabled={isPending}
                 onClick={() => toggleInterest(option.value)}
