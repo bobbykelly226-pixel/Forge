@@ -226,13 +226,13 @@ export function ConnectionsHubProvider({
   const router = useRouter();
   const searchParams = useSearchParams();
   const requestedTab = searchParams.get('tab');
-  const validTabs: ConnectionsTabId[] = ['forYou', 'openToChat', 'interestedInYou', 'mutual', 'conversations', 'saved', 'sent'];
+  const validTabs: ConnectionsTabId[] = [ 'openToChat', 'interestedInYou', 'mutual', 'conversations', 'saved', 'sent'];
   const activeTab: ConnectionsTabId = requestedTab && validTabs.includes(requestedTab as ConnectionsTabId)
     ? requestedTab as ConnectionsTabId
-    : 'forYou';
+    : 'mutual';
   const setActiveTab = useCallback((tab: ConnectionsTabId) => {
     const params = new URLSearchParams(window.location.search);
-    if (tab === 'forYou') params.delete('tab');
+    if (tab === 'mutual' || tab === 'forYou') params.delete('tab');
     else params.set('tab', tab);
     const query = params.toString();
     router.replace(`/connections${query ? `?${query}` : ''}`, { scroll: false });
