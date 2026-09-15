@@ -4,18 +4,23 @@ import { useRef, type KeyboardEvent } from 'react';
 import { useConnectionsHub, type ConnectionsTabId } from '@/components/connections/ConnectionsHubProvider';
 
 const TABS: { id: ConnectionsTabId; label: string }[] = [
-  { id: 'mutual', label: 'Connected' },
+  { id: 'mutual', label: 'Connections' },
   { id: 'interestedInYou', label: 'Interested' },
-  { id: 'conversations', label: 'Messages' },
   { id: 'saved', label: 'Saved' },
 ];
 
 export default function ConnectionsTabs({ layout = 'horizontal' }: { layout?: 'horizontal' | 'vertical' }) {
-  const { activeTab, setActiveTab, tabCounts, openToChat, getOpenToChatStatus } = useConnectionsHub();
+  const { activeTab, setActiveTab, openToChat, getOpenToChatStatus, mutual, interestReceived, saved, getInterestStatus, isSavedRemoved, isNewActivity } = useConnectionsHub();
   const tabListRef = useRef<HTMLDivElement>(null);
-  const requests = openToChat.filter(profile => ['pending', 'saved_later'].includes(getOpenToChatStatus(profile.id))).length;
+  const hasNew: Partial<Record<ConnectionsTabId, boolean>> = {
+    mutual: mutual.some(profile => isNewActivity('connection:' + profile.connectionId))
+      || interestReceived.some(profile => getInterestStatus(profile.id) === 'mutual' && isNewActivity('connection:' + profile.interestId)),
+    interestedInYou: interestReceived.some(profile => getInterestStatus(profile.id) === 'pending' && isNewActivity('interest:' + profile.interestId))
+      || openToChat.some(profile => ['pending', 'saved_later'].includes(getOpenToChatStatus(profile.id)) && isNewActivity('request:' + profile.requestId)),
+    saved: saved.some(profile => !isSavedRemoved(profile.id) && isNewActivity('saved:' + profile.id)),
+  };
   const isVertical = layout === 'vertical';
-  const selectedTab = activeTab === 'sent' ? 'interestedInYou' : activeTab;
+  const selectedTab = (activeTab === 'sent' || activeTab === 'openToChat') ? 'interestedInYou' : activeTab;
   const activeIndex = TABS.findIndex(tab => tab.id === selectedTab);
 
   function handleKeyDown(event: KeyboardEvent<HTMLDivElement>) {
@@ -33,18 +38,11 @@ export default function ConnectionsTabs({ layout = 'horizontal' }: { layout?: 'h
 
   return (
     <div>
-      {requests > 0 ? (
-        <div className="mb-3 flex items-center gap-3">
-          <button data-text-link type="button" onClick={() => setActiveTab('openToChat')} className="text-sm font-semibold">
-            Chat requests · {requests}
-          </button>
-        </div>
-      ) : null}
       <div ref={tabListRef} role="tablist" aria-label="Connections sections"
         aria-orientation={isVertical ? 'vertical' : 'horizontal'}
         onKeyDown={handleKeyDown}
         data-connection-tabs
-        className={isVertical ? 'flex flex-col gap-2' : 'grid grid-cols-4 gap-1'}>
+        className={isVertical ? 'flex flex-col gap-2' : 'grid grid-cols-3 gap-1'}>
         {TABS.map((tab, index) => (
           <button key={tab.id} type="button" role="tab"
             id={`connections-tab-${layout}-${tab.id}`}
@@ -52,9 +50,9 @@ export default function ConnectionsTabs({ layout = 'horizontal' }: { layout?: 'h
             aria-controls={selectedTab === tab.id ? `connections-panel-${activeTab}` : undefined}
             tabIndex={selectedTab === tab.id || (activeIndex < 0 && index === 0) ? 0 : -1}
             onClick={() => setActiveTab(tab.id)}
-            className="flex min-w-0 flex-col items-center justify-center gap-1 rounded-lg px-1 py-3 text-xs font-semibold focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#C92027]">
+            className="flex min-w-0 flex-row items-center justify-center gap-2 rounded-lg px-1 py-3 text-xs font-semibold focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#C92027]">
             <span>{tab.label}</span>
-            {(tabCounts[tab.id] ?? 0) > 0 ? <span className="text-xs" aria-label={`${tabCounts[tab.id]} items`}>{tabCounts[tab.id]}</span> : null}
+            {hasNew[tab.id] ? <span data-new-activity role="img" aria-label="New activity" /> : null}
           </button>
         ))}
       </div>
