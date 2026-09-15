@@ -3,7 +3,7 @@
 begin;
 create extension if not exists pgtap with schema extensions;
 set local search_path = public, extensions, pg_temp;
-select plan(10);
+select plan(14);
 
 insert into auth.users (
   instance_id, id, aud, role, email, encrypted_password, email_confirmed_at,
@@ -46,5 +46,22 @@ select ok(public.forge_profiles_match_preferences('15151515-1515-4515-8515-15151
 select ok(not public.forge_valid_non_negotiables('{"smokeFree":false,"faith":["invalid"],"children":[]}'), 'invalid identities rejected');
 select ok(not public.forge_valid_non_negotiables('{"smokeFree":"true","faith":[],"children":[]}'), 'invalid toggle type rejected');
 select function_privs_are('public','forge_meets_non_negotiables',array['jsonb','text','text','text'],'anon',array[]::text[],'anonymous comparison RPC unavailable');
+
+-- Discovery excludes mismatches; existing active connections keep profile access.
+update public.profiles set status='active', is_discoverable=true where id='16161616-1616-4616-8616-161616161616';
+update public.profiles set smoking='regularly' where id='16161616-1616-4616-8616-161616161616';
+select set_config('request.jwt.claim.sub','15151515-1515-4515-8515-151515151515',true);
+set local role authenticated;
+select is((select count(*)::integer from public.get_eligible_discovery_profile('16161616-1616-4616-8616-161616161616')),0,'unconnected mismatch is not accessible through Discovery');
+select is((with changed as (
+update public.profile_preferences set non_negotiables='{"smokeFree":false,"faith":[],"children":[]}' where user_id='16161616-1616-4616-8616-161616161616' returning user_id
+) select count(*)::integer from changed),0,'member cannot change another member requirements');
+select lives_ok($$update public.profile_preferences set non_negotiables='{"smokeFree":true,"faith":[],"children":[]}' where user_id='15151515-1515-4515-8515-151515151515'$$,'member may save their own requirements');
+reset role;
+insert into public.connections(user_a_id,user_b_id,source,status) values('15151515-1515-4515-8515-151515151515','16161616-1616-4616-8616-161616161616','mutual_interest','active');
+set local role authenticated;
+select is((select count(*)::integer from public.get_eligible_discovery_profile('16161616-1616-4616-8616-161616161616')),1,'active connection can still open profile despite non-negotiable mismatch');
+reset role;
 select * from finish();
+
 rollback;
