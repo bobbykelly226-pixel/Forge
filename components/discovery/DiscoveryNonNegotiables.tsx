@@ -3,7 +3,7 @@ import { useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
 import { saveNonNegotiables } from '@/app/actions/non-negotiables';
 import { EMPTY_NON_NEGOTIABLES, validateNonNegotiables, type NonNegotiables } from '@/lib/discovery/non-negotiables';
-import { FAITH_IDENTITY_OPTIONS } from '@/lib/profile/structured-options';
+import { FAITH_IDENTITY_OPTIONS, DRINKING_OPTIONS } from '@/lib/profile/structured-options';
 
 const childrenOptions = [
   { value: 'yes', label: 'Wants children' }, { value: 'no', label: 'Does not want children' },
@@ -13,12 +13,14 @@ export default function DiscoveryNonNegotiables({ initialValue }: { initialValue
   const [value, setValue] = useState<NonNegotiables>(() => validateNonNegotiables(initialValue) ?? EMPTY_NON_NEGOTIABLES);
   const [faithOn, setFaithOn] = useState(value.faith.length > 0);
   const [childrenOn, setChildrenOn] = useState(value.children.length > 0);
+  const [drinkingOn, setDrinkingOn] = useState(value.drinking.length > 0);
+  const [petsOn, setPetsOn] = useState(value.pets.length > 0);
   const [message, setMessage] = useState('');
   const [pending, startTransition] = useTransition();
   const router = useRouter();
   const update = (next: NonNegotiables) => { setValue(next); setMessage(''); };
   const save = () => {
-    if ((faithOn && !value.faith.length) || (childrenOn && !value.children.length)) {
+    if ((faithOn && !value.faith.length) || (childrenOn && !value.children.length) || (drinkingOn && !value.drinking.length) || (petsOn && !value.pets.length)) {
       setMessage('Select at least one answer for each enabled requirement.'); return;
     }
     startTransition(async () => {
@@ -29,7 +31,7 @@ export default function DiscoveryNonNegotiables({ initialValue }: { initialValue
       } catch { setMessage('Could not save. Please try again.'); }
     });
   };
-  const choices = (key: 'faith' | 'children', options: {value:string;label:string}[]) => (
+  const choices = (key: 'faith' | 'children' | 'drinking' | 'pets', options: {value:string;label:string}[]) => (
     <div className="mt-3 grid gap-2 sm:grid-cols-2">
       {options.map(o => <label key={o.value} className="flex items-center gap-2 text-sm text-black">
         <input type="checkbox" checked={value[key].includes(o.value)} onChange={e => update({...value, [key]: e.target.checked ? [...value[key], o.value] : value[key].filter(x => x !== o.value)})} />{o.label}
@@ -52,6 +54,14 @@ export default function DiscoveryNonNegotiables({ initialValue }: { initialValue
       <fieldset><legend className="sr-only">Future children</legend>
         <label className="flex items-center gap-3 text-sm font-semibold text-[#0B2D5C]"><input type="checkbox" checked={childrenOn} onChange={e => {setChildrenOn(e.target.checked); update({...value,children:[]});}} />Only show people with these plans for future children</label>
         {childrenOn && <><p className="mt-2 text-sm text-black">This concerns having children in the future—not whether someone already has children. Select all answers you’re open to.</p>{choices('children',childrenOptions)}</>}
+      </fieldset>
+      <fieldset><legend className="sr-only">Drinking</legend>
+        <label className="flex items-center gap-3 text-sm font-semibold text-[#0B2D5C]"><input type="checkbox" checked={drinkingOn} onChange={e => {setDrinkingOn(e.target.checked); update({...value,drinking:[]});}} />Only show people with these drinking habits</label>
+        {drinkingOn && choices('drinking', DRINKING_OPTIONS.filter(o => o.value !== 'prefer_not_to_say'))}
+      </fieldset>
+      <fieldset><legend className="sr-only">Pets</legend>
+        <label className="flex items-center gap-3 text-sm font-semibold text-[#0B2D5C]"><input type="checkbox" checked={petsOn} onChange={e => {setPetsOn(e.target.checked); update({...value,pets:[]});}} />Only show people with these pet situations</label>
+        {petsOn && <><p className="mt-2 text-sm text-black">Whether someone currently has pets.</p>{choices('pets', [{value:'yes',label:'Has pets'},{value:'no',label:'Does not have pets'}])}</>}
       </fieldset>
     </fieldset>
     <p className="text-sm text-black">For enabled requirements, unanswered and “Prefer not to say” answers won’t qualify. Both members’ requirements apply. Existing connections stay intact.</p>

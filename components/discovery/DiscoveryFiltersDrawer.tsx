@@ -150,7 +150,7 @@ export default function DiscoveryFiltersDrawer({
     <div className="fixed inset-0 z-[90] flex items-end justify-center sm:items-center sm:p-6" role="presentation">
       <div
         className="absolute inset-0"
-        style={{ backgroundColor: 'rgba(11, 45, 92, 0.28)' }}
+        style={{ backgroundColor: 'rgba(5, 16, 30, 0.65)', backdropFilter: 'blur(3px)' }}
         aria-hidden="true"
         onClick={onClose}
       />
@@ -161,9 +161,9 @@ export default function DiscoveryFiltersDrawer({
         role="dialog"
         aria-modal="true"
         aria-labelledby="discovery-filter-title"
-        className="relative w-full max-w-2xl max-h-[92dvh] overflow-y-auto rounded-t-xl bg-[#E6E6E7] shadow-2xl outline-none sm:max-h-[88dvh] sm:rounded-xl"
+        className="relative flex w-full max-w-2xl max-h-[92dvh] flex-col overflow-hidden rounded-t-xl bg-[#E6E6E7] shadow-2xl outline-none sm:max-h-[88dvh] sm:rounded-xl"
       >
-        <header data-profile-chrome="header" className="sticky top-0 z-10 flex items-center justify-between border-b border-[#0B2D5C]/08 bg-[#FBF9F6]/95 px-5 py-4 backdrop-blur sm:px-7">
+        <header data-profile-chrome="header" className="shrink-0 z-10 flex items-center justify-between border-b border-[#0B2D5C]/08 bg-[#FBF9F6]/95 px-5 py-4 backdrop-blur sm:px-7">
           <div className="flex items-center gap-3">
             <SlidersHorizontal className="h-5 w-5 text-[#D62828]" aria-hidden="true" />
             <div>
@@ -185,7 +185,7 @@ export default function DiscoveryFiltersDrawer({
           </button>
         </header>
 
-        <div className="space-y-7 px-5 py-6 sm:px-7">
+        <div className="min-h-0 overflow-y-auto space-y-7 px-5 py-6 sm:px-7">
           <DiscoveryMatchingPreferences
             initialPreferences={initialPreferences}
             initialLocation={initialLocation}
@@ -263,7 +263,7 @@ export default function DiscoveryFiltersDrawer({
           </div>
         </div>
 
-        <footer className="sticky bottom-0 flex gap-3 border-t border-[#0B2D5C]/08 bg-[#FBF9F6]/95 px-5 py-4 backdrop-blur sm:px-7">
+        <footer className="shrink-0 flex gap-3 border-t border-[#0B2D5C]/08 bg-[#FBF9F6]/95 px-5 py-4 backdrop-blur sm:px-7">
           <button
             type="button"
             onClick={() => onChange({ ...EMPTY_DISCOVERY_FILTERS })}

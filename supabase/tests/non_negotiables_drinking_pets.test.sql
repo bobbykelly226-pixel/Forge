@@ -1,0 +1,15 @@
+begin;
+create extension if not exists pgtap with schema extensions;
+set local search_path = public, extensions, pg_temp;
+select plan(9);
+select ok(public.forge_meets_non_negotiables('{"smokeFree":false,"faith":[],"children":[]}',null,null,null,null,null),'legacy preferences default new requirements off');
+select ok(public.forge_meets_non_negotiables('{"smokeFree":false,"faith":[],"children":[],"drinking":["never"],"pets":["yes"]}',null,null,null,'never','dog'),'explicit drinking and legacy pet ownership match');
+select ok(not public.forge_meets_non_negotiables('{"smokeFree":false,"faith":[],"children":[],"drinking":["never"],"pets":[]}',null,null,null,'socially',null),'drinking mismatch excluded');
+select ok(not public.forge_meets_non_negotiables('{"smokeFree":false,"faith":[],"children":[],"pets":["no"]}',null,null,null,null,'prefer_not_to_say'),'private pet answer excluded');
+select ok(not public.forge_valid_non_negotiables('{"smokeFree":false,"faith":[],"children":[],"drinking":["invented"]}'),'invalid drinking answer rejected');
+select ok(not public.forge_meets_non_negotiables('{"smokeFree":false,"faith":[],"children":[],"drinking":["never"]}',null,null,null,null,null),'unknown drinking answer excluded');
+select ok(not public.forge_meets_non_negotiables('{"smokeFree":false,"faith":[],"children":[],"pets":["no"]}',null,null,null,null,null),'unknown pet answer excluded');
+select ok(public.forge_meets_non_negotiables('{"smokeFree":false,"faith":[],"children":[],"pets":["no"]}',null,null,null,null,'no_pets'),'legacy no-pets answer matches');
+select function_privs_are('public','forge_meets_non_negotiables',array['jsonb','text','text','text','text','text'],'anon',array[]::text[],'anonymous expanded comparison RPC unavailable');
+select * from finish();
+rollback;

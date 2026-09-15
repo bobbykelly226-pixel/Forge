@@ -526,15 +526,21 @@
 }
 
 /* Matching choices use fill, rather than an inset outline, to show selection. */
-.forge-profile-theme button[data-matching-interest][aria-pressed="false"] {
+.forge-profile-theme [data-discovery-filters] button[type="button"][data-matching-interest][aria-pressed="false"] {
   background-color: #FFFFFF !important;
   color: #0B2D5C !important;
   border: 1px solid #0B2D5C;
   box-shadow: none;
 }
-.forge-profile-theme button[data-matching-interest][aria-pressed="true"] {
+.forge-profile-theme [data-discovery-filters] button[type="button"][data-matching-interest][aria-pressed="true"] {
   background-color: #0B2D5C !important;
   color: #FFFFFF !important;
   border: 1px solid #0B2D5C;
   box-shadow: none;
+}
+
+.forge-profile-theme [data-discovery-filters] {
+  background: #E6E6E7 !important;
+  border: 2px solid #FFFFFF;
+  box-shadow: 0 24px 80px rgba(0,0,0,.55);
 }
