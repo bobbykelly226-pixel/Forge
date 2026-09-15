@@ -524,3 +524,17 @@
   height: 10px;
   box-shadow: 0 0 0 3px #E6E6E7;
 }
+
+/* Matching choices use fill, rather than an inset outline, to show selection. */
+.forge-profile-theme button[data-matching-interest][aria-pressed="false"] {
+  background-color: #FFFFFF !important;
+  color: #0B2D5C !important;
+  border: 1px solid #0B2D5C;
+  box-shadow: none;
+}
+.forge-profile-theme button[data-matching-interest][aria-pressed="true"] {
+  background-color: #0B2D5C !important;
+  color: #FFFFFF !important;
+  border: 1px solid #0B2D5C;
+  box-shadow: none;
+}
