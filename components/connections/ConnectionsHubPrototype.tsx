@@ -224,7 +224,7 @@ export default function ConnectionsHubPrototype({
         aside={
           <div className="rounded-[1.75rem] border border-[#0B2D5C]/08 bg-white/70 p-6 shadow-[0_16px_44px_rgba(11,45,92,0.05)] backdrop-blur-sm xl:p-7">
             <img
-              src="/Logos/forge-founder-transparent.png"
+              src="/Logos/forgedinlife-simple-light.png"
               alt="Forge"
               className="forge-corner-logo h-12 w-auto"
             />

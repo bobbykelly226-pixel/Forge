@@ -190,7 +190,7 @@ export default function PublicProfilePresentation({
         </div>
 
         <div className="mt-6 min-w-0 rounded-xl border border-[#C9CBCE] bg-[#E6E6E7] p-5 text-black sm:p-7 lg:mt-0 lg:p-8">
-          <div className="space-y-7 [&>section+section]:border-t [&>section+section]:border-[#C9CBCE] [&>section+section]:pt-7">
+          <div className="space-y-4 [&>section+section]:border-t [&>section+section]:border-[#C9CBCE] [&>section+section]:pt-4">
             {essentialDetails.length > 0 ? (
               <section aria-label={`${firstName}'s profile highlights`}>
                 <dl className="space-y-4">
