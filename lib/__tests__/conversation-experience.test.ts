@@ -30,10 +30,13 @@ it('keeps four non-scrolling connection tabs with requests and sent activity sec
   assert.match(tabs, /grid-cols-4/);
   assert.doesNotMatch(tabs, /overflow-x-auto/);
   assert.match(tabs, /requests > 0/);
-  assert.match(tabs, /<details[\s\S]*?Sent activity/);
+  assert.doesNotMatch(tabs, /<details|More connection options/);
   const provider = read('components/connections/ConnectionsHubProvider.tsx');
   assert.match(provider, /: 'mutual';/);
   const hub = read('components/connections/ConnectionsHubPrototype.tsx');
+  assert.match(hub, /data-interest-selector/);
+  assert.match(hub, />Received<\/button>/);
+  assert.match(hub, />Sent<\/button>/);
   assert.doesNotMatch(hub, /ConnectionsSectionIntro|ForYouOverviewCard/);
 });
 
