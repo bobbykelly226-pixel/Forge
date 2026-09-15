@@ -485,12 +485,15 @@
 .forge-profile-theme [data-interest-selector] {
   background: #D4D5D7;
   border: 1px solid #C9CBCE;
+  border-radius: 999px;
+  padding: 4px;
+  align-items: stretch;
 }
 .forge-profile-theme [data-interest-selector] > button[type="button"][aria-pressed] {
   background: transparent !important;
   color: #0B2D5C !important;
   border: 0;
-  border-radius: 999px;
+  border-radius: 999px !important;
   box-shadow: none;
   padding: 10px 22px;
   min-height: 44px;
