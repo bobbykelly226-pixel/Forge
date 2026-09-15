@@ -2134,6 +2134,10 @@ export type Database = {
         Args: { p_user_id?: string }
         Returns: number
       }
+      get_open_to_chat_allowance: {
+        Args: Record<PropertyKey, never>
+        Returns: Json
+      }
       end_connection: { Args: { p_connection_id: string }; Returns: Json }
       ensure_conversation_for_connection: {
         Args: { p_connection_id: string }

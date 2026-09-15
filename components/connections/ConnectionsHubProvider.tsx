@@ -14,6 +14,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 
 import { ensureConversationAction } from '@/app/actions/conversations';
 import {
+  getOpenToChatAllowanceAction,
   markOpenToChatEducationSeenAction,
   passOnProfileAction,
   removeSavedAction,
@@ -24,7 +25,7 @@ import {
 } from '@/app/actions/relationships';
 import AcceptChatDrawer from '@/components/connections/AcceptChatDrawer';
 import ActionConflictDrawer from '@/components/discovery/ActionConflictDrawer';
-import OpenToChatDrawer from '@/components/OpenToChatDrawer';
+import OpenToChatDrawer, { type OpenToChatSendFeedback } from '@/components/OpenToChatDrawer';
 import {
   connectionIdFromRpcData,
   findConversationForPeer,
@@ -940,15 +941,21 @@ export function ConnectionsHubProvider({
   }, [openToChatPrompt, returnFocusToSavedOpenToChat]);
 
   const handleOpenToChatSent = useCallback(
-    async (note: string | null): Promise<boolean> => {
-      if (!openToChatPrompt || pending) return false;
+    async (note: string | null): Promise<OpenToChatSendFeedback> => {
+      if (!openToChatPrompt || pending) {
+        return { success: false, message: 'A request is already being sent.' };
+      }
       setPending(true);
       const result = await sendOpenToChatAction(openToChatPrompt.profileId, note);
       setPending(false);
 
       if (!result.success) {
-        announce(result.message);
-        return false;
+        return {
+          success: false,
+          message: result.message,
+          code: result.code,
+          retryAt: result.retryAt,
+        };
       }
 
       trackLaunchEvent('Discovery Action Completed', { action: 'open_to_chat' });
@@ -962,10 +969,34 @@ export function ConnectionsHubProvider({
         `Open to Chat sent to ${openToChatPrompt.profileName}.`,
         note ? 'Your note was included with the request.' : 'Your request was sent without a note.'
       );
-      return true;
+      return {
+        success: true,
+        remaining:
+          typeof result.data.remaining === 'number' ? result.data.remaining : undefined,
+        dailyLimit:
+          typeof result.data.daily_limit === 'number' ? result.data.daily_limit : undefined,
+        nextAvailableAt:
+          typeof result.data.next_available_at === 'string'
+            ? result.data.next_available_at
+            : undefined,
+      };
     },
     [announce, openToChatPrompt, patchSavedAction, pending]
   );
+
+  const loadOpenToChatAllowance = useCallback(async (): Promise<OpenToChatSendFeedback> => {
+    const result = await getOpenToChatAllowanceAction();
+    if (!result.success) return { success: false, message: result.message };
+    return {
+      success: true,
+      remaining: typeof result.data.remaining === 'number' ? result.data.remaining : undefined,
+      dailyLimit: typeof result.data.daily_limit === 'number' ? result.data.daily_limit : undefined,
+      nextAvailableAt:
+        typeof result.data.next_available_at === 'string'
+          ? result.data.next_available_at
+          : undefined,
+    };
+  }, []);
 
   const handleEducationContinued = useCallback(() => {
     setEducationSeen(true);
@@ -1155,6 +1186,7 @@ export function ConnectionsHubProvider({
         open={openToChatPrompt !== null}
         onClose={closeOpenToChatDrawer}
         onSent={handleOpenToChatSent}
+        onAllowanceRequested={loadOpenToChatAllowance}
         onEducationContinued={handleEducationContinued}
         profileName={openToChatPrompt?.profileName ?? 'them'}
         initialStep={openToChatPrompt?.initialStep ?? 'educate'}

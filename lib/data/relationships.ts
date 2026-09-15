@@ -1,7 +1,6 @@
 import { createClient } from '@/lib/supabase/server';
 import { ensureFoundationalRecords, type DataAccessResult } from '@/lib/data/profile';
 import { isOpenToChatNoteValid, OPEN_TO_CHAT_NOTE_MAX_LENGTH } from '@/lib/data-model-rules';
-import { OPEN_TO_CHAT_DAILY_LIMIT } from '@/lib/discovery/config';
 
 async function requireUser() {
   const supabase = await createClient();
@@ -19,7 +18,13 @@ async function requireUser() {
   return { supabase, user };
 }
 
-type RpcOk = { ok?: boolean; message?: string; [key: string]: unknown };
+type RpcOk = {
+  ok?: boolean;
+  message?: string;
+  reason?: string;
+  retry_at?: string;
+  [key: string]: unknown;
+};
 
 function rpcResult(
   data: unknown,
@@ -35,6 +40,8 @@ function rpcResult(
     return {
       success: false,
       message: payload.message || fallback,
+      code: typeof payload.reason === 'string' ? payload.reason : undefined,
+      retryAt: typeof payload.retry_at === 'string' ? payload.retry_at : undefined,
     };
   }
   return { success: true, data: payload };
@@ -109,31 +116,18 @@ export async function sendOpenToChat(
     };
   }
 
-  if (OPEN_TO_CHAT_DAILY_LIMIT != null) {
-    const { data: count, error: countError } = await supabase.rpc(
-      'count_open_to_chat_sent_today',
-      { p_user_id: user.id }
-    );
-    if (countError) {
-      console.error('count_open_to_chat_sent_today:', countError.message);
-      return {
-        success: false,
-        message: 'Could not send Open to Chat right now. Please try again.',
-      };
-    }
-    if (typeof count === 'number' && count >= OPEN_TO_CHAT_DAILY_LIMIT) {
-      return {
-        success: false,
-        message: 'You have reached today’s Open to Chat limit. Please try again tomorrow.',
-      };
-    }
-  }
-
   const { data, error } = await supabase.rpc('send_open_to_chat', {
     p_recipient_id: profileId,
     p_note: note ?? undefined,
   });
   return rpcResult(data, error, 'Could not send Open to Chat. Please try again.');
+}
+
+export async function getOpenToChatAllowance(): Promise<DataAccessResult<RpcOk>> {
+  const { supabase, user } = await requireUser();
+  if (!user) return { success: false, message: 'You must be signed in.' };
+  const { data, error } = await supabase.rpc('get_open_to_chat_allowance');
+  return rpcResult(data, error, 'Could not load your Open to Chat allowance right now.');
 }
 
 export async function respondOpenToChat(

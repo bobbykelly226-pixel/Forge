@@ -12,6 +12,8 @@ export type DataAccessError = {
   message: string;
   /** Authoritative database/business code when present (e.g. stale_revision). */
   code?: string;
+  /** ISO timestamp when an intentionally limited action becomes available again. */
+  retryAt?: string;
   /**
    * True when the failure may be a lost/transport response after a write.
    * False when the database returned an authoritative {ok:false} payload.
