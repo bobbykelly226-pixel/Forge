@@ -23,6 +23,20 @@ import {
   seedPeerIdFromConversationId,
 } from '@/lib/seed/conversations';
 
+it('keeps four non-scrolling connection tabs with requests and sent activity secondary', () => {
+  const tabs = read('components/connections/ConnectionsTabs.tsx');
+  const definitions = tabs.slice(tabs.indexOf('const TABS:'), tabs.indexOf('export default'));
+  assert.deepEqual([...definitions.matchAll(/label: '([^']+)'/g)].map(match => match[1]), ['Connected', 'Interested', 'Messages', 'Saved']);
+  assert.match(tabs, /grid-cols-4/);
+  assert.doesNotMatch(tabs, /overflow-x-auto/);
+  assert.match(tabs, /requests > 0/);
+  assert.match(tabs, /<details[\s\S]*?Sent activity/);
+  const provider = read('components/connections/ConnectionsHubProvider.tsx');
+  assert.match(provider, /: 'mutual';/);
+  const hub = read('components/connections/ConnectionsHubPrototype.tsx');
+  assert.doesNotMatch(hub, /ConnectionsSectionIntro|ForYouOverviewCard/);
+});
+
 function read(path: string) {
   return readFileSync(join(process.cwd(), path), 'utf8');
 }
@@ -294,7 +308,7 @@ describe('navigation and mutual conversation integration', () => {
     assert.doesNotMatch(accept, /Messaging is coming later/i);
     assert.doesNotMatch(accept, /coming soon/i);
     assert.match(accept, /Start Conversation/);
-    assert.match(accept, /View Mutual Connections/);
+    assert.match(accept, /View Connections/);
     assert.doesNotMatch(provider, /Messaging is coming later/i);
     assert.doesNotMatch(profileView, /Conversation tools will appear/i);
     assert.match(cta, /ensureConversationAction/);
