@@ -5,6 +5,7 @@ import {
   Bookmark,
   Check,
   Heart,
+  Info,
   RotateCcw,
   Send,
   X,
@@ -140,9 +141,10 @@ export default function DiscoveryActionTiles({
       }}
       aria-label="Learn about Open to Chat"
       aria-haspopup="dialog"
-      className="inline-flex min-h-10 shrink-0 items-center justify-center whitespace-nowrap rounded-md px-2 py-2 text-xs font-semibold"
+      title="About Open to Chat"
+      className="inline-flex h-11 w-11 shrink-0 items-center justify-center self-center rounded-full border border-[#0B2D5C]/20 bg-white text-[#0B2D5C] transition hover:border-[#0B2D5C]/45 hover:bg-[#FBF9F6] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0B2D5C]"
     >
-      <span>Learn more</span>
+      <Info className="h-5 w-5" strokeWidth={1.75} aria-hidden="true" />
     </button>
   );
 

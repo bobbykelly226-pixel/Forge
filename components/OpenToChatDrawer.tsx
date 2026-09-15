@@ -260,8 +260,16 @@ export default function OpenToChatDrawer({
           {step === 'educate' && (
             <div id={descriptionId} className="space-y-4 text-[15px] leading-relaxed text-[#3D4654]">
               <p>Open to Chat lets you introduce yourself with an optional note.</p>
-              <p>The other person always decides whether to accept.</p>
-              <p>You can only send one Open to Chat request to each person.</p>
+              <p>
+                The other person can accept, privately decline, or simply let the request expire.
+                You will not receive a negative notification.
+              </p>
+              <p>
+                A conversation opens only if they accept. Otherwise, the request expires after seven
+                days.
+              </p>
+              <p>You can send one active Open to Chat request to each person.</p>
+              <p>Blocking and other safety tools remain available at any time.</p>
             </div>
           )}
 
