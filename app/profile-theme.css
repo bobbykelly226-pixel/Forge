@@ -464,7 +464,7 @@
   color: #FFFFFF !important;
 }
 
-/* Four equal-width connection tabs stay visible on small screens. */
+/* Three equal-width connection tabs stay visible on small screens. */
 .forge-profile-theme [data-connection-tabs] > button[type="button"][role="tab"] {
   padding: 10px 2px;
   min-width: 0;
@@ -503,13 +503,21 @@
   color: #FFFFFF !important;
 }
 
-/* Counts are quiet text, without a separate badge behind the number. */
-.forge-profile-theme [data-connection-tabs] > button[role="tab"] > span[aria-label] {
-  background: transparent !important;
-  color: inherit !important;
-  border: 0;
-  box-shadow: none;
-  padding: 0;
-  font-weight: 400;
-  font-variant-numeric: tabular-nums;
+.forge-profile-theme [data-new-activity] {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  min-width: 8px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  background: #C92027 !important;
+}
+.forge-profile-theme [data-card-new] {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  z-index: 2;
+  width: 10px;
+  height: 10px;
+  box-shadow: 0 0 0 3px #E6E6E7;
 }
