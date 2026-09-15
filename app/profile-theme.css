@@ -176,6 +176,30 @@
 .forge-profile-theme button[aria-pressed="false"] { border: 1px solid #83909E; }
 .forge-profile-theme button[role="switch"][aria-checked="true"] { background-color: var(--profile-navy, #0B2D5C); }
 .forge-profile-theme button[role="switch"][aria-checked="false"] { background-color: #737B86; }
+/* Recognition choices use native radios so selection stays clear beside navy actions. */
+.forge-profile-theme [data-character-signal-choice] {
+  --profile-text: var(--profile-navy, #0B2D5C);
+  --profile-muted: #5C636B;
+  background-color: #FFFFFF;
+  color: var(--profile-text);
+  border-color: #83909E;
+  border-radius: 6px;
+  min-height: 48px;
+  cursor: pointer;
+}
+.forge-profile-theme [data-character-signal-choice]:hover { border-color: var(--profile-navy, #0B2D5C); }
+.forge-profile-theme [data-character-signal-choice]:has(input:checked) {
+  --profile-text: #FFFFFF;
+  --profile-muted: #E6E6E7;
+  background-color: var(--profile-navy, #0B2D5C);
+  border-color: var(--profile-navy, #0B2D5C);
+}
+.forge-profile-theme [data-character-signal-choice] input { accent-color: var(--profile-navy, #0B2D5C); }
+.forge-profile-theme [data-character-signal-choice] input:checked { accent-color: #FFFFFF; }
+.forge-profile-theme [data-character-signal-choice]:has(input:focus-visible) {
+  outline: 2px solid #C92027;
+  outline-offset: 3px;
+}
 .forge-profile-theme [data-icon-badge] {
   --profile-text: var(--profile-navy, #0B2D5C);
   background-color: #FFFFFF !important;

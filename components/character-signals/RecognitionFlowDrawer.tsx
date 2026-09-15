@@ -49,7 +49,7 @@ function getFocusableElements(container: HTMLElement): HTMLElement[] {
     'a[href], button:not([disabled]), textarea, input, select, [tabindex]:not([tabindex="-1"])'
   );
   return Array.from(nodes).filter(
-    (el) => !el.hasAttribute('disabled') && el.getAttribute('aria-hidden') !== 'true'
+    (el) => el.tabIndex >= 0 && !el.hasAttribute('disabled') && el.getAttribute('aria-hidden') !== 'true'
   );
 }
 
@@ -61,6 +61,8 @@ function RecognitionFlowDrawerInner({
 }: RecognitionFlowDrawerInnerProps) {
   const titleId = useId();
   const descriptionId = useId();
+  const interactionGroupName = useId();
+  const signalGroupName = useId();
   const panelRef = useRef<HTMLDivElement>(null);
   const primaryRef = useRef<HTMLButtonElement>(null);
   const initial = getRecognitionFlowInitialState(recipient);
@@ -200,7 +202,7 @@ function RecognitionFlowDrawerInner({
 
               <fieldset className="mt-6">
                 <legend className="text-sm font-semibold text-[#0B2D5C]">Interaction type</legend>
-                <div className="mt-3 flex flex-col gap-2 sm:flex-row" role="radiogroup">
+                <div className="mt-3 flex flex-col gap-2 sm:flex-row">
                   {(
                     [
                       { id: 'in_app', label: 'In-app conversation' },
@@ -209,23 +211,25 @@ function RecognitionFlowDrawerInner({
                   ).map((option) => {
                     const selected = interactionType === option.id;
                     return (
-                      <button
+                      <label
                         key={option.id}
-                        type="button"
-                        role="radio"
-                        aria-checked={selected}
-                        onClick={() => {
-                          setInteractionType(option.id);
-                          setSelectedSignalId(null);
-                        }}
-                        className={`inline-flex flex-1 items-center justify-center rounded-2xl px-4 py-3 text-sm font-semibold transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0B2D5C] ${
-                          selected
-                            ? 'bg-[#0B2D5C] text-white'
-                            : 'border border-[#0B2D5C]/15 bg-white text-[#0B2D5C] hover:bg-[#FBF9F6]'
-                        }`}
+                        data-character-signal-choice
+                        className="inline-flex flex-1 items-center gap-3 border px-4 py-3 text-sm font-semibold transition"
                       >
+                        <input
+                          type="radio"
+                          name={interactionGroupName}
+                          value={option.id}
+                          checked={selected}
+                          tabIndex={selected ? 0 : -1}
+                          onChange={() => {
+                            setInteractionType(option.id);
+                            setSelectedSignalId(null);
+                          }}
+                          className="h-5 w-5 shrink-0"
+                        />
                         {option.label}
-                      </button>
+                      </label>
                     );
                   })}
                 </div>
@@ -274,39 +278,38 @@ function RecognitionFlowDrawerInner({
                 role="radiogroup"
                 aria-label="Character Signals"
               >
-                {availableSignals.map((signal) => {
+                {availableSignals.map((signal, index) => {
                   const selected = selectedSignalId === signal.id;
                   return (
-                    <button
+                    <label
                       key={signal.id}
-                      type="button"
-                      role="radio"
-                      aria-checked={selected}
-                      onClick={() => setSelectedSignalId(signal.id)}
-                      className={`flex items-start gap-3 rounded-2xl border px-4 py-3.5 text-left transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0B2D5C] ${
-                        selected
-                          ? 'border-[#0B2D5C] bg-[#0B2D5C] text-white shadow-[0_8px_20px_rgba(11,45,92,0.16)]'
-                          : 'border-[#0B2D5C]/10 bg-white/90 text-[#0B2D5C] hover:border-[#0B2D5C]/25'
-                      }`}
+                      data-character-signal-choice
+                      className="flex items-start gap-3 border px-4 py-3.5 text-left transition"
                     >
+                      <input
+                        type="radio"
+                        name={signalGroupName}
+                        value={signal.id}
+                        checked={selected}
+                        tabIndex={selected || (!selectedSignalId && index === 0) ? 0 : -1}
+                        onChange={() => setSelectedSignalId(signal.id)}
+                        className="mt-2 h-5 w-5 shrink-0"
+                      />
                       <span
-                        className={`mt-0.5 inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-xl ${
-                          selected ? 'bg-white/15 text-white' : 'bg-[#E8EEF6] text-[#0B2D5C]'
-                        }`}
+                        data-icon-badge
+                        className="mt-0.5 inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-xl"
                       >
                         <CharacterSignalIcon signalId={signal.id} className="h-4 w-4" />
                       </span>
                       <span className="min-w-0">
                         <span className="block text-sm font-semibold">{signal.title}</span>
                         <span
-                          className={`mt-1 block text-xs leading-relaxed ${
-                            selected ? 'text-white/80' : 'text-[#5A6575]'
-                          }`}
+                          className="mt-1 block text-xs leading-relaxed text-[#5A6575]"
                         >
                           {signal.shortDescription}
                         </span>
                       </span>
-                    </button>
+                    </label>
                   );
                 })}
               </div>
