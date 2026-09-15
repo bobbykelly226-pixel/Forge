@@ -23,18 +23,22 @@ import {
   seedPeerIdFromConversationId,
 } from '@/lib/seed/conversations';
 
-it('keeps four non-scrolling connection tabs with requests and sent activity secondary', () => {
+it('keeps three non-scrolling connection tabs with new-activity dots', () => {
   const tabs = read('components/connections/ConnectionsTabs.tsx');
   const definitions = tabs.slice(tabs.indexOf('const TABS:'), tabs.indexOf('export default'));
-  assert.deepEqual([...definitions.matchAll(/label: '([^']+)'/g)].map(match => match[1]), ['Connected', 'Interested', 'Messages', 'Saved']);
-  assert.match(tabs, /grid-cols-4/);
+  assert.deepEqual([...definitions.matchAll(/label: '([^']+)'/g)].map(match => match[1]), ['Connections', 'Interested', 'Saved']);
+  assert.match(tabs, /grid-cols-3/);
   assert.doesNotMatch(tabs, /overflow-x-auto/);
-  assert.match(tabs, /requests > 0/);
+  assert.match(tabs, /data-new-activity/);
+  assert.doesNotMatch(tabs, /tabCounts/);
   assert.doesNotMatch(tabs, /<details|More connection options/);
   const provider = read('components/connections/ConnectionsHubProvider.tsx');
   assert.match(provider, /: 'mutual';/);
+  assert.match(provider, /forge:connections:seen:v1/);
+  assert.match(provider, /!seenActivity.has\(key\)/);
   const hub = read('components/connections/ConnectionsHubPrototype.tsx');
   assert.match(hub, /data-interest-selector/);
+  assert.match(hub, /onClickCapture=\{\(\) => markActivitySeen\(activityKey\)\}/);
   assert.match(hub, />Received<\/button>/);
   assert.match(hub, />Sent<\/button>/);
   assert.doesNotMatch(hub, /ConnectionsSectionIntro|ForYouOverviewCard/);
@@ -45,15 +49,15 @@ function read(path: string) {
 }
 
 describe('conversation experience routes and wiring', () => {
-  it('uses Connections Messages tab and dedicated thread route', () => {
+  it('keeps Messages in the footer and preserves the dedicated thread route', () => {
     const tabs = read('components/connections/ConnectionsTabs.tsx');
     const page = read('app/connections/page.tsx');
     const thread = read('app/connections/c/[conversationId]/page.tsx');
     const nav = read('components/ForgeAppBottomNav.tsx');
     const desktopNav = read('components/ForgeDesktopAppNav.tsx');
 
-    assert.match(tabs, /conversations/);
-    assert.match(tabs, /Messages/);
+    assert.doesNotMatch(tabs, /label: 'Messages'/);
+    assert.match(nav, /label: 'Messages'/);
     assert.match(page, /tab=conversations|initialTab|listMyConversationsAction/);
     assert.match(thread, /ConversationThread/);
     assert.match(thread, /markConversationReadAction/);
