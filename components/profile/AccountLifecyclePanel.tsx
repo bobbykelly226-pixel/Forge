@@ -10,9 +10,29 @@ import {
   requestAccountExportAction,
   type AccountActionState,
 } from '@/app/actions/account-lifecycle';
+import AuthCaptcha from '@/components/auth/AuthCaptcha';
+import { isAuthCaptchaEnabled } from '@/lib/auth/captcha';
 import type { AccountLifecycle } from '@/lib/account/lifecycle';
 
 const INITIAL: AccountActionState = { success: false, message: '' };
+
+function usePasswordAction(action: (state: AccountActionState, data: FormData) => Promise<AccountActionState>) {
+  const [token, setToken] = useState<string | null>(null);
+  const [resetKey, setResetKey] = useState(0);
+  const [state, dispatch, pending] = useActionState(async (previous: AccountActionState, data: FormData) => {
+    try {
+      return await action(previous, data);
+    } finally {
+      setToken(null);
+      setResetKey((value) => value + 1);
+    }
+  }, INITIAL);
+  return {
+    state, dispatch, pending,
+    ready: !isAuthCaptchaEnabled() || Boolean(token),
+    check: <><input type="hidden" name="captchaToken" value={token ?? ''} /><AuthCaptcha resetKey={resetKey} onTokenChange={setToken} /></>,
+  };
+}
 
 function StatusMessage({ state }: { state: AccountActionState }) {
   if (!state.message) return null;
@@ -33,9 +53,9 @@ export default function AccountLifecyclePanel({
   loadError: string | null;
 }) {
   const [pauseState, pauseAction, pausePending] = useActionState(changeAccountLifecycleAction, INITIAL);
-  const [deactivationState, deactivationAction, deactivationPending] = useActionState(changeAccountLifecycleAction, INITIAL);
-  const [exportState, exportAction, exportPending] = useActionState(requestAccountExportAction, INITIAL);
-  const [deleteState, deleteAction, deletePending] = useActionState(deleteAccountAction, INITIAL);
+  const { state: deactivationState, dispatch: deactivationAction, pending: deactivationPending, ready: deactivationReady, check: deactivationCheck } = usePasswordAction(changeAccountLifecycleAction);
+  const { state: exportState, dispatch: exportAction, pending: exportPending, ready: exportReady, check: exportCheck } = usePasswordAction(requestAccountExportAction);
+  const { state: deleteState, dispatch: deleteAction, pending: deletePending, ready: deleteReady, check: deleteCheck } = usePasswordAction(deleteAccountAction);
   const [showDeactivate, setShowDeactivate] = useState(false);
 
   const paused = lifecycle?.profile_status === 'paused';
@@ -82,7 +102,8 @@ export default function AccountLifecyclePanel({
               <input type="hidden" name="lifecycle_action" value={deactivated ? 'reactivate' : 'deactivate'} />
               <label className="block text-sm font-semibold text-[#0B2D5C]">Current password</label>
               <input type="password" name="password" required autoComplete="current-password" className="mt-2 w-full rounded-2xl border border-[#0B2D5C]/15 px-4 py-3 text-sm" />
-              <button disabled={deactivationPending} className="mt-3 w-full rounded-2xl bg-[#D62828] px-5 py-3 text-sm font-semibold text-white disabled:opacity-50">
+              {deactivationCheck}
+              <button disabled={deactivationPending || !deactivationReady} className="mt-3 w-full rounded-2xl bg-[#D62828] px-5 py-3 text-sm font-semibold text-white disabled:opacity-50">
                 {deactivationPending ? 'Saving…' : `Confirm ${deactivated ? 'reactivation' : 'deactivation'}`}
               </button>
             </form>
@@ -97,7 +118,8 @@ export default function AccountLifecyclePanel({
           <form action={exportAction} className="mt-5">
             <label className="block text-sm font-semibold text-[#0B2D5C]">Current password</label>
             <input type="password" name="password" required autoComplete="current-password" className="mt-2 w-full rounded-2xl border border-[#0B2D5C]/15 px-4 py-3 text-sm" />
-            <button disabled={exportPending} className="mt-3 rounded-2xl bg-[#0B2D5C] px-5 py-3 text-sm font-semibold text-white disabled:opacity-50">{exportPending ? 'Preparing…' : 'Prepare secure download'}</button>
+            {exportCheck}
+            <button disabled={exportPending || !exportReady} className="mt-3 rounded-2xl bg-[#0B2D5C] px-5 py-3 text-sm font-semibold text-white disabled:opacity-50">{exportPending ? 'Preparing…' : 'Prepare secure download'}</button>
           </form>
           <StatusMessage state={exportState} />
           {exportState.downloadUrl ? <a href={exportState.downloadUrl} className="mt-3 inline-flex rounded-2xl bg-[#D62828] px-5 py-3 text-sm font-semibold text-white">Download now</a> : null}
@@ -111,7 +133,8 @@ export default function AccountLifecyclePanel({
             <form action={deleteAction} className="mt-5 space-y-3">
               <input type="password" name="password" required autoComplete="current-password" placeholder="Current password" className="w-full rounded-2xl border border-[#0B2D5C]/15 px-4 py-3 text-sm" />
               <input name="confirmation" required placeholder="Type DELETE" className="w-full rounded-2xl border border-[#D62828]/25 px-4 py-3 text-sm" />
-              <button disabled={deletePending} className="w-full rounded-2xl bg-[#D62828] px-5 py-3 text-sm font-semibold text-white disabled:opacity-50">{deletePending ? 'Deleting…' : 'Permanently delete account'}</button>
+              {deleteCheck}
+              <button disabled={deletePending || !deleteReady} className="w-full rounded-2xl bg-[#D62828] px-5 py-3 text-sm font-semibold text-white disabled:opacity-50">{deletePending ? 'Deleting…' : 'Permanently delete account'}</button>
             </form>
           )}
           <StatusMessage state={deleteState} />

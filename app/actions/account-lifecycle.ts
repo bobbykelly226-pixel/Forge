@@ -3,6 +3,8 @@
 import { createClient as createSupabaseClient, type SupabaseClient } from '@supabase/supabase-js';
 import { revalidatePath } from 'next/cache';
 
+import { AUTH_CAPTCHA_REQUIRED_MESSAGE, isAuthCaptchaEnabled } from '@/lib/auth/captcha';
+import { accountAuthErrorMessage } from '@/lib/account/auth-errors';
 import { getSessionId } from '@/lib/account/lifecycle';
 import { PROFILE_PHOTO_BUCKET } from '@/lib/profile-photo';
 import { createServiceClient } from '@/lib/supabase/admin';
@@ -43,12 +45,17 @@ async function currentIdentity(): Promise<CurrentIdentity | { error: string }> {
 }
 
 async function confirmPasswordAndRecord(
-  password: string
+  password: string,
+  captchaToken: string
 ): Promise<ConfirmedIdentity | { error: string }> {
   const identity = await currentIdentity();
   if ('error' in identity) return identity;
   if (password.length < 8 || password.length > 200) {
     return { error: 'Enter your current password.' } as const;
+  }
+
+  if (isAuthCaptchaEnabled() && !captchaToken) {
+    return { error: AUTH_CAPTCHA_REQUIRED_MESSAGE } as const;
   }
 
   const { url, anonKey } = getSupabaseEnv();
@@ -58,11 +65,13 @@ async function confirmPasswordAndRecord(
   const { data, error } = await verifier.auth.signInWithPassword({
     email: identity.email,
     password,
+    options: { captchaToken: captchaToken || undefined },
   });
-  if (error || data.user?.id !== identity.userId) {
-    return { error: 'That password was not accepted.' } as const;
-  }
+  if (error) return { error: accountAuthErrorMessage(error) } as const;
   await verifier.auth.signOut({ scope: 'local' });
+  if (data.user?.id !== identity.userId) {
+    return { error: 'Your account identity could not be confirmed. Please try again.' } as const;
+  }
 
   const admin = createServiceClient();
   if (!admin) return { error: 'The account security service is not configured.' } as const;
@@ -91,7 +100,10 @@ export async function changeAccountLifecycleAction(
   if ('error' in identity) return { success: false, message: identity.error };
 
   if (action === 'deactivate' || action === 'reactivate') {
-    const confirmation = await confirmPasswordAndRecord(String(formData.get('password') ?? ''));
+    const confirmation = await confirmPasswordAndRecord(
+      String(formData.get('password') ?? ''),
+      String(formData.get('captchaToken') ?? '').trim()
+    );
     if ('error' in confirmation) return { success: false, message: confirmation.error };
   }
 
@@ -111,7 +123,10 @@ export async function requestAccountExportAction(
   _previous: AccountActionState,
   formData: FormData
 ): Promise<AccountActionState> {
-  const confirmation = await confirmPasswordAndRecord(String(formData.get('password') ?? ''));
+  const confirmation = await confirmPasswordAndRecord(
+    String(formData.get('password') ?? ''),
+    String(formData.get('captchaToken') ?? '').trim()
+  );
   if ('error' in confirmation) return { success: false, message: confirmation.error };
 
   const token = crypto.randomUUID();
@@ -140,7 +155,10 @@ export async function deleteAccountAction(
   if (String(formData.get('confirmation') ?? '').trim() !== 'DELETE') {
     return { success: false, message: 'Type DELETE exactly to confirm permanent account deletion.' };
   }
-  const confirmation = await confirmPasswordAndRecord(String(formData.get('password') ?? ''));
+  const confirmation = await confirmPasswordAndRecord(
+    String(formData.get('password') ?? ''),
+    String(formData.get('captchaToken') ?? '').trim()
+  );
   if ('error' in confirmation) return { success: false, message: confirmation.error };
 
   const { data: photos } = await confirmation.db
