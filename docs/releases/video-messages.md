@@ -4,7 +4,7 @@ Scope approved September 16: camera button in active message composer; camera an
 
 ## Release state
 
-Implemented behind NEXT_PUBLIC_VIDEO_MESSAGES_ENABLED=true. Default is off. Based on FIX-013 / PR97; do not merge independently without its prerequisite. No shared database migration has been applied for video. Preview and Production use the same database, so migration activation requires an explicit shared-database rollout decision.
+Draft PR #98 includes FIX-013 / PR97; do not merge independently without its prerequisite. Founder approved Preview activation. Shared migration applied and verified as live version 20260916141125. Production frontend remains unchanged and video disabled. next.config.ts enables video only for Vercel Preview builds on codex/video-messages and codex/fix008-discovery-persistent (explicit false disables it).
 
 Migration: 20260916133132_conversation_video_messages.sql. Adds service-only inspection records, MP4/WebM allowances, immutable-upload protection and a validated-video requirement to the existing send RPC. Existing message/conversation/block guards remain. No member/account fixtures are created outside disposable tests.
 
@@ -22,11 +22,11 @@ Inspection records are bound to storage object identity. Members cannot insert r
 
 ## Remaining release gates
 
-- Disposable pgTAP tests and CI for this exact commit.
+- PR Validation #185 passed application and database checks at 6bd4e022601679674a9c7ee254c1e555431a3a42 (665 application tests and full database suite).
 - Browser recorder lifecycle using actual camera/microphone: permission denial/retry, stop/auto-stop, preview, retake, send, cancellation/unmount, device interruption, portrait/landscape.
 - Real two-account Preview send/playback/reload; block/end denial; retry without duplicate messages. Preserve existing text drafts.
-- Shared migration approval and application, then Preview-only feature flag/redeploy. Leave Production flag off and PR unmerged until reviewed.
+- Stable Preview deployment and real-device validation. Leave Production video off and PR unmerged until reviewed.
 
 Browser automation daemon failed to start in this workspace. No physical-device or end-to-end video-send success is claimed. Local temporary recorder lab was removed before commit.
 
-GitHub upload was rejected by automatic approval review because earlier file approvals did not cover this new feature. Explicit approval is required before upload/opening its draft PR. No video-feature remote upload, shared migration, or Production rollout has occurred.
+The earlier upload approval block was resolved by explicit founder approval. PR #98 is uploaded and draft/unmerged. Shared backend activation was separately approved and completed. Live MIME constraint name differed from disposable CI; the first transaction rolled back, and the corrected migration handles both names. Private bucket, inspection-table RLS, service-only inspection writes, and pg_catalog-first function search paths were verified. Stable Preview: https://preview.forgedinlife.com/login. No Production frontend rollout.
