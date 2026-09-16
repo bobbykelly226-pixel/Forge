@@ -42,14 +42,15 @@ export const securityHeaders = [
   },
 ];
 
-// Enable the approved video trial only on the designated Preview branches.
-const videoPreviewEnabled = process.env.VERCEL_ENV === 'preview'
-  && ['codex/video-messages', 'codex/fix008-discovery-persistent'].includes(process.env.VERCEL_GIT_COMMIT_REF ?? '')
+// Approved release: enable Production and the designated Preview branches.
+const videoEnabled = (process.env.VERCEL_ENV === 'production'
+  || (process.env.VERCEL_ENV === 'preview'
+    && ['codex/video-messages', 'codex/fix008-discovery-persistent'].includes(process.env.VERCEL_GIT_COMMIT_REF ?? '')))
   && process.env.NEXT_PUBLIC_VIDEO_MESSAGES_ENABLED !== 'false';
 
 const nextConfig: NextConfig = {
   env: {
-    NEXT_PUBLIC_VIDEO_MESSAGES_ENABLED: videoPreviewEnabled ? 'true' : 'false',
+    NEXT_PUBLIC_VIDEO_MESSAGES_ENABLED: videoEnabled ? 'true' : 'false',
   },
   async headers() {
     return [
