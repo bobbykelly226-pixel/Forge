@@ -893,7 +893,7 @@ export default function ConversationThread({
       </div>
 
       <div
-        className="sticky bottom-0 max-h-[50%] shrink-0 overflow-y-auto overscroll-contain border-t border-[#0B2D5C]/10 bg-[#FBF9F6]/95 backdrop-blur-md"
+        className="sticky bottom-0 max-h-[50%] overflow-y-auto overscroll-contain shrink-0 border-t border-[#0B2D5C]/10 bg-[#FBF9F6]/95 backdrop-blur-md"
         style={{ paddingBottom: 'max(0.75rem, env(safe-area-inset-bottom))' }}
       >
         <div className="mx-auto max-w-2xl space-y-3 px-4 py-3 sm:px-5">
