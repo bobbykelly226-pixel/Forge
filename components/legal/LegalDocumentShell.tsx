@@ -18,14 +18,14 @@ export default function LegalDocumentShell({
   return (
     <div className="min-h-screen bg-[#F8F6F2] text-[#222222]">
       <Header />
-      <main className="mx-auto max-w-3xl px-6 pb-16 pt-14">
+      <main className="mx-auto max-w-4xl px-6 pb-20 pt-20">
         <h1 className="mb-5 text-5xl font-bold tracking-tight text-[#0B2D5C]">
           {title}
         </h1>
         <p className="mb-8 text-sm text-[#666666]">
           Version {version} · Effective {effectiveDate}
         </p>
-        <div className="legal-document-content max-w-none leading-8 text-[#444444]">
+        <div className="legal-document-content prose max-w-none text-lg leading-8 text-[#444444]">
           {children}
         </div>
         <LegalReviewReturnLink />
@@ -78,6 +78,7 @@ export default function LegalDocumentShell({
               <Link href="/values" className="transition hover:text-white">Values</Link>
               <Link href="/privacy" className="transition hover:text-white">Privacy Policy</Link>
               <Link href="/terms" className="transition hover:text-white">Terms of Service</Link>
+              <Link href="/community-standards" className="transition hover:text-white">Community Standards</Link>
               <Link href="/contact" className="transition hover:text-white">Contact</Link>
             </div>
 
