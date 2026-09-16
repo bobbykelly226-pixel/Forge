@@ -114,6 +114,9 @@ export async function fetchDiscoveryProfileAction(profileId: string) {
   }
 
   const actionState = await loadActionStateForProfiles([profileId]);
+  if (!actionState.success) {
+    return { success: false as const, message: actionState.message, profile: null, actionState: null };
+  }
   return {
     success: true as const,
     unavailable: false as const,

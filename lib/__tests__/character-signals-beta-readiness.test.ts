@@ -80,7 +80,7 @@ describe('Character Signals beta readiness', () => {
     const actions = read('app/actions/character-signals.ts');
 
     assert.match(page, /loadCharacterSignalRecognitionRecipient\(profileId\)/);
-    assert.match(view, /recognitionRecipient=\{recognitionRecipient\}/);
+    assert.match(view, /recognitionRecipient=\{ended \? null : recognitionRecipient\}/);
     assert.match(presentation, /recognitionRecipient=\{recognitionRecipient\}/);
     assert.match(sections, /recognitionRecipient=\{recognitionRecipient\}/);
     assert.match(signals, /Recognize a Positive Quality/);

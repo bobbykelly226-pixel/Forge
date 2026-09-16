@@ -23,6 +23,7 @@ import {
 import type { RecognitionRecipient } from '@/lib/character-signals/types';
 
 type Props = {
+  ended?: boolean;
   profile: PublicDiscoveryProfile;
   /** Live engine presentation from the server; seed profiles compute locally. */
   alignmentPresentation?: SeedProfileAlignmentPresentation | null;
@@ -37,6 +38,7 @@ type Props = {
 };
 
 export default function DiscoveryProfileView({
+  ended = false,
   profile,
   alignmentPresentation: liveAlignmentPresentation = null,
   mutualConnectionId = null,
@@ -60,7 +62,7 @@ export default function DiscoveryProfileView({
     ? toSeedAlignmentPresentation(seedProfile)
     : liveAlignmentPresentation;
 
-  if (passed && !isSeed) {
+  if (passed && !isSeed && !ended) {
     return (
       <div className="mx-auto flex min-h-screen max-w-lg flex-col items-center justify-center px-6 pb-[calc(7rem+env(safe-area-inset-bottom))] text-center">
         <h1
@@ -96,25 +98,35 @@ export default function DiscoveryProfileView({
     );
   }
 
-  const backHref = isMutualConnection ? '/connections?tab=mutual' : '/discovery';
-  const backLabel = isMutualConnection ? '← Back to Connections' : '← Back to Discovery';
+  const backHref = ended ? '/connections?tab=conversations' : isMutualConnection ? '/connections?tab=mutual' : '/discovery';
+  const backLabel = ended ? 'Back to Past Conversations' : isMutualConnection ? '← Back to Connections' : '← Back to Discovery';
 
   return (
     <div className="min-h-screen pb-[calc(7rem+env(safe-area-inset-bottom))] pt-5 lg:pb-16 lg:pt-8">
+      {ended ? (
+        <div role="status" className="mx-auto max-w-3xl px-5 py-4">
+          <p>This connection has ended. This member will no longer appear in Discovery.</p>
+          {existingConversationId ? (
+            <Link data-text-link href={`/connections/c/${existingConversationId}`} className="inline-flex min-h-11 items-center font-semibold">
+              View past conversation · Block or Report
+            </Link>
+          ) : null}
+        </div>
+      ) : null}
       <PublicProfilePresentation
         profile={profile}
         mode="discovery"
         showAlignmentCard
         showSurfacedReason={!isSeed && !alignmentPresentation}
         alignmentPresentation={alignmentPresentation}
-        recognitionRecipient={recognitionRecipient}
+        recognitionRecipient={ended ? null : recognitionRecipient}
         header={
           <div className="flex flex-wrap items-center justify-between gap-3">
             <PublicProfileBackLink href={backHref} label={backLabel} />
           </div>
         }
         primaryAction={
-          isMutualConnection ? (
+          isMutualConnection && !ended ? (
             <DiscoveryProfileConversationCta
               profileId={profileId}
               firstName={firstName}
@@ -126,7 +138,7 @@ export default function DiscoveryProfileView({
           ) : null
         }
         footer={
-          !isMutualConnection ? (
+          !isMutualConnection && !ended ? (
             <DiscoveryActionTiles
               profileId={profileId}
               profileName={firstName}

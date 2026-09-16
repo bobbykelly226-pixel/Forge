@@ -211,6 +211,7 @@ export default async function DiscoveryProfilePage({
         initialEducationSeen={education.success ? education.data : false}
       >
         <DiscoveryProfileView
+          ended={Boolean(result.actionState && 'ended' in result.actionState && result.actionState.ended)}
           profile={result.profile}
           alignmentPresentation={liveAlignmentPresentation}
           mutualConnectionId={mutualConnectionId}
