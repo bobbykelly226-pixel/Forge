@@ -30,3 +30,11 @@ Inspection records are bound to storage object identity. Members cannot insert r
 Browser automation daemon failed to start in this workspace. No physical-device or end-to-end video-send success is claimed. Local temporary recorder lab was removed before commit.
 
 The earlier upload approval block was resolved by explicit founder approval. PR #98 is uploaded and draft/unmerged. Shared backend activation was separately approved and completed. Live MIME constraint name differed from disposable CI; the first transaction rolled back, and the corrected migration handles both names. Private bucket, inspection-table RLS, service-only inspection writes, and pg_catalog-first function search paths were verified. Stable Preview: https://preview.forgedinlife.com/login. No Production frontend rollout.
+
+## Safety follow-up — September 16
+
+Founder confirmed desktop recording, sending and playback on both ends. Phone verification remains pending. Approved next work: respectful-content reminder, video-specific reporting, then optional view-once.
+
+First increment: reminder above Send video, linked Community Standards with explicit video rule; Report video below received clips opens existing reporting dialog and includes message reference in report details. Existing authenticated conversation report submission and operator queue remain in use. This reference is reporter-supplied context, not an immutable evidence snapshot or proof of content. Moderator video playback/preservation is not yet implemented.
+
+View-once remains planned, not active. Before enabling: server-enforced viewing grants, failed-playback handling, expired message marker with Report action, capture-risk notice, and a defined/disclosed safety-evidence retention policy. Do not claim automatic deletion or capture prevention. Existing video continues to allow replay.

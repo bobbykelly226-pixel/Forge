@@ -109,6 +109,7 @@ export default function VideoRecorder({ onSend, onClose }: { onSend: (file: File
     <p className="my-2">Record up to 15 seconds. Review before sending.</p>
     {url ? <video key={url} src={url} controls playsInline preload="metadata" aria-label="Review your video" className="max-h-[45dvh] w-full rounded-xl bg-black" /> : <video ref={preview} muted playsInline autoPlay aria-label="Camera preview" className="max-h-[45dvh] w-full rounded-xl bg-black" />}
     {phase === 'recording' && <p role="status" className="my-3 text-center text-xl font-semibold">Recording · {remaining}s remaining</p>}
+    {(phase === 'review' || phase === 'sending') && <p className="mt-3 text-sm text-black"><strong>Keep it respectful.</strong> Nudity, sexually explicit content, harassment, and threats are not allowed. Violations may result in account suspension or removal. <a href="/community-standards" target="_blank" rel="noopener noreferrer" className="underline">Community Standards (opens in a new tab)</a></p>}
     {error && <p role="alert" className="my-3">{error}</p>}
     <div className="mt-4 flex flex-wrap justify-end gap-3 [&>button]:min-h-11 [&>button]:rounded-lg [&>button]:bg-[#0B2D5C] [&>button]:px-4 [&>button]:py-2 [&>button]:text-white">
       {phase === 'idle' && (needsReload ? <button type="button" onClick={() => window.location.reload()}>Reload conversation</button> : <button type="button" onClick={() => void openCamera()}>Enable camera & microphone</button>)}

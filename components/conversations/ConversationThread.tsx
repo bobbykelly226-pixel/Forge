@@ -721,6 +721,15 @@ export default function ConversationThread({
                       </p>
                     ) : null}
                   </div>
+                  {!isSent && !isSeed && message.attachments.some(attachment => attachment.mimeType.startsWith('video/')) && <ConversationSafetyMenu
+                    reportMessageId={message.id}
+                    peerUserId={meta.peerUserId}
+                    peerFirstName={meta.peerFirstName}
+                    connectionId={meta.connectionId}
+                    conversationId={meta.conversationId}
+                    profileHref={profileHref}
+                    blockedByViewer={blockedByViewer}
+                  />}
                   <div className="mt-1 flex items-center gap-2 px-1">
                     <time
                       dateTime={message.createdAt}

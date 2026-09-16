@@ -22,6 +22,7 @@ export default function CommunityStandardsPage() {
       <ul>
         <li>No harassment, threats, stalking, coercion, bullying, or degrading conduct.</li>
         <li>No hateful or discriminatory attacks against a person or protected group.</li>
+        <li>Video messages must not contain nudity or sexually explicit content.</li>
         <li>No sexual pressure, exploitation, non-consensual content, or unwanted explicit material.</li>
         <li>Respect boundaries, refusals, blocks, ended conversations, and requests for no contact.</li>
       </ul>
