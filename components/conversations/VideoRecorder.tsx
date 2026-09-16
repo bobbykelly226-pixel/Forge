@@ -105,8 +105,8 @@ export default function VideoRecorder({ onSend, onClose }: { onSend: (file: File
     finally { busy.current = false; if (alive.current) setPhase('review'); }
   };
   return <dialog ref={dialog} onCancel={event => { event.preventDefault(); if (phase !== 'sending') onClose(); }} aria-labelledby="video-hello-title" className="fixed m-auto max-h-[90dvh] w-[min(94vw,480px)] overflow-y-auto rounded-2xl bg-[#E6E6E7] p-4 text-[#0B2D5C] backdrop:bg-black/60">
-    <div className="flex items-center justify-between gap-3"><h2 id="video-hello-title" className="text-xl font-semibold">Video Hello</h2><button type="button" disabled={phase === 'sending'} onClick={onClose} aria-label="Close video recorder" className="min-h-11 min-w-11">✕</button></div>
-    <p className="my-2">Record up to 15 seconds. Review before sending.</p>
+    <div className="flex items-center justify-between gap-3"><h2 id="video-hello-title" className="text-xl font-semibold">Video “Hello”</h2><button type="button" disabled={phase === 'sending'} onClick={onClose} aria-label="Close video recorder" className="min-h-11 min-w-11">✕</button></div>
+    <p className="my-2">Send a quick, personal hello in a video up to 15 seconds. Review before sending.</p>
     <p className="mt-3 text-sm text-black"><strong>Keep it respectful.</strong> Nudity, sexually explicit content, harassment, and threats are not allowed. Violations may result in account suspension or removal. <a data-text-link href="/community-standards" target="_blank" rel="noopener noreferrer" className="underline">Community Standards (opens in a new tab)</a></p>
     {url ? <video key={url} src={url} controls playsInline preload="metadata" aria-label="Review your video" className="max-h-[45dvh] w-full rounded-xl bg-black" /> : <video ref={preview} muted playsInline autoPlay aria-label="Camera preview" className="max-h-[45dvh] w-full rounded-xl bg-black" />}
     {phase === 'recording' && <p role="status" className="my-3 text-center text-xl font-semibold">Recording · {remaining}s remaining</p>}
