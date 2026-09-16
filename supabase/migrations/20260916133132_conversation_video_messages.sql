@@ -13,7 +13,8 @@ alter table public.conversation_video_checks enable row level security;
 revoke all on public.conversation_video_checks from public, anon, authenticated;
 grant select, insert, update, delete on public.conversation_video_checks to service_role;
 
-alter table public.message_attachments drop constraint message_attachments_mime_type_check;
+alter table public.message_attachments drop constraint if exists message_attachments_mime_type_check;
+alter table public.message_attachments drop constraint if exists message_attachments_mime_type;
 alter table public.message_attachments add constraint message_attachments_mime_type_check check (
  mime_type in ('image/jpeg','image/png','image/webp','application/pdf','text/plain',
  'application/vnd.openxmlformats-officedocument.wordprocessingml.document','video/mp4','video/webm')
