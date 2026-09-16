@@ -32,6 +32,17 @@ describe('authentication CAPTCHA protection', () => {
     assert.match(authAction, /resetPasswordForEmail\([\s\S]*captchaToken/);
   });
 
+  it('creates cross-browser password recovery links without weakening CAPTCHA', () => {
+    assert.match(
+      authAction,
+      /requestPasswordReset[\s\S]*flowType: 'implicit'[\s\S]*resetPasswordForEmail/
+    );
+    assert.match(
+      authAction,
+      /requestPasswordReset[\s\S]*resetPasswordForEmail\([\s\S]*captchaToken/
+    );
+  });
+
   it('does not use service-role email fallbacks while CAPTCHA is enabled', () => {
     assert.match(
       authAction,

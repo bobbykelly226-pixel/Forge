@@ -11,6 +11,7 @@
 export type ConfirmationOutcome =
   | 'session_ready'
   | 'confirmed_needs_signin'
+  | 'recovery_link_error'
   | 'already_confirmed'
   | 'invalid_or_expired';
 
@@ -40,6 +41,14 @@ export const CONFIRMATION_COPY: Record<ConfirmationOutcome, ConfirmationPresenta
     message: 'Your email is confirmed. Sign in to continue into Forge.',
     primaryHref: '/login',
     primaryLabel: 'Sign in',
+  },
+  recovery_link_error: {
+    outcome: 'recovery_link_error',
+    title: 'Password reset link could not be opened',
+    message:
+      'This older reset link could not create a secure password-reset session. Return to sign in and request a new reset email.',
+    primaryHref: '/login',
+    primaryLabel: 'Return to sign in',
   },
   already_confirmed: {
     outcome: 'already_confirmed',
@@ -116,8 +125,12 @@ export function classifyConfirmationProviderError(
  * cookie is unavailable. The email is confirmed in that case; the user simply
  * needs to sign in normally.
  */
-export function outcomeForCodeExchangeFailure(): 'confirmed_needs_signin' {
-  return 'confirmed_needs_signin';
+export function outcomeForCodeExchangeFailure(
+  nextPath?: string | null
+): 'confirmed_needs_signin' | 'recovery_link_error' {
+  return nextPath === '/auth/update-password'
+    ? 'recovery_link_error'
+    : 'confirmed_needs_signin';
 }
 
 export function presentationForOutcome(
@@ -132,6 +145,7 @@ export function parseConfirmationOutcome(
   if (
     value === 'session_ready' ||
     value === 'confirmed_needs_signin' ||
+    value === 'recovery_link_error' ||
     value === 'already_confirmed' ||
     value === 'invalid_or_expired'
   ) {

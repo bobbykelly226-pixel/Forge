@@ -37,6 +37,13 @@ describe('confirmation outcome classification', () => {
     assert.doesNotMatch(CONFIRMATION_COPY[outcome].message, /invalid or has expired/i);
   });
 
+  it('does not mislabel a failed recovery exchange as email confirmation', () => {
+    const outcome = outcomeForCodeExchangeFailure('/auth/update-password');
+    assert.equal(outcome, 'recovery_link_error');
+    assert.match(CONFIRMATION_COPY[outcome].title, /password reset/i);
+    assert.doesNotMatch(CONFIRMATION_COPY[outcome].title, /email confirmed/i);
+  });
+
   it('maps invalid or expired confirmation links to resend guidance', () => {
     const outcome = classifyConfirmationProviderError(
       'Email link is invalid or has expired'
@@ -93,12 +100,14 @@ describe('confirmation outcome classification', () => {
 
   it('builds auth result paths from outcomes', () => {
     assert.equal(authResultPath('confirmed_needs_signin'), '/auth/result?outcome=confirmed_needs_signin');
+    assert.equal(authResultPath('recovery_link_error'), '/auth/result?outcome=recovery_link_error');
     assert.equal(authResultPath('already_confirmed'), '/auth/result?outcome=already_confirmed');
     assert.equal(authResultPath('invalid_or_expired'), '/auth/result?outcome=invalid_or_expired');
   });
 
   it('parses outcome query values safely', () => {
     assert.equal(parseConfirmationOutcome('already_confirmed'), 'already_confirmed');
+    assert.equal(parseConfirmationOutcome('recovery_link_error'), 'recovery_link_error');
     assert.equal(parseConfirmationOutcome('nope'), null);
     assert.equal(parseConfirmationOutcome(undefined), null);
   });
