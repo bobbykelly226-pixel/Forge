@@ -426,6 +426,8 @@ export type Database = {
           position: number
           sender_id: string
           storage_path: string
+          view_once: boolean
+          viewed_at: string | null
           width: number | null
         }
         Insert: {
@@ -441,6 +443,8 @@ export type Database = {
           position?: number
           sender_id: string
           storage_path: string
+          view_once?: boolean
+          viewed_at?: string | null
           width?: number | null
         }
         Update: {
@@ -456,6 +460,8 @@ export type Database = {
           position?: number
           sender_id?: string
           storage_path?: string
+          view_once?: boolean
+          viewed_at?: string | null
           width?: number | null
         }
         Relationships: [
@@ -2633,6 +2639,10 @@ export type Database = {
           p_client_message_id?: string
           p_conversation_id: string
         }
+        Returns: Json
+      }
+      open_view_once_video: {
+        Args: { p_attachment_id: string }
         Returns: Json
       }
       send_conversation_message_with_attachments: {

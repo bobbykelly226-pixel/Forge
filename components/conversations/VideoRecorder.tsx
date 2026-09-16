@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from 'react';
 import { chooseRecordingType, VIDEO_MAX_SECONDS } from '@/lib/conversations/video';
 import { MESSAGE_ATTACHMENT_MAX_BYTES } from '@/lib/conversations/constants';
 
-export default function VideoRecorder({ onSend, onClose }: { onSend: (file: File) => Promise<boolean>; onClose: () => void }) {
+export default function VideoRecorder({ onSend, onClose }: { onSend: (file: File, options: { viewOnce: boolean }) => Promise<boolean>; onClose: () => void }) {
   const dialog = useRef<HTMLDialogElement>(null);
   const preview = useRef<HTMLVideoElement>(null);
   const stream = useRef<MediaStream | null>(null);
@@ -20,6 +20,7 @@ export default function VideoRecorder({ onSend, onClose }: { onSend: (file: File
   const [url, setUrl] = useState('');
   const [error, setError] = useState('');
   const [needsReload, setNeedsReload] = useState(false);
+  const [viewOnce, setViewOnce] = useState(false);
 
   const stop = () => {
     if (timer.current) clearInterval(timer.current);
@@ -30,10 +31,11 @@ export default function VideoRecorder({ onSend, onClose }: { onSend: (file: File
   };
   useEffect(() => {
     alive.current = true;
+    const generationRef = generation;
     dialog.current?.showModal();
     const interrupt = () => { if (document.hidden && stream.current) { generation.current++; discard.current = true; stop(); if (alive.current) { setPhase('idle'); setError('Recording interrupted. Please record again.'); } } };
     document.addEventListener('visibilitychange', interrupt);
-    return () => { alive.current = false; generation.current++; discard.current = true; stop(); document.removeEventListener('visibilitychange', interrupt); };
+    return () => { alive.current = false; generationRef.current++; discard.current = true; stop(); document.removeEventListener('visibilitychange', interrupt); };
   }, []);
   useEffect(() => () => { if (url) URL.revokeObjectURL(url); }, [url]);
 
@@ -100,7 +102,7 @@ export default function VideoRecorder({ onSend, onClose }: { onSend: (file: File
   const send = async () => {
     if (!file || busy.current) return;
     busy.current = true; setPhase('sending'); setError('');
-    try { if (await onSend(file)) { onClose(); return; } setError('Video could not be sent. Your clip is here so you can retry.'); }
+    try { if (await onSend(file, { viewOnce })) { onClose(); return; } setError('Video could not be sent. Your clip is here so you can retry.'); }
     catch { setError('Video could not be sent. Please retry.'); }
     finally { busy.current = false; if (alive.current) setPhase('review'); }
   };
@@ -109,6 +111,11 @@ export default function VideoRecorder({ onSend, onClose }: { onSend: (file: File
     <p className="my-2">Send a quick, personal hello in a video up to 15 seconds. Review before sending.</p>
     <p className="mt-3 text-sm text-black"><strong>Keep it respectful.</strong> Nudity, sexually explicit content, harassment, and threats are not allowed. Violations may result in account suspension or removal. <a data-text-link href="/community-standards" target="_blank" rel="noopener noreferrer" aria-label="Community Standards, opens in a new tab" className="underline">Community Standards <span aria-hidden="true">↗</span></a></p>
     {url ? <video key={url} src={url} controls playsInline preload="metadata" aria-label="Review your video" className="max-h-[45dvh] w-full rounded-xl bg-black" /> : <video ref={preview} muted playsInline autoPlay aria-label="Camera preview" className="max-h-[45dvh] w-full rounded-xl bg-black" />}
+    {phase === 'review' && <fieldset className="mt-4 rounded-xl border border-[#0B2D5C]/15 bg-white p-3 text-black">
+      <legend className="px-1 text-sm font-semibold text-[#0B2D5C]">Choose how it can be viewed</legend>
+      <label className="mt-2 flex min-h-11 cursor-pointer items-start gap-3"><input type="radio" name="video-delivery" checked={!viewOnce} onChange={() => setViewOnce(false)} className="mt-1" /><span><strong>Keep in conversation</strong><span className="block text-sm">It can be played again later.</span></span></label>
+      <label className="mt-2 flex min-h-11 cursor-pointer items-start gap-3"><input type="radio" name="video-delivery" checked={viewOnce} onChange={() => setViewOnce(true)} className="mt-1" /><span><strong>View Once</strong><span className="block text-sm">It disappears after the recipient opens it. They may still be able to record their screen.</span></span></label>
+    </fieldset>}
     {phase === 'recording' && <p role="status" className="my-3 text-center text-xl font-semibold">Recording · {remaining}s remaining</p>}
     {error && <p role="alert" className="my-3">{error}</p>}
     <div className="mt-4 flex flex-wrap justify-end gap-3 [&>button]:min-h-11 [&>button]:rounded-lg [&>button]:bg-[#0B2D5C] [&>button]:px-4 [&>button]:py-2 [&>button]:text-white">
