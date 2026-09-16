@@ -10,13 +10,14 @@ import {
   type ChangeEvent,
   type KeyboardEvent as ReactKeyboardEvent,
 } from 'react';
-import { FileUp, Paperclip, Smile, X } from 'lucide-react';
+import { FileUp, Paperclip, Smile, Video, X } from 'lucide-react';
 
 import {
   listConversationMessagesAction,
   sendConversationMessageAction,
 } from '@/app/actions/conversations';
 import ConversationSafetyMenu from '@/components/conversations/ConversationSafetyMenu';
+import VideoRecorder from '@/components/conversations/VideoRecorder';
 import MessageAttachment from '@/components/conversations/MessageAttachment';
 import { trackLaunchEvent } from '@/lib/analytics/launch-events';
 import {
@@ -116,6 +117,8 @@ export default function ConversationThread({
   const [loadingOlder, setLoadingOlder] = useState(false);
   const [composerText, setComposerText] = useState('');
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const videoMessageId = useRef<string | null>(null);
+  const [videoOpen, setVideoOpen] = useState(false);
   const [emojiOpen, setEmojiOpen] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [sending, setSending] = useState(false);
@@ -342,10 +345,11 @@ export default function ConversationThread({
   const sendMessage = async (
     body: string,
     existingClientMessageId?: string,
-    existingAttachment?: ConversationAttachmentInput
+    existingAttachment?: ConversationAttachmentInput,
+    recordedVideo?: File
   ) => {
     const outbound = normalizeComposerOutboundText(body);
-    const pendingFile = existingAttachment ? null : selectedFile;
+    const pendingFile = existingAttachment ? null : recordedVideo ?? selectedFile;
     if ((!outbound && !pendingFile && !existingAttachment) || sending || composerDisabled) {
       return false;
     }
@@ -401,6 +405,24 @@ export default function ConversationThread({
         setLiveMessage('That attachment could not be uploaded. Please try again.');
         return false;
       }
+      if (pendingFile.type.startsWith('video/')) {
+        setUploading(true);
+        try {
+          const response = await fetch('/api/conversation-video/validate', {
+            method: 'POST', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ conversationId: meta.conversationId, path, mimeType: pendingFile.type }),
+          });
+          if (!response.ok) {
+            await supabase.storage.from(MESSAGE_ATTACHMENT_BUCKET).remove([path]);
+            setLiveMessage('Video could not be verified. Record a clip under 15 seconds and try again.');
+            return false;
+          }
+        } catch {
+          await supabase.storage.from(MESSAGE_ATTACHMENT_BUCKET).remove([path]);
+          setLiveMessage('Video upload was interrupted. Please try again.');
+          return false;
+        } finally { setUploading(false); }
+      }
       attachment = {
         storage_path: path,
         file_name: sanitizeAttachmentName(pendingFile.name),
@@ -447,9 +469,11 @@ export default function ConversationThread({
     };
 
     setSending(true);
-    composerTextRef.current = '';
-    setComposerText('');
-    setSelectedFile(null);
+    if (!recordedVideo) {
+      composerTextRef.current = '';
+      setComposerText('');
+      setSelectedFile(null);
+    }
     setEmojiOpen(false);
     setMessages((current) => mergeMessages(current, [optimisticMessage]));
 
@@ -847,6 +871,10 @@ export default function ConversationThread({
                 >
                   <Smile className="h-5 w-5" aria-hidden="true" />
                 </button>
+                {process.env.NEXT_PUBLIC_VIDEO_MESSAGES_ENABLED === 'true' && <button
+                  type="button" onClick={() => { videoMessageId.current = createClientMessageId(); setVideoOpen(true); }} disabled={composerDisabled || Boolean(selectedFile)}
+                  className="rounded-full p-2 text-[#0B2D5C] disabled:opacity-50" aria-label="Record a 15-second video"
+                ><Video className="h-5 w-5" aria-hidden="true" /></button>}
                 <span
                   className={`ml-1 text-xs ${remainingChars < 100 ? 'text-[#D62828]' : 'text-[#8A93A0]'}`}
                   aria-live="polite"
@@ -871,6 +899,10 @@ export default function ConversationThread({
         </div>
       </div>
 
+      {videoOpen && !isBlocked && threadStatus !== 'ended' && <VideoRecorder
+        onClose={() => setVideoOpen(false)}
+        onSend={(file) => sendMessage('', videoMessageId.current ?? undefined, undefined, file)}
+      />}
       <div id={liveRegionId} className="sr-only" aria-live="polite" aria-atomic="true">
         {liveMessage}
       </div>

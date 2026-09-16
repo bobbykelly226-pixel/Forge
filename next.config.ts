@@ -49,6 +49,10 @@ const nextConfig: NextConfig = {
         source: '/:path*',
         headers: securityHeaders,
       },
+      {
+        source: '/connections/c/:path*',
+        headers: [{ key: 'Permissions-Policy', value: 'camera=(self), microphone=(self), geolocation=(self), browsing-topics=(), payment=(), usb=()' }],
+      },
     ];
   },
   async redirects() {

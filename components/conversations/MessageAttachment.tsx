@@ -9,6 +9,7 @@ import {
 } from '@/lib/conversations/attachments';
 import { MESSAGE_ATTACHMENT_BUCKET } from '@/lib/conversations/constants';
 import type { ConversationAttachment } from '@/lib/conversations/types';
+import VideoMessage from './VideoMessage';
 import { createClient } from '@/lib/supabase/client';
 
 type Props = {
@@ -24,7 +25,7 @@ export default function MessageAttachment({ attachment, isSent, localPreviewUrl 
 
   useEffect(() => {
     let active = true;
-    if (!path || localPreviewUrl) return;
+    if (!path || localPreviewUrl || attachment.mimeType.startsWith('video/')) return;
 
     const load = async () => {
       const supabase = createClient();
@@ -42,11 +43,12 @@ export default function MessageAttachment({ attachment, isSent, localPreviewUrl 
     return () => {
       active = false;
     };
-  }, [path, localPreviewUrl]);
+  }, [path, localPreviewUrl, attachment.mimeType]);
 
   const displayUrl = localPreviewUrl ?? signedUrl;
 
   if (!path) return null;
+  if (attachment.mimeType.startsWith('video/')) return <VideoMessage path={path} localUrl={localPreviewUrl} />;
 
   const name = attachment.fileName;
   const detail = formatAttachmentSize(attachment.fileSize);

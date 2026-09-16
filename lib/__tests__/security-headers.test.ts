@@ -11,7 +11,7 @@ test('applies the security headers to every application route', async () => {
 
   const configuredRoutes = await nextConfig.headers();
 
-  assert.deepEqual(configuredRoutes, [
+  assert.deepEqual(configuredRoutes.slice(0, 1), [
     {
       source: '/:path*',
       headers: securityHeaders,
@@ -59,3 +59,10 @@ test('allows only the external browser resources Forge currently needs', () => {
     /frame-src[^;]*https:\/\/challenges\.cloudflare\.com/
   );
 });
+
+ test('camera and microphone are enabled only on conversation routes', async () => {
+ const routes = await nextConfig.headers!();
+ assert.equal(routes.length, 2);
+ assert.equal(routes[1].source, '/connections/c/:path*');
+ assert.match(routes[1].headers[0].value, /camera=\(self\), microphone=\(self\)/);
+ });
