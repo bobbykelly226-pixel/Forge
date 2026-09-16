@@ -29,7 +29,7 @@ on storage.objects as restrictive for update to authenticated
 using (bucket_id <> 'conversation-attachments') with check (bucket_id <> 'conversation-attachments');
 
 create or replace function public.get_video_upload_for_validation(p_conversation_id uuid, p_path text)
-returns jsonb language plpgsql security definer set search_path = public as $$
+returns jsonb language plpgsql security definer set search_path = pg_catalog, public, pg_temp as $$
 declare v_uid uuid := auth.uid(); v_result jsonb;
 begin
  if v_uid is null or p_path not like p_conversation_id::text || '/' || v_uid::text || '/%'
@@ -51,7 +51,7 @@ create or replace function public.send_conversation_message_with_attachments(
 returns jsonb
 language plpgsql
 security definer
-set search_path = public
+set search_path = pg_catalog, public, pg_temp
 as $$
 declare
   v_uid uuid := auth.uid();
