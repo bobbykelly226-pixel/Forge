@@ -102,13 +102,19 @@ export async function loadOperatorReportReview(
   }
 
   const reportIds = caseRows.map((item) => item.report_id);
-  const [{ data: reports, error: reportsError }, { data: evidenceCounts }, { data: alertRows }] =
+  const [
+    { data: reports, error: reportsError },
+    { data: evidenceCounts },
+    { data: videoEvidenceCounts },
+    { data: alertRows },
+  ] =
     await Promise.all([
       admin
         .from('user_reports')
         .select('id, reporter_id, reported_user_id, conversation_id, reason, details, created_at')
         .in('id', reportIds),
       admin.from('report_evidence').select('report_id').in('report_id', reportIds),
+      admin.from('reported_video_evidence').select('report_id').in('report_id', reportIds),
       admin.from('safety_report_notifications').select('report_id, status').in('report_id', reportIds),
     ]);
 
@@ -139,6 +145,12 @@ export async function loadOperatorReportReview(
   const profilesById = new Map((profiles ?? []).map((profile) => [profile.id, profile] as const));
   const evidenceCountByReport = new Map<string, number>();
   for (const evidence of evidenceCounts ?? []) {
+    evidenceCountByReport.set(
+      evidence.report_id,
+      (evidenceCountByReport.get(evidence.report_id) ?? 0) + 1
+    );
+  }
+  for (const evidence of videoEvidenceCounts ?? []) {
     evidenceCountByReport.set(
       evidence.report_id,
       (evidenceCountByReport.get(evidence.report_id) ?? 0) + 1

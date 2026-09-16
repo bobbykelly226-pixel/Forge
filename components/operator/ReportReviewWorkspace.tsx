@@ -1,6 +1,8 @@
 'use client';
 
 import Link from 'next/link';
+import ReportedVideoReview from './ReportedVideoReview';
+import { reportedVideoMessageId } from '@/lib/operator/reported-video';
 import { useActionState, useState } from 'react';
 import {
   AlertTriangle,
@@ -253,6 +255,8 @@ export default function ReportReviewWorkspace({
                 </p>
               </div>
             </article>
+
+            {reportedVideoMessageId(selected.details) && <ReportedVideoReview key={selected.reportId} reportId={selected.reportId} />}
 
             <section className="rounded-[1.75rem] border border-[#0B2D5C]/10 bg-white p-5 sm:p-7">
               <div className="flex items-center gap-2"><FileWarning className="h-5 w-5 text-[#D62828]" aria-hidden="true" /><h2 className="text-xl font-semibold text-[#0B2D5C]">Private evidence</h2></div>
