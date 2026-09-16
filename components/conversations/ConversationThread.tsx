@@ -10,17 +10,16 @@ import {
   type ChangeEvent,
   type KeyboardEvent as ReactKeyboardEvent,
 } from 'react';
-import { ChevronDown, ChevronUp, FileUp, Paperclip, Smile, X } from 'lucide-react';
+import { FileUp, Paperclip, Smile, Video, X } from 'lucide-react';
 
 import {
   listConversationMessagesAction,
   sendConversationMessageAction,
 } from '@/app/actions/conversations';
 import ConversationSafetyMenu from '@/components/conversations/ConversationSafetyMenu';
+import VideoRecorder from '@/components/conversations/VideoRecorder';
 import MessageAttachment from '@/components/conversations/MessageAttachment';
-import ConversationStarters from '@/components/conversations/ConversationStarters';
 import { trackLaunchEvent } from '@/lib/analytics/launch-events';
-import { partnerSaidLabel, viewerSaidLabel } from '@/lib/compatibility/answer-labels';
 import {
   createAttachmentPath,
   readImageDimensions,
@@ -42,10 +41,8 @@ import {
   isLikelyMobileKeyboardOpen,
 } from '@/lib/conversations/mobile-viewport';
 import type {
-  ConversationAlignmentContext,
   ConversationAttachmentInput,
   ConversationMessage,
-  ConversationStarter,
   ConversationThreadMeta,
 } from '@/lib/conversations/types';
 import { createClient } from '@/lib/supabase/client';
@@ -55,8 +52,6 @@ type ConversationThreadProps = {
   initialMessages: ConversationMessage[];
   hasMoreInitial?: boolean;
   viewerUserId: string;
-  alignmentContext: ConversationAlignmentContext | null;
-  starters: ConversationStarter[];
   isSeed?: boolean;
 };
 
@@ -96,8 +91,6 @@ export default function ConversationThread({
   initialMessages,
   hasMoreInitial = false,
   viewerUserId,
-  alignmentContext,
-  starters,
   isSeed = false,
 }: ConversationThreadProps) {
   const composerId = useId();
@@ -124,12 +117,11 @@ export default function ConversationThread({
   const [loadingOlder, setLoadingOlder] = useState(false);
   const [composerText, setComposerText] = useState('');
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const videoMessageId = useRef<string | null>(null);
+  const [videoOpen, setVideoOpen] = useState(false);
   const [emojiOpen, setEmojiOpen] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [sending, setSending] = useState(false);
-  const [contextExpanded, setContextExpanded] = useState(false);
-  const [composerFocused, setComposerFocused] = useState(false);
-  const [keyboardOpen, setKeyboardOpen] = useState(false);
   const [mobileViewportHeight, setMobileViewportHeight] = useState<number | null>(null);
   const [threadStatus, setThreadStatus] = useState(meta.status);
   const [endedByViewer, setEndedByViewer] = useState(meta.endedByViewer);
@@ -139,22 +131,26 @@ export default function ConversationThread({
 
   const profileHref = `/discovery/profile/${meta.peerUserId}`;
   const composerDisabled = threadStatus === 'ended' || isBlocked || sending || uploading;
-  const youSaid = viewerSaidLabel();
-  const theySaid = partnerSaidLabel(meta.peerFirstName);
-  const hasTwoWayExchange =
-    messages.some((message) => message.senderId === viewerUserId) &&
-    messages.some((message) => message.senderId !== viewerUserId);
-
   const scrollToBottom = useCallback((behavior: ScrollBehavior = 'smooth') => {
     messagesEndRef.current?.scrollIntoView({ behavior, block: 'end' });
   }, []);
 
   const syncMobileViewport = useCallback(() => {
     const viewport = window.visualViewport;
+    const compactLandscape = window.matchMedia('(pointer: coarse) and (orientation: landscape) and (max-height: 500px)').matches;
+    const root = threadRootRef.current;
+    if (root) {
+      root.dataset.compactLandscape = String(compactLandscape);
+      root.dataset.composerPriority = String(compactLandscape && (viewport?.height ?? window.innerHeight) < 180);
+      root.style.setProperty('--conversation-viewport-top', `${viewport?.offsetTop ?? 0}px`);
+    }
+    if (compactLandscape) {
+      setMobileViewportHeight(viewport?.height ?? window.innerHeight);
+      return;
+    }
     const isDesktop = window.matchMedia('(min-width: 1024px)').matches;
 
     if (!viewport || isDesktop) {
-      setKeyboardOpen(false);
       setMobileViewportHeight(null);
       return;
     }
@@ -163,7 +159,6 @@ export default function ConversationThread({
       window.innerHeight,
       viewport.height
     );
-    setKeyboardOpen(nextKeyboardOpen);
 
     if (!nextKeyboardOpen) {
       setMobileViewportHeight(null);
@@ -350,10 +345,11 @@ export default function ConversationThread({
   const sendMessage = async (
     body: string,
     existingClientMessageId?: string,
-    existingAttachment?: ConversationAttachmentInput
+    existingAttachment?: ConversationAttachmentInput,
+    recordedVideo?: File
   ) => {
     const outbound = normalizeComposerOutboundText(body);
-    const pendingFile = existingAttachment ? null : selectedFile;
+    const pendingFile = existingAttachment ? null : recordedVideo ?? selectedFile;
     if ((!outbound && !pendingFile && !existingAttachment) || sending || composerDisabled) {
       return false;
     }
@@ -409,6 +405,24 @@ export default function ConversationThread({
         setLiveMessage('That attachment could not be uploaded. Please try again.');
         return false;
       }
+      if (pendingFile.type.startsWith('video/')) {
+        setUploading(true);
+        try {
+          const response = await fetch('/api/conversation-video/validate', {
+            method: 'POST', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ conversationId: meta.conversationId, path, mimeType: pendingFile.type }),
+          });
+          if (!response.ok) {
+            await supabase.storage.from(MESSAGE_ATTACHMENT_BUCKET).remove([path]);
+            setLiveMessage('Video could not be verified. Record a clip under 15 seconds and try again.');
+            return false;
+          }
+        } catch {
+          await supabase.storage.from(MESSAGE_ATTACHMENT_BUCKET).remove([path]);
+          setLiveMessage('Video upload was interrupted. Please try again.');
+          return false;
+        } finally { setUploading(false); }
+      }
       attachment = {
         storage_path: path,
         file_name: sanitizeAttachmentName(pendingFile.name),
@@ -455,9 +469,11 @@ export default function ConversationThread({
     };
 
     setSending(true);
-    composerTextRef.current = '';
-    setComposerText('');
-    setSelectedFile(null);
+    if (!recordedVideo) {
+      composerTextRef.current = '';
+      setComposerText('');
+      setSelectedFile(null);
+    }
     setEmojiOpen(false);
     setMessages((current) => mergeMessages(current, [optimisticMessage]));
 
@@ -580,42 +596,12 @@ export default function ConversationThread({
     });
   };
 
-  const handleStarterSelect = (text: string) => {
-    const textarea = textareaRef.current;
-    if (!textarea) {
-      setComposerText((current) => {
-        const next = current ? `${current}\n\n${text}` : text;
-        composerTextRef.current = next;
-        return next;
-      });
-      return;
-    }
-    const start = textarea.selectionStart ?? composerText.length;
-    const end = textarea.selectionEnd ?? composerText.length;
-    const next =
-      composerText.slice(0, start) +
-      (composerText && start > 0 ? '\n\n' : '') +
-      text +
-      composerText.slice(end);
-    composerTextRef.current = next;
-    setComposerText(next);
-    requestAnimationFrame(() => {
-      textarea.focus();
-      const cursor = start + (composerText && start > 0 ? 2 : 0) + text.length;
-      textarea.setSelectionRange(cursor, cursor);
-    });
-  };
-
   const remainingChars = MESSAGE_MAX_LENGTH - composerText.length;
-  const showConnectionContext =
-    Boolean(alignmentContext) &&
-    !hasTwoWayExchange &&
-    !composerFocused &&
-    !keyboardOpen;
 
   return (
     <div
       ref={threadRootRef}
+      data-conversation-thread
       className="flex h-[calc(100dvh-9rem)] min-h-0 flex-col overflow-hidden rounded-[1.5rem] border border-[#0B2D5C]/08 bg-[#FBF9F6] shadow-sm lg:h-[calc(100dvh-5rem)]"
       style={
         mobileViewportHeight === null
@@ -623,9 +609,9 @@ export default function ConversationThread({
           : { height: `${mobileViewportHeight}px` }
       }
     >
-      <header className="sticky top-0 z-30 border-b border-[#0B2D5C]/10 bg-[#FBF9F6]/95 backdrop-blur-md">
+      <header className="sticky top-0 z-30 shrink-0 border-b border-[#0B2D5C]/10 bg-[#FBF9F6]/95 backdrop-blur-md">
         <div className="mx-auto flex max-w-2xl items-center justify-between gap-3 px-4 py-3 sm:px-5">
-          <div className="min-w-0 flex-1">
+          <div data-conversation-heading className="min-w-0 flex-1">
             <Link
               href="/connections?tab=conversations"
               data-text-link
@@ -672,120 +658,9 @@ export default function ConversationThread({
         </div>
       </header>
 
-      {showConnectionContext && alignmentContext ? (
-        <section className="border-b border-[#0B2D5C]/08 bg-white/70">
-          <div className="mx-auto max-w-2xl px-4 sm:px-5">
-            <button
-              type="button"
-              onClick={() => setContextExpanded((open) => !open)}
-              className="flex w-full items-center justify-between gap-3 py-4 text-left"
-              aria-expanded={contextExpanded}
-            >
-              <span
-                className="text-base font-semibold text-[#0B2D5C]"
-                style={{ fontFamily: 'var(--font-discovery-display), Georgia, serif' }}
-              >
-                Forge connection context
-              </span>
-              {contextExpanded ? (
-                <ChevronUp className="h-5 w-5 shrink-0 text-[#7A8494]" strokeWidth={1.75} aria-hidden="true" />
-              ) : (
-                <ChevronDown className="h-5 w-5 shrink-0 text-[#7A8494]" strokeWidth={1.75} aria-hidden="true" />
-              )}
-            </button>
-            {contextExpanded ? (
-              <div className="space-y-6 pb-5">
-                {alignmentContext.whyIntroduced.length > 0 ? (
-                  <div>
-                    <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[#7A8494]">
-                      Why Forge introduced you
-                    </p>
-                    <ul className="mt-3 list-disc space-y-2 pl-5 text-[15px] leading-relaxed text-[#3D4654]">
-                      {alignmentContext.whyIntroduced.map((item) => (
-                        <li key={item}>{item}</li>
-                      ))}
-                    </ul>
-                  </div>
-                ) : null}
-
-                <div>
-                  <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[#D62828]">
-                    Relationship Alignment
-                  </p>
-                  <p
-                    className="mt-1.5 text-base font-semibold text-[#0B2D5C]"
-                    style={{ fontFamily: 'var(--font-discovery-display), Georgia, serif' }}
-                  >
-                    {alignmentContext.alignmentLabel}
-                  </p>
-                </div>
-
-                {alignmentContext.importantFactors.length > 0 ? (
-                  <div>
-                    <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[#7A8494]">
-                      Important Alignment Factors
-                    </p>
-                    <ul className="mt-3 space-y-4">
-                      {alignmentContext.importantFactors.map((factor) => (
-                        <li
-                          key={factor.title}
-                          className="rounded-2xl border border-[#0B2D5C]/08 bg-[#F8F6F2] p-4"
-                        >
-                          <h3 className="text-base font-semibold text-[#0B2D5C]">{factor.title}</h3>
-                          <p className="mt-2 text-sm leading-relaxed text-[#5A6575]">
-                            {factor.explanation}
-                          </p>
-                          {(factor.viewerAnswer || factor.partnerAnswer) && (
-                            <dl className="mt-4 space-y-3">
-                              {factor.viewerAnswer ? (
-                                <div className="rounded-xl bg-white px-3 py-2.5">
-                                  <dt className="text-[11px] font-semibold uppercase tracking-[0.12em] text-[#8A93A0]">
-                                    {youSaid}
-                                  </dt>
-                                  <dd className="mt-1 text-sm font-medium text-[#0B2D5C]">
-                                    “{factor.viewerAnswer}”
-                                  </dd>
-                                </div>
-                              ) : null}
-                              {factor.partnerAnswer ? (
-                                <div className="rounded-xl bg-white px-3 py-2.5">
-                                  <dt className="text-[11px] font-semibold uppercase tracking-[0.12em] text-[#8A93A0]">
-                                    {theySaid}
-                                  </dt>
-                                  <dd className="mt-1 text-sm font-medium text-[#0B2D5C]">
-                                    “{factor.partnerAnswer}”
-                                  </dd>
-                                </div>
-                              ) : null}
-                            </dl>
-                          )}
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                ) : null}
-
-                {alignmentContext.incompleteAssessmentCopy ? (
-                  <p className="text-sm leading-relaxed text-[#7A8494]">
-                    {alignmentContext.incompleteAssessmentCopy}
-                  </p>
-                ) : null}
-
-                <Link data-text-link
-                  href={profileHref}
-                  className="inline-flex text-sm font-semibold text-[#0B2D5C] underline-offset-2 hover:underline"
-                >
-                  View profile
-                </Link>
-              </div>
-            ) : null}
-          </div>
-        </section>
-      ) : null}
-
       {threadStatus === 'ended' ? (
         <div
-          className="border-b border-[#0B2D5C]/08 bg-[#F8F6F2] px-4 py-3 text-center text-sm text-[#5A6575] sm:px-5"
+          className="shrink-0 border-b border-[#0B2D5C]/08 bg-[#F8F6F2] px-4 py-3 text-center text-sm text-[#5A6575] sm:px-5"
           role="status"
         >
           {blockedByViewer
@@ -846,6 +721,15 @@ export default function ConversationThread({
                       </p>
                     ) : null}
                   </div>
+                  {!isSent && !isSeed && message.attachments.some(attachment => attachment.mimeType.startsWith('video/')) && <ConversationSafetyMenu
+                    reportMessageId={message.id}
+                    peerUserId={meta.peerUserId}
+                    peerFirstName={meta.peerFirstName}
+                    connectionId={meta.connectionId}
+                    conversationId={meta.conversationId}
+                    profileHref={profileHref}
+                    blockedByViewer={blockedByViewer}
+                  />}
                   <div className="mt-1 flex items-center gap-2 px-1">
                     <time
                       dateTime={message.createdAt}
@@ -888,15 +772,12 @@ export default function ConversationThread({
       </div>
 
       <div
-        className="sticky bottom-0 shrink-0 border-t border-[#0B2D5C]/10 bg-[#FBF9F6]/95 backdrop-blur-md"
+        data-conversation-composer
+        className="sticky bottom-0 max-h-[50%] overflow-y-auto overscroll-contain shrink-0 border-t border-[#0B2D5C]/10 bg-[#FBF9F6]/95 backdrop-blur-md"
         style={{ paddingBottom: 'max(0.75rem, env(safe-area-inset-bottom))' }}
       >
         <div className="mx-auto max-w-2xl space-y-3 px-4 py-3 sm:px-5">
-          {threadStatus !== 'ended' && !meta.isBlocked && !hasTwoWayExchange ? (
-            <ConversationStarters starters={starters} onSelect={handleStarterSelect} />
-          ) : null}
-
-          <div className="rounded-[1.25rem] border border-[#0B2D5C]/12 bg-white p-3 shadow-sm">
+          <div data-composer-fields className="rounded-[1.25rem] border border-[#0B2D5C]/12 bg-white p-3 shadow-sm">
             <input
               ref={fileInputRef}
               type="file"
@@ -935,8 +816,6 @@ export default function ConversationThread({
               }}
               onKeyDown={handleComposerKeyDown}
               onFocus={() => {
-                setComposerFocused(true);
-                setContextExpanded(false);
                 requestAnimationFrame(() => {
                   syncMobileViewport();
                   scrollToBottom('auto');
@@ -944,7 +823,6 @@ export default function ConversationThread({
               }}
               onBlur={() => {
                 requestAnimationFrame(() => {
-                  setComposerFocused(document.activeElement === textareaRef.current);
                   syncMobileViewport();
                 });
               }}
@@ -961,7 +839,7 @@ export default function ConversationThread({
                   ? 'Messaging is closed for this connection.'
                   : `Message ${meta.peerFirstName}…`
               }
-              className="w-full resize-none bg-transparent text-[15px] leading-relaxed text-[#0B2D5C] outline-none placeholder:text-[#8A93A0] disabled:opacity-60"
+              className="w-full resize-none bg-transparent text-base leading-relaxed text-[#0B2D5C] outline-none placeholder:text-[#8A93A0] disabled:opacity-60"
             />
             {emojiOpen ? (
               <div
@@ -981,7 +859,7 @@ export default function ConversationThread({
                 ))}
               </div>
             ) : null}
-            <div className="mt-2 flex items-center justify-between gap-3">
+            <div data-composer-actions className="mt-2 flex items-center justify-between gap-3">
               <div className="flex items-center gap-1">
                 <button
                   type="button"
@@ -1002,6 +880,10 @@ export default function ConversationThread({
                 >
                   <Smile className="h-5 w-5" aria-hidden="true" />
                 </button>
+                {process.env.NEXT_PUBLIC_VIDEO_MESSAGES_ENABLED === 'true' && <button
+                  type="button" onClick={() => { videoMessageId.current = createClientMessageId(); setVideoOpen(true); }} disabled={composerDisabled || Boolean(selectedFile)}
+                  className="rounded-full p-2 text-[#0B2D5C] disabled:opacity-50" aria-label="Record a 15-second video"
+                ><Video className="h-5 w-5" aria-hidden="true" /></button>}
                 <span
                   className={`ml-1 text-xs ${remainingChars < 100 ? 'text-[#D62828]' : 'text-[#8A93A0]'}`}
                   aria-live="polite"
@@ -1026,6 +908,10 @@ export default function ConversationThread({
         </div>
       </div>
 
+      {videoOpen && !isBlocked && threadStatus !== 'ended' && <VideoRecorder
+        onClose={() => setVideoOpen(false)}
+        onSend={(file) => sendMessage('', videoMessageId.current ?? undefined, undefined, file)}
+      />}
       <div id={liveRegionId} className="sr-only" aria-live="polite" aria-atomic="true">
         {liveMessage}
       </div>

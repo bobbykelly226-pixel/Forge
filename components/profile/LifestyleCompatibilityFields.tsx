@@ -153,6 +153,14 @@ export function SmokingFields({
   const showProducts = smokingUsesProducts(smoking);
   const showOtherText = showProducts && products.includes('other');
   const showPartnerPrefs = smoking !== '';
+  const selectedPartnerLabels = SMOKING_PARTNER_PREFERENCE_OPTIONS
+    .filter((option) => partnerPrefs.includes(option.value))
+    .map((option) => option.label);
+  const partnerSummary = selectedPartnerLabels.length === 0
+    ? 'Choose what you are comfortable with in a partner.'
+    : `${selectedPartnerLabels.slice(0, 2).join('; ')}${
+        selectedPartnerLabels.length > 2 ? `; +${selectedPartnerLabels.length - 2} more` : ''
+      }`;
 
   return (
     <div className="space-y-5">
@@ -212,17 +220,27 @@ export function SmokingFields({
       )}
 
       {showPartnerPrefs ? (
-        <MultiChoiceChips
-          name="smoking_partner_preferences"
-          legend="What are you comfortable with in a long-term partner?"
-          hint="Select all that feel comfortable for you. Your own habits do not determine your answer here."
-          optionalNote="Optional — different products stay distinct."
-          options={SMOKING_PARTNER_PREFERENCE_OPTIONS}
-          values={partnerPrefs}
-          onChange={setPartnerPrefs}
-          exclusiveValues={OPENNESS_EXCLUSIVE}
-          disabled={disabled}
-        />
+        <details className="rounded-[6px] border border-[#C9CBCE] bg-[#F7F7F7]">
+          <summary className="cursor-pointer px-4 py-3 text-sm font-semibold text-[#0B2D5C]">
+            Partner smoking preferences
+            <span className="mt-1 block text-sm font-normal leading-relaxed text-black">
+              {partnerSummary}
+            </span>
+          </summary>
+          <div className="border-t border-[#C9CBCE] p-4">
+            <MultiChoiceChips
+              name="smoking_partner_preferences"
+              legend="What are you comfortable with in a long-term partner?"
+              hint="Select all that feel comfortable for you. Your own habits do not determine your answer here."
+              optionalNote="Optional — different products stay distinct."
+              options={SMOKING_PARTNER_PREFERENCE_OPTIONS}
+              values={partnerPrefs}
+              onChange={setPartnerPrefs}
+              exclusiveValues={OPENNESS_EXCLUSIVE}
+              disabled={disabled}
+            />
+          </div>
+        </details>
       ) : (
         <input type="hidden" name="smoking_partner_preferences" value="" />
       )}

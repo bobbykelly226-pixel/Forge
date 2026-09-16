@@ -17,6 +17,8 @@ export const REPORT_EVIDENCE_MIME_TYPES = [
 ] as const;
 
 export const MESSAGE_ATTACHMENT_MIME_TYPES = [
+  'video/mp4',
+  'video/webm',
   'image/jpeg',
   'image/png',
   'image/webp',

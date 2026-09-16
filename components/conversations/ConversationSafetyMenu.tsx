@@ -34,6 +34,7 @@ import {
 import { createClient } from '@/lib/supabase/client';
 
 type ConversationSafetyMenuProps = {
+  reportMessageId?: string;
   peerUserId: string;
   peerFirstName: string;
   connectionId: string;
@@ -223,6 +224,7 @@ function SafetyDialog({
 }
 
 export default function ConversationSafetyMenu({
+  reportMessageId,
   peerUserId,
   peerFirstName,
   connectionId,
@@ -415,7 +417,7 @@ export default function ConversationSafetyMenu({
       const result = await reportUserAction({
         reportedUserId: peerUserId,
         reason: reportReason,
-        details: reportDetails.trim() || undefined,
+        details: (reportMessageId ? `Reported video message: ${reportMessageId}\n${reportDetails.trim()}` : reportDetails.trim()) || undefined,
         conversationId,
         evidence,
       });
@@ -457,7 +459,7 @@ export default function ConversationSafetyMenu({
 
   return (
     <>
-      <div className="relative" ref={menuRef}>
+      {reportMessageId ? <button type="button" className="mt-2 min-h-11 rounded-lg px-3 text-sm underline" onClick={() => { setReportReason('inappropriate_content'); setDialog('report'); }}>Report video</button> : <div className="relative" ref={menuRef}>
         <button
           type="button"
           onClick={() => setMenuOpen((open) => !open)}
@@ -535,7 +537,7 @@ export default function ConversationSafetyMenu({
             </button>
           </div>
         ) : null}
-      </div>
+      </div>}
 
       {feedback ? (
         <div
@@ -580,8 +582,8 @@ export default function ConversationSafetyMenu({
 
       <SafetyDialog
         open={dialog === 'report'}
-        title={`Report ${peerFirstName}`}
-        description="Reports are reviewed by Forge. Reporting does not automatically block this person — you can block separately if you need to."
+        title={reportMessageId ? `Report video from ${peerFirstName}` : `Report ${peerFirstName}`}
+        description="Reports are reviewed by Forge. Reporting does not automatically block this person, you can block separately if you need to."
         confirmLabel="Submit report"
         busyLabel="Submitting report…"
         confirmTone="danger"
@@ -592,6 +594,7 @@ export default function ConversationSafetyMenu({
         focusConfirm={false}
       >
         <div className="mt-5 space-y-4">
+          {reportMessageId && <p className="text-sm text-black">This report will include a reference to the selected video message.</p>}
           <label className="block">
             <span className="text-sm font-semibold text-[#0B2D5C]">Reason</span>
             <div className="relative mt-2">
@@ -621,6 +624,7 @@ export default function ConversationSafetyMenu({
               autoFocus
               value={reportDetails}
               onChange={(event) => setReportDetails(event.target.value)}
+              maxLength={reportMessageId ? 900 : 1000}
               rows={3}
               className="mt-2 w-full resize-none rounded-2xl border border-[#0B2D5C]/15 bg-white px-4 py-3 text-[15px] leading-relaxed text-[#0B2D5C] outline-none focus:border-[#0B2D5C]/35"
               placeholder="Share any context that may help our review."

@@ -256,6 +256,7 @@ export type ProfileActionState = {
   saved: boolean;
   passed: boolean;
   connected: boolean;
+  ended: boolean;
 };
 
 export async function loadActionStateForProfiles(
@@ -275,6 +276,7 @@ export async function loadActionStateForProfiles(
     saved: false,
     passed: false,
     connected: false,
+    ended: false,
   });
 
   const result: Record<string, ProfileActionState> = {};
@@ -313,9 +315,12 @@ export async function loadActionStateForProfiles(
     supabase
       .from('connections')
       .select('user_a_id, user_b_id, status')
-      .eq('status', 'active')
       .or(`user_a_id.eq.${user.id},user_b_id.eq.${user.id}`),
   ]);
+
+  if (connections.error) {
+    return { success: false, message: 'Could not load connection status.' };
+  }
 
   for (const row of saved.data ?? []) {
     if (result[row.saved_id]) result[row.saved_id]!.saved = true;
@@ -336,7 +341,13 @@ export async function loadActionStateForProfiles(
   const idSet = new Set(uniqueIds);
   for (const row of connections.data ?? []) {
     const other = row.user_a_id === user.id ? row.user_b_id : row.user_a_id;
-    if (idSet.has(other) && result[other]) result[other]!.connected = true;
+    if (idSet.has(other) && result[other]) {
+      if (row.status === 'ended') {
+        result[other] = { ...empty(), ended: true };
+      } else {
+        result[other]!.connected = true;
+      }
+    }
   }
 
   return { success: true, data: result };

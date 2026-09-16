@@ -28,7 +28,7 @@ export default function CharacterSignalsProfileSection() {
             Character Signals
           </h2>
           <p className="mt-2 max-w-2xl text-sm leading-relaxed text-[#5A6575]">
-            Review recognition you receive and control what may appear on your profile.
+            Recognize your connections, review recognition you receive, and choose what appears on your profile.
           </p>
         </div>
         {pendingCount > 0 ? (
@@ -49,7 +49,7 @@ export default function CharacterSignalsProfileSection() {
           href="/character-signals"
           className="inline-flex items-center justify-center rounded-2xl border border-[#0B2D5C]/15 bg-white px-4 py-2.5 text-sm font-semibold text-[#0B2D5C] transition hover:bg-[#FBF9F6]"
         >
-          View Recognition History
+          Manage Character Signals
         </Link>
       </div>
     </section>

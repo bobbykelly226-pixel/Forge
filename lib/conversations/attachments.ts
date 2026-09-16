@@ -18,7 +18,7 @@ export function isSupportedMessageAttachmentType(mimeType: string): boolean {
 
 export function validateMessageAttachment(file: Pick<File, 'name' | 'size' | 'type'>): string | null {
   if (!isSupportedMessageAttachmentType(file.type)) {
-    return 'Choose a JPG, PNG, WebP, PDF, TXT, or DOCX file.';
+    return 'Choose a JPG, PNG, WebP, PDF, TXT, DOCX, or recorded MP4/WebM video.';
   }
   if (file.size < 1) return 'That file is empty.';
   if (file.size > MESSAGE_ATTACHMENT_MAX_BYTES) {

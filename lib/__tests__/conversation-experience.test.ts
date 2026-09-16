@@ -166,14 +166,11 @@ describe('seed conversation isolation', () => {
   });
 });
 
-describe('personalized attribution in conversation context', () => {
+describe('personalized compatibility attribution', () => {
   it('uses You said and first-name said labels', () => {
     assert.equal(viewerSaidLabel(), 'You said');
     assert.equal(partnerSaidLabel('Amanda'), 'Amanda said');
     assert.equal(partnerSaidLabel('seed-amanda-cole'), 'This profile said');
-    const thread = read('components/conversations/ConversationThread.tsx');
-    assert.match(thread, /viewerSaidLabel/);
-    assert.match(thread, /partnerSaidLabel/);
   });
 });
 

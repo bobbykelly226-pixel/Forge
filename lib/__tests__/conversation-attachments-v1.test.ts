@@ -120,13 +120,12 @@ describe('conversation attachment security and UI wiring', () => {
     assert.match(thread, /event: 'INSERT'/);
     assert.match(thread, /refreshQueuedRef\.current = true/);
     assert.match(thread, /void refreshMessages\(\)/);
-    assert.match(thread, /!hasTwoWayExchange/);
     assert.match(thread, /h-\[calc\(100dvh-9rem\)\]/);
     assert.match(thread, /touch-pan-y overflow-y-auto overscroll-contain/);
     assert.match(realtimeMigration, /alter publication supabase_realtime add table public\.messages/);
   });
 
-  it('keeps the mobile composer above the keyboard and removes completed intro context', () => {
+  it('keeps the mobile composer above the keyboard and the thread conversation-only', () => {
     const thread = read('components/conversations/ConversationThread.tsx');
     assert.equal(isLikelyMobileKeyboardOpen(844, 510), true);
     assert.equal(isLikelyMobileKeyboardOpen(844, 780), false);
@@ -140,9 +139,7 @@ describe('conversation attachment security and UI wiring', () => {
     );
     assert.match(thread, /window\.visualViewport/);
     assert.match(thread, /mobileViewportHeight/);
-    assert.match(thread, /showConnectionContext/);
-    assert.match(thread, /!composerFocused/);
-    assert.match(thread, /!keyboardOpen/);
+    assert.doesNotMatch(thread, /showConnectionContext|Forge connection context|ConversationStarters/);
     assert.match(thread, /shrink-0 border-t/);
 
     const conversationPage = read('app/connections/c/[conversationId]/page.tsx');
