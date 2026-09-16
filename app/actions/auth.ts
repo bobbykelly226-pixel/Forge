@@ -1,6 +1,7 @@
 'use server';
 
 import { Resend } from 'resend';
+import { createClient as createSupabaseClient } from '@supabase/supabase-js';
 
 import {
   INVITATION_REQUIRED_MESSAGE,
@@ -14,6 +15,7 @@ import {
 import { buildCanonicalAuthUrl } from '@/lib/auth/origins';
 import { createClient } from '@/lib/supabase/server';
 import { createServiceClient } from '@/lib/supabase/admin';
+import { getSupabaseEnv } from '@/lib/supabase/env';
 
 type ActionResult = {
   success: boolean;
@@ -340,7 +342,19 @@ export async function requestPasswordReset(input: {
   if (isAuthCaptchaEnabled() && !input.captchaToken) {
     return { success: false, message: AUTH_CAPTCHA_REQUIRED_MESSAGE };
   }
-  const supabase = await createClient();
+  // Recovery links must work when the email opens in a different browser or
+  // device. The SSR client uses PKCE and binds the link to the requesting
+  // browser. An implicit recovery link carries its one-time recovery session
+  // back to our callback, which clears the URL before continuing.
+  const { url, anonKey } = getSupabaseEnv();
+  const supabase = createSupabaseClient(url, anonKey, {
+    auth: {
+      flowType: 'implicit',
+      autoRefreshToken: false,
+      persistSession: false,
+      detectSessionInUrl: false,
+    },
+  });
   const { error } = await supabase.auth.resetPasswordForEmail(email, {
     redirectTo: buildCanonicalAuthUrl(
       '/auth/callback?next=/auth/update-password'

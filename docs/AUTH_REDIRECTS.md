@@ -6,6 +6,8 @@ Canonical production site: `https://forge.forgedinlife.com`
 
 - Signup `emailRedirectTo`: `https://forge.forgedinlife.com/auth/callback?next=/onboarding`
 - Password reset `redirectTo`: `https://forge.forgedinlife.com/auth/callback?next=/auth/update-password`
+- Password reset requests use Supabase's implicit recovery flow so the one-time
+  link can be opened in a different browser or device from the request.
 - Update password page: `/auth/update-password` (set a new password after recovery session)
 - Callback page: `/auth/callback` (handles URL hash tokens, PKCE `code`, and `token_hash`)
 - Confirm route: `/auth/confirm` (SSR `token_hash` + `type` template flow)

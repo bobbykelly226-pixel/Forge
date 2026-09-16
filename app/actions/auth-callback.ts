@@ -50,7 +50,7 @@ export async function completeAuthWithCode(
     // here with a code. A missing PKCE verifier (for example, when the email is
     // opened in another browser/profile) prevents an automatic session but does
     // not undo the email confirmation.
-    return failureResult(outcomeForCodeExchangeFailure());
+    return failureResult(outcomeForCodeExchangeFailure(nextPath));
   }
   return redirectForAuthenticatedUser(nextPath);
 }
