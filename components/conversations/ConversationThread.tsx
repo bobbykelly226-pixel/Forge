@@ -138,6 +138,7 @@ export default function ConversationThread({
     const root = threadRootRef.current;
     if (root) {
       root.dataset.compactLandscape = String(compactLandscape);
+      root.dataset.composerPriority = String(compactLandscape && (viewport?.height ?? window.innerHeight) < 180);
       root.style.setProperty('--conversation-viewport-top', `${viewport?.offsetTop ?? 0}px`);
     }
     if (compactLandscape) {

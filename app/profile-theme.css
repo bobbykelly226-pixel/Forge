@@ -629,3 +629,15 @@
   min-height: 44px;
   padding: 8px !important;
 }
+/* Safari can leave only one control row above its landscape keyboard.
+   Reserve that row for typing; restore navigation when the viewport grows. */
+.forge-profile-theme [data-conversation-thread][data-composer-priority="true"] {
+  overflow-y: auto;
+}
+.forge-profile-theme [data-composer-priority="true"] > header {
+  display: none;
+}
+.forge-profile-theme [data-composer-priority="true"] [data-conversation-composer] {
+  min-height: 52px;
+  max-height: 100%;
+}
