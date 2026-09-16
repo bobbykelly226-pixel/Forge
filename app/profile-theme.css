@@ -572,3 +572,60 @@
   border: 2px solid #FFFFFF;
   box-shadow: 0 24px 80px rgba(0,0,0,.55);
 }
+.forge-profile-theme [data-conversation-thread][data-compact-landscape="true"] {
+  position: fixed;
+  inset-inline: 0;
+  top: var(--conversation-viewport-top, 0px);
+  z-index: 45;
+  border-radius: 0;
+  padding-inline: env(safe-area-inset-left) env(safe-area-inset-right);
+}
+.forge-profile-theme:has([data-compact-landscape="true"]) nav[data-profile-chrome="navigation"] {
+  display: none;
+}
+.forge-profile-theme [data-compact-landscape="true"] > header > div {
+  max-width: none;
+  padding: 2px 12px;
+}
+.forge-profile-theme [data-compact-landscape="true"] [data-conversation-heading] {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+.forge-profile-theme [data-compact-landscape="true"] [data-conversation-heading] h1 {
+  margin: 0;
+  font-size: 18px;
+}
+.forge-profile-theme [data-compact-landscape="true"] [data-conversation-composer] {
+  padding-bottom: 2px !important;
+}
+.forge-profile-theme [data-compact-landscape="true"] [data-conversation-composer] > div {
+  max-width: none;
+  padding: 2px 8px;
+}
+.forge-profile-theme [data-compact-landscape="true"] [data-composer-fields] {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 4px 8px;
+  padding: 2px 6px;
+  border-radius: 12px;
+}
+.forge-profile-theme [data-compact-landscape="true"] [data-composer-fields] > div:not([data-composer-actions]) {
+  grid-column: 1 / -1;
+}
+.forge-profile-theme [data-compact-landscape="true"] [data-composer-fields] textarea {
+  height: 44px;
+  min-height: 44px;
+  padding: 8px;
+  font-size: 16px;
+}
+.forge-profile-theme [data-compact-landscape="true"] [data-composer-actions] {
+  margin-top: 0;
+  gap: 8px;
+}
+.forge-profile-theme [data-compact-landscape="true"] :is([data-composer-actions], header) button {
+  min-width: 44px;
+  min-height: 44px;
+  padding: 8px !important;
+}

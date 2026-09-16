@@ -134,6 +134,16 @@ export default function ConversationThread({
 
   const syncMobileViewport = useCallback(() => {
     const viewport = window.visualViewport;
+    const compactLandscape = window.matchMedia('(pointer: coarse) and (orientation: landscape) and (max-height: 500px)').matches;
+    const root = threadRootRef.current;
+    if (root) {
+      root.dataset.compactLandscape = String(compactLandscape);
+      root.style.setProperty('--conversation-viewport-top', `${viewport?.offsetTop ?? 0}px`);
+    }
+    if (compactLandscape) {
+      setMobileViewportHeight(viewport?.height ?? window.innerHeight);
+      return;
+    }
     const isDesktop = window.matchMedia('(min-width: 1024px)').matches;
 
     if (!viewport || isDesktop) {
@@ -566,6 +576,7 @@ export default function ConversationThread({
   return (
     <div
       ref={threadRootRef}
+      data-conversation-thread
       className="flex h-[calc(100dvh-9rem)] min-h-0 flex-col overflow-hidden rounded-[1.5rem] border border-[#0B2D5C]/08 bg-[#FBF9F6] shadow-sm lg:h-[calc(100dvh-5rem)]"
       style={
         mobileViewportHeight === null
@@ -575,7 +586,7 @@ export default function ConversationThread({
     >
       <header className="sticky top-0 z-30 shrink-0 border-b border-[#0B2D5C]/10 bg-[#FBF9F6]/95 backdrop-blur-md">
         <div className="mx-auto flex max-w-2xl items-center justify-between gap-3 px-4 py-3 sm:px-5">
-          <div className="min-w-0 flex-1">
+          <div data-conversation-heading className="min-w-0 flex-1">
             <Link
               href="/connections?tab=conversations"
               data-text-link
@@ -727,11 +738,12 @@ export default function ConversationThread({
       </div>
 
       <div
+        data-conversation-composer
         className="sticky bottom-0 max-h-[50%] overflow-y-auto overscroll-contain shrink-0 border-t border-[#0B2D5C]/10 bg-[#FBF9F6]/95 backdrop-blur-md"
         style={{ paddingBottom: 'max(0.75rem, env(safe-area-inset-bottom))' }}
       >
         <div className="mx-auto max-w-2xl space-y-3 px-4 py-3 sm:px-5">
-          <div className="rounded-[1.25rem] border border-[#0B2D5C]/12 bg-white p-3 shadow-sm">
+          <div data-composer-fields className="rounded-[1.25rem] border border-[#0B2D5C]/12 bg-white p-3 shadow-sm">
             <input
               ref={fileInputRef}
               type="file"
@@ -813,7 +825,7 @@ export default function ConversationThread({
                 ))}
               </div>
             ) : null}
-            <div className="mt-2 flex items-center justify-between gap-3">
+            <div data-composer-actions className="mt-2 flex items-center justify-between gap-3">
               <div className="flex items-center gap-1">
                 <button
                   type="button"
