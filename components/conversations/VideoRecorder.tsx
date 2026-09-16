@@ -19,6 +19,7 @@ export default function VideoRecorder({ onSend, onClose }: { onSend: (file: File
   const [file, setFile] = useState<File | null>(null);
   const [url, setUrl] = useState('');
   const [error, setError] = useState('');
+  const [needsReload, setNeedsReload] = useState(false);
 
   const stop = () => {
     if (timer.current) clearInterval(timer.current);
@@ -38,6 +39,15 @@ export default function VideoRecorder({ onSend, onClose }: { onSend: (file: File
 
   const openCamera = async () => {
     if (busy.current) return;
+    // SPA navigation keeps the entry document's restrictive media policy.
+    // Reload this conversation to obtain its conversation-only permissions.
+    const policy = (document as Document & { featurePolicy?: { allowsFeature: (feature: string) => boolean } }).featurePolicy;
+    if (policy && (!policy.allowsFeature('camera') || !policy.allowsFeature('microphone'))) {
+      setNeedsReload(true);
+      setError('Reload this conversation to enable video recording. Copy any unsent message first; then reopen the video button after reloading.');
+      return;
+    }
+    setNeedsReload(false);
     busy.current = true;
     const attempt = ++generation.current;
     stop(); setFile(null); setUrl(''); setError(''); setPhase('opening');
@@ -50,9 +60,15 @@ export default function VideoRecorder({ onSend, onClose }: { onSend: (file: File
       await new Promise<void>(resolve => requestAnimationFrame(() => resolve()));
       if (preview.current) { preview.current.srcObject = media; await preview.current.play(); }
       setPhase('ready');
-    } catch {
+    } catch (cause) {
       stop();
-      if (alive.current) { setPhase('idle'); setError('Camera and microphone could not open. Allow both in your browser settings, or try a supported browser.'); }
+      const name = cause instanceof Error ? cause.name : '';
+      let message = 'Camera and microphone could not open. Please try again.';
+      if (name === 'NotAllowedError' || name === 'SecurityError') message = 'Camera or microphone access is blocked. Allow both in this site’s browser permissions, then reload this page and try again. Your device or workplace settings may also restrict access.';
+      else if (name === 'NotFoundError') message = 'No camera or microphone was found. Connect both, or try recording on your phone.';
+      else if (name === 'NotReadableError' || name === 'AbortError') message = 'Your camera or microphone is unavailable. Close other apps using it, check device permissions, and try again.';
+      else if (cause instanceof Error && cause.message === 'unsupported') message = 'This browser does not support video recording. Try an updated browser or another device.';
+      if (alive.current) { setPhase('idle'); setError(message); }
     } finally { busy.current = false; }
   };
   const record = () => {
@@ -95,7 +111,7 @@ export default function VideoRecorder({ onSend, onClose }: { onSend: (file: File
     {phase === 'recording' && <p role="status" className="my-3 text-center text-xl font-semibold">Recording · {remaining}s remaining</p>}
     {error && <p role="alert" className="my-3">{error}</p>}
     <div className="mt-4 flex flex-wrap justify-end gap-3 [&>button]:min-h-11 [&>button]:rounded-lg [&>button]:bg-[#0B2D5C] [&>button]:px-4 [&>button]:py-2 [&>button]:text-white">
-      {phase === 'idle' && <button type="button" onClick={() => void openCamera()}>Enable camera & microphone</button>}
+      {phase === 'idle' && (needsReload ? <button type="button" onClick={() => window.location.reload()}>Reload conversation</button> : <button type="button" onClick={() => void openCamera()}>Enable camera & microphone</button>)}
       {phase === 'opening' && <p role="status">Opening camera…</p>}
       {phase === 'ready' && <button type="button" onClick={record}>Record</button>}
       {phase === 'recording' && <button type="button" onClick={stop}>Stop recording</button>}
