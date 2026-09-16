@@ -623,7 +623,7 @@ export default function ConversationThread({
           : { height: `${mobileViewportHeight}px` }
       }
     >
-      <header className="sticky top-0 z-30 border-b border-[#0B2D5C]/10 bg-[#FBF9F6]/95 backdrop-blur-md">
+      <header className="sticky top-0 z-30 shrink-0 border-b border-[#0B2D5C]/10 bg-[#FBF9F6]/95 backdrop-blur-md">
         <div className="mx-auto flex max-w-2xl items-center justify-between gap-3 px-4 py-3 sm:px-5">
           <div className="min-w-0 flex-1">
             <Link
@@ -672,6 +672,24 @@ export default function ConversationThread({
         </div>
       </header>
 
+      {threadStatus === 'ended' ? (
+        <div
+          className="shrink-0 border-b border-[#0B2D5C]/08 bg-[#F8F6F2] px-4 py-3 text-center text-sm text-[#5A6575] sm:px-5"
+          role="status"
+        >
+          {blockedByViewer
+            ? `You blocked ${meta.peerFirstName}. You can keep this history for your records, but messaging is closed.`
+            : endedByViewer
+              ? 'You ended this connection. Your shared history remains available, but messaging is closed.'
+              : 'This connection was ended. Your shared history remains available, but messaging is closed.'}
+        </div>
+      ) : null}
+
+      <div
+        ref={scrollContainerRef}
+        onScroll={handleScroll}
+        className="min-h-0 flex-1 touch-pan-y overflow-y-auto overscroll-contain"
+      >
       {showConnectionContext && alignmentContext ? (
         <section className="border-b border-[#0B2D5C]/08 bg-white/70">
           <div className="mx-auto max-w-2xl px-4 sm:px-5">
@@ -783,25 +801,12 @@ export default function ConversationThread({
         </section>
       ) : null}
 
-      {threadStatus === 'ended' ? (
-        <div
-          className="border-b border-[#0B2D5C]/08 bg-[#F8F6F2] px-4 py-3 text-center text-sm text-[#5A6575] sm:px-5"
-          role="status"
-        >
-          {blockedByViewer
-            ? `You blocked ${meta.peerFirstName}. You can keep this history for your records, but messaging is closed.`
-            : endedByViewer
-              ? 'You ended this connection. Your shared history remains available, but messaging is closed.'
-              : 'This connection was ended. Your shared history remains available, but messaging is closed.'}
-        </div>
-      ) : null}
-
-      <div
-        ref={scrollContainerRef}
-        onScroll={handleScroll}
-        className="min-h-0 flex-1 touch-pan-y overflow-y-auto overscroll-contain"
-      >
         <div className="mx-auto flex max-w-2xl flex-col px-4 py-4 sm:px-5">
+          {threadStatus !== 'ended' && !isBlocked && !hasTwoWayExchange ? (
+            <div className="mb-4" hidden={composerFocused || keyboardOpen}>
+              <ConversationStarters starters={starters} onSelect={handleStarterSelect} />
+            </div>
+          ) : null}
           {hasMore ? (
             <button
               type="button"
@@ -888,14 +893,10 @@ export default function ConversationThread({
       </div>
 
       <div
-        className="sticky bottom-0 shrink-0 border-t border-[#0B2D5C]/10 bg-[#FBF9F6]/95 backdrop-blur-md"
+        className="sticky bottom-0 max-h-[50%] shrink-0 overflow-y-auto overscroll-contain border-t border-[#0B2D5C]/10 bg-[#FBF9F6]/95 backdrop-blur-md"
         style={{ paddingBottom: 'max(0.75rem, env(safe-area-inset-bottom))' }}
       >
         <div className="mx-auto max-w-2xl space-y-3 px-4 py-3 sm:px-5">
-          {threadStatus !== 'ended' && !meta.isBlocked && !hasTwoWayExchange ? (
-            <ConversationStarters starters={starters} onSelect={handleStarterSelect} />
-          ) : null}
-
           <div className="rounded-[1.25rem] border border-[#0B2D5C]/12 bg-white p-3 shadow-sm">
             <input
               ref={fileInputRef}
@@ -961,7 +962,7 @@ export default function ConversationThread({
                   ? 'Messaging is closed for this connection.'
                   : `Message ${meta.peerFirstName}…`
               }
-              className="w-full resize-none bg-transparent text-[15px] leading-relaxed text-[#0B2D5C] outline-none placeholder:text-[#8A93A0] disabled:opacity-60"
+              className="w-full resize-none bg-transparent text-base leading-relaxed text-[#0B2D5C] outline-none placeholder:text-[#8A93A0] disabled:opacity-60"
             />
             {emojiOpen ? (
               <div

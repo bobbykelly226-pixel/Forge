@@ -100,7 +100,7 @@ describe('Character Signals beta readiness', () => {
     assert.match(profileSignals, /NewRecognitionSection/);
     assert.match(profileSignals, /PrivateSignalsSection/);
     assert.match(profileSignals, /VisibleOnProfileSection/);
-    assert.match(profileSignals, /View Recognition History/);
+    assert.match(profileSignals, /Manage Character Signals/);
     assert.match(actions, /revalidatePath\('\/profile'\)/);
   });
 
