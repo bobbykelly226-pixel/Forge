@@ -583,7 +583,7 @@ export default function ConversationSafetyMenu({
       <SafetyDialog
         open={dialog === 'report'}
         title={reportMessageId ? `Report video from ${peerFirstName}` : `Report ${peerFirstName}`}
-        description="Reports are reviewed by Forge. Reporting does not automatically block this person — you can block separately if you need to."
+        description="Reports are reviewed by Forge. Reporting does not automatically block this person, you can block separately if you need to."
         confirmLabel="Submit report"
         busyLabel="Submitting report…"
         confirmTone="danger"
