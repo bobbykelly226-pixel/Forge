@@ -181,6 +181,13 @@ export default function MyProfileHub({
                   Update photos
                 </button>
 
+                <Link
+                  href="/character-signals#eligible-recognition-heading"
+                  className="mt-3 inline-flex min-h-11 w-full items-center justify-center rounded-md px-4 py-2 text-sm font-semibold focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+                >
+                  Give a Character Signal
+                </Link>
+
                 <div className="mt-5 border-t border-[#C9CBCE] pt-5">
                   <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2">
                   <Link

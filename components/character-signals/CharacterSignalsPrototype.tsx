@@ -114,10 +114,10 @@ export default function CharacterSignalsWorkspace() {
               animationDelay: '50ms',
             }}
           >
+            <EligibleRecipientsSection recipients={recipients} />
             <VisibleOnProfileSection signals={signals} />
             <PrivateSignalsSection signals={signals} />
             <NewRecognitionSection signals={signals} />
-            <EligibleRecipientsSection recipients={recipients} />
             <RecognitionHistorySection history={history} />
             <LearnMoreSection
               onLearnMore={openLearnMore}

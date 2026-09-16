@@ -11,18 +11,11 @@ import ConversationThread from '@/components/conversations/ConversationThread';
 import ForgeAppBottomNav from '@/components/ForgeAppBottomNav';
 import ForgeAppCanvas from '@/components/ForgeAppCanvas';
 import NotificationsProvider from '@/components/notifications/NotificationsProvider';
-import { loadConversationAlignmentContext } from '@/lib/conversations/alignment-context';
-import { buildConversationStarters } from '@/lib/conversations/starters';
-import { getCurrentUserProfile } from '@/lib/data/profile';
-import { getDiscoveryProfile } from '@/lib/data/discovery';
-import { isSeedProfileId } from '@/lib/seed/access';
 import {
   buildSeedMessages,
   buildSeedThreadMeta,
   isSeedConversationId,
-  seedPeerIdFromConversationId,
 } from '@/lib/seed/conversations';
-import { getSeedProfileById } from '@/lib/seed/catalog';
 import { createClient } from '@/lib/supabase/server';
 
 const display = Fraunces({
@@ -69,20 +62,6 @@ export default async function ConversationThreadPage({
   if (isSeed) {
     const meta = buildSeedThreadMeta(conversationId);
     if (!meta) notFound();
-    const peerId = seedPeerIdFromConversationId(conversationId);
-    const seedProfile = peerId ? getSeedProfileById(peerId) : null;
-    const alignmentContext = peerId
-      ? await loadConversationAlignmentContext(peerId)
-      : null;
-    const starters = buildConversationStarters({
-      peerFirstName: meta.peerFirstName,
-      thingsIEnjoy: seedProfile?.thingsIEnjoy ?? null,
-      career: seedProfile?.career ?? null,
-      relocation: seedProfile?.relocation ?? null,
-      sharedStrengthCopies: alignmentContext?.sharedStrengths.map((item) => item.copy) ?? [],
-      viewerThingsIEnjoy: ['Hiking', 'Cooking', 'Board games'],
-    });
-
     return (
       <ForgeAppCanvas
         desktopViewportLock
@@ -96,8 +75,6 @@ export default async function ConversationThreadPage({
             meta={meta}
             initialMessages={buildSeedMessages(conversationId)}
             viewerUserId="seed-demo-viewer"
-            alignmentContext={alignmentContext}
-            starters={starters}
             isSeed
           />
         </div>
@@ -121,27 +98,6 @@ export default async function ConversationThreadPage({
 
   void markConversationReadAction(conversationId);
 
-  const [alignmentContext, peerProfile, viewerProfile] = await Promise.all([
-    loadConversationAlignmentContext(meta.peerUserId),
-    isSeedProfileId(meta.peerUserId)
-      ? Promise.resolve(null)
-      : getDiscoveryProfile(meta.peerUserId),
-    getCurrentUserProfile(),
-  ]);
-
-  const peer = peerProfile?.success ? peerProfile.data : null;
-  const starters = buildConversationStarters({
-    peerFirstName: meta.peerFirstName,
-    thingsIEnjoy: peer?.things_i_enjoy ?? null,
-    career: peer?.career ?? null,
-    relocation: peer?.relocation ?? null,
-    sharedStrengthCopies: alignmentContext?.sharedStrengths.map((item) => item.copy) ?? [],
-    viewerThingsIEnjoy:
-      viewerProfile.success && viewerProfile.data
-        ? viewerProfile.data.things_i_enjoy
-        : null,
-  });
-
   return (
     <ForgeAppCanvas
       desktopViewportLock
@@ -157,8 +113,6 @@ export default async function ConversationThreadPage({
             initialMessages={messages}
             hasMoreInitial={hasMore}
             viewerUserId={user.id}
-            alignmentContext={alignmentContext}
-            starters={starters}
           />
         </div>
         <ForgeAppBottomNav active="messages" />

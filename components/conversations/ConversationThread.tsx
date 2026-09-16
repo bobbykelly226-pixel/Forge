@@ -10,7 +10,7 @@ import {
   type ChangeEvent,
   type KeyboardEvent as ReactKeyboardEvent,
 } from 'react';
-import { ChevronDown, ChevronUp, FileUp, Paperclip, Smile, X } from 'lucide-react';
+import { FileUp, Paperclip, Smile, X } from 'lucide-react';
 
 import {
   listConversationMessagesAction,
@@ -18,9 +18,7 @@ import {
 } from '@/app/actions/conversations';
 import ConversationSafetyMenu from '@/components/conversations/ConversationSafetyMenu';
 import MessageAttachment from '@/components/conversations/MessageAttachment';
-import ConversationStarters from '@/components/conversations/ConversationStarters';
 import { trackLaunchEvent } from '@/lib/analytics/launch-events';
-import { partnerSaidLabel, viewerSaidLabel } from '@/lib/compatibility/answer-labels';
 import {
   createAttachmentPath,
   readImageDimensions,
@@ -42,10 +40,8 @@ import {
   isLikelyMobileKeyboardOpen,
 } from '@/lib/conversations/mobile-viewport';
 import type {
-  ConversationAlignmentContext,
   ConversationAttachmentInput,
   ConversationMessage,
-  ConversationStarter,
   ConversationThreadMeta,
 } from '@/lib/conversations/types';
 import { createClient } from '@/lib/supabase/client';
@@ -55,8 +51,6 @@ type ConversationThreadProps = {
   initialMessages: ConversationMessage[];
   hasMoreInitial?: boolean;
   viewerUserId: string;
-  alignmentContext: ConversationAlignmentContext | null;
-  starters: ConversationStarter[];
   isSeed?: boolean;
 };
 
@@ -96,8 +90,6 @@ export default function ConversationThread({
   initialMessages,
   hasMoreInitial = false,
   viewerUserId,
-  alignmentContext,
-  starters,
   isSeed = false,
 }: ConversationThreadProps) {
   const composerId = useId();
@@ -127,9 +119,6 @@ export default function ConversationThread({
   const [emojiOpen, setEmojiOpen] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [sending, setSending] = useState(false);
-  const [contextExpanded, setContextExpanded] = useState(false);
-  const [composerFocused, setComposerFocused] = useState(false);
-  const [keyboardOpen, setKeyboardOpen] = useState(false);
   const [mobileViewportHeight, setMobileViewportHeight] = useState<number | null>(null);
   const [threadStatus, setThreadStatus] = useState(meta.status);
   const [endedByViewer, setEndedByViewer] = useState(meta.endedByViewer);
@@ -139,12 +128,6 @@ export default function ConversationThread({
 
   const profileHref = `/discovery/profile/${meta.peerUserId}`;
   const composerDisabled = threadStatus === 'ended' || isBlocked || sending || uploading;
-  const youSaid = viewerSaidLabel();
-  const theySaid = partnerSaidLabel(meta.peerFirstName);
-  const hasTwoWayExchange =
-    messages.some((message) => message.senderId === viewerUserId) &&
-    messages.some((message) => message.senderId !== viewerUserId);
-
   const scrollToBottom = useCallback((behavior: ScrollBehavior = 'smooth') => {
     messagesEndRef.current?.scrollIntoView({ behavior, block: 'end' });
   }, []);
@@ -154,7 +137,6 @@ export default function ConversationThread({
     const isDesktop = window.matchMedia('(min-width: 1024px)').matches;
 
     if (!viewport || isDesktop) {
-      setKeyboardOpen(false);
       setMobileViewportHeight(null);
       return;
     }
@@ -163,7 +145,6 @@ export default function ConversationThread({
       window.innerHeight,
       viewport.height
     );
-    setKeyboardOpen(nextKeyboardOpen);
 
     if (!nextKeyboardOpen) {
       setMobileViewportHeight(null);
@@ -580,38 +561,7 @@ export default function ConversationThread({
     });
   };
 
-  const handleStarterSelect = (text: string) => {
-    const textarea = textareaRef.current;
-    if (!textarea) {
-      setComposerText((current) => {
-        const next = current ? `${current}\n\n${text}` : text;
-        composerTextRef.current = next;
-        return next;
-      });
-      return;
-    }
-    const start = textarea.selectionStart ?? composerText.length;
-    const end = textarea.selectionEnd ?? composerText.length;
-    const next =
-      composerText.slice(0, start) +
-      (composerText && start > 0 ? '\n\n' : '') +
-      text +
-      composerText.slice(end);
-    composerTextRef.current = next;
-    setComposerText(next);
-    requestAnimationFrame(() => {
-      textarea.focus();
-      const cursor = start + (composerText && start > 0 ? 2 : 0) + text.length;
-      textarea.setSelectionRange(cursor, cursor);
-    });
-  };
-
   const remainingChars = MESSAGE_MAX_LENGTH - composerText.length;
-  const showConnectionContext =
-    Boolean(alignmentContext) &&
-    !hasTwoWayExchange &&
-    !composerFocused &&
-    !keyboardOpen;
 
   return (
     <div
@@ -690,123 +640,7 @@ export default function ConversationThread({
         onScroll={handleScroll}
         className="min-h-0 flex-1 touch-pan-y overflow-y-auto overscroll-contain"
       >
-      {showConnectionContext && alignmentContext ? (
-        <section className="border-b border-[#0B2D5C]/08 bg-white/70">
-          <div className="mx-auto max-w-2xl px-4 sm:px-5">
-            <button
-              type="button"
-              onClick={() => setContextExpanded((open) => !open)}
-              className="flex w-full items-center justify-between gap-3 py-4 text-left"
-              aria-expanded={contextExpanded}
-            >
-              <span
-                className="text-base font-semibold text-[#0B2D5C]"
-                style={{ fontFamily: 'var(--font-discovery-display), Georgia, serif' }}
-              >
-                Forge connection context
-              </span>
-              {contextExpanded ? (
-                <ChevronUp className="h-5 w-5 shrink-0 text-[#7A8494]" strokeWidth={1.75} aria-hidden="true" />
-              ) : (
-                <ChevronDown className="h-5 w-5 shrink-0 text-[#7A8494]" strokeWidth={1.75} aria-hidden="true" />
-              )}
-            </button>
-            {contextExpanded ? (
-              <div className="space-y-6 pb-5">
-                {alignmentContext.whyIntroduced.length > 0 ? (
-                  <div>
-                    <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[#7A8494]">
-                      Why Forge introduced you
-                    </p>
-                    <ul className="mt-3 list-disc space-y-2 pl-5 text-[15px] leading-relaxed text-[#3D4654]">
-                      {alignmentContext.whyIntroduced.map((item) => (
-                        <li key={item}>{item}</li>
-                      ))}
-                    </ul>
-                  </div>
-                ) : null}
-
-                <div>
-                  <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[#D62828]">
-                    Relationship Alignment
-                  </p>
-                  <p
-                    className="mt-1.5 text-base font-semibold text-[#0B2D5C]"
-                    style={{ fontFamily: 'var(--font-discovery-display), Georgia, serif' }}
-                  >
-                    {alignmentContext.alignmentLabel}
-                  </p>
-                </div>
-
-                {alignmentContext.importantFactors.length > 0 ? (
-                  <div>
-                    <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[#7A8494]">
-                      Important Alignment Factors
-                    </p>
-                    <ul className="mt-3 space-y-4">
-                      {alignmentContext.importantFactors.map((factor) => (
-                        <li
-                          key={factor.title}
-                          className="rounded-2xl border border-[#0B2D5C]/08 bg-[#F8F6F2] p-4"
-                        >
-                          <h3 className="text-base font-semibold text-[#0B2D5C]">{factor.title}</h3>
-                          <p className="mt-2 text-sm leading-relaxed text-[#5A6575]">
-                            {factor.explanation}
-                          </p>
-                          {(factor.viewerAnswer || factor.partnerAnswer) && (
-                            <dl className="mt-4 space-y-3">
-                              {factor.viewerAnswer ? (
-                                <div className="rounded-xl bg-white px-3 py-2.5">
-                                  <dt className="text-[11px] font-semibold uppercase tracking-[0.12em] text-[#8A93A0]">
-                                    {youSaid}
-                                  </dt>
-                                  <dd className="mt-1 text-sm font-medium text-[#0B2D5C]">
-                                    “{factor.viewerAnswer}”
-                                  </dd>
-                                </div>
-                              ) : null}
-                              {factor.partnerAnswer ? (
-                                <div className="rounded-xl bg-white px-3 py-2.5">
-                                  <dt className="text-[11px] font-semibold uppercase tracking-[0.12em] text-[#8A93A0]">
-                                    {theySaid}
-                                  </dt>
-                                  <dd className="mt-1 text-sm font-medium text-[#0B2D5C]">
-                                    “{factor.partnerAnswer}”
-                                  </dd>
-                                </div>
-                              ) : null}
-                            </dl>
-                          )}
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                ) : null}
-
-                {alignmentContext.incompleteAssessmentCopy ? (
-                  <p className="text-sm leading-relaxed text-[#7A8494]">
-                    {alignmentContext.incompleteAssessmentCopy}
-                  </p>
-                ) : null}
-
-                <Link data-text-link
-                  href={profileHref}
-                  className="inline-flex text-sm font-semibold text-[#0B2D5C] underline-offset-2 hover:underline"
-                >
-                  View profile
-                </Link>
-              </div>
-            ) : null}
-          </div>
-        </section>
-      ) : null}
-
         <div className="mx-auto flex max-w-2xl flex-col px-4 py-4 sm:px-5">
-          {threadStatus !== 'ended' && !isBlocked && !hasTwoWayExchange ? (
-            <div className="mb-4" hidden={composerFocused || keyboardOpen}>
-              <ConversationStarters starters={starters} onSelect={handleStarterSelect} />
-            </div>
-          ) : null}
           {hasMore ? (
             <button
               type="button"
@@ -936,8 +770,6 @@ export default function ConversationThread({
               }}
               onKeyDown={handleComposerKeyDown}
               onFocus={() => {
-                setComposerFocused(true);
-                setContextExpanded(false);
                 requestAnimationFrame(() => {
                   syncMobileViewport();
                   scrollToBottom('auto');
@@ -945,7 +777,6 @@ export default function ConversationThread({
               }}
               onBlur={() => {
                 requestAnimationFrame(() => {
-                  setComposerFocused(document.activeElement === textareaRef.current);
                   syncMobileViewport();
                 });
               }}
