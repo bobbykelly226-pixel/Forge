@@ -30,7 +30,7 @@ function usePasswordAction(action: (state: AccountActionState, data: FormData) =
   return {
     state, dispatch, pending,
     ready: !isAuthCaptchaEnabled() || Boolean(token),
-    check: <><input type="hidden" name="captchaToken" value={token ?? ''} /><AuthCaptcha resetKey={resetKey} onTokenChange={setToken} /></>,
+    check: <><input type="hidden" name="captchaToken" value={token ?? ''} /><div className="my-4 w-full min-w-0 shrink-0"><AuthCaptcha fitContainer resetKey={resetKey} onTokenChange={setToken} /></div></>,
   };
 }
 
