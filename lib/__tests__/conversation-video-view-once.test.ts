@@ -3,7 +3,7 @@ import { readFileSync } from 'node:fs';
 import test from 'node:test';
 
 const migration = readFileSync(
-  new URL('../../supabase/migrations/20260916232932_conversation_video_view_once.sql', import.meta.url),
+  new URL('../../supabase/migrations/20260917015310_conversation_video_view_once.sql', import.meta.url),
   'utf8'
 );
 const recorder = readFileSync(
