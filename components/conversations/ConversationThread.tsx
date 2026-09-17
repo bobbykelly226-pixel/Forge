@@ -611,7 +611,7 @@ export default function ConversationThread({
     <div
       ref={threadRootRef}
       data-conversation-thread
-      className="flex h-[calc(100dvh-9rem)] min-h-0 flex-col overflow-hidden rounded-[1.5rem] border border-[#0B2D5C]/08 bg-[#FBF9F6] shadow-sm lg:h-[calc(100dvh-5rem)]"
+      className="flex h-full min-h-0 flex-col overflow-hidden bg-[#FBF9F6] lg:h-[calc(100dvh-5rem)] lg:rounded-[1.5rem] lg:border lg:border-[#0B2D5C]/08 lg:shadow-sm"
       style={
         mobileViewportHeight === null
           ? undefined

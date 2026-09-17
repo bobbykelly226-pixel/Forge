@@ -70,7 +70,7 @@ export default async function ConversationThreadPage({
           fontFamily: 'var(--font-discovery-sans), ui-sans-serif, system-ui, sans-serif',
         }}
       >
-        <div className="mx-auto min-h-screen w-full max-w-3xl px-4 pb-28 pt-4 sm:px-6 lg:pb-10">
+        <div className="h-[calc(100dvh-5.25rem)] min-h-0 w-full lg:mx-auto lg:h-screen lg:max-w-3xl lg:px-4 lg:pb-10 lg:pt-4">
           <ConversationThread
             meta={meta}
             initialMessages={buildSeedMessages(conversationId)}
@@ -107,7 +107,7 @@ export default async function ConversationThreadPage({
       }}
     >
       <NotificationsProvider initialMessagesUnread={false}>
-        <div className="mx-auto min-h-screen w-full max-w-3xl px-4 pb-28 pt-4 sm:px-6 lg:pb-10">
+        <div className="h-[calc(100dvh-5.25rem)] min-h-0 w-full lg:mx-auto lg:h-screen lg:max-w-3xl lg:px-4 lg:pb-10 lg:pt-4">
           <ConversationThread
             meta={meta}
             initialMessages={messages}
