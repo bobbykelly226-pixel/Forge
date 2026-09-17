@@ -14,8 +14,9 @@ const migration = readFileSync(
 
 describe('Founding Beta invitation intake', () => {
   it('keeps the public request separate from account creation', () => {
-    assert.match(publicPage, /request access/i);
-    assert.match(publicForm, /does not create an account or guarantee selection/i);
+    assert.match(publicPage, /request your invitation/i);
+    assert.match(publicForm, /does not create an account/i);
+    assert.doesNotMatch(`${publicPage}\n${publicForm}`, /selected members|guarantee selection/i);
     assert.match(publicAction, /founding_beta_requests/);
     assert.doesNotMatch(publicAction, /auth\.signUp/);
   });

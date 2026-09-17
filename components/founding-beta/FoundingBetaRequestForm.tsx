@@ -137,7 +137,7 @@ export default function FoundingBetaRequestForm() {
         {pending ? 'Submitting request…' : 'Request Founding Beta invitation'}
       </button>
       <p className="mt-4 text-center text-xs leading-relaxed text-[#5C636B]">
-        Submitting this form does not create an account or guarantee selection. Invitations are personal, email-bound, and single-use.
+        Submitting this form does not create an account. Invitations are personal, email-bound, and single-use.
       </p>
     </form>
   );
