@@ -40,9 +40,11 @@ describe('messaging safety lifecycle', () => {
     const menu = read('components/conversations/ConversationSafetyMenu.tsx');
     const notification = read('lib/safety/report-notification.ts');
     assert.match(menu, /createPortal/);
-    assert.match(menu, /max-h-\[calc\(100dvh-1\.5rem\)\]/);
+    assert.match(menu, /h-full w-full overflow-hidden/);
+    assert.match(menu, /sm:max-h-\[calc\(100dvh-3rem\)\]/);
     assert.match(menu, /focusConfirm=\{false\}/);
-    assert.match(menu, /<textarea[\s\S]*autoFocus/);
+    assert.match(menu, /scrollRef\.current\?\.scrollTo\(\{ top: 0/);
+    assert.match(menu, /panelRef\.current\?\.focus\(\{ preventScroll: true \}\)/);
     assert.match(notification, /Forge Safety <hello@forgedinlife\.com>/);
     assert.match(notification, /admin@forgedinlife\.com/);
     assert.match(notification, /Safety report saved but review notification failed/);
