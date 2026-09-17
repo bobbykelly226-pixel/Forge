@@ -88,6 +88,7 @@ function SafetyDialog({
   const titleId = useId();
   const descriptionId = useId();
   const panelRef = useRef<HTMLDivElement>(null);
+  const scrollRef = useRef<HTMLDivElement>(null);
   const primaryRef = useRef<HTMLButtonElement>(null);
 
   const handleKeyDown = useCallback(
@@ -130,10 +131,11 @@ function SafetyDialog({
     document.body.style.overflow = 'hidden';
 
     const focusTimer = window.setTimeout(() => {
+      scrollRef.current?.scrollTo({ top: 0, behavior: 'instant' });
       if (focusConfirm) {
         primaryRef.current?.focus();
       } else {
-        panelRef.current?.querySelector<HTMLTextAreaElement>('textarea')?.focus();
+        panelRef.current?.focus({ preventScroll: true });
       }
     }, 30);
 
@@ -158,7 +160,7 @@ function SafetyDialog({
 
   return createPortal(
     <div
-      className="fixed inset-0 z-[90] flex items-center justify-center overflow-y-auto overscroll-contain p-3 sm:p-6"
+      className="fixed inset-0 z-[90] flex items-start justify-center overflow-hidden sm:items-center sm:p-6"
       role="presentation"
     >
       <div
@@ -174,9 +176,12 @@ function SafetyDialog({
         aria-describedby={descriptionId}
         tabIndex={-1}
         onKeyDown={handleKeyDown}
-        className="relative z-[91] my-auto w-full max-w-md overflow-hidden rounded-[1.75rem] bg-[#F8F6F2] shadow-[0_18px_60px_rgba(11,45,92,0.22)] outline-none"
+        className="relative z-[91] h-full w-full overflow-hidden bg-[#F8F6F2] shadow-[0_18px_60px_rgba(11,45,92,0.22)] outline-none sm:my-auto sm:h-auto sm:max-w-md sm:rounded-[1.75rem]"
       >
-        <div className="max-h-[calc(100dvh-1.5rem)] overflow-y-auto overscroll-contain px-5 py-6 sm:max-h-[calc(100dvh-3rem)] sm:px-7 sm:py-7">
+        <div
+          ref={scrollRef}
+          className="h-full overflow-y-auto overscroll-contain px-5 pb-[max(1.5rem,env(safe-area-inset-bottom))] pt-[max(1.5rem,env(safe-area-inset-top))] sm:h-auto sm:max-h-[calc(100dvh-3rem)] sm:px-7 sm:py-7"
+        >
           <h2
             id={titleId}
             className="text-[1.35rem] leading-tight tracking-[-0.02em] text-[#0B2D5C]"
@@ -621,7 +626,6 @@ export default function ConversationSafetyMenu({
               Additional details <span className="font-normal text-[#8A93A0]">(optional)</span>
             </span>
             <textarea
-              autoFocus
               value={reportDetails}
               onChange={(event) => setReportDetails(event.target.value)}
               maxLength={reportMessageId ? 900 : 1000}

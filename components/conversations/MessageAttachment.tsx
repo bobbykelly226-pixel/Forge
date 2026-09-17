@@ -48,7 +48,14 @@ export default function MessageAttachment({ attachment, isSent, localPreviewUrl 
   const displayUrl = localPreviewUrl ?? signedUrl;
 
   if (!path) return null;
-  if (attachment.mimeType.startsWith('video/')) return <VideoMessage path={path} localUrl={localPreviewUrl} />;
+  if (attachment.mimeType.startsWith('video/')) return <VideoMessage
+    path={path}
+    localUrl={localPreviewUrl}
+    attachmentId={attachment.id}
+    viewOnce={attachment.viewOnce}
+    viewedAt={attachment.viewedAt}
+    isSent={isSent}
+  />;
 
   const name = attachment.fileName;
   const detail = formatAttachmentSize(attachment.fileSize);

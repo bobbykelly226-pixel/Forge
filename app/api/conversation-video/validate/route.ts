@@ -24,12 +24,12 @@ export async function POST(request: Request) {
     const db = supabase as unknown as SupabaseClient;
     const { data: upload, error: accessError } = await db.rpc('get_video_upload_for_validation', { p_conversation_id: input.conversationId, p_path: input.path });
     if (accessError || !upload?.object_id || upload.mime_type !== input.mimeType || upload.file_size < 1 || upload.file_size > MESSAGE_ATTACHMENT_MAX_BYTES) return deny(403);
-    const { data: blob, error } = await supabase.storage.from(MESSAGE_ATTACHMENT_BUCKET).download(input.path);
+    const admin = createServiceClient() as unknown as SupabaseClient | null;
+    if (!admin) return deny(503);
+    const { data: blob, error } = await admin.storage.from(MESSAGE_ATTACHMENT_BUCKET).download(input.path);
     if (error || !blob || blob.size !== upload.file_size || blob.size > MESSAGE_ATTACHMENT_MAX_BYTES) return deny(400);
     const duration = await inspectVideo(blob, input.mimeType);
     if (duration === null) return deny(400);
-    const admin = createServiceClient() as unknown as SupabaseClient | null;
-    if (!admin) return deny(503);
     const { error: saveError } = await admin.from('conversation_video_checks').upsert({
       object_id: upload.object_id, storage_path: input.path, sender_id: user.id,
       file_size: upload.file_size, mime_type: input.mimeType, duration_seconds: duration,
