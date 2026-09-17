@@ -1760,6 +1760,59 @@ export type Database = {
           },
         ]
       }
+      reported_video_evidence: {
+        Row: {
+          created_at: string
+          file_name: string
+          file_size: number
+          id: string
+          mime_type: string
+          report_id: string
+          source_attachment_id: string
+          source_conversation_id: string
+          source_message_id: string
+          source_sender_id: string
+          source_storage_path: string
+          storage_path: string
+        }
+        Insert: {
+          created_at?: string
+          file_name: string
+          file_size: number
+          id?: string
+          mime_type: string
+          report_id: string
+          source_attachment_id: string
+          source_conversation_id: string
+          source_message_id: string
+          source_sender_id: string
+          source_storage_path: string
+          storage_path: string
+        }
+        Update: {
+          created_at?: string
+          file_name?: string
+          file_size?: number
+          id?: string
+          mime_type?: string
+          report_id?: string
+          source_attachment_id?: string
+          source_conversation_id?: string
+          source_message_id?: string
+          source_sender_id?: string
+          source_storage_path?: string
+          storage_path?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "reported_video_evidence_report_id_fkey"
+            columns: ["report_id"]
+            isOneToOne: false
+            referencedRelation: "user_reports"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       safety_action_audit: {
         Row: {
           action: string

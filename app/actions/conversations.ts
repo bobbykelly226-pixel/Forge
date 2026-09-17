@@ -16,6 +16,9 @@ import {
 } from '@/lib/data/conversations';
 import type { ConversationAttachmentInput, ReportPayload } from '@/lib/conversations/types';
 import { sendSafetyReportNotification } from '@/lib/safety/report-notification';
+import { preserveReportedVideoEvidence } from '@/lib/safety/reported-video-evidence';
+import { createClient } from '@/lib/supabase/server';
+import { createServiceClient } from '@/lib/supabase/admin';
 
 export async function ensureConversationAction(connectionId: string) {
   return ensureConversationForConnection(connectionId);
@@ -69,6 +72,16 @@ export async function unblockUserAction(blockedUserId: string) {
 export async function reportUserAction(payload: ReportPayload) {
   const result = await reportUser(payload);
   if (!result.success || !result.data?.reportId) return result;
+
+  const messageReference = payload.details?.startsWith('Reported video message: ');
+  if (messageReference) {
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    const admin = createServiceClient();
+    if (user && admin) {
+      await preserveReportedVideoEvidence(admin, result.data.reportId, user.id);
+    }
+  }
 
   if (!result.data.duplicate) {
     await sendSafetyReportNotification({
