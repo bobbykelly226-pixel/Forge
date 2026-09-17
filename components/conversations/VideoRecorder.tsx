@@ -106,11 +106,13 @@ export default function VideoRecorder({ onSend, onClose }: { onSend: (file: File
     catch { setError('Video could not be sent. Please retry.'); }
     finally { busy.current = false; if (alive.current) setPhase('review'); }
   };
-  return <dialog ref={dialog} onCancel={event => { event.preventDefault(); if (phase !== 'sending') onClose(); }} aria-labelledby="video-hello-title" className="fixed m-auto max-h-[90dvh] w-[min(94vw,480px)] overflow-y-auto rounded-2xl bg-[#E6E6E7] p-4 text-[#0B2D5C] backdrop:bg-black/60">
+  return <dialog ref={dialog} onCancel={event => { event.preventDefault(); if (phase !== 'sending') onClose(); }} aria-labelledby="video-hello-title" className="fixed m-auto max-h-[calc(100dvh-1rem)] w-[min(94vw,480px)] overflow-y-auto rounded-2xl bg-[#E6E6E7] p-3 text-[#0B2D5C] backdrop:bg-black/60 sm:max-h-[90dvh] sm:p-4">
     <div className="flex items-center justify-between gap-3"><h2 id="video-hello-title" className="text-xl font-semibold">Video “Hello”</h2><button type="button" disabled={phase === 'sending'} onClick={onClose} aria-label="Close video recorder" className="min-h-11 min-w-11">✕</button></div>
-    <p className="my-2">Send a quick, personal hello in a video up to 15 seconds. Review before sending.</p>
-    <p className="mt-3 text-sm text-black"><strong>Keep it respectful.</strong> Nudity, sexually explicit content, harassment, and threats are not allowed. Violations may result in account suspension or removal. <a data-text-link href="/community-standards" target="_blank" rel="noopener noreferrer" aria-label="Community Standards, opens in a new tab" className="underline">Community Standards <span aria-hidden="true">↗</span></a></p>
-    {url ? <video key={url} src={url} controls playsInline preload="metadata" aria-label="Review your video" className="max-h-[45dvh] w-full rounded-xl bg-black" /> : <video ref={preview} muted playsInline autoPlay aria-label="Camera preview" className="max-h-[45dvh] w-full rounded-xl bg-black" />}
+    {phase !== 'recording' && <>
+      <p className="my-2">Send a quick, personal hello in a video up to 15 seconds. Review before sending.</p>
+      <p className="mt-3 text-sm text-black"><strong>Keep it respectful.</strong> Nudity, sexually explicit content, harassment, and threats are not allowed. Violations may result in account suspension or removal. <a data-text-link href="/community-standards" target="_blank" rel="noopener noreferrer" aria-label="Community Standards, opens in a new tab" className="underline">Community Standards <span aria-hidden="true">↗</span></a></p>
+    </>}
+    {url ? <video key={url} src={url} controls playsInline preload="metadata" aria-label="Review your video" className="max-h-[38dvh] w-full rounded-xl bg-black object-contain sm:max-h-[45dvh]" /> : <video ref={preview} muted playsInline autoPlay aria-label="Camera preview" className="max-h-[38dvh] w-full rounded-xl bg-black object-contain sm:max-h-[45dvh]" />}
     {phase === 'review' && <fieldset className="mt-4 rounded-xl border border-[#0B2D5C]/15 bg-white p-3 text-black">
       <legend className="px-1 text-sm font-semibold text-[#0B2D5C]">Choose how it can be viewed</legend>
       <label className="mt-2 flex min-h-11 cursor-pointer items-start gap-3"><input type="radio" name="video-delivery" checked={!viewOnce} onChange={() => setViewOnce(false)} className="mt-1" /><span><strong>Keep in conversation</strong><span className="block text-sm">It can be played again later.</span></span></label>
@@ -118,7 +120,7 @@ export default function VideoRecorder({ onSend, onClose }: { onSend: (file: File
     </fieldset>}
     {phase === 'recording' && <p role="status" className="my-3 text-center text-xl font-semibold">Recording · {remaining}s remaining</p>}
     {error && <p role="alert" className="my-3">{error}</p>}
-    <div className="mt-4 flex flex-wrap justify-end gap-3 [&>button]:min-h-11 [&>button]:rounded-lg [&>button]:bg-[#0B2D5C] [&>button]:px-4 [&>button]:py-2 [&>button]:text-white">
+    <div className="sticky bottom-0 -mx-3 -mb-3 mt-3 flex flex-wrap justify-end gap-3 bg-[#E6E6E7] px-3 py-3 sm:-mx-4 sm:-mb-4 sm:mt-4 sm:px-4 sm:py-4 [&>button]:min-h-11 [&>button]:rounded-lg [&>button]:bg-[#0B2D5C] [&>button]:px-4 [&>button]:py-2 [&>button]:text-white">
       {phase === 'idle' && (needsReload ? <button type="button" onClick={() => window.location.reload()}>Reload conversation</button> : <button type="button" onClick={() => void openCamera()}>Enable camera & microphone</button>)}
       {phase === 'opening' && <p role="status">Opening camera…</p>}
       {phase === 'ready' && <button type="button" onClick={record}>Record</button>}
