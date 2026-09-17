@@ -34,7 +34,7 @@ async function sendInvitationEmail(input: { email: string; firstName: string }) 
     subject: 'Your Forge Founding Beta invitation',
     html: `
       <h2>Welcome to the Forge Founding Beta, ${input.firstName.replace(/[<>&"']/g, '')}.</h2>
-      <p>Your request has been selected. Your personal invitation is active for seven days and may be used once.</p>
+      <p>Your personal invitation is ready. It is active for seven days and may be used once.</p>
       <p><a href="${signupUrl.toString()}">Create your invited Forge account</a></p>
       <p>Use <strong>${input.email}</strong> when creating your account. The invitation is tied to that address.</p>
       <p>Thank you for helping us build a more intentional dating experience.</p>

@@ -10,7 +10,7 @@ export type FoundingBetaRequestState = {
 };
 
 const GENERIC_SUCCESS =
-  'Your request is in. If selected for the Founding Beta, Forge will email your personal invitation.';
+  'Your request is in. After Forge completes its private review, we will email your personal invitation.';
 
 function text(formData: FormData, key: string) {
   return String(formData.get(key) ?? '').trim();
@@ -52,7 +52,7 @@ async function sendSubmissionEmails(input: {
       html: `
         <h2>Thank you, ${firstName}.</h2>
         <p>Your request to join the Forge Founding Beta has been received.</p>
-        <p>Submitting a request does not create an account. If your request is selected, Forge will send a separate personal invitation tied to this email address.</p>
+        <p>Submitting a request does not create an account. After Forge completes its private review, we will send a separate personal invitation tied to this email address.</p>
         <p>Strong Values. Strong Connections.</p>
         <p>The Forge Team</p>
       `,
