@@ -43,6 +43,8 @@ export type ConversationAttachment = {
   width: number | null;
   height: number | null;
   position: number;
+  viewOnce: boolean;
+  viewedAt: string | null;
 };
 
 export type ConversationAttachmentInput = {
@@ -52,6 +54,7 @@ export type ConversationAttachmentInput = {
   file_size: number;
   width: number | null;
   height: number | null;
+  view_once?: boolean;
 };
 
 export type ConversationThreadMeta = {

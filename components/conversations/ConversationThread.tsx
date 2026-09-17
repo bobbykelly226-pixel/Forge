@@ -346,7 +346,8 @@ export default function ConversationThread({
     body: string,
     existingClientMessageId?: string,
     existingAttachment?: ConversationAttachmentInput,
-    recordedVideo?: File
+    recordedVideo?: File,
+    viewOnce = false
   ) => {
     const outbound = normalizeComposerOutboundText(body);
     const pendingFile = existingAttachment ? null : recordedVideo ?? selectedFile;
@@ -374,6 +375,7 @@ export default function ConversationThread({
         file_size: pendingFile.size,
         width: null,
         height: null,
+        view_once: recordedVideo ? viewOnce : false,
       };
     }
 
@@ -430,6 +432,7 @@ export default function ConversationThread({
         file_size: pendingFile.size,
         width: null,
         height: null,
+        view_once: recordedVideo ? viewOnce : false,
       };
       if (pendingFile.type.startsWith('image/')) {
         const dimensions = await readImageDimensions(pendingFile).catch(() => null);
@@ -460,6 +463,8 @@ export default function ConversationThread({
               width: attachment.width,
               height: attachment.height,
               position: 0,
+              viewOnce: attachment.view_once === true,
+              viewedAt: null,
             },
           ]
         : [],
@@ -535,6 +540,10 @@ export default function ConversationThread({
         attachment: attachment
           ? attachment.mime_type.startsWith('image/')
             ? 'photo'
+            : attachment.mime_type.startsWith('video/')
+              ? attachment.view_once
+                ? 'video_view_once'
+                : 'video'
             : 'file'
           : 'none',
       });
@@ -602,7 +611,7 @@ export default function ConversationThread({
     <div
       ref={threadRootRef}
       data-conversation-thread
-      className="flex h-[calc(100dvh-9rem)] min-h-0 flex-col overflow-hidden rounded-[1.5rem] border border-[#0B2D5C]/08 bg-[#FBF9F6] shadow-sm lg:h-[calc(100dvh-5rem)]"
+      className="flex h-full min-h-0 flex-col overflow-hidden bg-[#FBF9F6] lg:h-[calc(100dvh-5rem)] lg:rounded-[1.5rem] lg:border lg:border-[#0B2D5C]/08 lg:shadow-sm"
       style={
         mobileViewportHeight === null
           ? undefined
@@ -753,6 +762,7 @@ export default function ConversationThread({
                                   file_size: message.attachments[0].fileSize,
                                   width: message.attachments[0].width,
                                   height: message.attachments[0].height,
+                                  view_once: message.attachments[0].viewOnce,
                                 }
                               : undefined
                           )
@@ -910,7 +920,7 @@ export default function ConversationThread({
 
       {videoOpen && !isBlocked && threadStatus !== 'ended' && <VideoRecorder
         onClose={() => setVideoOpen(false)}
-        onSend={(file) => sendMessage('', videoMessageId.current ?? undefined, undefined, file)}
+        onSend={(file, options) => sendMessage('', videoMessageId.current ?? undefined, undefined, file, options.viewOnce)}
       />}
       <div id={liveRegionId} className="sr-only" aria-live="polite" aria-atomic="true">
         {liveMessage}

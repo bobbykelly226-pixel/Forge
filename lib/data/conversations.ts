@@ -74,6 +74,8 @@ function mapAttachment(raw: unknown): ConversationMessage['attachments'][number]
     width: typeof row.width === 'number' ? row.width : null,
     height: typeof row.height === 'number' ? row.height : null,
     position: typeof row.position === 'number' ? row.position : 0,
+    viewOnce: row.view_once === true,
+    viewedAt: asString(row.viewed_at),
   };
 }
 
