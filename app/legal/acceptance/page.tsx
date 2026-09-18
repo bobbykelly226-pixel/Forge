@@ -26,26 +26,33 @@ export default async function LegalAcceptancePage({
 
   const status = await loadCurrentLegalAcceptance();
   return (
-    <main className="min-h-screen bg-[#F8F6F2] px-5 py-12 text-[#222222] sm:px-6">
-      <div className="mx-auto max-w-2xl">
-        <h1 className="text-4xl font-bold tracking-tight text-[#0B2D5C] sm:text-5xl">
-          Review your agreements
-        </h1>
-        <p className="mb-8 mt-4 text-lg leading-8 text-[#444444]">
-          Open each document and accept it at the bottom to continue.
-        </p>
+    <main className="min-h-screen bg-[#A9ADB3] px-4 py-8 text-black sm:px-6 sm:py-12">
+      <section className="mx-auto max-w-3xl rounded-lg border border-[#0B2D5C] bg-[#E6E6E7] p-5 shadow-[0_10px_28px_rgba(11,45,92,0.12)] sm:p-8">
+        <div className="border-b border-[#C9CBCE] pb-6">
+          <p className="mb-2 text-sm font-bold uppercase tracking-[0.14em] text-[#C92027]">
+            Forge agreements
+          </p>
+          <h1 className="text-3xl font-bold tracking-tight text-[#0B2D5C] sm:text-4xl">
+            Review your agreements
+          </h1>
+          <p className="mt-3 text-base leading-7 text-black sm:text-lg">
+            Open each document and accept it at the bottom to continue.
+          </p>
+        </div>
 
         {status.unavailable ? (
-          <div className="rounded-2xl border border-amber-200 bg-amber-50 p-5 text-amber-900" role="alert">
+          <div className="mt-6 rounded-md border border-[#C92027] bg-[#F7F7F7] p-5 text-black" role="alert">
             {status.message}
           </div>
         ) : (
-          <LegalAcceptanceForm
-            redirectTo={redirectTo}
-            initialAcceptedKeys={status.acceptedKeys}
-          />
+          <div className="mt-6">
+            <LegalAcceptanceForm
+              redirectTo={redirectTo}
+              initialAcceptedKeys={status.acceptedKeys}
+            />
+          </div>
         )}
-      </div>
+      </section>
     </main>
   );
 }
