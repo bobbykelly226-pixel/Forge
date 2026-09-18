@@ -31,17 +31,17 @@ export default function LegalAcceptanceForm({
         return (
           <div
             key={document.key}
-            className="rounded-2xl border border-[#0B2D5C]/15 bg-white p-5 shadow-sm"
+            className="rounded-md border border-[#0B2D5C] bg-[#F7F7F7] p-5 shadow-[0_4px_12px_rgba(11,45,92,0.08)]"
           >
             <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
-              <div>
-                <p className="font-semibold text-[#0B2D5C]">
+              <div className="min-w-0">
+                <p className="text-base font-bold text-[#0B2D5C] sm:text-lg">
                   {document.title}{' '}
-                  <span className="font-normal text-[#6B7280]">v{document.version}</span>
+                  <span className="whitespace-nowrap font-normal text-[#596273]">v{document.version}</span>
                 </p>
                 <p
                   className={`mt-1 text-sm font-semibold ${
-                    isAccepted ? 'text-emerald-700' : 'text-[#A61F1F]'
+                    isAccepted ? 'text-[#16734A]' : 'text-[#C92027]'
                   }`}
                 >
                   {isAccepted ? 'Accepted' : 'Not reviewed'}
@@ -49,7 +49,7 @@ export default function LegalAcceptanceForm({
               </div>
               <Link
                 href={reviewHref(document.href)}
-                className="inline-flex min-h-11 items-center justify-center rounded-xl border border-[#0B2D5C]/25 px-4 py-2 font-semibold text-[#0B2D5C] transition hover:border-[#0B2D5C] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0B2D5C] focus-visible:ring-offset-2"
+                className="inline-flex min-h-11 w-full items-center justify-center rounded-md border border-[#0B2D5C] bg-[#0B2D5C] px-4 py-2 font-semibold text-white transition hover:bg-[#0A2540] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#C92027] focus-visible:ring-offset-2 sm:w-auto"
               >
                 {isAccepted ? 'Review again' : 'Review and accept'}
               </Link>
@@ -61,7 +61,7 @@ export default function LegalAcceptanceForm({
       {allAccepted ? (
         <Link
           href={redirectTo}
-          className="flex min-h-14 w-full items-center justify-center rounded-2xl bg-[#D62828] px-6 py-4 text-lg font-semibold text-white transition hover:bg-[#A61F1F] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0B2D5C] focus-visible:ring-offset-2"
+          className="flex min-h-14 w-full items-center justify-center rounded-md border border-[#0B2D5C] bg-[#0B2D5C] px-6 py-4 text-lg font-semibold text-white transition hover:bg-[#0A2540] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#C92027] focus-visible:ring-offset-2"
         >
           Continue to Forge
         </Link>
@@ -69,7 +69,7 @@ export default function LegalAcceptanceForm({
         <button
           type="button"
           disabled
-          className="min-h-14 w-full rounded-2xl bg-gray-400 px-6 py-4 text-lg font-semibold text-white disabled:cursor-not-allowed"
+          className="min-h-14 w-full rounded-md border border-[#7D8795] bg-[#8E99A9] px-6 py-4 text-lg font-semibold text-white disabled:cursor-not-allowed"
         >
           Continue to Forge
         </button>
