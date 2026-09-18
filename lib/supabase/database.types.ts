@@ -2259,6 +2259,10 @@ export type Database = {
       }
     }
     Functions: {
+      accept_current_legal_document: {
+        Args: { p_document_key: string }
+        Returns: boolean
+      }
       approve_founding_beta_request: {
         Args: { p_operator_id: string; p_reason: string; p_request_id: string }
         Returns: Json
@@ -2285,7 +2289,6 @@ export type Database = {
         Args: { p_primary: string; p_also?: string[]; p_pace?: string | null }
         Returns: undefined
       }
-
       accept_current_legal_documents: {
         Args: Record<PropertyKey, never>
         Returns: boolean

@@ -3,7 +3,7 @@ begin;
 create extension if not exists pgtap with schema extensions;
 set local search_path = public, extensions, pg_temp;
 
-select plan(24);
+select plan(39);
 
 select has_table('public', 'legal_document_versions', 'legal document versions are stored');
 select has_table('public', 'member_legal_acceptances', 'member acceptance history is stored');
@@ -30,6 +30,10 @@ select is(
 
 select has_function('public', 'has_current_legal_acceptance', array[]::text[], 'acceptance status function exists');
 select has_function('public', 'accept_current_legal_documents', array[]::text[], 'acceptance write function exists');
+select has_function(
+  'public', 'accept_current_legal_document', array['text'],
+  'per-document acceptance function exists'
+);
 
 select function_privs_are(
   'public', 'has_current_legal_acceptance', array[]::text[], 'anon', array[]::text[],
@@ -46,6 +50,14 @@ select function_privs_are(
 select function_privs_are(
   'public', 'accept_current_legal_documents', array[]::text[], 'authenticated', array['EXECUTE'],
   'authenticated members may record their own acceptance'
+);
+select function_privs_are(
+  'public', 'accept_current_legal_document', array['text'], 'anon', array[]::text[],
+  'anonymous callers cannot record one document acceptance'
+);
+select function_privs_are(
+  'public', 'accept_current_legal_document', array['text'], 'authenticated', array['EXECUTE'],
+  'authenticated members may record one document acceptance'
 );
 
 select ok(
@@ -92,17 +104,53 @@ select set_config('request.jwt.claim.sub', '21212121-2121-4212-8212-212121212121
 set local role authenticated;
 
 select is(public.has_current_legal_acceptance(), false, 'a member starts without current acceptance');
-select is(public.accept_current_legal_documents(), true, 'the member can accept the complete current set');
-select is(public.has_current_legal_acceptance(), true, 'the member is current immediately after acceptance');
+select is(public.accept_current_legal_document('terms'), true, 'the member can accept Terms');
+select is(public.has_current_legal_acceptance(), false, 'one document does not unlock member features');
+select is(
+  (select count(*)::integer from public.member_legal_acceptances),
+  1,
+  'one acceptance stores one evidence record'
+);
+select is(
+  (select count(*)::integer from public.member_legal_acceptances where source = 'legal_document_review'),
+  1,
+  'the acceptance records its trusted review source'
+);
+select ok(
+  exists (
+    select 1
+    from public.member_legal_acceptances acceptance
+    join public.legal_document_versions version on version.id = acceptance.document_version_id
+    where version.document_key = 'terms' and version.is_current
+  ),
+  'the evidence identifies the exact current document version'
+);
+select is(public.accept_current_legal_document('terms'), true, 'accepting the same version again succeeds');
+select is(
+  (select count(*)::integer from public.member_legal_acceptances),
+  1,
+  'repeat acceptance is idempotent'
+);
+select is(public.accept_current_legal_document('privacy'), true, 'the member can accept Privacy');
+select is(public.accept_current_legal_document('community_standards'), true, 'the member can accept Community Standards');
+select is(public.has_current_legal_acceptance(), false, 'three documents still do not unlock member features');
+select is(public.accept_current_legal_document('sensitive_data_consent'), true, 'the member can accept Sensitive Data Processing');
+select is(public.has_current_legal_acceptance(), true, 'all four persisted acceptances unlock member features');
 select is(
   (select count(*)::integer from public.member_legal_acceptances),
   4,
   'one append-only record is stored for each current document'
 );
 select is(
-  (select count(*)::integer from public.member_legal_acceptances where source = 'legal_acceptance_gate'),
+  (select count(*)::integer from public.member_legal_acceptances where source = 'legal_document_review'),
   4,
   'each acceptance records its trusted source'
+);
+select is(public.accept_current_legal_documents(), true, 'the legacy batch function remains compatible');
+select is(
+  (select count(*)::integer from public.member_legal_acceptances),
+  4,
+  'the legacy batch function cannot duplicate evidence'
 );
 
 select * from finish();
