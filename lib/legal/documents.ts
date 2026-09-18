@@ -15,6 +15,7 @@ export type LegalDocumentDefinition = {
   effectiveDate: string;
   href: string;
   acknowledgement: string;
+  acceptanceAction: string;
 };
 
 export const CURRENT_LEGAL_DOCUMENTS: readonly LegalDocumentDefinition[] = [
@@ -26,6 +27,7 @@ export const CURRENT_LEGAL_DOCUMENTS: readonly LegalDocumentDefinition[] = [
     effectiveDate: 'August 21, 2026',
     href: '/terms',
     acknowledgement: 'I have read and agree to the Forge Terms of Service.',
+    acceptanceAction: 'I Agree to the Terms of Service',
   },
   {
     key: 'privacy',
@@ -35,6 +37,7 @@ export const CURRENT_LEGAL_DOCUMENTS: readonly LegalDocumentDefinition[] = [
     effectiveDate: 'August 21, 2026',
     href: '/privacy',
     acknowledgement: 'I have read and acknowledge the Forge Privacy Policy.',
+    acceptanceAction: 'I Acknowledge the Privacy Policy',
   },
   {
     key: 'community_standards',
@@ -44,6 +47,7 @@ export const CURRENT_LEGAL_DOCUMENTS: readonly LegalDocumentDefinition[] = [
     effectiveDate: 'August 21, 2026',
     href: '/community-standards',
     acknowledgement: 'I agree to follow the Forge Community Standards.',
+    acceptanceAction: 'I Agree to the Community Standards',
   },
   {
     key: 'sensitive_data_consent',
@@ -54,10 +58,15 @@ export const CURRENT_LEGAL_DOCUMENTS: readonly LegalDocumentDefinition[] = [
     href: '/sensitive-data-consent',
     acknowledgement:
       'I consent to Forge processing the sensitive information I choose to provide for matching, profile, safety, and support features.',
+    acceptanceAction: 'I Consent to Sensitive Data Processing',
   },
 ] as const;
 
 const REQUIRED_KEYS = new Set<string>(LEGAL_DOCUMENT_KEYS);
+
+export function isLegalDocumentKey(value: string): value is LegalDocumentKey {
+  return REQUIRED_KEYS.has(value);
+}
 
 export function hasAllRequiredLegalAcknowledgements(keys: readonly string[]): boolean {
   const acknowledged = new Set(keys);

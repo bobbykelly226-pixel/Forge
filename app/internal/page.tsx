@@ -1,6 +1,6 @@
 import { Fraunces, Manrope } from 'next/font/google';
 import Link from 'next/link';
-import { FileWarning, Images, KeyRound, Scale, ShieldCheck } from 'lucide-react';
+import { FileWarning, Images, KeyRound, Scale, ShieldCheck, UsersRound } from 'lucide-react';
 import { notFound, redirect } from 'next/navigation';
 
 import ForgeAppCanvas from '@/components/ForgeAppCanvas';
@@ -29,6 +29,12 @@ export const metadata = {
 };
 
 const TOOLS = [
+  {
+    href: '/internal/founding-beta',
+    title: 'Founding Beta Requests',
+    description: 'Review access requests and issue personal seven-day beta invitations.',
+    icon: UsersRound,
+  },
   {
     href: '/internal/account-governance',
     title: 'Account Governance',
@@ -91,7 +97,7 @@ export default async function AdministratorHomePage() {
           administrator account, authenticator verification, and permanent audit records.
         </p>
 
-        <section className="mt-9 grid gap-5 md:grid-cols-2 xl:grid-cols-4" aria-label="Administrator tools">
+        <section className="mt-9 grid gap-5 md:grid-cols-2 xl:grid-cols-3" aria-label="Administrator tools">
           {TOOLS.map((tool) => {
             const Icon = tool.icon;
             return (

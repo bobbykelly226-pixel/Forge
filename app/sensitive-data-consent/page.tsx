@@ -5,7 +5,7 @@ const document = getLegalDocument('sensitive_data_consent');
 
 export default function SensitiveDataConsentPage() {
   return (
-    <LegalDocumentShell {...document}>
+    <LegalDocumentShell {...document} documentKey={document.key}>
       <p>
         Forge is a values-first dating service. To provide compatibility, profile,
         communication, safety, and support features, Forge processes information that may be

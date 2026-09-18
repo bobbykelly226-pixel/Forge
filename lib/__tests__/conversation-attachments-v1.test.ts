@@ -116,11 +116,12 @@ describe('conversation attachment security and UI wiring', () => {
     );
     assert.match(thread, /composerTextRef\.current = next/);
     assert.match(thread, /sendMessage\(event\.currentTarget\.value\)/);
+    assert.match(thread, /sendMessage\(textareaRef\.current\?\.value \?\? composerTextRef\.current\)/);
     assert.match(thread, /\.channel\(`conversation:/);
     assert.match(thread, /event: 'INSERT'/);
     assert.match(thread, /refreshQueuedRef\.current = true/);
     assert.match(thread, /void refreshMessages\(\)/);
-    assert.match(thread, /h-\[calc\(100dvh-9rem\)\]/);
+    assert.match(thread, /min-h-0 flex-1 touch-pan-y overflow-y-auto overscroll-contain/);
     assert.match(thread, /touch-pan-y overflow-y-auto overscroll-contain/);
     assert.match(realtimeMigration, /alter publication supabase_realtime add table public\.messages/);
   });

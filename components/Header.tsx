@@ -34,10 +34,10 @@ export default function Header() {
               Log In
             </Link>
             <Link
-              href="/signup"
+              href="/founding-beta"
               className="bg-[#D62828] hover:bg-[#A61F1F] text-white px-5 py-2.5 rounded-xl font-semibold transition"
             >
-              Sign Up
+              Founding Beta
             </Link>
           </div>
         </div>
@@ -68,11 +68,11 @@ export default function Header() {
                 Log In
               </Link>
               <Link
-                href="/signup"
+                href="/founding-beta"
                 onClick={closeMenu}
                 className="bg-[#D62828] hover:bg-[#A61F1F] text-white py-3.5 rounded-xl font-semibold transition"
               >
-                Sign Up
+                Founding Beta
               </Link>
             </div>
           </div>

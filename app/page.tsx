@@ -120,10 +120,10 @@ export default function Home() {
             Ready to find something more meaningful?
           </h2>
           <Link
-            href="/signup"
+            href="/founding-beta"
             className="inline-block bg-[#D62828] hover:bg-[#A61F1F] text-white px-10 py-4 rounded-2xl font-semibold text-lg transition"
           >
-            Sign Up for Forge
+            Request Founding Beta Access
           </Link>
           <p className="mt-6 text-white/80 text-base">
             Already have an account?{' '}

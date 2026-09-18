@@ -95,6 +95,121 @@ export type Database = {
         }
         Relationships: []
       }
+      founding_beta_request_events: {
+        Row: {
+          action: string
+          created_at: string
+          id: string
+          operator_id: string
+          reason: string
+          request_id: string
+        }
+        Insert: {
+          action: string
+          created_at?: string
+          id?: string
+          operator_id: string
+          reason: string
+          request_id: string
+        }
+        Update: {
+          action?: string
+          created_at?: string
+          id?: string
+          operator_id?: string
+          reason?: string
+          request_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "founding_beta_request_events_request_id_fkey"
+            columns: ["request_id"]
+            isOneToOne: false
+            referencedRelation: "founding_beta_requests"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      founding_beta_requests: {
+        Row: {
+          adult_confirmed: boolean
+          decision_note: string | null
+          email: string
+          feedback_agreed: boolean
+          first_name: string
+          gender: string
+          heard_about_forge: string | null
+          id: string
+          interested_in: string[]
+          invitation_delivery_error: string | null
+          invitation_delivery_status: string
+          invitation_id: string | null
+          invitation_sent_at: string | null
+          location: string
+          relationship_goal: string
+          reviewed_at: string | null
+          reviewed_by: string | null
+          standards_agreed: boolean
+          status: string
+          submitted_at: string
+          updated_at: string
+        }
+        Insert: {
+          adult_confirmed: boolean
+          decision_note?: string | null
+          email: string
+          feedback_agreed: boolean
+          first_name: string
+          gender: string
+          heard_about_forge?: string | null
+          id?: string
+          interested_in: string[]
+          invitation_delivery_error?: string | null
+          invitation_delivery_status?: string
+          invitation_id?: string | null
+          invitation_sent_at?: string | null
+          location: string
+          relationship_goal: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          standards_agreed: boolean
+          status?: string
+          submitted_at?: string
+          updated_at?: string
+        }
+        Update: {
+          adult_confirmed?: boolean
+          decision_note?: string | null
+          email?: string
+          feedback_agreed?: boolean
+          first_name?: string
+          gender?: string
+          heard_about_forge?: string | null
+          id?: string
+          interested_in?: string[]
+          invitation_delivery_error?: string | null
+          invitation_delivery_status?: string
+          invitation_id?: string | null
+          invitation_sent_at?: string | null
+          location?: string
+          relationship_goal?: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          standards_agreed?: boolean
+          status?: string
+          submitted_at?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "founding_beta_requests_invitation_id_fkey"
+            columns: ["invitation_id"]
+            isOneToOne: false
+            referencedRelation: "beta_signup_invitations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       legal_document_versions: {
         Row: {
           created_at: string
@@ -2144,6 +2259,28 @@ export type Database = {
       }
     }
     Functions: {
+      accept_current_legal_document: {
+        Args: { p_document_key: string }
+        Returns: boolean
+      }
+      approve_founding_beta_request: {
+        Args: { p_operator_id: string; p_reason: string; p_request_id: string }
+        Returns: Json
+      }
+      decline_founding_beta_request: {
+        Args: { p_operator_id: string; p_reason: string; p_request_id: string }
+        Returns: boolean
+      }
+      record_founding_beta_invitation_delivery: {
+        Args: {
+          p_error?: string | null
+          p_is_resend?: boolean
+          p_operator_id: string
+          p_request_id: string
+          p_success: boolean
+        }
+        Returns: boolean
+      }
       save_my_relationship_goals: {
         Args: { p_goals: string[] }
         Returns: undefined
@@ -2152,7 +2289,6 @@ export type Database = {
         Args: { p_primary: string; p_also?: string[]; p_pace?: string | null }
         Returns: undefined
       }
-
       accept_current_legal_documents: {
         Args: Record<PropertyKey, never>
         Returns: boolean
