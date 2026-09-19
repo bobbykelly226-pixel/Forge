@@ -1,6 +1,6 @@
 import { Fraunces, Manrope } from 'next/font/google';
 import Link from 'next/link';
-import { FileWarning, Images, KeyRound, Scale, ShieldCheck, UsersRound } from 'lucide-react';
+import { ArrowRight, FileWarning, Images, KeyRound, Scale, ShieldCheck, UsersRound } from 'lucide-react';
 import { notFound, redirect } from 'next/navigation';
 
 import ForgeAppCanvas from '@/components/ForgeAppCanvas';
@@ -93,8 +93,8 @@ export default async function AdministratorHomePage() {
           Administrator Home
         </h1>
         <p className="mt-3 max-w-2xl text-base leading-relaxed text-[#5A6575]">
-          Choose the private Forge tool you need. Every action remains protected by the approved
-          administrator account, authenticator verification, and permanent audit records.
+          Choose one work area. Each tile opens its own focused workspace, and every workspace has
+          a clear path back here.
         </p>
 
         <section className="mt-9 grid gap-5 md:grid-cols-2 xl:grid-cols-3" aria-label="Administrator tools">
@@ -104,14 +104,14 @@ export default async function AdministratorHomePage() {
               <Link
                 key={tool.href}
                 href={tool.href}
-                className="group rounded-[1.75rem] border border-[#0B2D5C]/10 bg-white p-6 shadow-[0_16px_45px_rgba(11,45,92,0.06)] transition hover:-translate-y-0.5 hover:border-[#0B2D5C]/20 hover:shadow-[0_20px_50px_rgba(11,45,92,0.1)]"
+                className="group border border-[#0B2D5C] bg-[#E6E6E7] p-6 shadow-[0_12px_32px_rgba(11,45,92,0.08)] transition hover:-translate-y-0.5 hover:bg-white hover:shadow-[0_18px_42px_rgba(11,45,92,0.12)]"
               >
-                <span className="inline-flex rounded-2xl bg-[#EEF3F9] p-3 text-[#0B2D5C] transition group-hover:bg-[#0B2D5C] group-hover:text-white">
+                <span className="inline-flex border border-[#0B2D5C] bg-white p-3 text-[#0B2D5C] transition group-hover:bg-[#0B2D5C] group-hover:text-white">
                   <Icon className="h-6 w-6" aria-hidden="true" />
                 </span>
                 <h2 className="mt-5 text-xl font-semibold text-[#0B2D5C]">{tool.title}</h2>
-                <p className="mt-2 text-sm leading-relaxed text-[#5A6575]">{tool.description}</p>
-                <p className="mt-5 text-sm font-semibold text-[#D62828]">Open {tool.title} →</p>
+                <p className="mt-2 text-sm leading-relaxed text-black">{tool.description}</p>
+                <p className="mt-5 inline-flex items-center gap-2 text-sm font-semibold text-[#C92027]">Open workspace <ArrowRight className="h-4 w-4 transition group-hover:translate-x-1" aria-hidden="true" /></p>
               </Link>
             );
           })}

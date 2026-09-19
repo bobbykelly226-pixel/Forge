@@ -74,7 +74,8 @@ export type OperatorReportReviewResult =
   | { success: false; message: string };
 
 export async function loadOperatorReportReview(
-  requestedReportId?: string | null
+  requestedReportId?: string | null,
+  requestedStatus?: OperatorReportCaseStatus | null
 ): Promise<OperatorReportReviewResult> {
   const admin = createServiceClient();
   if (!admin) {
@@ -185,11 +186,15 @@ export async function loadOperatorReportReview(
     ];
   });
 
-  const selectedCase =
-    cases.find((item) => item.reportId === requestedReportId) ??
-    cases.find((item) => item.status === 'pending') ??
-    cases[0] ??
-    null;
+  const selectedCase = requestedReportId
+    ? cases.find(
+        (item) =>
+          item.reportId === requestedReportId &&
+          (!requestedStatus || item.status === requestedStatus)
+      ) ?? null
+    : requestedStatus
+      ? cases.find((item) => item.status === requestedStatus) ?? null
+      : null;
 
   if (!selectedCase) {
     return {

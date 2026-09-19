@@ -6,6 +6,7 @@ import ReportReviewWorkspace from '@/components/operator/ReportReviewWorkspace';
 import { isForgeOperatorUser } from '@/lib/operator/access';
 import { getOperatorMfaState } from '@/lib/operator/mfa';
 import { loadOperatorReportReview } from '@/lib/operator/report-review';
+import type { OperatorReportCaseStatus } from '@/lib/operator/report-review';
 import { createClient } from '@/lib/supabase/server';
 
 const display = Fraunces({
@@ -28,10 +29,12 @@ export const metadata = {
   robots: { index: false, follow: false },
 };
 
+const CASE_STATUSES = new Set<OperatorReportCaseStatus>(['pending', 'reviewing', 'resolved', 'dismissed']);
+
 export default async function ReportReviewPage({
   searchParams,
 }: {
-  searchParams: Promise<{ case?: string }>;
+  searchParams: Promise<{ case?: string; status?: string }>;
 }) {
   const supabase = await createClient();
   const {
@@ -51,7 +54,10 @@ export default async function ReportReviewPage({
   }
 
   const params = await searchParams;
-  const result = await loadOperatorReportReview(params.case);
+  const status = CASE_STATUSES.has(params.status as OperatorReportCaseStatus)
+    ? (params.status as OperatorReportCaseStatus)
+    : null;
+  const result = await loadOperatorReportReview(params.case, status);
 
   return (
     <ForgeAppCanvas
@@ -61,6 +67,7 @@ export default async function ReportReviewPage({
       <ReportReviewWorkspace
         data={result.success ? result.data : null}
         loadError={result.success ? null : result.message}
+        status={status}
       />
     </ForgeAppCanvas>
   );

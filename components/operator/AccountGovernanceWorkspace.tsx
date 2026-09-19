@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { useActionState } from 'react';
-import { Scale, ShieldCheck } from 'lucide-react';
+import { ArrowLeft, Scale, ShieldCheck } from 'lucide-react';
 
 import { updateAccountGovernanceAction, type GovernanceActionState } from '@/app/actions/account-governance';
 import type { AccountGovernanceRecord } from '@/lib/operator/account-governance';
@@ -19,7 +19,7 @@ export default function AccountGovernanceWorkspace({ email, record, error }: { e
           <h1 className="mt-5 font-[family-name:var(--font-discovery-display)] text-4xl font-semibold tracking-[-0.03em] text-[#0B2D5C] sm:text-5xl">Account governance</h1>
           <p className="mt-3 max-w-2xl text-base leading-relaxed text-[#5A6575]">Manage retention and legal preservation without exposing these controls to members.</p>
         </div>
-        <Link href="/internal" className="rounded-2xl border border-[#0B2D5C]/14 bg-white px-4 py-3 text-sm font-semibold text-[#0B2D5C]">Administrator Home</Link>
+        <Link href="/internal" className="inline-flex items-center gap-2 border border-[#0B2D5C] bg-white px-4 py-3 text-sm font-semibold text-[#0B2D5C]"><ArrowLeft className="h-4 w-4" aria-hidden="true" />Back to Administrator Home</Link>
       </header>
       <form method="get" className="mt-8 flex max-w-2xl gap-3 rounded-[1.5rem] border border-[#0B2D5C]/10 bg-white p-4">
         <label htmlFor="member-email" className="sr-only">Exact member email</label>

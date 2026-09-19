@@ -6,6 +6,8 @@ import { reportedVideoMessageId } from '@/lib/operator/reported-video';
 import { useActionState, useState } from 'react';
 import {
   AlertTriangle,
+  ArrowLeft,
+  ArrowRight,
   Archive,
   CheckCircle2,
   Clock3,
@@ -40,6 +42,17 @@ const STATUS_CLASSES: Record<OperatorReportCaseStatus, string> = {
 };
 
 const ENFORCEMENT_ACTIONS = new Set(['warn', 'restrict', 'suspend', 'remove', 'safety_block']);
+
+const CASE_QUEUES: Array<{
+  status: OperatorReportCaseStatus;
+  description: string;
+  group: 'attention' | 'history';
+}> = [
+  { status: 'pending', description: 'New member reports waiting for an initial review.', group: 'attention' },
+  { status: 'reviewing', description: 'Open cases where an administrator has begun work.', group: 'attention' },
+  { status: 'resolved', description: 'Cases completed with a recorded resolution.', group: 'history' },
+  { status: 'dismissed', description: 'Reports closed without enforcement.', group: 'history' },
+];
 
 function formatDate(value: string) {
   return new Date(value).toLocaleString();
@@ -136,9 +149,11 @@ function CaseActionForm({ reportId }: { reportId: string }) {
 export default function ReportReviewWorkspace({
   data,
   loadError,
+  status,
 }: {
   data: OperatorReportReviewData | null;
   loadError?: string | null;
+  status: OperatorReportCaseStatus | null;
 }) {
   const counts = {
     pending: data?.cases.filter((item) => item.status === 'pending').length ?? 0,
@@ -147,6 +162,8 @@ export default function ReportReviewWorkspace({
     dismissed: data?.cases.filter((item) => item.status === 'dismissed').length ?? 0,
   };
   const selected = data?.selectedCase ?? null;
+  const activeQueue = CASE_QUEUES.find((queue) => queue.status === status) ?? null;
+  const visibleCases = status ? data?.cases.filter((item) => item.status === status) ?? [] : [];
 
   return (
     <main className="mx-auto w-full max-w-[90rem] px-4 py-8 sm:px-6 lg:px-8 lg:py-12">
@@ -163,27 +180,55 @@ export default function ReportReviewWorkspace({
             Review private member reports and evidence, record bounded enforcement, preserve every decision, and track appeals.
           </p>
         </div>
-        <nav className="flex flex-wrap gap-3" aria-label="Operator tools">
-          <Link href="/internal" className="rounded-2xl border border-[#0B2D5C]/14 bg-white px-4 py-3 text-sm font-semibold text-[#0B2D5C]">
-            Administrator Home
+        {status ? (
+          <Link href="/internal/report-review" className="inline-flex items-center gap-2 border border-[#0B2D5C] bg-white px-4 py-3 text-sm font-semibold text-[#0B2D5C]">
+            <ArrowLeft className="h-4 w-4" aria-hidden="true" />Back to Safety Reports
           </Link>
-          <Link href="/internal/photo-moderation" className="rounded-2xl border border-[#0B2D5C]/14 bg-white px-4 py-3 text-sm font-semibold text-[#0B2D5C]">
-            Photo moderation
+        ) : (
+          <Link href="/internal" className="inline-flex items-center gap-2 border border-[#0B2D5C] bg-white px-4 py-3 text-sm font-semibold text-[#0B2D5C]">
+            <ArrowLeft className="h-4 w-4" aria-hidden="true" />Back to Administrator Home
           </Link>
-          <Link href="/internal/operator-security?redirectTo=/internal/report-review" className="rounded-2xl border border-[#0B2D5C]/14 bg-white px-4 py-3 text-sm font-semibold text-[#0B2D5C]">
-            Account security
-          </Link>
-        </nav>
+        )}
       </header>
 
-      <section className="mt-8 grid gap-3 sm:grid-cols-2 lg:grid-cols-4" aria-label="Case counts">
-        {(['pending', 'reviewing', 'resolved', 'dismissed'] as const).map((status) => (
-          <div key={status} className="rounded-2xl border border-[#0B2D5C]/08 bg-white/80 p-4">
-            <p className="text-xs font-semibold uppercase tracking-[0.12em] text-[#667085]">{STATUS_LABELS[status]}</p>
-            <p className="mt-2 text-3xl font-semibold text-[#0B2D5C]">{counts[status]}</p>
-          </div>
-        ))}
-      </section>
+      {!status ? (
+        <>
+          <section className="mt-8" aria-labelledby="reports-attention-heading">
+            <div className="flex items-end justify-between gap-4">
+              <div><p className="text-xs font-semibold uppercase tracking-[0.14em] text-[#C92027]">Case queues</p><h2 id="reports-attention-heading" className="mt-1 text-2xl font-semibold text-[#0B2D5C]">Needs attention</h2></div>
+              <p className="text-sm text-[#5C636B]">Open one queue at a time</p>
+            </div>
+            <div className="mt-4 grid gap-4 md:grid-cols-2">
+              {CASE_QUEUES.filter((queue) => queue.group === 'attention').map((queue) => (
+                <Link key={queue.status} href={`/internal/report-review?status=${queue.status}`} className="group border border-[#0B2D5C] bg-[#E6E6E7] p-5 shadow-[0_10px_24px_rgba(11,45,92,0.08)] transition hover:bg-white sm:p-6">
+                  <div className="flex items-start justify-between gap-4"><FileWarning className="h-7 w-7 text-[#C92027]" aria-hidden="true" /><span className="text-4xl font-semibold text-[#0B2D5C]">{counts[queue.status]}</span></div>
+                  <h3 className="mt-5 text-xl font-semibold text-[#0B2D5C]">{STATUS_LABELS[queue.status]}</h3>
+                  <p className="mt-2 text-sm leading-relaxed text-black">{queue.description}</p>
+                  <span className="mt-5 inline-flex items-center gap-2 text-sm font-semibold text-[#C92027]">Open queue <ArrowRight className="h-4 w-4 transition group-hover:translate-x-1" aria-hidden="true" /></span>
+                </Link>
+              ))}
+            </div>
+          </section>
+          <section className="mt-9" aria-labelledby="reports-history-heading">
+            <h2 id="reports-history-heading" className="text-2xl font-semibold text-[#0B2D5C]">Completed and history</h2>
+            <div className="mt-4 grid gap-4 md:grid-cols-2">
+              {CASE_QUEUES.filter((queue) => queue.group === 'history').map((queue) => (
+                <Link key={queue.status} href={`/internal/report-review?status=${queue.status}`} className="group border border-[#0B2D5C] bg-white p-5 transition hover:bg-[#E6E6E7] sm:p-6">
+                  <div className="flex items-start justify-between gap-4"><Archive className="h-6 w-6 text-[#0B2D5C]" aria-hidden="true" /><span className="text-3xl font-semibold text-[#0B2D5C]">{counts[queue.status]}</span></div>
+                  <h3 className="mt-4 text-lg font-semibold text-[#0B2D5C]">{STATUS_LABELS[queue.status]}</h3>
+                  <p className="mt-2 text-sm text-black">{queue.description}</p>
+                  <span className="mt-4 inline-flex items-center gap-2 text-sm font-semibold text-[#0B2D5C]">View records <ArrowRight className="h-4 w-4 transition group-hover:translate-x-1" aria-hidden="true" /></span>
+                </Link>
+              ))}
+            </div>
+          </section>
+        </>
+      ) : (
+        <section className="mt-8 border-b border-[#C9CBCE] pb-5">
+          <p className="text-xs font-semibold uppercase tracking-[0.14em] text-[#C92027]">Selected queue</p>
+          <div className="mt-2 flex flex-wrap items-end justify-between gap-3"><div><h2 className="text-2xl font-semibold text-[#0B2D5C]">{activeQueue ? STATUS_LABELS[activeQueue.status] : ''}</h2><p className="mt-1 text-sm text-black">{activeQueue?.description}</p></div><p className="text-lg font-semibold text-[#0B2D5C]">{visibleCases.length} {visibleCases.length === 1 ? 'case' : 'cases'}</p></div>
+        </section>
+      )}
 
       {loadError ? (
         <p className="mt-6 rounded-2xl border border-[#B42318]/20 bg-[#FFF5F4] px-5 py-4 text-sm text-[#9B1C1C]" role="alert">
@@ -191,22 +236,23 @@ export default function ReportReviewWorkspace({
         </p>
       ) : null}
 
-      {!loadError && data && data.cases.length === 0 ? (
+      {!loadError && status && data && visibleCases.length === 0 ? (
         <section className="mt-6 rounded-[1.75rem] border border-[#2E7D5B]/15 bg-[#F2F8F5] px-6 py-12 text-center">
           <CheckCircle2 className="mx-auto h-12 w-12 text-[#2E7D5B]" aria-hidden="true" />
-          <h2 className="mt-4 text-2xl font-semibold text-[#0B2D5C]">No report cases are waiting</h2>
+          <h2 className="mt-4 text-2xl font-semibold text-[#0B2D5C]">This queue is clear</h2>
+          <p className="mt-2 text-black">There are no {activeQueue ? STATUS_LABELS[activeQueue.status].toLowerCase() : ''} cases right now.</p>
         </section>
       ) : null}
 
-      {data && selected ? (
+      {status && data && selected ? (
         <div className="mt-6 grid gap-6 xl:grid-cols-[22rem_minmax(0,1fr)_22rem]">
           <aside className="rounded-[1.5rem] border border-[#0B2D5C]/10 bg-white/80 p-3 xl:sticky xl:top-6 xl:max-h-[calc(100vh-3rem)] xl:overflow-y-auto">
             <h2 className="px-2 py-2 text-sm font-semibold text-[#0B2D5C]">Case queue</h2>
             <div className="mt-1 space-y-2">
-              {data.cases.map((item) => (
+              {visibleCases.map((item) => (
                 <Link
                   key={item.reportId}
-                  href={`/internal/report-review?case=${encodeURIComponent(item.reportId)}`}
+                  href={`/internal/report-review?status=${status}&case=${encodeURIComponent(item.reportId)}`}
                   aria-current={item.reportId === selected.reportId ? 'page' : undefined}
                   className={`block rounded-2xl border p-4 transition ${
                     item.reportId === selected.reportId

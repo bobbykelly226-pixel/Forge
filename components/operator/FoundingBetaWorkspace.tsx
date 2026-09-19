@@ -2,13 +2,13 @@
 
 import Link from 'next/link';
 import { useActionState, useState } from 'react';
-import { CheckCircle2, Clock3, Mail, ShieldCheck, UserCheck, UserX } from 'lucide-react';
+import { ArrowLeft, ArrowRight, CheckCircle2, Clock3, Mail, ShieldCheck, UserCheck, UserX } from 'lucide-react';
 
 import {
   reviewFoundingBetaRequestAction,
   type FoundingBetaReviewState,
 } from '@/app/actions/founding-beta-review';
-import type { FoundingBetaRequest } from '@/lib/operator/founding-beta';
+import type { FoundingBetaRequest, FoundingBetaRequestStatus } from '@/lib/operator/founding-beta';
 
 const INITIAL_STATE: FoundingBetaReviewState = { success: false, message: '' };
 
@@ -43,13 +43,37 @@ function ReviewForm({ request }: { request: FoundingBetaRequest }) {
   );
 }
 
-export default function FoundingBetaWorkspace({ requests, loadError }: { requests: FoundingBetaRequest[]; loadError?: string | null }) {
+const QUEUES: Array<{
+  status: FoundingBetaRequestStatus;
+  label: string;
+  description: string;
+  icon: typeof Clock3;
+  group: 'attention' | 'history';
+}> = [
+  { status: 'pending', label: 'Pending review', description: 'New requests waiting for a decision.', icon: Clock3, group: 'attention' },
+  { status: 'approved', label: 'Email pending', description: 'Approved requests whose invitation still needs attention.', icon: UserCheck, group: 'attention' },
+  { status: 'invited', label: 'Invited', description: 'Requests with an invitation already sent.', icon: Mail, group: 'history' },
+  { status: 'declined', label: 'Declined', description: 'Requests that were not invited.', icon: UserX, group: 'history' },
+];
+
+export default function FoundingBetaWorkspace({
+  requests,
+  loadError,
+  status,
+}: {
+  requests: FoundingBetaRequest[];
+  loadError?: string | null;
+  status: FoundingBetaRequestStatus | null;
+}) {
   const counts = {
     pending: requests.filter((item) => item.status === 'pending').length,
     invited: requests.filter((item) => item.status === 'invited').length,
     approved: requests.filter((item) => item.status === 'approved').length,
     declined: requests.filter((item) => item.status === 'declined').length,
   };
+
+  const activeQueue = QUEUES.find((queue) => queue.status === status) ?? null;
+  const visibleRequests = status ? requests.filter((request) => request.status === status) : [];
 
   return (
     <main className="mx-auto w-full max-w-7xl px-4 py-8 sm:px-6 lg:px-8 lg:py-12">
@@ -59,23 +83,71 @@ export default function FoundingBetaWorkspace({ requests, loadError }: { request
           <h1 className="mt-4 text-4xl font-semibold tracking-tight text-[#0B2D5C] sm:text-5xl">Founding Beta requests</h1>
           <p className="mt-3 max-w-3xl leading-relaxed text-[#5C636B]">Review requests, build a balanced first cohort, and issue personal seven-day invitations. Submission details are private.</p>
         </div>
-        <Link href="/internal" className="border border-[#0B2D5C] bg-white px-4 py-3 text-sm font-semibold text-[#0B2D5C]">Administrator Home</Link>
+        <Link href={status ? '/internal/founding-beta' : '/internal'} className="inline-flex items-center gap-2 border border-[#0B2D5C] bg-white px-4 py-3 text-sm font-semibold text-[#0B2D5C]">
+          <ArrowLeft className="h-4 w-4" aria-hidden="true" />
+          {status ? 'Back to Founding Beta' : 'Back to Administrator Home'}
+        </Link>
       </header>
 
-      <section className="mt-7 grid grid-cols-2 gap-3 lg:grid-cols-4" aria-label="Request counts">
-        {[
-          ['Pending', counts.pending, Clock3], ['Invited', counts.invited, Mail], ['Approved, email pending', counts.approved, UserCheck], ['Declined', counts.declined, UserX],
-        ].map(([label, count, Icon]) => {
-          const CountIcon = Icon as typeof Clock3;
-          return <div key={String(label)} className="border border-[#0B2D5C]/15 bg-white p-4"><CountIcon className="h-5 w-5 text-[#C92027]" /><p className="mt-3 text-2xl font-semibold text-[#0B2D5C]">{String(count)}</p><p className="mt-1 text-xs text-[#5C636B]">{String(label)}</p></div>;
-        })}
-      </section>
+      {!status ? (
+        <>
+          <section className="mt-8" aria-labelledby="beta-attention-heading">
+            <div className="flex items-end justify-between gap-4">
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-[0.14em] text-[#C92027]">Work queues</p>
+                <h2 id="beta-attention-heading" className="mt-1 text-2xl font-semibold text-[#0B2D5C]">Needs attention</h2>
+              </div>
+              <p className="text-sm text-[#5C636B]">Open one queue at a time</p>
+            </div>
+            <div className="mt-4 grid gap-4 md:grid-cols-2">
+              {QUEUES.filter((queue) => queue.group === 'attention').map((queue) => {
+                const Icon = queue.icon;
+                return (
+                  <Link key={queue.status} href={`/internal/founding-beta?status=${queue.status}`} className="group border border-[#0B2D5C] bg-[#E6E6E7] p-5 shadow-[0_10px_24px_rgba(11,45,92,0.08)] transition hover:bg-white sm:p-6">
+                    <div className="flex items-start justify-between gap-4">
+                      <span className="border border-[#C92027] bg-white p-2.5 text-[#C92027]"><Icon className="h-6 w-6" aria-hidden="true" /></span>
+                      <span className="text-4xl font-semibold text-[#0B2D5C]">{counts[queue.status]}</span>
+                    </div>
+                    <h3 className="mt-5 text-xl font-semibold text-[#0B2D5C]">{queue.label}</h3>
+                    <p className="mt-2 text-sm leading-relaxed text-black">{queue.description}</p>
+                    <span className="mt-5 inline-flex items-center gap-2 text-sm font-semibold text-[#C92027]">Open queue <ArrowRight className="h-4 w-4 transition group-hover:translate-x-1" aria-hidden="true" /></span>
+                  </Link>
+                );
+              })}
+            </div>
+          </section>
+          <section className="mt-9" aria-labelledby="beta-history-heading">
+            <h2 id="beta-history-heading" className="text-2xl font-semibold text-[#0B2D5C]">Completed and history</h2>
+            <div className="mt-4 grid gap-4 md:grid-cols-2">
+              {QUEUES.filter((queue) => queue.group === 'history').map((queue) => {
+                const Icon = queue.icon;
+                return (
+                  <Link key={queue.status} href={`/internal/founding-beta?status=${queue.status}`} className="group border border-[#0B2D5C] bg-white p-5 transition hover:bg-[#E6E6E7] sm:p-6">
+                    <div className="flex items-start justify-between gap-4"><Icon className="h-6 w-6 text-[#0B2D5C]" aria-hidden="true" /><span className="text-3xl font-semibold text-[#0B2D5C]">{counts[queue.status]}</span></div>
+                    <h3 className="mt-4 text-lg font-semibold text-[#0B2D5C]">{queue.label}</h3>
+                    <p className="mt-2 text-sm text-black">{queue.description}</p>
+                    <span className="mt-4 inline-flex items-center gap-2 text-sm font-semibold text-[#0B2D5C]">View records <ArrowRight className="h-4 w-4 transition group-hover:translate-x-1" aria-hidden="true" /></span>
+                  </Link>
+                );
+              })}
+            </div>
+          </section>
+        </>
+      ) : (
+        <section className="mt-8 border-b border-[#C9CBCE] pb-5">
+          <p className="text-xs font-semibold uppercase tracking-[0.14em] text-[#C92027]">Selected queue</p>
+          <div className="mt-2 flex flex-wrap items-end justify-between gap-3">
+            <div><h2 className="text-2xl font-semibold text-[#0B2D5C]">{activeQueue?.label}</h2><p className="mt-1 text-sm text-black">{activeQueue?.description}</p></div>
+            <p className="text-lg font-semibold text-[#0B2D5C]">{visibleRequests.length} {visibleRequests.length === 1 ? 'record' : 'records'}</p>
+          </div>
+        </section>
+      )}
 
       {loadError ? <p role="alert" className="mt-6 border border-[#C92027] bg-[#FFF5F4] p-4 text-[#8F1D1D]">{loadError}</p> : null}
-      {!loadError && requests.length === 0 ? <section className="mt-6 border border-[#2E7D5B] bg-[#F0F8F4] px-6 py-12 text-center"><CheckCircle2 className="mx-auto h-11 w-11 text-[#2E7D5B]" /><h2 className="mt-4 text-2xl font-semibold text-[#0B2D5C]">No requests yet</h2><p className="mt-2 text-black">Share the Founding Beta request page to begin building the cohort.</p></section> : null}
+      {!loadError && status && visibleRequests.length === 0 ? <section className="mt-6 border border-[#2E7D5B] bg-[#F0F8F4] px-6 py-12 text-center"><CheckCircle2 className="mx-auto h-11 w-11 text-[#2E7D5B]" /><h2 className="mt-4 text-2xl font-semibold text-[#0B2D5C]">This queue is clear</h2><p className="mt-2 text-black">There are no {activeQueue?.label.toLowerCase()} records right now.</p></section> : null}
 
-      <section className="mt-6 grid gap-5 lg:grid-cols-2" aria-label="Founding Beta request queue">
-        {requests.map((request) => (
+      {status ? <section className="mt-6 grid gap-5 lg:grid-cols-2" aria-label={`${activeQueue?.label ?? 'Founding Beta'} queue`}>
+        {visibleRequests.map((request) => (
           <article key={request.id} className="border border-[#0B2D5C] bg-[#E6E6E7] p-5 shadow-[0_12px_32px_rgba(11,45,92,0.08)] sm:p-6">
             <div className="flex flex-wrap items-start justify-between gap-3">
               <div><p className="text-xs font-semibold uppercase tracking-[0.14em] text-[#C92027]">{request.status}</p><h2 className="mt-1 text-2xl font-semibold text-[#0B2D5C]">{request.firstName}</h2><a href={`mailto:${request.email}`} className="mt-1 block break-all text-sm text-[#0B2D5C] underline">{request.email}</a></div>
@@ -94,7 +166,7 @@ export default function FoundingBetaWorkspace({ requests, loadError }: { request
             {request.status !== 'declined' ? <ReviewForm request={request} /> : null}
           </article>
         ))}
-      </section>
+      </section> : null}
     </main>
   );
 }
