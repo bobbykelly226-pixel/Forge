@@ -6,8 +6,6 @@ import { reportedVideoMessageId } from '@/lib/operator/reported-video';
 import { useActionState, useState } from 'react';
 import {
   AlertTriangle,
-  ArrowLeft,
-  ArrowRight,
   Archive,
   CheckCircle2,
   Clock3,
@@ -15,7 +13,6 @@ import {
   FileWarning,
   Gavel,
   ShieldAlert,
-  ShieldCheck,
 } from 'lucide-react';
 
 import { reviewSafetyReportAction } from '@/app/actions/report-review';
@@ -166,27 +163,24 @@ export default function ReportReviewWorkspace({
   const visibleCases = status ? data?.cases.filter((item) => item.status === status) ?? [] : [];
 
   return (
-    <main className="mx-auto w-full max-w-[90rem] px-4 py-8 sm:px-6 lg:px-8 lg:py-12">
+    <main className="mx-auto w-full max-w-[90rem] px-4 py-7 sm:px-6 sm:py-10 lg:px-8">
       <header className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
         <div>
-          <div className="inline-flex items-center gap-2 rounded-full border border-[#0B2D5C]/10 bg-white/75 px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.14em] text-[#0B2D5C]">
-            <ShieldCheck className="h-4 w-4 text-[#D62828]" aria-hidden="true" />
-            MFA-protected operator workspace
-          </div>
-          <h1 className="mt-4 text-4xl font-semibold tracking-[-0.03em] text-[#0B2D5C] sm:text-5xl">
+          <div className="inline-flex border border-[#0B2D5C] bg-[#E6E6E7] px-3 py-2 text-[11px] font-semibold uppercase tracking-[0.12em] text-[#0B2D5C]">MFA-protected operator workspace</div>
+          <h1 className="mt-4 text-3xl font-semibold tracking-[-0.02em] text-[#0B2D5C] sm:text-4xl">
             Safety report review
           </h1>
-          <p className="mt-3 max-w-3xl text-base leading-relaxed text-[#5A6575]">
+          <p className="mt-2 max-w-3xl text-sm leading-relaxed text-black sm:text-base">
             Review private member reports and evidence, record bounded enforcement, preserve every decision, and track appeals.
           </p>
         </div>
         {status ? (
-          <Link href="/internal/report-review" className="inline-flex items-center gap-2 border border-[#0B2D5C] bg-white px-4 py-3 text-sm font-semibold text-[#0B2D5C]">
-            <ArrowLeft className="h-4 w-4" aria-hidden="true" />Back to Safety Reports
+          <Link href="/internal/report-review" className="inline-flex !bg-transparent text-sm font-semibold !text-[#0B2D5C] underline">
+            ← Back to Safety Reports
           </Link>
         ) : (
-          <Link href="/internal" className="inline-flex items-center gap-2 border border-[#0B2D5C] bg-white px-4 py-3 text-sm font-semibold text-[#0B2D5C]">
-            <ArrowLeft className="h-4 w-4" aria-hidden="true" />Back to Administrator Home
+          <Link href="/internal" className="inline-flex !bg-transparent text-sm font-semibold !text-[#0B2D5C] underline">
+            ← Back to Administrator Home
           </Link>
         )}
       </header>
@@ -196,15 +190,14 @@ export default function ReportReviewWorkspace({
           <section className="mt-8" aria-labelledby="reports-attention-heading">
             <div className="flex items-end justify-between gap-4">
               <div><p className="text-xs font-semibold uppercase tracking-[0.14em] text-[#C92027]">Case queues</p><h2 id="reports-attention-heading" className="mt-1 text-2xl font-semibold text-[#0B2D5C]">Needs attention</h2></div>
-              <p className="text-sm text-[#5C636B]">Open one queue at a time</p>
+              <p className="text-sm text-black">Open one queue at a time</p>
             </div>
             <div className="mt-4 grid gap-4 md:grid-cols-2">
               {CASE_QUEUES.filter((queue) => queue.group === 'attention').map((queue) => (
-                <Link key={queue.status} href={`/internal/report-review?status=${queue.status}`} className="group border border-[#0B2D5C] bg-[#E6E6E7] p-5 shadow-[0_10px_24px_rgba(11,45,92,0.08)] transition hover:bg-white sm:p-6">
-                  <div className="flex items-start justify-between gap-4"><FileWarning className="h-7 w-7 text-[#C92027]" aria-hidden="true" /><span className="text-4xl font-semibold text-[#0B2D5C]">{counts[queue.status]}</span></div>
-                  <h3 className="mt-5 text-xl font-semibold text-[#0B2D5C]">{STATUS_LABELS[queue.status]}</h3>
-                  <p className="mt-2 text-sm leading-relaxed text-black">{queue.description}</p>
-                  <span className="mt-5 inline-flex items-center gap-2 text-sm font-semibold text-[#C92027]">Open queue <ArrowRight className="h-4 w-4 transition group-hover:translate-x-1" aria-hidden="true" /></span>
+                <Link key={queue.status} href={`/internal/report-review?status=${queue.status}`} className="!bg-[#E6E6E7] p-4 shadow-[inset_0_0_0_1px_#0B2D5C] transition hover:!bg-white sm:p-5">
+                  <div className="flex items-center justify-between gap-4"><h3 className="text-lg font-semibold !text-[#0B2D5C]">{STATUS_LABELS[queue.status]}</h3><span className="text-2xl font-semibold !text-[#0B2D5C]">{counts[queue.status]}</span></div>
+                  <p className="mt-1 text-sm leading-snug text-black">{queue.description}</p>
+                  <span className="mt-3 inline-flex text-sm font-semibold !text-[#C92027]">Open →</span>
                 </Link>
               ))}
             </div>
@@ -213,11 +206,10 @@ export default function ReportReviewWorkspace({
             <h2 id="reports-history-heading" className="text-2xl font-semibold text-[#0B2D5C]">Completed and history</h2>
             <div className="mt-4 grid gap-4 md:grid-cols-2">
               {CASE_QUEUES.filter((queue) => queue.group === 'history').map((queue) => (
-                <Link key={queue.status} href={`/internal/report-review?status=${queue.status}`} className="group border border-[#0B2D5C] bg-white p-5 transition hover:bg-[#E6E6E7] sm:p-6">
-                  <div className="flex items-start justify-between gap-4"><Archive className="h-6 w-6 text-[#0B2D5C]" aria-hidden="true" /><span className="text-3xl font-semibold text-[#0B2D5C]">{counts[queue.status]}</span></div>
-                  <h3 className="mt-4 text-lg font-semibold text-[#0B2D5C]">{STATUS_LABELS[queue.status]}</h3>
-                  <p className="mt-2 text-sm text-black">{queue.description}</p>
-                  <span className="mt-4 inline-flex items-center gap-2 text-sm font-semibold text-[#0B2D5C]">View records <ArrowRight className="h-4 w-4 transition group-hover:translate-x-1" aria-hidden="true" /></span>
+                <Link key={queue.status} href={`/internal/report-review?status=${queue.status}`} className="!bg-[#E6E6E7] p-4 shadow-[inset_0_0_0_1px_#0B2D5C] transition hover:!bg-white sm:p-5">
+                  <div className="flex items-center justify-between gap-4"><h3 className="text-lg font-semibold !text-[#0B2D5C]">{STATUS_LABELS[queue.status]}</h3><span className="text-2xl font-semibold !text-[#0B2D5C]">{counts[queue.status]}</span></div>
+                  <p className="mt-1 text-sm leading-snug text-black">{queue.description}</p>
+                  <span className="mt-3 inline-flex text-sm font-semibold !text-[#0B2D5C]">View →</span>
                 </Link>
               ))}
             </div>
@@ -254,10 +246,10 @@ export default function ReportReviewWorkspace({
                   key={item.reportId}
                   href={`/internal/report-review?status=${status}&case=${encodeURIComponent(item.reportId)}`}
                   aria-current={item.reportId === selected.reportId ? 'page' : undefined}
-                  className={`block rounded-2xl border p-4 transition ${
+                  className={`block border p-4 transition ${
                     item.reportId === selected.reportId
-                      ? 'border-[#0B2D5C]/25 bg-[#EEF3F9]'
-                      : 'border-[#0B2D5C]/08 bg-white hover:border-[#0B2D5C]/18'
+                      ? 'border-[#0B2D5C] !bg-[#E6E6E7]'
+                      : 'border-[#0B2D5C]/30 !bg-white hover:!bg-[#E6E6E7]'
                   }`}
                 >
                   <div className="flex items-center justify-between gap-2">
@@ -266,7 +258,7 @@ export default function ReportReviewWorkspace({
                     </span>
                     <span className="text-[11px] text-[#7A8494]">{item.evidenceCount} evidence</span>
                   </div>
-                  <p className="mt-3 text-sm font-semibold text-[#0B2D5C]">{item.reasonLabel}</p>
+                  <p className="mt-3 text-sm font-semibold !text-[#0B2D5C]">{item.reasonLabel}</p>
                   <p className="mt-1 text-xs text-[#667085]">Against {item.reportedUserName}</p>
                   <p className="mt-2 font-mono text-[10px] text-[#98A2B3]">{item.reportId.slice(0, 8)}</p>
                 </Link>

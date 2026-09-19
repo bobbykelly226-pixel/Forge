@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { useActionState, useState } from 'react';
-import { ArrowLeft, ArrowRight, CheckCircle2, Clock3, Mail, ShieldCheck, UserCheck, UserX } from 'lucide-react';
+import { CheckCircle2 } from 'lucide-react';
 
 import {
   reviewFoundingBetaRequestAction,
@@ -47,13 +47,12 @@ const QUEUES: Array<{
   status: FoundingBetaRequestStatus;
   label: string;
   description: string;
-  icon: typeof Clock3;
   group: 'attention' | 'history';
 }> = [
-  { status: 'pending', label: 'Pending review', description: 'New requests waiting for a decision.', icon: Clock3, group: 'attention' },
-  { status: 'approved', label: 'Email pending', description: 'Approved requests whose invitation still needs attention.', icon: UserCheck, group: 'attention' },
-  { status: 'invited', label: 'Invited', description: 'Requests with an invitation already sent.', icon: Mail, group: 'history' },
-  { status: 'declined', label: 'Declined', description: 'Requests that were not invited.', icon: UserX, group: 'history' },
+  { status: 'pending', label: 'Pending review', description: 'New requests waiting for a decision.', group: 'attention' },
+  { status: 'approved', label: 'Email pending', description: 'Approved requests whose invitation still needs attention.', group: 'attention' },
+  { status: 'invited', label: 'Invited', description: 'Requests with an invitation already sent.', group: 'history' },
+  { status: 'declined', label: 'Declined', description: 'Requests that were not invited.', group: 'history' },
 ];
 
 export default function FoundingBetaWorkspace({
@@ -76,16 +75,15 @@ export default function FoundingBetaWorkspace({
   const visibleRequests = status ? requests.filter((request) => request.status === status) : [];
 
   return (
-    <main className="mx-auto w-full max-w-7xl px-4 py-8 sm:px-6 lg:px-8 lg:py-12">
+    <main className="mx-auto w-full max-w-5xl px-4 py-7 sm:px-6 sm:py-10 lg:px-8">
       <header className="flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <div className="inline-flex items-center gap-2 border border-[#0B2D5C]/15 bg-white px-3 py-2 text-xs font-semibold uppercase tracking-[0.14em] text-[#0B2D5C]"><ShieldCheck className="h-4 w-4 text-[#C92027]" /> MFA-protected administrator workspace</div>
-          <h1 className="mt-4 text-4xl font-semibold tracking-tight text-[#0B2D5C] sm:text-5xl">Founding Beta requests</h1>
-          <p className="mt-3 max-w-3xl leading-relaxed text-[#5C636B]">Review requests, build a balanced first cohort, and issue personal seven-day invitations. Submission details are private.</p>
+          <div className="inline-flex border border-[#0B2D5C] bg-[#E6E6E7] px-3 py-2 text-[11px] font-semibold uppercase tracking-[0.12em] text-[#0B2D5C]">MFA-protected administrator workspace</div>
+          <h1 className="mt-4 text-3xl font-semibold tracking-tight text-[#0B2D5C] sm:text-4xl">Founding Beta requests</h1>
+          <p className="mt-2 max-w-3xl text-sm leading-relaxed text-black sm:text-base">Review requests and issue personal seven-day invitations.</p>
         </div>
-        <Link href={status ? '/internal/founding-beta' : '/internal'} className="inline-flex items-center gap-2 border border-[#0B2D5C] bg-white px-4 py-3 text-sm font-semibold text-[#0B2D5C]">
-          <ArrowLeft className="h-4 w-4" aria-hidden="true" />
-          {status ? 'Back to Founding Beta' : 'Back to Administrator Home'}
+        <Link href={status ? '/internal/founding-beta' : '/internal'} className="inline-flex !bg-transparent text-sm font-semibold !text-[#0B2D5C] underline">
+          ← {status ? 'Back to Founding Beta' : 'Back to Administrator Home'}
         </Link>
       </header>
 
@@ -97,20 +95,15 @@ export default function FoundingBetaWorkspace({
                 <p className="text-xs font-semibold uppercase tracking-[0.14em] text-[#C92027]">Work queues</p>
                 <h2 id="beta-attention-heading" className="mt-1 text-2xl font-semibold text-[#0B2D5C]">Needs attention</h2>
               </div>
-              <p className="text-sm text-[#5C636B]">Open one queue at a time</p>
+              <p className="text-sm text-black">Open one queue at a time</p>
             </div>
             <div className="mt-4 grid gap-4 md:grid-cols-2">
               {QUEUES.filter((queue) => queue.group === 'attention').map((queue) => {
-                const Icon = queue.icon;
                 return (
-                  <Link key={queue.status} href={`/internal/founding-beta?status=${queue.status}`} className="group border border-[#0B2D5C] bg-[#E6E6E7] p-5 shadow-[0_10px_24px_rgba(11,45,92,0.08)] transition hover:bg-white sm:p-6">
-                    <div className="flex items-start justify-between gap-4">
-                      <span className="border border-[#C92027] bg-white p-2.5 text-[#C92027]"><Icon className="h-6 w-6" aria-hidden="true" /></span>
-                      <span className="text-4xl font-semibold text-[#0B2D5C]">{counts[queue.status]}</span>
-                    </div>
-                    <h3 className="mt-5 text-xl font-semibold text-[#0B2D5C]">{queue.label}</h3>
-                    <p className="mt-2 text-sm leading-relaxed text-black">{queue.description}</p>
-                    <span className="mt-5 inline-flex items-center gap-2 text-sm font-semibold text-[#C92027]">Open queue <ArrowRight className="h-4 w-4 transition group-hover:translate-x-1" aria-hidden="true" /></span>
+                  <Link key={queue.status} href={`/internal/founding-beta?status=${queue.status}`} className="!bg-[#E6E6E7] p-4 shadow-[inset_0_0_0_1px_#0B2D5C] transition hover:!bg-white sm:p-5">
+                    <div className="flex items-center justify-between gap-4"><h3 className="text-lg font-semibold !text-[#0B2D5C]">{queue.label}</h3><span className="text-2xl font-semibold !text-[#0B2D5C]">{counts[queue.status]}</span></div>
+                    <p className="mt-1 text-sm leading-snug text-black">{queue.description}</p>
+                    <span className="mt-3 inline-flex text-sm font-semibold !text-[#C92027]">Open →</span>
                   </Link>
                 );
               })}
@@ -120,13 +113,11 @@ export default function FoundingBetaWorkspace({
             <h2 id="beta-history-heading" className="text-2xl font-semibold text-[#0B2D5C]">Completed and history</h2>
             <div className="mt-4 grid gap-4 md:grid-cols-2">
               {QUEUES.filter((queue) => queue.group === 'history').map((queue) => {
-                const Icon = queue.icon;
                 return (
-                  <Link key={queue.status} href={`/internal/founding-beta?status=${queue.status}`} className="group border border-[#0B2D5C] bg-white p-5 transition hover:bg-[#E6E6E7] sm:p-6">
-                    <div className="flex items-start justify-between gap-4"><Icon className="h-6 w-6 text-[#0B2D5C]" aria-hidden="true" /><span className="text-3xl font-semibold text-[#0B2D5C]">{counts[queue.status]}</span></div>
-                    <h3 className="mt-4 text-lg font-semibold text-[#0B2D5C]">{queue.label}</h3>
-                    <p className="mt-2 text-sm text-black">{queue.description}</p>
-                    <span className="mt-4 inline-flex items-center gap-2 text-sm font-semibold text-[#0B2D5C]">View records <ArrowRight className="h-4 w-4 transition group-hover:translate-x-1" aria-hidden="true" /></span>
+                  <Link key={queue.status} href={`/internal/founding-beta?status=${queue.status}`} className="!bg-[#E6E6E7] p-4 shadow-[inset_0_0_0_1px_#0B2D5C] transition hover:!bg-white sm:p-5">
+                    <div className="flex items-center justify-between gap-4"><h3 className="text-lg font-semibold !text-[#0B2D5C]">{queue.label}</h3><span className="text-2xl font-semibold !text-[#0B2D5C]">{counts[queue.status]}</span></div>
+                    <p className="mt-1 text-sm leading-snug text-black">{queue.description}</p>
+                    <span className="mt-3 inline-flex text-sm font-semibold !text-[#0B2D5C]">View →</span>
                   </Link>
                 );
               })}

@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { useActionState } from 'react';
-import { ArrowLeft, Scale, ShieldCheck } from 'lucide-react';
+import { Scale } from 'lucide-react';
 
 import { updateAccountGovernanceAction, type GovernanceActionState } from '@/app/actions/account-governance';
 import type { AccountGovernanceRecord } from '@/lib/operator/account-governance';
@@ -12,14 +12,14 @@ const INITIAL: GovernanceActionState = { success: false, message: '' };
 export default function AccountGovernanceWorkspace({ email, record, error }: { email: string; record: AccountGovernanceRecord | null; error: string | null }) {
   const [state, action, pending] = useActionState(updateAccountGovernanceAction, INITIAL);
   return (
-    <main className="mx-auto w-full max-w-6xl px-4 py-10 sm:px-6 lg:px-8 lg:py-16">
+    <main className="mx-auto w-full max-w-6xl px-4 py-7 sm:px-6 sm:py-10 lg:px-8">
       <header className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
         <div>
-          <div className="inline-flex items-center gap-2 rounded-full border border-[#0B2D5C]/10 bg-white/75 px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.14em] text-[#0B2D5C]"><ShieldCheck className="h-4 w-4 text-[#D62828]" /> MFA-protected administrator workspace</div>
-          <h1 className="mt-5 font-[family-name:var(--font-discovery-display)] text-4xl font-semibold tracking-[-0.03em] text-[#0B2D5C] sm:text-5xl">Account governance</h1>
-          <p className="mt-3 max-w-2xl text-base leading-relaxed text-[#5A6575]">Manage retention and legal preservation without exposing these controls to members.</p>
+          <div className="inline-flex border border-[#0B2D5C] bg-[#E6E6E7] px-3 py-2 text-[11px] font-semibold uppercase tracking-[0.12em] text-[#0B2D5C]">MFA-protected administrator workspace</div>
+          <h1 className="mt-4 font-[family-name:var(--font-discovery-display)] text-3xl font-semibold tracking-[-0.02em] text-[#0B2D5C] sm:text-4xl">Account governance</h1>
+          <p className="mt-2 max-w-2xl text-sm leading-relaxed text-black sm:text-base">Manage retention and legal preservation without exposing these controls to members.</p>
         </div>
-        <Link href="/internal" className="inline-flex items-center gap-2 border border-[#0B2D5C] bg-white px-4 py-3 text-sm font-semibold text-[#0B2D5C]"><ArrowLeft className="h-4 w-4" aria-hidden="true" />Back to Administrator Home</Link>
+        <Link href="/internal" className="inline-flex !bg-transparent text-sm font-semibold !text-[#0B2D5C] underline">← Back to Administrator Home</Link>
       </header>
       <form method="get" className="mt-8 flex max-w-2xl gap-3 rounded-[1.5rem] border border-[#0B2D5C]/10 bg-white p-4">
         <label htmlFor="member-email" className="sr-only">Exact member email</label>

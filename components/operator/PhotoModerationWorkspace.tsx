@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { useActionState } from 'react';
-import { ArrowLeft, CheckCircle2, Clock3, ShieldCheck, XCircle } from 'lucide-react';
+import { CheckCircle2, Clock3, XCircle } from 'lucide-react';
 
 import {
   moderateProfilePhotoAction,
@@ -132,26 +132,22 @@ export default function PhotoModerationWorkspace({
   loadError?: string | null;
 }) {
   return (
-    <main className="mx-auto w-full max-w-6xl px-4 py-8 sm:px-6 lg:px-8 lg:py-12">
+    <main className="mx-auto w-full max-w-6xl px-4 py-7 sm:px-6 sm:py-10 lg:px-8">
       <div className="flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <div className="inline-flex items-center gap-2 rounded-full border border-[#0B2D5C]/10 bg-white/75 px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.14em] text-[#0B2D5C]">
-            <ShieldCheck className="h-4 w-4 text-[#D62828]" aria-hidden="true" />
-            Operator only
-          </div>
-          <h1 className="mt-4 text-4xl font-semibold tracking-[-0.03em] text-[#0B2D5C] sm:text-5xl">
+          <div className="inline-flex border border-[#0B2D5C] bg-[#E6E6E7] px-3 py-2 text-[11px] font-semibold uppercase tracking-[0.12em] text-[#0B2D5C]">Operator only</div>
+          <h1 className="mt-4 text-3xl font-semibold tracking-[-0.02em] text-[#0B2D5C] sm:text-4xl">
             Photo moderation
           </h1>
-          <p className="mt-3 max-w-2xl text-base leading-relaxed text-[#5A6575]">
+          <p className="mt-2 max-w-2xl text-sm leading-relaxed text-black sm:text-base">
             Review every new or replaced profile photo before it can appear to another member.
           </p>
         </div>
         <Link
           href="/internal"
-          className="inline-flex w-fit items-center justify-center gap-2 border border-[#0B2D5C] bg-white px-4 py-3 text-sm font-semibold text-[#0B2D5C] transition hover:bg-[#E6E6E7]"
+          className="inline-flex w-fit !bg-transparent text-sm font-semibold !text-[#0B2D5C] underline"
         >
-          <ArrowLeft className="h-4 w-4" aria-hidden="true" />
-          Back to Administrator Home
+          ← Back to Administrator Home
         </Link>
       </div>
 

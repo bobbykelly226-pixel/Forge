@@ -97,7 +97,7 @@ export default async function AdministratorHomePage() {
                 className="group !bg-[#E6E6E7] p-4 text-[#0B2D5C] shadow-[inset_0_0_0_1px_#0B2D5C] transition hover:!bg-white sm:p-5"
               >
                 <div className="flex items-center justify-between gap-4">
-                  <h2 className="text-lg font-semibold text-[#0B2D5C]">{tool.title}</h2>
+                  <h2 className="text-lg font-semibold !text-[#0B2D5C]">{tool.title}</h2>
                   <span className="shrink-0 text-sm font-semibold text-[#C92027]">Open →</span>
                 </div>
                 <p className="mt-1 text-sm leading-snug text-black">{tool.description}</p>
@@ -105,7 +105,7 @@ export default async function AdministratorHomePage() {
           ))}
         </section>
 
-        <Link href="/" className="mt-6 inline-flex text-sm font-semibold text-[#0B2D5C] underline">
+        <Link href="/" className="mt-6 inline-flex !bg-transparent text-sm font-semibold !text-[#0B2D5C] underline">
           Return to the Forge homepage
         </Link>
       </main>
