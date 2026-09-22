@@ -59,12 +59,12 @@ export default function LegalAcceptanceForm({
       })}
 
       {allAccepted ? (
-        <Link
+        <a
           href={redirectTo}
           className="flex min-h-14 w-full items-center justify-center rounded-md border border-[#0B2D5C] bg-[#0B2D5C] px-6 py-4 text-lg font-semibold text-white transition hover:bg-[#0A2540] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#C92027] focus-visible:ring-offset-2"
         >
           Continue to Forge
-        </Link>
+        </a>
       ) : (
         <button
           type="button"

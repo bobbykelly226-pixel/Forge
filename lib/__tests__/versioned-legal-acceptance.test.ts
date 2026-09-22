@@ -112,6 +112,10 @@ describe('versioned legal and sensitive-data acceptance', () => {
   it('locks Continue to Forge until every current document is accepted', () => {
     assert.match(acceptanceForm, /const allAccepted = CURRENT_LEGAL_DOCUMENTS\.every/);
     assert.match(acceptanceForm, /Continue to Forge/);
+    assert.match(
+      acceptanceForm,
+      /allAccepted[\s\S]*<a[\s\S]*href=\{redirectTo\}[\s\S]*Continue to Forge/
+    );
     assert.match(acceptanceForm, /type="button"[\s\S]*disabled/);
     assert.doesNotMatch(acceptancePage, /if \(status\.accepted\)[\s\S]*redirect\(redirectTo\)/);
   });
