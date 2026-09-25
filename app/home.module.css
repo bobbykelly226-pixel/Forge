@@ -16,18 +16,12 @@
 }
 
 .heroImage {
-  grid-column: 2;
-  grid-row: 1;
-  min-height: 555px;
-  background: url('/hero-couple.png') right center / cover no-repeat;
-}
-
-.heroImage::after {
-  content: '';
   position: absolute;
-  inset: 0 0 0 42%;
-  background: linear-gradient(90deg, var(--cream), transparent 39%);
-  pointer-events: none;
+  inset: 0 0 0 auto;
+  width: 68%;
+  background: url('/hero-couple.png') right center / cover no-repeat;
+  -webkit-mask-image: linear-gradient(90deg, transparent 0%, #000 42%);
+  mask-image: linear-gradient(90deg, transparent 0%, #000 42%);
 }
 
 .heroCopy {
@@ -255,9 +249,16 @@
 
 @media (max-width: 700px) {
   .hero { display: flex; flex-direction: column; min-height: 0; }
-  .heroImage { min-height: 350px; background: url('/hero-mobile.JPG') center 45% / cover no-repeat; }
-  .heroImage::after { display: none; }
-  .heroCopy { margin-top: -22px; padding: 38px 24px 46px; border-radius: 22px 22px 0 0; background: var(--cream); }
+  .heroImage {
+    position: relative;
+    inset: auto;
+    width: 100%;
+    min-height: 350px;
+    background: url('/hero-mobile.JPG') center 45% / cover no-repeat;
+    -webkit-mask-image: linear-gradient(180deg, #000 0%, #000 72%, transparent 100%);
+    mask-image: linear-gradient(180deg, #000 0%, #000 72%, transparent 100%);
+  }
+  .heroCopy { margin-top: -24px; padding: 38px 24px 46px; }
   .heroCopy::before { right: -245px; top: -285px; }
   .heroAccent { margin-bottom: 24px; }
   .hero h1 { font-size: clamp(2.6rem, 8.6vw, 3.5rem); }
