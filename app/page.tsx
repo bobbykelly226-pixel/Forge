@@ -1,138 +1,79 @@
 import Header from '../components/Header';
 import Link from 'next/link';
+import styles from './home.module.css';
+
+const coreValues = [
+  { title: 'FAITH', icon: '/icon-faith.png', description: 'Build a relationship with a foundation that matters.' },
+  { title: 'FAMILY', icon: '/icon-family.png', description: 'Find someone who values family as much as you do.' },
+  { title: 'SERVICE', icon: '/icon-service.png', description: 'Connect with people who lead with purpose and give with heart.' },
+  { title: 'COMMITMENT', icon: '/icon-commitment.png', description: 'Look for relationships built on loyalty, trust, and lasting commitment.' },
+  { title: 'INTEGRITY', icon: '/icon-integrity.png', description: 'Find someone whose actions match their values and words.' },
+  { title: 'RESPONSIBILITY', icon: '/icon-responsibility.png', description: 'Connect with people who take ownership of their lives and future.' },
+];
 
 export default function Home() {
   return (
-    <div className="min-h-screen bg-[#F8F6F2] text-[#222222]">
+    <div className={styles.home}>
       <Header />
 
-      {/* Mobile Hero */}
-      <div className="md:hidden">
-        <div className="relative h-[360px] bg-cover bg-center" style={{ backgroundImage: "url('/hero-mobile.JPG')" }}>
-          <div className="absolute inset-0 bg-gradient-to-b from-black/30 to-transparent"></div>
-        </div>
-
-        <div className="px-6 -mt-8 relative z-10 bg-[#F8F6F2] rounded-t-3xl pt-10 pb-12">
-          <h1 className="text-5xl font-bold tracking-tight text-[#0B2D5C] leading-none mb-6">
-            Strong Values.<br />
-            <span className="text-[#D62828]">Strong Connections.</span>
-          </h1>
-          <p className="text-[19px] text-[#444444] leading-relaxed">
-            Forge was built for people who believe the strongest relationships begin with shared values. 
-            If you&apos;re looking for something rooted in faith, family, commitment, and purpose, you&apos;re in the right place.
-          </p>
-        </div>
-      </div>
-
-      {/* Desktop Hero */}
-      <div className="hidden md:block relative w-full h-[410px] flex items-center bg-cover bg-[center_28%]" style={{ backgroundImage: "url('/hero-couple.png')" }}>
-        <div className="absolute inset-0 bg-gradient-to-r from-[#F8F6F2] via-[#F8F6F2]/96 to-transparent" style={{ width: '78%' }}></div>
-        <div className="relative z-10 max-w-4xl px-6 md:pl-20 text-left pt-8 md:pt-12">
-          <h1 className="text-5xl sm:text-6xl md:text-7xl font-bold tracking-[-0.02em] leading-none text-[#0B2D5C] mb-6">
-            Strong Values.<br />
-            <span className="text-[#D62828]">Strong Connections.</span>
-          </h1>
-          <p className="text-lg sm:text-xl text-[#444444] max-w-lg">
-            Forge was built for people who believe the strongest relationships begin with shared values. 
-            If you&apos;re looking for something rooted in faith, family, commitment, and purpose, you&apos;re in the right place.
-          </p>
-        </div>
-      </div>
-
-      {/* Horizontal Values Section */}
-      <div className="bg-[#F4F4F4] py-16">
-        <div className="max-w-6xl mx-auto px-6">
-          <h2 className="text-4xl font-bold tracking-tight text-[#0B2D5C] text-center mb-12">Our Core Values</h2>
-          <div className="grid grid-cols-2 md:grid-cols-6 gap-8 md:gap-6">
-            <div className="text-center px-4 flex flex-col items-center">
-              <div className="h-28 flex items-center justify-center mb-4">
-                <img src="/icon-faith.png" alt="Faith" className="w-20 h-20 object-contain" />
-              </div>
-              <h3 className="font-semibold text-[#0B2D5C] mb-2">FAITH</h3>
-              <p className="text-sm text-[#444444] text-center">Build a relationship with a foundation that matters.</p>
-            </div>
-            <div className="text-center px-4 flex flex-col items-center">
-              <div className="h-28 flex items-center justify-center mb-4">
-                <img src="/icon-family.png" alt="Family" className="w-24 h-24 object-contain" />
-              </div>
-              <h3 className="font-semibold text-[#0B2D5C] mb-2">FAMILY</h3>
-              <p className="text-sm text-[#444444] text-center">Find someone who values family as much as you do.</p>
-            </div>
-            <div className="text-center px-4 flex flex-col items-center">
-              <div className="h-28 flex items-center justify-center mb-4">
-                <img src="/icon-service.png" alt="Service" className="w-24 h-24 object-contain" />
-              </div>
-              <h3 className="font-semibold text-[#0B2D5C] mb-2">SERVICE</h3>
-              <p className="text-sm text-[#444444] text-center">Connect with people who lead with purpose and give with heart.</p>
-            </div>
-            <div className="text-center px-4 flex flex-col items-center">
-              <div className="h-28 flex items-center justify-center mb-4">
-                <img src="/icon-commitment.png" alt="Commitment" className="w-20 h-20 object-contain" />
-              </div>
-              <h3 className="font-semibold text-[#0B2D5C] mb-2">COMMITMENT</h3>
-              <p className="text-sm text-[#444444] text-center">Look for relationships built on loyalty, trust, and lasting commitment.</p>
-            </div>
-            <div className="text-center px-4 flex flex-col items-center">
-              <div className="h-28 flex items-center justify-center mb-4">
-                <img src="/icon-integrity.png" alt="Integrity" className="w-20 h-20 object-contain" />
-              </div>
-              <h3 className="font-semibold text-[#0B2D5C] mb-2">INTEGRITY</h3>
-              <p className="text-sm text-[#444444] text-center">Find someone whose actions match their values and words.</p>
-            </div>
-            <div className="text-center px-4 flex flex-col items-center">
-              <div className="h-28 flex items-center justify-center mb-4">
-                <img src="/icon-responsibility.png" alt="Responsibility" className="w-24 h-24 object-contain" />
-              </div>
-              <h3 className="font-semibold text-[#0B2D5C] mb-2">RESPONSIBILITY</h3>
-              <p className="text-sm text-[#444444] text-center">Connect with people who take ownership of their lives and future.</p>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* About Forge Section */}
-      <div className="bg-white py-20">
-        <div className="max-w-6xl mx-auto px-6 grid md:grid-cols-2 gap-12 items-center">
-          <div>
-            <p className="text-[#D62828] uppercase tracking-widest text-sm font-medium mb-3">ABOUT FORGE</p>
-            <h2 className="text-4xl sm:text-5xl leading-tight font-bold tracking-tight text-[#0B2D5C] mb-8">
-              Meaningful relationships don’t happen by chance.<br />
-              <span className="text-[#D62828]">They’re forged by design.</span>
-            </h2>
-            <p className="text-lg text-[#444444] leading-relaxed mb-8">
-              Forge is a values-first dating platform for people who are tired of surface-level connections and ready for something real. 
-              We believe the strongest relationships are built on shared values, mutual respect, and a commitment to something greater than ourselves.
+      <main>
+        <section className={styles.hero} aria-labelledby="home-heading">
+          <div className={styles.heroImage} aria-hidden="true" />
+          <div className={styles.heroCopy}>
+            <span className={styles.heroAccent} aria-hidden="true" />
+            <h1 id="home-heading">Strong Values.<br /><span>Strong Connections.</span></h1>
+            <p>
+              Forge was built for people who believe the strongest relationships begin with shared values.
+              If you&apos;re looking for something rooted in faith, family, commitment, and purpose, you&apos;re in the right place.
             </p>
-            <a href="/about" className="inline-flex items-center gap-3 bg-[#0B2D5C] hover:bg-[#0A2540] text-white px-8 py-4 rounded-xl font-semibold transition">
-              Learn More About Forge →
-            </a>
           </div>
-          <div className="flex justify-center md:justify-end">
-            <img src="/Logos/forgedinlife-full-dark.png" alt="Forge" className="max-w-[380px] w-full" />
-          </div>
-        </div>
-      </div>
+          <div className={styles.heroRule} aria-hidden="true" />
+        </section>
 
-      {/* Final CTA */}
-      <div className="bg-[#0B2D5C] py-20">
-        <div className="max-w-3xl mx-auto px-6 text-center">
-          <h2 className="text-3xl sm:text-4xl font-bold tracking-tight text-white mb-8 leading-tight">
-            Ready to find something more meaningful?
-          </h2>
-          <Link
-            href="/founding-beta"
-            className="inline-block bg-[#D62828] hover:bg-[#A61F1F] text-white px-10 py-4 rounded-2xl font-semibold text-lg transition"
-          >
-            Request Founding Beta Access
-          </Link>
-          <p className="mt-6 text-white/80 text-base">
-            Already have an account?{' '}
-            <Link href="/login" className="text-white font-semibold underline underline-offset-4 hover:text-[#D62828] transition">
-              Log in
-            </Link>
-          </p>
-        </div>
-      </div>
+        <section className={styles.values} aria-labelledby="values-heading">
+          <div className={styles.sectionShell}>
+            <div className={styles.sectionIntro}>
+              <span className={styles.sectionEyebrow}>WHAT GUIDES US</span>
+              <h2 id="values-heading">Our Core Values</h2>
+            </div>
+            <div className={styles.valueGrid}>
+              {coreValues.map((value, index) => (
+                <article className={styles.valueCard} key={value.title}>
+                  <span className={styles.valueNumber} aria-hidden="true">0{index + 1}</span>
+                  <div className={styles.valueIcon}><img src={value.icon} alt="" /></div>
+                  <h3>{value.title}</h3>
+                  <p>{value.description}</p>
+                </article>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        <section className={styles.about} aria-labelledby="about-heading">
+          <div className={styles.aboutGrid}>
+            <div className={styles.aboutCopy}>
+              <span className={styles.sectionEyebrow}>ABOUT FORGE</span>
+              <h2 id="about-heading">Meaningful relationships don’t happen by chance.<br /><span>They’re forged by design.</span></h2>
+              <p>
+                Forge is a values-first dating platform for people who are tired of surface-level connections and ready for something real.
+                We believe the strongest relationships are built on shared values, mutual respect, and a commitment to something greater than ourselves.
+              </p>
+              <Link href="/about" className={styles.aboutLink}>Learn More About Forge <span aria-hidden="true">→</span></Link>
+            </div>
+            <div className={styles.aboutMark}>
+              <img src="/Logos/forgedinlife-full-dark.png" alt="Forge" />
+            </div>
+          </div>
+        </section>
+
+        <section className={styles.invitation} aria-labelledby="invitation-heading">
+          <div className={styles.invitationInner}>
+            <h2 id="invitation-heading">Ready to find something more meaningful?</h2>
+            <Link href="/founding-beta" className={styles.invitationLink}>Request Founding Beta Access</Link>
+            <p>Already have an account? <Link href="/login">Log in</Link></p>
+          </div>
+        </section>
+      </main>
 
       {/* Footer */}
       <footer className="bg-[#0B2D5C] text-white/80 py-8 border-t border-white/10">
