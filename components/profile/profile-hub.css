@@ -31,16 +31,22 @@
   justify-content: space-between;
   gap: 20px;
 }
+.profile-hub-identity-row > :first-child {
+  flex: 0 0 min(28%, 275px);
+}
 .profile-hub-gallery {
   display: flex;
-  flex: none;
+  flex: 1;
+  min-width: 0;
   gap: 8px;
 }
 .forge-profile-theme .profile-hub-photo-slot {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: clamp(50px, 5vw, 68px);
+  flex: 1 1 0;
+  width: 0;
+  min-width: 0;
   aspect-ratio: 1;
   overflow: hidden;
   padding: 0;
@@ -119,13 +125,14 @@
 }
 @media (max-width: 640px) {
   .profile-hub-identity-row { align-items: flex-start; flex-direction: column; }
+  .profile-hub-identity-row > :first-child { flex: none; }
   .profile-hub-gallery { width: 100%; }
-  .forge-profile-theme .profile-hub-photo-slot { flex: 1; width: auto; min-width: 0; }
   .profile-hub-actions { align-items: stretch; flex-direction: column; }
   .forge-profile-theme .profile-hub-photo-action { width: 100%; }
   .profile-hub-summary::before { right: -180px; }
 }
 @media (min-width: 641px) and (max-width: 1050px) {
   .profile-hub-identity-row { align-items: flex-start; flex-direction: column; }
-  .forge-profile-theme .profile-hub-photo-slot { width: 64px; }
+  .profile-hub-identity-row > :first-child { flex: none; }
+  .profile-hub-gallery { width: min(100%, 700px); }
 }
