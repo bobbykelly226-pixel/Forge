@@ -27,9 +27,11 @@ export default function ProfileCompatibilityCard({
       : action === 'continue'
         ? PROFILE_CARD_COPY.continue
         : PROFILE_CARD_COPY.start;
+  const categoryPercent = totalCategories > 0 ? Math.min(100, Math.round(completedCategories / totalCategories * 100)) : 0;
+  const questionPercent = totalEligibleQuestions > 0 ? Math.min(100, Math.round(completedQuestions / totalEligibleQuestions * 100)) : 0;
 
   return (
-    <section className="rounded-[1.75rem] border border-[#0B2D5C]/08 bg-white/90 p-6 shadow-[0_12px_40px_rgba(11,45,92,0.05)]">
+    <section data-profile-compatibility className="rounded-[1.75rem] border border-[#0B2D5C]/08 bg-white/90 p-6 shadow-[0_12px_40px_rgba(11,45,92,0.05)]">
       <p className="text-xs font-semibold uppercase tracking-[0.14em] text-[#D62828]">
         {PROFILE_CARD_COPY.eyebrow}
       </p>
@@ -47,12 +49,16 @@ export default function ProfileCompatibilityCard({
         {PROFILE_CARD_COPY.supporting}
       </p>
       </> : null}
-      <p className="mt-4 text-sm font-medium text-[#0B2D5C]">
-        {completedCategories} of {totalCategories} categories complete
-      </p>
-      <p className="mt-1 text-sm font-medium text-[#0B2D5C]">
-        {completedQuestions} of {totalEligibleQuestions} questions complete
-      </p>
+      <div className="mt-5 space-y-3">
+        <div>
+          <p className="text-sm font-medium text-[#0B2D5C]">{completedCategories} of {totalCategories} categories complete</p>
+          {compact ? <div className="profile-progress-track mt-1.5" role="progressbar" aria-label="Compatibility categories complete" aria-valuenow={completedCategories} aria-valuemin={0} aria-valuemax={totalCategories}><span style={{ width: `${categoryPercent}%` }} /></div> : null}
+        </div>
+        <div>
+          <p className="text-sm font-medium text-[#0B2D5C]">{completedQuestions} of {totalEligibleQuestions} questions complete</p>
+          {compact ? <div className="profile-progress-track mt-1.5" role="progressbar" aria-label="Compatibility questions complete" aria-valuenow={completedQuestions} aria-valuemin={0} aria-valuemax={totalEligibleQuestions}><span style={{ width: `${questionPercent}%` }} /></div> : null}
+        </div>
+      </div>
       <Link
         href="/compatibility-profile"
         className="mt-5 inline-flex w-full items-center justify-center rounded-2xl bg-[#0B2D5C] px-5 py-3.5 text-sm font-semibold text-white transition hover:bg-[#0A2540] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0B2D5C]"

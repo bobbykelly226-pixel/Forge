@@ -1,0 +1,83 @@
+/* Member Profile styling is scoped to this page so other app screens retain their layout. */
+.forge-profile-theme .profile-hub-summary {
+  position: relative;
+  overflow: hidden;
+  border-color: #0B2D5C;
+  background: linear-gradient(125deg, #f7f7f7 0%, #e6e6e7 72%) !important;
+}
+.profile-hub-summary::before {
+  content: '';
+  position: absolute;
+  top: -125px;
+  right: -95px;
+  width: 285px;
+  height: 285px;
+  border: 1px solid rgba(11, 45, 92, .12);
+  border-radius: 50%;
+  pointer-events: none;
+}
+.profile-hub-eyebrow {
+  position: relative;
+  margin: 0 0 22px;
+  color: #C92027;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: .16em;
+}
+.profile-hub-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 16px;
+  margin-top: 22px;
+}
+.forge-profile-theme .profile-hub-photo-action {
+  min-width: 170px;
+  background: #0B2D5C !important;
+  color: #FFFFFF !important;
+}
+.forge-profile-theme .profile-hub-signal-action {
+  color: #0B2D5C !important;
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+.forge-profile-theme .profile-hub [data-profile-edit-group] {
+  border-left: 4px solid #0B2D5C;
+  transition: box-shadow .2s ease, transform .2s ease;
+}
+.forge-profile-theme .profile-hub [data-profile-edit-group]:nth-of-type(even) {
+  border-left-color: #C92027;
+}
+.forge-profile-theme .profile-hub [data-profile-edit-group]:hover {
+  box-shadow: 0 8px 20px rgba(11, 45, 92, .09);
+}
+.profile-edit-number {
+  flex: none;
+  padding-top: 2px;
+  color: #C92027;
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: 1.1rem;
+  font-style: italic;
+  line-height: 1.2;
+}
+.forge-profile-theme .profile-hub [data-profile-compatibility] {
+  border: 1px solid #0B2D5C;
+  border-radius: 6px;
+}
+.profile-hub .profile-progress-track {
+  height: 6px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: #C9CBCE;
+}
+.profile-hub .profile-progress-track span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: #C92027;
+}
+@media (max-width: 640px) {
+  .profile-hub-actions { align-items: stretch; flex-direction: column; }
+  .forge-profile-theme .profile-hub-photo-action { width: 100%; }
+  .profile-hub-summary::before { right: -180px; }
+}

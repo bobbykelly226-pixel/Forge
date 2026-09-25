@@ -360,12 +360,15 @@ export default function ProfileWorkspace({
           </p>
         </div>
 
-        {PROFILE_EDIT_GROUPS.map(group => (
-          <section key={group.id} tabIndex={-1} style={{ scrollMarginTop: 24 }} ref={node => { groupRefs.current[group.id] = node; }} className="overflow-hidden rounded-[6px] border border-[#0B2D5C] bg-[#E6E6E7]">
+        {PROFILE_EDIT_GROUPS.map((group, index) => (
+          <section key={group.id} data-profile-edit-group tabIndex={-1} style={{ scrollMarginTop: 24 }} ref={node => { groupRefs.current[group.id] = node; }} className="overflow-hidden rounded-[6px] border border-[#0B2D5C] bg-[#E6E6E7]">
             <div className="flex items-center justify-between gap-4 p-5">
-              <div className="min-w-0">
-                <h3 className="text-xl font-semibold text-[#0B2D5C]">{group.title}</h3>
-                <p className="mt-1 text-sm text-black">{group.sections.map(id => PROFILE_SECTIONS.find(section => section.id === id)?.title).join(' · ')}</p>
+              <div className="min-w-0 flex items-start gap-4">
+                <span className="profile-edit-number" aria-hidden="true">0{index + 1}</span>
+                <div className="min-w-0">
+                  <h3 className="text-xl font-semibold text-[#0B2D5C]">{group.title}</h3>
+                  <p className="mt-1 text-sm text-black">{group.sections.map(id => PROFILE_SECTIONS.find(section => section.id === id)?.title).join(' · ')}</p>
+                </div>
               </div>
               <button type="button" disabled={Object.values(sectionStatus).includes('saving')}
                 aria-label={`${openGroup === group.id ? 'Close' : 'Edit'} ${group.title}`} aria-expanded={openGroup === group.id} aria-controls={`group-${group.id}`}
