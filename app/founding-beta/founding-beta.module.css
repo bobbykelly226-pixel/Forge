@@ -235,7 +235,7 @@
   border-left: 3px solid var(--red);
 }
 .requestCopy .eyebrow::before { display: none; }
-.request h2 {
+.requestCopy h2 {
   margin: 18px 0 24px;
   font-family: Arial, Helvetica, sans-serif;
   font-size: clamp(2.35rem, 3.6vw, 3.4rem);
@@ -243,7 +243,7 @@
   letter-spacing: -.048em;
   line-height: 1.13;
 }
-.request h2 span {
+.requestCopy h2 span {
   color: var(--red);
   font-family: Georgia, 'Times New Roman', serif;
   font-style: italic;
