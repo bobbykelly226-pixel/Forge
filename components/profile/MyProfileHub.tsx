@@ -66,7 +66,12 @@ export default function MyProfileHub({
   compatibilityCard,
 }: MyProfileHubProps) {
   const [photoUrl, setPhotoUrl] = useState(initialPhotoUrl);
+  const [profilePhotos, setProfilePhotos] = useState(photos);
   const workspaceRef = useRef<ProfileWorkspaceHandle>(null);
+  const additionalPhotos = [...profilePhotos]
+    .filter((photo) => !photo.is_primary)
+    .sort((a, b) => a.display_order - b.display_order)
+    .slice(0, 5);
 
   return (
     <>
@@ -143,36 +148,58 @@ export default function MyProfileHub({
             <div className="space-y-5">
               <section className="profile-hub-summary rounded-[6px] border border-[#0B2D5C] bg-white/90 p-6 shadow-[0_12px_40px_rgba(11,45,92,0.05)]">
                 <p className="profile-hub-eyebrow">YOUR PROFILE</p>
-                <div className="flex items-center gap-4">
-                  {photoUrl ? (
-                    <img
-                      src={photoUrl}
-                      alt=""
-                      className="h-20 w-20 shrink-0 rounded-full border-4 border-white object-cover shadow-[0_8px_24px_rgba(11,45,92,0.12)]"
-                    />
-                  ) : (
-                    <div
-                      className="h-20 w-20 shrink-0 rounded-full border-4 border-white shadow-[0_8px_24px_rgba(11,45,92,0.12)]"
-                      style={{
-                        background:
-                          'linear-gradient(160deg, #1B2F4A 0%, #3E566F 38%, #A8927D 72%, #E6D5C3 100%)',
-                      }}
-                      role="img"
-                      aria-label={`${displayName} profile photo`}
-                    />
-                  )}
-                  <div className="min-w-0">
-                    <h1
-                      className="text-[clamp(1.85rem,3vw,2.4rem)] leading-none tracking-[-0.03em] text-[#0B2D5C]"
-                      style={{
-                        fontFamily: 'var(--font-discovery-display), Georgia, serif',
-                      }}
-                    >
-                      {displayName}
-                    </h1>
-                    <p className="mt-2 text-sm text-[#5A6575]">
-                      {location || 'Add your location'}
-                    </p>
+                <div className="profile-hub-identity-row">
+                  <div className="flex min-w-0 items-center gap-4">
+                    {photoUrl ? (
+                      <img
+                        src={photoUrl}
+                        alt=""
+                        className="h-20 w-20 shrink-0 rounded-full border-4 border-white object-cover shadow-[0_8px_24px_rgba(11,45,92,0.12)]"
+                      />
+                    ) : (
+                      <div
+                        className="h-20 w-20 shrink-0 rounded-full border-4 border-white shadow-[0_8px_24px_rgba(11,45,92,0.12)]"
+                        style={{
+                          background:
+                            'linear-gradient(160deg, #1B2F4A 0%, #3E566F 38%, #A8927D 72%, #E6D5C3 100%)',
+                        }}
+                        role="img"
+                        aria-label={`${displayName} profile photo`}
+                      />
+                    )}
+                    <div className="min-w-0">
+                      <h1
+                        className="text-[clamp(1.85rem,3vw,2.4rem)] leading-none tracking-[-0.03em] text-[#0B2D5C]"
+                        style={{
+                          fontFamily: 'var(--font-discovery-display), Georgia, serif',
+                        }}
+                      >
+                        {displayName}
+                      </h1>
+                      <p className="mt-2 text-sm text-[#5A6575]">
+                        {location || 'Add your location'}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="profile-hub-gallery" aria-label="Additional profile photos">
+                    {Array.from({ length: 5 }, (_, index) => {
+                      const photo = additionalPhotos[index];
+                      return (
+                        <button
+                          key={photo?.id ?? `empty-${index}`}
+                          type="button"
+                          onClick={() => workspaceRef.current?.openPhotos()}
+                          className="profile-hub-photo-slot"
+                          aria-label={photo ? `Edit additional photo ${index + 1}` : `Add additional photo ${index + 1}`}
+                        >
+                          {photo?.public_url ? (
+                            <img src={photo.public_url} alt="" className="h-full w-full object-cover" />
+                          ) : (
+                            <span aria-hidden="true">+</span>
+                          )}
+                        </button>
+                      );
+                    })}
                   </div>
                 </div>
 
@@ -233,6 +260,7 @@ export default function MyProfileHub({
                 initialPhotos={photos}
                 initialSection={initialSection}
                 onPrimaryPhotoChange={setPhotoUrl}
+                onPhotosChange={setProfilePhotos}
                 compatibilityComplete={compatibilityCard.totalEligibleQuestions > 0 && compatibilityCard.completedQuestions >= compatibilityCard.totalEligibleQuestions}
               />
               <section aria-label="Compatibility" className="space-y-3">

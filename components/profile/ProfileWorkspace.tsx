@@ -73,6 +73,7 @@ export type ProfileWorkspaceProps = {
   initialSection?: string | null;
   compatibilityComplete?: boolean;
   onPrimaryPhotoChange?: (url: string | null) => void;
+  onPhotosChange?: (photos: ManagedProfilePhoto[]) => void;
   onCompletionPercentChange?: (percent: number) => void;
 };
 
@@ -115,6 +116,7 @@ export default function ProfileWorkspace({
   initialSection,
   compatibilityComplete = false,
   onPrimaryPhotoChange,
+  onPhotosChange,
   onCompletionPercentChange,
 }: ProfileWorkspaceProps) {
   const router = useRouter();
@@ -447,6 +449,7 @@ export default function ProfileWorkspace({
                     onSubmit={(event) => void handleSectionSave(section.id, event)}
                     onPhotosChange={({ photos: nextPhotos, primaryPhotoUrl }) => {
                       setPhotos(nextPhotos);
+                      onPhotosChange?.(nextPhotos);
                       setProfile((current) => ({
                         ...current,
                         profile_photo_url: primaryPhotoUrl,
