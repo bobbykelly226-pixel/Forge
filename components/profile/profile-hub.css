@@ -58,6 +58,13 @@
   box-shadow: 0 0 0 2px rgba(201, 32, 39, .2);
 }
 .profile-hub-photo-slot:has(img) { border-style: solid; }
+.profile-hub-photo-status {
+  padding: 3px;
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 1.2;
+  text-align: center;
+}
 .profile-hub-actions {
   display: flex;
   flex-wrap: wrap;

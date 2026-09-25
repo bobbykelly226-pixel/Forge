@@ -68,10 +68,9 @@ export default function MyProfileHub({
   const [photoUrl, setPhotoUrl] = useState(initialPhotoUrl);
   const [profilePhotos, setProfilePhotos] = useState(photos);
   const workspaceRef = useRef<ProfileWorkspaceHandle>(null);
-  const additionalPhotos = [...profilePhotos]
-    .filter((photo) => !photo.is_primary)
+  const orderedPhotos = [...profilePhotos]
     .sort((a, b) => a.display_order - b.display_order)
-    .slice(0, 5);
+    .slice(0, 6);
 
   return (
     <>
@@ -181,19 +180,21 @@ export default function MyProfileHub({
                       </p>
                     </div>
                   </div>
-                  <div className="profile-hub-gallery" aria-label="Additional profile photos">
-                    {Array.from({ length: 5 }, (_, index) => {
-                      const photo = additionalPhotos[index];
+                  <div className="profile-hub-gallery" aria-label="Your profile photos">
+                    {Array.from({ length: Math.max(5, orderedPhotos.length) }, (_, index) => {
+                      const photo = orderedPhotos[index];
                       return (
                         <button
                           key={photo?.id ?? `empty-${index}`}
                           type="button"
                           onClick={() => workspaceRef.current?.openPhotos()}
                           className="profile-hub-photo-slot"
-                          aria-label={photo ? `Edit additional photo ${index + 1}` : `Add additional photo ${index + 1}`}
+                          aria-label={photo ? `Edit ${photo.is_primary ? 'primary' : `profile photo ${index + 1}`}${photo.moderation_status === 'pending' ? ', pending review' : ''}` : `Add profile photo ${index + 1}`}
                         >
                           {photo?.public_url ? (
                             <img src={photo.public_url} alt="" className="h-full w-full object-cover" />
+                          ) : photo ? (
+                            <span className="profile-hub-photo-status" aria-hidden="true">{photo.moderation_status === 'pending' ? 'Pending review' : 'Preview unavailable'}</span>
                           ) : (
                             <span aria-hidden="true">+</span>
                           )}
