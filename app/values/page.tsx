@@ -2,91 +2,81 @@
 
 import Header from '../../components/Header';
 import Link from 'next/link';
+import styles from '../editorial.module.css';
+
+const values = [
+  {
+    title: 'Faith',
+    icon: '/icon-faith.png',
+    description: 'We welcome people from every faith background who believe spiritual values play an important role in building meaningful relationships and living a purposeful life.',
+  },
+  {
+    title: 'Family',
+    icon: '/icon-family.png',
+    description: "Strong families strengthen communities. Whether you're hoping to start a family, grow one, or simply cherish the relationships you already have, family matters here.",
+  },
+  {
+    title: 'Service',
+    icon: '/icon-service.png',
+    description: 'Many people drawn to Forge dedicate their lives to serving others, including first responders, members of the military, healthcare professionals, teachers, and community leaders.',
+  },
+  {
+    title: 'Commitment',
+    icon: '/icon-commitment.png',
+    description: 'Meaningful relationships require consistency, commitment, and the willingness to grow together through every season of life.',
+  },
+  {
+    title: 'Integrity',
+    icon: '/icon-integrity.png',
+    description: 'Honesty, authenticity, and trust are the foundation of every lasting relationship. We believe character matters just as much as compatibility.',
+  },
+  {
+    title: 'Personal Responsibility',
+    icon: '/icon-responsibility.png',
+    description: 'Healthy relationships begin with personal responsibility. Accountability, self-awareness, and continuous growth help create stronger partners and stronger relationships.',
+  },
+] as const;
 
 export default function Values() {
   return (
-    <div className="min-h-screen bg-[#F8F6F2] text-[#222222]">
+    <div className={styles.page}>
       <Header />
-
-      <div className="pt-20 pb-20 max-w-6xl mx-auto px-6">
-        <h1 className="text-5xl font-bold tracking-tight text-[#0B2D5C] text-center mb-12">Our Core Values</h1>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
-          
-          {/* Faith */}
-          <div className="text-center">
-            <div className="h-28 flex items-center justify-center mb-6">
-              <img src="/icon-faith.png" alt="Faith" className="w-24 h-24 object-contain" />
+      <main>
+        <section className={`${styles.hero} ${styles.valuesHero}`} aria-labelledby="values-heading">
+          <div className={styles.heroShell}>
+            <div className={styles.heroCopy}>
+              <span className={styles.eyebrow}>WHAT GUIDES US</span>
+              <h1 id="values-heading">Our Core <em>Values.</em></h1>
+              <p className={styles.heroLead}>Shared values create a stronger starting point for meaningful connection.</p>
             </div>
-            <h3 className="text-2xl font-semibold text-[#0B2D5C] mb-4">Faith</h3>
-            <p className="text-[#444444] leading-relaxed">
-              We welcome people from every faith background who believe spiritual values play an important role in building meaningful relationships and living a purposeful life.
-            </p>
-          </div>
-
-          {/* Family */}
-          <div className="text-center">
-            <div className="h-28 flex items-center justify-center mb-6">
-              <img src="/icon-family.png" alt="Family" className="w-24 h-24 object-contain" />
+            <div className={styles.heroArt} aria-hidden="true">
+              <div className={styles.valuesArt}>
+                {values.map((value) => <span key={value.title} />)}
+              </div>
             </div>
-            <h3 className="text-2xl font-semibold text-[#0B2D5C] mb-4">Family</h3>
-            <p className="text-[#444444] leading-relaxed">
-              Strong families strengthen communities. Whether you&apos;re hoping to start a family, grow one, or simply cherish the relationships you already have, family matters here.
-            </p>
           </div>
+          <div className={styles.heroRule} aria-hidden="true" />
+        </section>
 
-          {/* Service */}
-          <div className="text-center">
-            <div className="h-28 flex items-center justify-center mb-6">
-              <img src="/icon-service.png" alt="Service" className="w-24 h-24 object-contain" />
+        <section className={styles.valuesSection} aria-label="The six core values">
+          <div className={styles.shell}>
+            <div className={styles.valueGrid}>
+              {values.map((value, index) => (
+                <article className={styles.valueCard} key={value.title}>
+                  <span className={styles.valueNumber} aria-hidden="true">0{index + 1}</span>
+                  <span className={styles.valueIcon}><img src={value.icon} alt="" /></span>
+                  <h2>{value.title}</h2>
+                  <p>{value.description}</p>
+                </article>
+              ))}
             </div>
-            <h3 className="text-2xl font-semibold text-[#0B2D5C] mb-4">Service</h3>
-            <p className="text-[#444444] leading-relaxed">
-              Many people drawn to Forge dedicate their lives to serving others, including first responders, members of the military, healthcare professionals, teachers, and community leaders.
-            </p>
           </div>
+        </section>
 
-          {/* Commitment */}
-          <div className="text-center">
-            <div className="h-28 flex items-center justify-center mb-6">
-              <img src="/icon-commitment.png" alt="Commitment" className="w-20 h-20 object-contain" />
-            </div>
-            <h3 className="text-2xl font-semibold text-[#0B2D5C] mb-4">Commitment</h3>
-            <p className="text-[#444444] leading-relaxed">
-              Meaningful relationships require consistency, commitment, and the willingness to grow together through every season of life.
-            </p>
-          </div>
-
-          {/* Integrity */}
-          <div className="text-center">
-            <div className="h-28 flex items-center justify-center mb-6">
-              <img src="/icon-integrity.png" alt="Integrity" className="w-20 h-20 object-contain" />
-            </div>
-            <h3 className="text-2xl font-semibold text-[#0B2D5C] mb-4">Integrity</h3>
-            <p className="text-[#444444] leading-relaxed">
-              Honesty, authenticity, and trust are the foundation of every lasting relationship. We believe character matters just as much as compatibility.
-            </p>
-          </div>
-
-          {/* Personal Responsibility */}
-          <div className="text-center">
-            <div className="h-28 flex items-center justify-center mb-6">
-              <img src="/icon-responsibility.png" alt="Responsibility" className="w-24 h-24 object-contain" />
-            </div>
-            <h3 className="text-2xl font-semibold text-[#0B2D5C] mb-4">Personal Responsibility</h3>
-            <p className="text-[#444444] leading-relaxed">
-              Healthy relationships begin with personal responsibility. Accountability, self-awareness, and continuous growth help create stronger partners and stronger relationships.
-            </p>
-          </div>
-        </div>
-
-        <div className="mt-20 text-center">
-          <p className="text-3xl font-semibold text-[#0B2D5C]">
-            Strong Values. Strong Connections.
-          </p>
-        </div>
-      </div>
-
+        <section className={styles.valuesClosing}>
+          <p>Strong Values. <em>Strong Connections.</em></p>
+        </section>
+      </main>
       {/* Footer */}
       <footer className="bg-[#0B2D5C] text-white/80 py-8">
         <div className="max-w-6xl mx-auto px-6">
