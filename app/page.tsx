@@ -21,10 +21,10 @@ export default function Home() {
           <div className={styles.heroImage} aria-hidden="true" />
           <div className={styles.heroCopy}>
             <span className={styles.heroAccent} aria-hidden="true" />
-            <h1 id="home-heading">Strong Values.<br /><span>Strong Connections.</span></h1>
+            <h1 id="home-heading">Strong Values.<span>Strong Connections.</span></h1>
             <p>
-              Forge was built for people who believe the strongest relationships begin with shared values.
-              If you&apos;re looking for something rooted in faith, family, commitment, and purpose, you&apos;re in the right place.
+              <span className={styles.heroLead}>Forge was built for people who believe the strongest relationships begin with shared values.</span>
+              <span className={styles.heroDetail}>If you&apos;re looking for something rooted in faith, family, commitment, and purpose, you&apos;re in the right place.</span>
             </p>
           </div>
           <div className={styles.heroRule} aria-hidden="true" />
@@ -34,7 +34,7 @@ export default function Home() {
           <div className={styles.sectionShell}>
             <div className={styles.sectionIntro}>
               <span className={styles.sectionEyebrow}>WHAT GUIDES US</span>
-              <h2 id="values-heading">Our Core Values</h2>
+              <h2 id="values-heading">Our Core <em>Values</em></h2>
             </div>
             <div className={styles.valueGrid}>
               {coreValues.map((value, index) => (
