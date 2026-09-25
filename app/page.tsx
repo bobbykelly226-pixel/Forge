@@ -53,7 +53,7 @@ export default function Home() {
           <div className={styles.aboutGrid}>
             <div className={styles.aboutCopy}>
               <span className={styles.sectionEyebrow}>ABOUT FORGE</span>
-              <h2 id="about-heading">Meaningful relationships don’t happen by chance.<br /><span>They start with shared values.</span></h2>
+              <h2 id="about-heading">Meaningful relationships don’t happen by chance.<br /><span>They are forged in life.</span></h2>
               <p>
                 Forge is a values-first dating platform for people who are tired of surface-level connections and ready for something real.
                 We believe the strongest relationships are built on shared values, mutual respect, and a commitment to something greater than ourselves.
