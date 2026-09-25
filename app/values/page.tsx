@@ -43,16 +43,11 @@ export default function Values() {
       <Header />
       <main>
         <section className={`${styles.hero} ${styles.valuesHero}`} aria-labelledby="values-heading">
-          <div className={styles.heroShell}>
+          <div className={styles.heroShell} style={{ gridTemplateColumns: '1fr', minHeight: 'auto' }}>
             <div className={styles.heroCopy}>
               <span className={styles.eyebrow}>WHAT GUIDES US</span>
               <h1 id="values-heading">Our Core <em>Values.</em></h1>
               <p className={styles.heroLead}>Shared values create a stronger starting point for meaningful connection.</p>
-            </div>
-            <div className={styles.heroArt} aria-hidden="true">
-              <div className={styles.valuesArt}>
-                {values.map((value) => <span key={value.title} />)}
-              </div>
             </div>
           </div>
           <div className={styles.heroRule} aria-hidden="true" />
