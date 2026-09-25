@@ -283,8 +283,8 @@
   position: relative;
   padding: 90px 24px 96px;
   overflow: hidden;
-  background: var(--navy);
-  color: white;
+  background: linear-gradient(135deg, #e6e6e7 0%, var(--cream) 55%, #dfe5eb 100%);
+  color: var(--navy);
   text-align: center;
 }
 .invitation::before, .invitation::after {
@@ -292,7 +292,7 @@
   position: absolute;
   width: 520px;
   height: 520px;
-  border: 1px solid #ffffff24;
+  border: 1px solid #0b2d5c20;
   border-radius: 50%;
   pointer-events: none;
 }
@@ -314,9 +314,9 @@
   transition: background-color .2s ease;
 }
 .invitationLink:hover { background: #a61f1f; }
-.invitation p { margin: 22px 0 0; color: #e6e6e7; font-size: 1rem; }
-.invitation p a { color: white; font-weight: 700; text-decoration: underline; text-underline-offset: 4px; }
-.invitation p a:hover { color: #ff9b9b; }
+.invitation p { margin: 22px 0 0; color: #40464e; font-size: 1rem; }
+.invitation p a { color: var(--navy); font-weight: 700; text-decoration: underline; text-underline-offset: 4px; }
+.invitation p a:hover { color: var(--red); }
 
 @media (max-width: 1000px) {
   .hero { grid-template-columns: 60% 40%; }
