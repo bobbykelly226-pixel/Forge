@@ -52,10 +52,10 @@ export default function BetaFeedbackWorkspace() {
         aside={
           <div className="rounded-[1.75rem] border border-[#0B2D5C]/08 bg-white/70 p-6 shadow-[0_12px_32px_rgba(11,45,92,0.04)] backdrop-blur-sm xl:p-7">
             <Image
-              src="/Logos/forge-founder-transparent.png"
+              src="/Logos/forgedinlife-simple-light.png"
               alt="Forge"
-              width={200}
-              height={48}
+              width={500}
+              height={465}
               className="forge-corner-logo h-12 w-auto"
             />
             <h1
@@ -74,10 +74,10 @@ export default function BetaFeedbackWorkspace() {
         <main data-feedback-workspace className="mx-auto w-full max-w-3xl px-4 pb-[7.5rem] sm:px-6 lg:mx-0 lg:max-w-none lg:px-0 lg:pb-10">
           <div className="mb-5 flex items-center justify-between gap-3 lg:hidden">
             <Image
-              src="/Logos/forge-founder-transparent.png"
+              src="/Logos/forgedinlife-simple-light.png"
               alt="Forge"
-              width={200}
-              height={56}
+              width={500}
+              height={465}
               className="forge-corner-logo h-12 w-auto sm:h-14"
             />
           </div>
