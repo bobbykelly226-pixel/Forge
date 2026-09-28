@@ -258,9 +258,9 @@ export default function PublicProfilePresentation({
             {hasMusic ? (
               <section>
                 <details>
-                  <summary className={`${headingClass} min-h-11 cursor-pointer py-2`} style={headingStyle}>
-                    Favorite Music
-                    <span className="mt-3 block text-base font-normal leading-7 text-black" style={{ fontFamily: 'var(--font-discovery-sans), ui-sans-serif, system-ui, sans-serif' }}>Genres, artists, and songs</span>
+                  <summary className="min-h-11 cursor-pointer py-2 text-base font-normal leading-7 text-black" style={{ fontFamily: 'var(--font-discovery-sans), ui-sans-serif, system-ui, sans-serif' }}>
+                    <span className={headingClass} style={headingStyle}>Favorite Music</span>
+                    <span className="mt-3 block text-base font-normal leading-7 text-black">Genres, artists, and songs</span>
                   </summary>
                   <dl className="mt-4 space-y-4 text-base leading-7 text-black">
                     {[
