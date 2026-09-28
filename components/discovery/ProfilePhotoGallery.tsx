@@ -199,7 +199,7 @@ export default function ProfilePhotoGallery({
               <ChevronRight className="h-5 w-5" aria-hidden="true" />
             </button>
             <div
-              className="absolute right-4 top-4 rounded-full bg-[#0B2D5C]/45 px-3 py-1 text-xs font-semibold text-white backdrop-blur-sm"
+              className="absolute right-4 top-4 rounded-full border border-white/80 bg-[#0B2D5C] px-3 py-1 text-xs font-semibold text-white shadow-sm"
               aria-live="polite"
               data-testid="gallery-position"
             >
