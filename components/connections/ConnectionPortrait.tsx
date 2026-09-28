@@ -9,7 +9,7 @@ type ConnectionPortraitProps = {
 const sizeClasses = {
   sm: 'h-16 w-16 rounded-2xl',
   md: 'h-24 w-24 rounded-2xl lg:h-28 lg:w-28',
-  lg: 'aspect-[3/4] w-full rounded-[1.25rem] lg:rounded-[1.5rem]',
+  lg: 'aspect-[3/4] w-full',
 } as const;
 
 export function ConnectionPortrait({
