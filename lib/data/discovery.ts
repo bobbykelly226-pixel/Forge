@@ -25,7 +25,7 @@ async function requireUser() {
   return { supabase, user };
 }
 
-async function attachDiscoverablePhotos(
+export async function attachDiscoverablePhotos(
   supabase: Awaited<ReturnType<typeof createClient>>,
   profiles: PublicDiscoveryProfile[]
 ): Promise<PublicDiscoveryProfile[]> {

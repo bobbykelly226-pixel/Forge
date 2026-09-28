@@ -1,4 +1,5 @@
 import { createClient } from '@/lib/supabase/server';
+import { attachDiscoverablePhotos } from '@/lib/data/discovery';
 import { ensureFoundationalRecords, type DataAccessResult } from '@/lib/data/profile';
 import {
   firstNameFromFullName,
@@ -160,7 +161,12 @@ async function loadPublicProfilesByIds(
     return map;
   }
 
-  for (const row of data ?? []) {
+  const profilesWithPhotos = await attachDiscoverablePhotos(
+    supabase,
+    (data ?? []) as PublicDiscoveryProfile[]
+  );
+
+  for (const row of profilesWithPhotos) {
     if (row.id) {
       map.set(row.id, row as PublicDiscoveryProfile);
     }
