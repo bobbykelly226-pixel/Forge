@@ -13,7 +13,6 @@ import {
 } from 'lucide-react';
 
 import { submitBetaFeedbackAction } from '@/app/actions/feedback';
-import DiscoveryDesktopTopBar from '@/components/DiscoveryDesktopTopBar';
 import ForgeAppBottomNav from '@/components/ForgeAppBottomNav';
 import ForgeAuthenticatedTwoColumnShell from '@/components/ForgeAuthenticatedTwoColumnShell';
 import ForgeDesktopAppNav from '@/components/ForgeDesktopAppNav';
@@ -72,8 +71,6 @@ export default function BetaFeedbackWorkspace() {
           </div>
         }
       >
-        <DiscoveryDesktopTopBar />
-
         <main data-feedback-workspace className="mx-auto w-full max-w-3xl px-4 pb-[7.5rem] sm:px-6 lg:mx-0 lg:max-w-none lg:px-0 lg:pb-10">
           <div className="mb-5 flex items-center justify-between gap-3 lg:hidden">
             <Image

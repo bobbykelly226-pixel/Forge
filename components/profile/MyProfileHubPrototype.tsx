@@ -18,7 +18,6 @@ import {
   type LucideIcon,
 } from 'lucide-react';
 
-import DiscoveryDesktopTopBar from '@/components/DiscoveryDesktopTopBar';
 import ForgeAppBottomNav from '@/components/ForgeAppBottomNav';
 import ForgeDesktopAppNav from '@/components/ForgeDesktopAppNav';
 import {
@@ -113,10 +112,6 @@ export default function MyProfileHubPrototype() {
           </aside>
 
           <div className="min-h-screen w-full min-w-0 lg:min-h-0">
-            <div className="px-0">
-              <DiscoveryDesktopTopBar />
-            </div>
-
             <div className="mx-auto flex w-full max-w-lg flex-col px-4 pb-[7.5rem] pt-5 sm:px-6 sm:pt-7 lg:mx-0 lg:max-w-none lg:px-0 lg:pb-10 lg:pt-0">
               <div className="mb-5 flex items-center justify-between gap-3 lg:hidden">
                 <img

@@ -5,7 +5,6 @@ import { useRef, useState } from 'react';
 import { Eye } from 'lucide-react';
 import './profile-hub.css';
 
-import DiscoveryDesktopTopBar from '@/components/DiscoveryDesktopTopBar';
 import ForgeAppBottomNav from '@/components/ForgeAppBottomNav';
 import ForgeAuthenticatedTwoColumnShell from '@/components/ForgeAuthenticatedTwoColumnShell';
 import ForgeDesktopAppNav from '@/components/ForgeDesktopAppNav';
@@ -106,10 +105,6 @@ export default function MyProfileHub({
           </div>
         }
       >
-        <div className="px-0">
-          <DiscoveryDesktopTopBar />
-        </div>
-
         <div className="mx-auto flex w-full max-w-lg flex-col px-4 pb-[7.5rem] pt-5 sm:px-6 sm:pt-7 lg:mx-0 lg:max-w-none lg:px-0 lg:pb-10 lg:pt-0">
           <div className="forge-mobile-brand-row mb-5 flex flex-wrap items-center justify-between gap-3 lg:hidden">
             <img

@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { Compass, Link2, MessageCircle, MessageSquarePlus, UserRound } from 'lucide-react';
+import { Bell, Compass, Link2, MessageCircle, MessageSquarePlus, UserRound } from 'lucide-react';
 
 import { useNotificationsOptional } from '@/components/notifications/NotificationsProvider';
 
@@ -36,6 +36,7 @@ export default function ForgeDesktopAppNav({
   const resolvedActive = active === 'character-signals' ? 'profile' : active;
   const notifications = useNotificationsOptional();
   const messagesUnread = messagesUnreadProp ?? notifications?.messagesUnread ?? false;
+  const notificationsUnreadCount = notifications?.notificationsUnreadCount ?? 0;
 
   return (
     <nav aria-label="App sections" className="mt-8 border-t border-[#0B2D5C]/08 pt-6">
@@ -74,6 +75,23 @@ export default function ForgeDesktopAppNav({
             </Link>
           );
         })}
+      </div>
+      <div className="mt-5 border-t border-white/25 pt-4">
+        <button
+          type="button"
+          onClick={() => notifications?.openNotifications()}
+          disabled={!notifications}
+          aria-label={notificationsUnreadCount > 0 ? `Notifications, ${notificationsUnreadCount} unread` : 'Notifications'}
+          className="inline-flex w-full items-center gap-2.5 rounded-2xl border border-[#0B2D5C]/10 bg-white/70 px-4 py-3 text-left text-sm font-semibold text-[#0B2D5C] transition hover:border-[#0B2D5C]/25 hover:bg-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0B2D5C] disabled:opacity-50"
+        >
+          <span className="relative inline-flex">
+            <Bell className="h-4 w-4" strokeWidth={1.75} aria-hidden="true" />
+            {notificationsUnreadCount > 0 ? (
+              <span className="absolute -right-0.5 -top-0.5 h-2 w-2 rounded-full bg-[#D62828]" aria-hidden="true" />
+            ) : null}
+          </span>
+          Notifications
+        </button>
       </div>
     </nav>
   );

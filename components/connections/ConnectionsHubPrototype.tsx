@@ -2,7 +2,6 @@
 
 import { useMemo, useState, type ReactNode } from 'react';
 
-import DiscoveryDesktopTopBar from '@/components/DiscoveryDesktopTopBar';
 import ForgeAppBottomNav from '@/components/ForgeAppBottomNav';
 import ForgeAuthenticatedTwoColumnShell from '@/components/ForgeAuthenticatedTwoColumnShell';
 import ForgeDesktopAppNav from '@/components/ForgeDesktopAppNav';
@@ -247,10 +246,6 @@ export default function ConnectionsHubPrototype({
           </div>
         }
       >
-        <div className="px-0">
-          <DiscoveryDesktopTopBar />
-        </div>
-
         <div className="mx-auto flex w-full max-w-lg flex-col px-4 pb-[7.5rem] pt-5 sm:px-6 sm:pt-7 lg:mx-0 lg:max-w-none lg:px-0 lg:pb-10 lg:pt-0">
           <header
             className="shrink-0 lg:hidden"
