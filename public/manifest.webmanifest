@@ -1,0 +1,15 @@
+{
+  "id": "/app",
+  "name": "Forge Dating",
+  "short_name": "Forge Dating",
+  "description": "Meaningful relationships rooted in faith, family, and commitment.",
+  "start_url": "/app",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#101d35",
+  "theme_color": "#101d35",
+  "icons": [
+    { "src": "/Logos/app-icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "/Logos/app-icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" }
+  ]
+}

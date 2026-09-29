@@ -1,4 +1,4 @@
-import type { Metadata } from 'next';
+import type { Metadata, Viewport } from 'next';
 import ForgeObservability from '@/components/analytics/ForgeObservability';
 import './globals.css';
 import './profile-theme.css';
@@ -9,8 +9,16 @@ export const metadata: Metadata = {
   metadataBase: new URL('https://forge.forgedinlife.com'),
   title: 'Forge - Strong Values. Strong Connections.',
   description: 'A dating platform built for meaningful relationships rooted in faith, family, and commitment.',
+  applicationName: 'Forge Dating',
+  manifest: '/manifest.webmanifest',
+  appleWebApp: {
+    capable: true,
+    title: 'Forge Dating',
+    statusBarStyle: 'default',
+  },
   icons: {
     icon: '/Logos/forgedinlife-favicon.png',
+    apple: '/Logos/apple-touch-icon.png',
   },
   openGraph: {
     title: 'Forge - Strong Values. Strong Connections.',
@@ -37,6 +45,13 @@ export const metadata: Metadata = {
   alternates: {
     canonical: 'https://forge.forgedinlife.com',
   },
+};
+
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  viewportFit: 'cover',
+  themeColor: '#101d35',
 };
 
 export default function RootLayout({
