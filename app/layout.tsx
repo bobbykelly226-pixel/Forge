@@ -18,7 +18,12 @@ export const metadata: Metadata = {
   },
   icons: {
     icon: '/Logos/forgedinlife-favicon.png',
-    apple: '/Logos/apple-touch-icon.png',
+    shortcut: '/Logos/app-icon-centered-192.png',
+    apple: {
+      url: '/Logos/apple-touch-icon-centered.png',
+      sizes: '180x180',
+      type: 'image/png',
+    },
   },
   openGraph: {
     title: 'Forge - Strong Values. Strong Connections.',
