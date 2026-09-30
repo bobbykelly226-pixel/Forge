@@ -619,8 +619,8 @@ export default function ConversationThread({
       }
     >
       <header className="sticky top-0 z-30 shrink-0 border-b border-[#0B2D5C]/10 bg-[#FBF9F6]/95 backdrop-blur-md">
-        <div className="mx-auto flex max-w-2xl items-center justify-between gap-3 px-4 py-3 sm:px-5">
-          <div data-conversation-heading className="min-w-0 flex-1">
+        <div className="relative mx-auto flex max-w-2xl items-center justify-between gap-3 px-4 py-2 sm:px-5 sm:py-3">
+          <div data-conversation-heading className="min-w-0 flex-1 max-sm:contents">
             <Link
               href="/connections?tab=conversations"
               data-text-link
@@ -629,7 +629,7 @@ export default function ConversationThread({
               ← Messages
             </Link>
             <h1
-              className="mt-1 truncate text-xl tracking-[-0.02em] text-[#0B2D5C]"
+              className="truncate text-xl tracking-[-0.02em] text-[#0B2D5C] max-sm:absolute max-sm:inset-x-28 max-sm:top-1/2 max-sm:-translate-y-1/2 max-sm:text-center sm:mt-1"
               style={{ fontFamily: 'var(--font-discovery-display), Georgia, serif' }}
             >
               <Link data-text-link href={profileHref} className="transition hover:text-[#0A2540]">

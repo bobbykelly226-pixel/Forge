@@ -10,7 +10,7 @@ import {
   type KeyboardEvent as ReactKeyboardEvent,
 } from 'react';
 import { createPortal } from 'react-dom';
-import { ChevronDown, ImagePlus, MoreVertical, X } from 'lucide-react';
+import { ChevronDown, ImagePlus, MoreHorizontal, X } from 'lucide-react';
 
 import {
   blockUserAction,
@@ -467,6 +467,7 @@ export default function ConversationSafetyMenu({
       {reportMessageId ? <button type="button" className="mt-2 min-h-11 rounded-lg px-3 text-sm underline" onClick={() => { setReportReason('inappropriate_content'); setDialog('report'); }}>Report video</button> : <div className="relative" ref={menuRef}>
         <button
           type="button"
+          data-conversation-options
           onClick={() => setMenuOpen((open) => !open)}
           className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-[#0B2D5C]/12 bg-white text-[#0B2D5C] transition hover:border-[#0B2D5C]/25 hover:bg-[#F8F6F2]"
           aria-haspopup="menu"
@@ -474,7 +475,7 @@ export default function ConversationSafetyMenu({
           aria-controls={menuId}
           aria-label="Conversation options"
         >
-          <MoreVertical className="h-5 w-5" strokeWidth={1.75} aria-hidden="true" />
+          <MoreHorizontal className="h-5 w-5" strokeWidth={1.75} aria-hidden="true" />
         </button>
 
         {menuOpen ? (
