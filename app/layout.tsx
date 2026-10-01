@@ -18,9 +18,9 @@ export const metadata: Metadata = {
   },
   icons: {
     icon: '/Logos/forgedinlife-favicon.png',
-    shortcut: '/Logos/app-icon-centered-192.png',
+    shortcut: '/Logos/app-icon-cream-192.png',
     apple: {
-      url: '/Logos/apple-touch-icon-centered.png',
+      url: '/Logos/apple-touch-icon-cream.png',
       sizes: '180x180',
       type: 'image/png',
     },
