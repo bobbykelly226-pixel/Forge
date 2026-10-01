@@ -2259,6 +2259,11 @@ export type Database = {
       }
     }
     Functions: {
+      get_beta_enrollment_capacity: { Args: Record<PropertyKey, never>; Returns: Json }
+      get_beta_enrollment_overview: { Args: Record<PropertyKey, never>; Returns: Json }
+      set_beta_account_limit: { Args: { p_limit: number }; Returns: undefined }
+      join_beta_waitlist: { Args: { p_email: string; p_client_key: string }; Returns: boolean }
+
       accept_current_legal_document: {
         Args: { p_document_key: string }
         Returns: boolean

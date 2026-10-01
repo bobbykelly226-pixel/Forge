@@ -3,22 +3,28 @@ import Link from 'next/link';
 import { ArrowRight, MessageCircle, ShieldCheck, Sparkles } from 'lucide-react';
 
 import Header from '@/components/Header';
-import FoundingBetaRequestForm from '@/components/founding-beta/FoundingBetaRequestForm';
+import BetaWaitlistForm from '@/components/founding-beta/BetaWaitlistForm';
+import { loadBetaCapacity } from '@/lib/operator/beta-enrollment';
+import { isBetaFull } from '@/lib/auth/beta-enrollment';
+
+export const dynamic = 'force-dynamic';
 import styles from './founding-beta.module.css';
 
 export const metadata: Metadata = {
-  title: 'Forge Founding Beta Invitation',
-  description: 'Request a personal invitation to help shape the Forge Founding Beta.',
+  title: 'Join the Forge Founding Beta',
+  description: 'Join the Forge Founding Beta and help shape a more intentional dating experience.',
   robots: { index: false, follow: false },
 };
 
 const benefits = [
   { icon: Sparkles, title: 'Early access', copy: 'Experience Forge before the broader public launch.' },
   { icon: MessageCircle, title: 'A real voice', copy: 'Your feedback will directly shape what Forge becomes.' },
-  { icon: ShieldCheck, title: 'Intentional community', copy: 'Every Founding Beta request is reviewed before an invitation is issued.' },
+  { icon: ShieldCheck, title: 'Intentional community', copy: 'Email verification and photo review help keep the community intentional.' },
 ] as const;
 
-export default function FoundingBetaPage() {
+export default async function FoundingBetaPage() {
+  const capacity = await loadBetaCapacity();
+  const full = capacity ? isBetaFull(capacity) : false;
   return (
     <div className={styles.beta}>
       <Header />
@@ -27,12 +33,12 @@ export default function FoundingBetaPage() {
           <div className={styles.heroPhoto} role="img" aria-label="A couple overlooking the mountains at sunset" />
           <div className={styles.heroInner}>
             <div className={styles.heroCopy}>
-              <p className={styles.eyebrow}>A personal invitation to help build something meaningful</p>
-              <h1 id="beta-heading">You’re invited to the <span>Forge Founding Beta.</span></h1>
+              <p className={styles.eyebrow}>Help build something meaningful</p>
+              <h1 id="beta-heading">Join the <span>Forge Founding Beta.</span></h1>
               <p className={styles.heroLead}>Forge is a values-first dating platform for people seeking meaningful relationships.</p>
               <p className={styles.heroDetail}>Founding members will help us test the experience, strengthen the community, and shape the path to launch.</p>
               <p className={styles.tagline}>Strong Values. Strong Connections.</p>
-              <a href="#request" className={styles.heroLink}>Request your invitation <ArrowRight size={18} aria-hidden="true" /></a>
+              <Link href={full ? "#request" : "/signup"} className={styles.heroLink}>{full ? "Join the waitlist" : "Create your account"} <ArrowRight size={18} aria-hidden="true" /></Link>
             </div>
           </div>
           <div className={styles.heroRule} aria-hidden="true" />
@@ -58,17 +64,17 @@ export default function FoundingBetaPage() {
         <section id="request" className={styles.request} aria-labelledby="request-heading">
           <div className={styles.requestGrid}>
             <div className={styles.requestCopy}>
-              <p className={styles.eyebrow}>Founding member request</p>
+              <p className={styles.eyebrow}>Become a founding member</p>
               <h2 id="request-heading">Help forge the experience <span>from the beginning.</span></h2>
               <p>
-                We are intentionally beginning with a small, balanced group. This is not a popularity contest and it is not first-come, first-served. We are looking for thoughtful adults who genuinely want meaningful connection and are willing to tell us what works and what does not.
+                We are beginning with a small group of adults seeking meaningful connection. Create your account directly and help us test the experience. Tell us what works, what is confusing, and what could be better.
               </p>
               <div className={styles.next}>
                 <strong>What happens next?</strong>
-                <p>Forge privately reviews each request, then sends a seven-day, single-use invitation to the email submitted.</p>
+                <p>Create your account, confirm your email, then complete your profile. You do not need to request access or wait for approval.</p>
               </div>
             </div>
-            <FoundingBetaRequestForm />
+            <div>{full ? <BetaWaitlistForm /> : <section className="border border-[#0B2D5C] bg-[#E6E6E7] p-7 sm:p-10"><h3 className="text-3xl font-bold text-[#0B2D5C]">Ready to join?</h3><p className="mt-4 text-lg leading-relaxed text-black">You’re welcome to join the Founding Beta. Sign up with your email and password, then check your inbox and spam folder for your confirmation email.</p><Link href="/signup" className="mt-6 inline-flex rounded-lg bg-[#0B2D5C] px-6 py-4 font-semibold text-white">Create your account</Link><p className="mt-5 text-black">Already joined? <Link href="/login" className="font-semibold text-[#0B2D5C] underline">Sign in</Link></p></section>}</div>
           </div>
         </section>
       </main>

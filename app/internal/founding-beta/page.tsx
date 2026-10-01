@@ -6,6 +6,7 @@ import FoundingBetaWorkspace from '@/components/operator/FoundingBetaWorkspace';
 import { isForgeOperatorUser } from '@/lib/operator/access';
 import { getOperatorMfaState } from '@/lib/operator/mfa';
 import { loadFoundingBetaRequests } from '@/lib/operator/founding-beta';
+import { loadBetaOverview } from '@/lib/operator/beta-enrollment';
 import type { FoundingBetaRequestStatus } from '@/lib/operator/founding-beta';
 import { createClient } from '@/lib/supabase/server';
 
@@ -33,11 +34,12 @@ export default async function FoundingBetaAdminPage({
   const status = REQUEST_STATUSES.has(params.status as FoundingBetaRequestStatus)
     ? (params.status as FoundingBetaRequestStatus)
     : null;
-  const queue = await loadFoundingBetaRequests();
+  const [queue, overview] = await Promise.all([loadFoundingBetaRequests(), loadBetaOverview()]);
   return (
     <ForgeAppCanvas className={`${display.variable} ${sans.variable}`} style={{ fontFamily: 'var(--font-discovery-sans), ui-sans-serif, system-ui, sans-serif' }}>
       <FoundingBetaWorkspace
         requests={queue.success ? queue.data : []}
+        overview={overview}
         loadError={queue.success ? null : queue.message}
         status={status}
       />

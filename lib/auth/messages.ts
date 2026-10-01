@@ -2,7 +2,7 @@
  * Client-safe auth path/error helpers (no server imports).
  */
 
-import { INVITATION_REQUIRED_MESSAGE } from './invitations';
+import { BETA_FULL_MESSAGE } from './beta-enrollment';
 
 export function sanitizeInternalPath(path: string | null | undefined): string | null {
   if (!path) return null;
@@ -15,9 +15,7 @@ export function sanitizeInternalPath(path: string | null | undefined): string | 
 export function mapAuthErrorMessage(errorMessage: string | undefined): string {
   const message = (errorMessage ?? '').toLowerCase();
 
-  if (message.includes('founding beta invitation') || message.includes('invitation is required')) {
-    return INVITATION_REQUIRED_MESSAGE;
-  }
+  if (message.includes('beta is currently full')) return BETA_FULL_MESSAGE;
 
   if (
     message.includes('rate limit') ||

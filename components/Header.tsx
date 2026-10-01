@@ -37,7 +37,7 @@ export default function Header() {
               href="/founding-beta"
               className="bg-[#D62828] hover:bg-[#A61F1F] text-white px-5 py-2.5 rounded-xl font-semibold transition"
             >
-              Founding Beta
+              Join the Beta
             </Link>
           </div>
         </div>
@@ -72,7 +72,7 @@ export default function Header() {
                 onClick={closeMenu}
                 className="bg-[#D62828] hover:bg-[#A61F1F] text-white py-3.5 rounded-xl font-semibold transition"
               >
-                Founding Beta
+                Join the Beta
               </Link>
             </div>
           </div>

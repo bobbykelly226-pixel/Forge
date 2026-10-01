@@ -1,5 +1,7 @@
 'use client';
 
+import BetaWaitlistForm from '@/components/founding-beta/BetaWaitlistForm';
+import { BETA_FULL_MESSAGE } from '@/lib/auth/beta-enrollment';
 import { signUpWithEmail } from '@/app/actions/auth';
 import PasswordInput from '@/components/auth/PasswordInput';
 import AuthCaptcha from '@/components/auth/AuthCaptcha';
@@ -18,6 +20,7 @@ export default function SignupForm({ initialEmail = '' }: { initialEmail?: strin
   const [confirmPassword, setConfirmPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
+  const [betaFull, setBetaFull] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [captchaToken, setCaptchaToken] = useState<string | null>(null);
   const [captchaResetKey, setCaptchaResetKey] = useState(0);
@@ -51,6 +54,7 @@ export default function SignupForm({ initialEmail = '' }: { initialEmail?: strin
       }
 
       if (result.status === 'error' || !result.success) {
+        if (result.message === BETA_FULL_MESSAGE) { setBetaFull(true); return; }
         setError(result.message);
         return;
       }
@@ -81,12 +85,11 @@ export default function SignupForm({ initialEmail = '' }: { initialEmail?: strin
             Join the Founding Beta
           </h1>
           <p className="text-lg text-[#444444] leading-relaxed">
-            Forge is currently invitation-only. Create your account using the email
-            address that received your invitation.
+            Create your account, confirm your email, and start exploring Forge. No invitation or approval needed.
           </p>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-5">
+        {betaFull ? <BetaWaitlistForm initialEmail={email} /> : <form onSubmit={handleSubmit} className="space-y-5">
           <div>
             <label htmlFor="email" className="sr-only">
               Email address
@@ -149,12 +152,12 @@ export default function SignupForm({ initialEmail = '' }: { initialEmail?: strin
             disabled={isSubmitting || !captchaReady}
             className="w-full bg-[#D62828] hover:bg-[#A61F1F] disabled:bg-gray-400 text-white font-semibold py-5 rounded-2xl text-lg transition"
           >
-            {isSubmitting ? 'Verifying invitation...' : 'Create invited account'}
+            {isSubmitting ? 'Creating your account…' : 'Create account'}
           </button>
-        </form>
+        </form>}
 
         <p className="mt-5 text-center text-sm leading-relaxed text-[#666666]">
-          Invitations are tied to the recipient&apos;s email address and may be used once.
+          For adults 18 and older. Your profile photos are reviewed before they appear to other members.
         </p>
 
         <p className="text-center text-[#444444] mt-8">

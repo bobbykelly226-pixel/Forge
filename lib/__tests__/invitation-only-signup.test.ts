@@ -3,7 +3,6 @@ import { describe, it } from 'node:test';
 import { readFileSync } from 'node:fs';
 
 import {
-  INVITATION_REQUIRED_MESSAGE,
   isActiveBetaSignupInvitation,
 } from '@/lib/auth/invitations';
 
@@ -15,7 +14,7 @@ const localConfig = readFileSync('supabase/config.toml', 'utf8');
 const signupForm = readFileSync('app/signup/SignupForm.tsx', 'utf8');
 const signupAction = readFileSync('app/actions/auth.ts', 'utf8');
 
-describe('invitation-only signup', () => {
+describe('legacy invitation history and direct signup', () => {
   it('accepts only an unused, unrevoked, unexpired invitation', () => {
     const now = Date.parse('2026-08-13T12:00:00Z');
     assert.equal(
@@ -66,10 +65,10 @@ describe('invitation-only signup', () => {
     assert.match(localConfig, /\[auth\.hook\.before_user_created\][\s\S]*enabled = true/);
   });
 
-  it('keeps server-action preflight and invitation-only signup copy wired', () => {
-    assert.match(signupAction, /hasActiveBetaSignupInvitation/);
-    assert.match(signupForm, /currently invitation-only/i);
-    assert.match(INVITATION_REQUIRED_MESSAGE, /Founding Beta invitation/i);
+  it('removes the active invitation preflight and invitation-only copy', () => {
+    assert.doesNotMatch(signupAction, /hasActiveBetaSignupInvitation/);
+    assert.doesNotMatch(signupForm, /currently invitation-only/i);
+    assert.match(signupForm, /No invitation or approval needed/);
   });
 
   it('does not invalidate a successful signup by generating a second confirmation link', () => {
@@ -79,6 +78,6 @@ describe('invitation-only signup', () => {
     );
 
     assert.doesNotMatch(freshSignupSection, /deliverConfirmationWithResend/);
-    assert.match(freshSignupSection, /Check your email to confirm your account/);
+    assert.match(freshSignupSection, /to confirm your account/);
   });
 });

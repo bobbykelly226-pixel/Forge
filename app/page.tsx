@@ -69,7 +69,7 @@ export default function Home() {
         <section className={styles.invitation} aria-labelledby="invitation-heading">
           <div className={styles.invitationInner}>
             <h2 id="invitation-heading">Ready to find something more meaningful?</h2>
-            <Link href="/founding-beta" className={styles.invitationLink}>Request Founding Beta Access</Link>
+            <Link href="/founding-beta" className={styles.invitationLink}>Join the Founding Beta</Link>
             <p>Already have an account? <Link href="/login">Log in</Link></p>
           </div>
         </section>

@@ -31,7 +31,7 @@ const TOOLS = [
   {
     href: '/internal/founding-beta',
     title: 'Founding Beta Requests',
-    description: 'Review access requests and issue personal seven-day beta invitations.',
+    description: 'Manage beta capacity, view accounts and confirmation status, and review the waitlist.',
   },
   {
     href: '/internal/account-governance',
