@@ -4,6 +4,7 @@ import './globals.css';
 import './profile-theme.css';
 import './marketing-theme.css';
 import ForwardNavigationScroll from '@/components/ForwardNavigationScroll';
+import ForgePullToRefresh from '@/components/ForgePullToRefresh';
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://forge.forgedinlife.com'),
@@ -68,6 +69,7 @@ export default function RootLayout({
     <html lang="en">
       <body>
         <ForwardNavigationScroll />
+        <ForgePullToRefresh />
         {children}
         <ForgeObservability />
       </body>

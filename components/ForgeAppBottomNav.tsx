@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { useState } from 'react';
-import { Bell, Compass, Link2, Menu, MessageCircle, MessageSquarePlus, RefreshCw, UserRound } from 'lucide-react';
+import { Bell, Compass, Link2, Menu, MessageCircle, MessageSquarePlus, UserRound } from 'lucide-react';
 
 import { useNotificationsOptional } from '@/components/notifications/NotificationsProvider';
 
@@ -61,14 +61,6 @@ export default function ForgeAppBottomNav({
               <MessageSquarePlus className="h-5 w-5" aria-hidden="true" />
               Beta Feedback
             </Link>
-            <button
-              type="button"
-              onClick={() => window.location.reload()}
-              className="flex w-full items-center gap-3 rounded-xl px-3 py-3 text-left text-sm font-semibold text-[#0B2D5C] hover:bg-[#FBF9F6]"
-            >
-              <RefreshCw className="h-5 w-5" aria-hidden="true" />
-              Refresh app
-            </button>
           </div>
         </div>
       ) : null}
