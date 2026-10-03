@@ -31,6 +31,22 @@ import {
 } from '../profile/structured-options';
 import type { Profile } from '../types/profile';
 
+describe('primary photo presentation after saving', () => {
+  it('keeps the selected primary first after reload while preserving other photo order', () => {
+    const photos = [
+      { storage_path: 'first', display_order: 0, is_primary: false, public_url: '/first.jpg' },
+      { storage_path: 'second', display_order: 1, is_primary: true, public_url: '/second.jpg' },
+      { storage_path: 'third', display_order: 2, is_primary: false, public_url: '/third.jpg' },
+    ];
+    assert.deepEqual(sortPhotosByDisplayOrder(photos).map(photo => photo.storage_path), ['second', 'first', 'third']);
+    assert.deepEqual(orderedPublicPhotoUrls({ photos }), ['/second.jpg', '/first.jpg', '/third.jpg']);
+    assert.equal(resolveAuthoritativeProfilePhotoUrl({ photos, legacyProfilePhotoUrl: null }), '/second.jpg');
+    const changed = photos.map(photo => ({ ...photo, is_primary: photo.storage_path === 'third' }));
+    assert.deepEqual(sortPhotosByDisplayOrder(changed).map(photo => photo.storage_path), ['third', 'first', 'second']);
+    assert.deepEqual(photos.map(photo => photo.storage_path), ['first', 'second', 'third']);
+  });
+});
+
 function minimalProfile(overrides: Partial<Profile> = {}): Profile {
   return {
     id: 'user-1',

@@ -1,6 +1,7 @@
 'use client';
 
 import { useRef, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { ChevronLeft, ChevronRight, Star, Trash2, Upload } from 'lucide-react';
 
 import {
@@ -17,6 +18,8 @@ import {
   PROFILE_PHOTO_BUCKET,
   canAddAnotherProfilePhoto,
   createUniqueProfilePhotoPath,
+  resolveAuthoritativeProfilePhotoUrl,
+  sortPhotosByDisplayOrder,
   type ManagedProfilePhoto,
   validateProcessedProfilePhoto,
 } from '@/lib/profile-photo';
@@ -48,7 +51,13 @@ export default function ProfilePhotoManager({
   disabled,
   onChange,
 }: ProfilePhotoManagerProps) {
-  const [photos, setPhotos] = useState<ManagedProfilePhoto[]>(initialPhotos);
+  const router = useRouter();
+  const [photos, setPhotos] = useState<ManagedProfilePhoto[]>(() => sortPhotosByDisplayOrder(initialPhotos));
+  const [photoSeed, setPhotoSeed] = useState(initialPhotos);
+  if (photoSeed !== initialPhotos) {
+    setPhotoSeed(initialPhotos);
+    setPhotos(sortPhotosByDisplayOrder(initialPhotos));
+  }
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [replaceTargetId, setReplaceTargetId] = useState<string | null>(null);
@@ -65,13 +74,17 @@ export default function ProfilePhotoManager({
       setError(result.message);
       return false;
     }
-    const nextPhotos = result.photos ?? photos;
+    const nextPhotos = sortPhotosByDisplayOrder(result.photos ?? photos);
     setPhotos(nextPhotos);
     onChange({
       photos: nextPhotos,
-      primaryPhotoUrl: result.primaryPhotoUrl ?? null,
+      primaryPhotoUrl: resolveAuthoritativeProfilePhotoUrl({
+        photos: nextPhotos,
+        legacyProfilePhotoUrl: result.primaryPhotoUrl,
+      }),
     });
     setError(null);
+    router.refresh();
     return true;
   };
 
@@ -287,7 +300,7 @@ export default function ProfilePhotoManager({
                     <button
                       type="button"
                       aria-label="Move photo earlier"
-                      disabled={disabled || busy || index === 0}
+                      disabled={disabled || busy || index === 0 || (index === 1 && photos[0]?.is_primary)}
                       onClick={() => void movePhoto(photo.id, -1)}
                       className="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-[#0B2D5C]/15 text-[#0B2D5C] disabled:opacity-40"
                     >
@@ -296,7 +309,7 @@ export default function ProfilePhotoManager({
                     <button
                       type="button"
                       aria-label="Move photo later"
-                      disabled={disabled || busy || index === photos.length - 1}
+                      disabled={disabled || busy || photo.is_primary || index === photos.length - 1}
                       onClick={() => void movePhoto(photo.id, 1)}
                       className="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-[#0B2D5C]/15 text-[#0B2D5C] disabled:opacity-40"
                     >

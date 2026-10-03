@@ -15,7 +15,7 @@ import ProfileCompatibilityCard, {
 } from '@/components/compatibility-profile/ProfileCompatibilityCard';
 import DiscoveryVisibilityToggle from '@/components/profile/DiscoveryVisibilityToggle';
 import ProfileWorkspace, { type ProfileWorkspaceHandle } from '@/components/profile/ProfileWorkspace';
-import type { ManagedProfilePhoto } from '@/lib/profile-photo';
+import { sortPhotosByDisplayOrder, type ManagedProfilePhoto } from '@/lib/profile-photo';
 import type { Profile } from '@/lib/types/profile';
 
 type PrivateProfileSeed = {
@@ -67,9 +67,13 @@ export default function MyProfileHub({
   const [photoUrl, setPhotoUrl] = useState(initialPhotoUrl);
   const [profilePhotos, setProfilePhotos] = useState(photos);
   const workspaceRef = useRef<ProfileWorkspaceHandle>(null);
-  const orderedPhotos = [...profilePhotos]
-    .sort((a, b) => a.display_order - b.display_order)
-    .slice(0, 6);
+  const [photoSeed, setPhotoSeed] = useState({ initialPhotoUrl, photos });
+  if (photoSeed.initialPhotoUrl !== initialPhotoUrl || photoSeed.photos !== photos) {
+    setPhotoSeed({ initialPhotoUrl, photos });
+    setPhotoUrl(initialPhotoUrl);
+    setProfilePhotos(photos);
+  }
+  const orderedPhotos = sortPhotosByDisplayOrder(profilePhotos).slice(0, 6);
 
   return (
     <>

@@ -123,6 +123,13 @@ export default function ProfileWorkspace({
   const [profile, setProfile] = useState<Profile>(initialProfile);
   const [coreValues, setCoreValues] = useState<string[]>(initialCoreValues);
   const [photos, setPhotos] = useState<ManagedProfilePhoto[]>(initialPhotos);
+  const [profileSeed, setProfileSeed] = useState({ initialProfile, initialCoreValues, initialPhotos });
+  if (profileSeed.initialProfile !== initialProfile || profileSeed.initialCoreValues !== initialCoreValues || profileSeed.initialPhotos !== initialPhotos) {
+    setProfileSeed({ initialProfile, initialCoreValues, initialPhotos });
+    setProfile(initialProfile);
+    setCoreValues(initialCoreValues);
+    setPhotos(initialPhotos);
+  }
   const [openSection, setOpenSection] = useState<ProfileSectionId | null>(() =>
     isProfileSectionId(initialSection) ? initialSection : null
   );
@@ -253,6 +260,7 @@ export default function ProfileWorkspace({
       returnSection.current = id;
       setStatus(id, 'saved', result.message || 'Saved.');
       setOpenSection(null);
+      router.refresh();
     } catch {
       setStatus(id, 'error', 'Could not save this section. Please try again.');
     }

@@ -160,11 +160,14 @@ export function toManagedProfilePhoto(photo: {
   };
 }
 
-/** Photos sorted by display_order for public + management presentation. */
-export function sortPhotosByDisplayOrder<T extends { display_order?: number | null }>(
+/** Keep the primary first; preserve saved ordering among the remaining photos. */
+export function sortPhotosByDisplayOrder<T extends { display_order?: number | null; is_primary?: boolean | null }>(
   photos: readonly T[]
 ): T[] {
-  return [...photos].sort((a, b) => (a.display_order ?? 0) - (b.display_order ?? 0));
+  return [...photos].sort((a, b) =>
+    Number(Boolean(b.is_primary)) - Number(Boolean(a.is_primary)) ||
+    (a.display_order ?? 0) - (b.display_order ?? 0)
+  );
 }
 
 /**
