@@ -148,11 +148,11 @@ export default function MyProfileHub({
                       <img
                         src={photoUrl}
                         alt=""
-                        className="h-20 w-20 shrink-0 rounded-full border-4 border-white object-cover object-top shadow-[0_8px_24px_rgba(11,45,92,0.12)]"
+                        className="h-20 w-20 shrink-0 rounded-md border-4 border-white bg-[#F7F7F7] object-contain object-center shadow-[0_8px_24px_rgba(11,45,92,0.12)]"
                       />
                     ) : (
                       <div
-                        className="h-20 w-20 shrink-0 rounded-full border-4 border-white shadow-[0_8px_24px_rgba(11,45,92,0.12)]"
+                        className="h-20 w-20 shrink-0 rounded-md border-4 border-white shadow-[0_8px_24px_rgba(11,45,92,0.12)]"
                         style={{
                           background:
                             'linear-gradient(160deg, #1B2F4A 0%, #3E566F 38%, #A8927D 72%, #E6D5C3 100%)',
