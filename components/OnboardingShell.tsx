@@ -36,6 +36,10 @@ import type { Tables } from '@/lib/supabase/database.types';
 
 const TOTAL_STEPS = 6;
 const DESKTOP_MEDIA_QUERY = '(min-width: 640px)';
+const MATCH_AGES = Array.from(
+  { length: MAX_MATCH_AGE - MIN_MATCH_AGE + 1 },
+  (_, index) => MIN_MATCH_AGE + index
+);
 
 const primaryButtonClassName =
   'inline-flex w-full items-center justify-center rounded-2xl bg-[#D62828] px-8 py-4 text-lg font-semibold text-white transition hover:bg-[#A61F1F] disabled:opacity-60';
@@ -436,31 +440,31 @@ export default function OnboardingShell({
               <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                 <label className="text-sm font-semibold text-[#0B2D5C]">
                   Minimum age
-                  <input
-                    type="number"
-                    min={MIN_MATCH_AGE}
-                    max={MAX_MATCH_AGE}
+                  <select
                     value={preferredAgeMin}
+                    disabled={isPending}
                     onChange={(event) => {
                       setPreferredAgeMin(Number(event.target.value));
                       setPreferencesSaved(false);
                     }}
-                    className="mt-2 min-w-0 w-full rounded-2xl border border-[#0B2D5C]/20 px-4 py-3"
-                  />
+                    className="mt-2 min-h-12 min-w-0 w-full rounded-2xl border border-[#0B2D5C]/20 bg-white px-4 py-3 text-base disabled:opacity-60"
+                  >
+                    {MATCH_AGES.map((age) => <option key={age} value={age}>{age}</option>)}
+                  </select>
                 </label>
                 <label className="text-sm font-semibold text-[#0B2D5C]">
                   Maximum age
-                  <input
-                    type="number"
-                    min={MIN_MATCH_AGE}
-                    max={MAX_MATCH_AGE}
+                  <select
                     value={preferredAgeMax}
+                    disabled={isPending}
                     onChange={(event) => {
                       setPreferredAgeMax(Number(event.target.value));
                       setPreferencesSaved(false);
                     }}
-                    className="mt-2 min-w-0 w-full rounded-2xl border border-[#0B2D5C]/20 px-4 py-3"
-                  />
+                    className="mt-2 min-h-12 min-w-0 w-full rounded-2xl border border-[#0B2D5C]/20 bg-white px-4 py-3 text-base disabled:opacity-60"
+                  >
+                    {MATCH_AGES.map((age) => <option key={age} value={age}>{age}</option>)}
+                  </select>
                 </label>
               </div>
 
