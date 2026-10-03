@@ -52,7 +52,6 @@ export type MyProfileHubProps = {
 export default function MyProfileHub({
   displayName,
   location,
-  photoUrl: initialPhotoUrl,
   onboardingCompleted,
   discoveryVisibility,
   profile,
@@ -64,13 +63,11 @@ export default function MyProfileHub({
   initialSection,
   compatibilityCard,
 }: MyProfileHubProps) {
-  const [photoUrl, setPhotoUrl] = useState(initialPhotoUrl);
   const [profilePhotos, setProfilePhotos] = useState(photos);
   const workspaceRef = useRef<ProfileWorkspaceHandle>(null);
-  const [photoSeed, setPhotoSeed] = useState({ initialPhotoUrl, photos });
-  if (photoSeed.initialPhotoUrl !== initialPhotoUrl || photoSeed.photos !== photos) {
-    setPhotoSeed({ initialPhotoUrl, photos });
-    setPhotoUrl(initialPhotoUrl);
+  const [photoSeed, setPhotoSeed] = useState(photos);
+  if (photoSeed !== photos) {
+    setPhotoSeed(photos);
     setProfilePhotos(photos);
   }
   const orderedPhotos = sortPhotosByDisplayOrder(profilePhotos).slice(0, 6);
@@ -148,23 +145,6 @@ export default function MyProfileHub({
                 <p className="profile-hub-eyebrow">YOUR PROFILE</p>
                 <div className="profile-hub-identity-row">
                   <div className="flex min-w-0 items-center gap-4">
-                    {photoUrl ? (
-                      <img
-                        src={photoUrl}
-                        alt=""
-                        className="h-20 w-20 shrink-0 rounded-md border-4 border-white bg-[#F7F7F7] object-contain object-center shadow-[0_8px_24px_rgba(11,45,92,0.12)]"
-                      />
-                    ) : (
-                      <div
-                        className="h-20 w-20 shrink-0 rounded-md border-4 border-white shadow-[0_8px_24px_rgba(11,45,92,0.12)]"
-                        style={{
-                          background:
-                            'linear-gradient(160deg, #1B2F4A 0%, #3E566F 38%, #A8927D 72%, #E6D5C3 100%)',
-                        }}
-                        role="img"
-                        aria-label={`${displayName} profile photo`}
-                      />
-                    )}
                     <div className="min-w-0">
                       <h1
                         className="text-[clamp(1.85rem,3vw,2.4rem)] leading-none tracking-[-0.03em] text-[#0B2D5C]"
@@ -259,7 +239,6 @@ export default function MyProfileHub({
                 hasImportantAlignmentFactors={hasImportantAlignmentFactors}
                 initialPhotos={photos}
                 initialSection={initialSection}
-                onPrimaryPhotoChange={setPhotoUrl}
                 onPhotosChange={setProfilePhotos}
                 compatibilityComplete={compatibilityCard.totalEligibleQuestions > 0 && compatibilityCard.completedQuestions >= compatibilityCard.totalEligibleQuestions}
               />
