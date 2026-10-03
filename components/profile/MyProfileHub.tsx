@@ -148,7 +148,7 @@ export default function MyProfileHub({
                       <img
                         src={photoUrl}
                         alt=""
-                        className="h-20 w-20 shrink-0 rounded-full border-4 border-white object-cover shadow-[0_8px_24px_rgba(11,45,92,0.12)]"
+                        className="h-20 w-20 shrink-0 rounded-full border-4 border-white object-cover object-top shadow-[0_8px_24px_rgba(11,45,92,0.12)]"
                       />
                     ) : (
                       <div
