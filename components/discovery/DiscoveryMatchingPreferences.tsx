@@ -9,6 +9,7 @@ import LocationPicker, {
 } from '@/components/profile/LocationPicker';
 import {
   INTERESTED_IN_OPTIONS,
+  SEX_OPTIONS,
   MAX_DISTANCE_MILES,
   MAX_MATCH_AGE,
   MIN_DISTANCE_MILES,
@@ -34,6 +35,11 @@ export default function DiscoveryMatchingPreferences({
   initialLocation: DiscoveryMatchingLocation;
 }) {
   const router = useRouter();
+  const [genderIdentity, setGenderIdentity] = useState(() =>
+    SEX_OPTIONS.some(option => option.value === initialPreferences?.gender_identity)
+      ? initialPreferences!.gender_identity!
+      : ''
+  );
   const [interestedIn, setInterestedIn] = useState(() =>
     getInterestedInSelections(initialPreferences?.interested_in)
   );
@@ -76,11 +82,25 @@ export default function DiscoveryMatchingPreferences({
         </p>
       </div>
 
-      <input
-        type="hidden"
-        name="gender_identity"
-        value={initialPreferences?.gender_identity ?? ''}
-      />
+      <label className="block text-sm font-semibold text-[#0B2D5C]">
+        I am
+        <select
+          name="gender_identity"
+          value={genderIdentity}
+          required
+          disabled={isPending}
+          onChange={(event) => {
+            setGenderIdentity(event.target.value);
+            setMessage(null);
+          }}
+          className="mt-2 min-h-12 w-full rounded-[6px] border border-[#0B2D5C]/25 bg-[#F7F7F7] px-3 py-3 text-base"
+        >
+          <option value="" disabled>Choose Male or Female</option>
+          {SEX_OPTIONS.map(option => (
+            <option key={option.value} value={option.value}>{option.label}</option>
+          ))}
+        </select>
+      </label>
       {interestedIn.map((value) => (
         <input key={value} type="hidden" name="interested_in" value={value} />
       ))}
