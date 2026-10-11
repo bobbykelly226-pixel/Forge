@@ -92,16 +92,13 @@
   border-left: 4px solid #0B2D5C;
   transition: box-shadow .2s ease, transform .2s ease;
 }
-.forge-profile-theme .profile-hub [data-profile-edit-group]:nth-of-type(even) {
-  border-left-color: #C92027;
-}
 .forge-profile-theme .profile-hub [data-profile-edit-group]:hover {
   box-shadow: 0 8px 20px rgba(11, 45, 92, .09);
 }
 .profile-edit-number {
   flex: none;
   padding-top: 2px;
-  color: #C92027;
+  color: #0B2D5C;
   font-family: Georgia, 'Times New Roman', serif;
   font-size: 1.1rem;
   font-style: italic;
@@ -121,7 +118,7 @@
   display: block;
   height: 100%;
   border-radius: inherit;
-  background: #C92027;
+  background: #0B2D5C;
 }
 @media (max-width: 640px) {
   .profile-hub-identity-row { align-items: flex-start; flex-direction: column; }

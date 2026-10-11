@@ -1,5 +1,7 @@
 'use client';
 
+import Link from 'next/link';
+import type { DiscoveryRequirement } from '@/lib/profile/discovery-requirements';
 import { useRouter } from 'next/navigation';
 import { useState, useTransition } from 'react';
 
@@ -10,8 +12,8 @@ type Props = {
   enabled: boolean;
   canEnable: boolean;
   message: string | null;
-  unmetRequirements: string[];
-  onAddLocation?: () => void;
+  unmetRequirements: DiscoveryRequirement[];
+  onEditSection?: (section: 'basics' | 'location') => void;
 };
 
 export default function DiscoveryVisibilityToggle({
@@ -19,7 +21,7 @@ export default function DiscoveryVisibilityToggle({
   canEnable,
   message,
   unmetRequirements,
-  onAddLocation,
+  onEditSection,
 }: Props) {
   const router = useRouter();
   const [enabled, setEnabled] = useState(initialEnabled);
@@ -76,7 +78,7 @@ export default function DiscoveryVisibilityToggle({
           disabled={pending || (!canEnable && !enabled)}
           onClick={() => onToggle(!enabled)}
           className={`relative h-8 w-14 shrink-0 rounded-full transition ${
-            enabled ? 'bg-[#D62828]' : 'bg-[#0B2D5C]/20'
+            enabled ? 'bg-[#0B2D5C]' : 'bg-[#0B2D5C]/20'
           } disabled:cursor-not-allowed disabled:opacity-60`}
         >
           <span
@@ -104,18 +106,25 @@ export default function DiscoveryVisibilityToggle({
           </p>
           <ul className="mt-2 list-disc space-y-1 pl-5 text-sm leading-6 text-[#5A6575]">
             {unmetRequirements.map((requirement) => (
-              <li key={requirement}>{requirement}</li>
+              <li key={requirement.id}>
+                {'section' in requirement ? (
+                  onEditSection ? (
+                    <button
+                      type="button"
+                      onClick={() => onEditSection(requirement.section)}
+                      className="min-h-11 py-2 text-left font-semibold text-[#0B2D5C] underline underline-offset-4 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+                    >
+                      {requirement.label}
+                    </button>
+                  ) : (
+                    <Link href={`/profile?section=${requirement.section}`} className="inline-flex min-h-11 items-center py-2 font-semibold text-[#0B2D5C] underline underline-offset-4">{requirement.label}</Link>
+                  )
+                ) : (
+                  <Link href={requirement.href} className="inline-flex min-h-11 items-center py-2 font-semibold text-[#0B2D5C] underline underline-offset-4">{requirement.label}</Link>
+                )}
+              </li>
             ))}
           </ul>
-          {onAddLocation && unmetRequirements.some((requirement) => /location/i.test(requirement)) ? (
-            <button
-              type="button"
-              onClick={onAddLocation}
-              className="mt-3 inline-flex min-h-11 items-center rounded-md bg-[#0B2D5C] px-4 py-2 text-sm font-semibold text-white hover:bg-[#0A2540]"
-            >
-              Add location
-            </button>
-          ) : null}
         </div>
       ) : null}
     </section>

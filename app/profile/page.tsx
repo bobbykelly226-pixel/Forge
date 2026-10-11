@@ -6,6 +6,7 @@ import ForgeAppCanvas from '@/components/ForgeAppCanvas';
 import NotificationsProvider from '@/components/notifications/NotificationsProvider';
 import { CharacterSignalsProvider } from '@/components/character-signals/CharacterSignalsProvider';
 import MyProfileHub from '@/components/profile/MyProfileHub';
+import { DISCOVERY_REQUIREMENTS, type DiscoveryRequirement } from '@/lib/profile/discovery-requirements';
 import { loadCompatibilityProfileStateAction } from '@/app/actions/questionnaire';
 import { loadCurrentUserProfileBundle } from '@/lib/data/bundle';
 import { loadMyCharacterSignals } from '@/lib/data/character-signals';
@@ -141,13 +142,13 @@ export default async function MyProfileHubPage({ searchParams }: PageProps) {
     discoveryHasMatchingPreferences &&
     discoveryHasPrivateLocation;
   const discoveryUnmetRequirements = [
-    !discoveryStatusAllowed ? 'Reactivate this account before entering Discovery.' : null,
-    !discoveryHasAdultDateOfBirth ? 'Add a valid adult date of birth.' : null,
+    !discoveryStatusAllowed ? DISCOVERY_REQUIREMENTS.account : null,
+    !discoveryHasAdultDateOfBirth ? DISCOVERY_REQUIREMENTS.birthdate : null,
     !discoveryHasMatchingPreferences
-      ? 'Complete who you are looking for, the age range, and the distance range.'
+      ? DISCOVERY_REQUIREMENTS.preferences
       : null,
-    !discoveryHasPrivateLocation ? 'Save your private matching location.' : null,
-  ].filter((requirement): requirement is string => requirement !== null);
+    !discoveryHasPrivateLocation ? DISCOVERY_REQUIREMENTS.location : null,
+  ].filter((requirement): requirement is DiscoveryRequirement => requirement !== null);
 
   const profileForWorkspace = {
     ...profile,

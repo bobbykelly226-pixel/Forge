@@ -14,6 +14,7 @@ import ProfileCompatibilityCard, {
   type ProfileCompatibilityCardProps,
 } from '@/components/compatibility-profile/ProfileCompatibilityCard';
 import DiscoveryVisibilityToggle from '@/components/profile/DiscoveryVisibilityToggle';
+import type { DiscoveryRequirement } from '@/lib/profile/discovery-requirements';
 import ProfileWorkspace, { type ProfileWorkspaceHandle } from '@/components/profile/ProfileWorkspace';
 import { sortPhotosByDisplayOrder, type ManagedProfilePhoto } from '@/lib/profile-photo';
 import type { Profile } from '@/lib/types/profile';
@@ -37,7 +38,7 @@ export type MyProfileHubProps = {
     enabled: boolean;
     canEnable: boolean;
     message: string | null;
-    unmetRequirements: string[];
+    unmetRequirements: DiscoveryRequirement[];
   };
   profile: Profile;
   privateDetails: PrivateProfileSeed | null;
@@ -220,7 +221,7 @@ export default function MyProfileHub({
 
 
               <DiscoveryVisibilityToggle
-                onAddLocation={() => workspaceRef.current?.openLocation()}
+                onEditSection={(section) => workspaceRef.current?.openEditor(section)}
                 enabled={discoveryVisibility.enabled}
                 canEnable={discoveryVisibility.canEnable}
                 message={discoveryVisibility.message}

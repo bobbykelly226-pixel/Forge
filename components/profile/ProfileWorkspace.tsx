@@ -60,7 +60,7 @@ type PrivateProfileSeed = {
   location_provider: string | null;
 };
 
-export type ProfileWorkspaceHandle = { openPhotos: () => void; openLocation: () => void };
+export type ProfileWorkspaceHandle = { openPhotos: () => void; openEditor: (id: ProfileSectionId) => void };
 
 export type ProfileWorkspaceProps = {
   ref?: Ref<ProfileWorkspaceHandle>;
@@ -204,15 +204,15 @@ export default function ProfileWorkspace({
   };
 
   useImperativeHandle(ref, () => ({
-    openLocation() {
+    openEditor(id) {
       if (Object.values(sectionStatus).includes('saving')) return;
-      if (openSection === 'location') {
-        const node = sectionRefs.current.location;
+      if (openSection === id) {
+        const node = sectionRefs.current[id];
         node?.focus({ preventScroll: true });
         node?.scrollIntoView({ behavior: 'instant', block: 'start' });
         return;
       }
-      openForEdit('location');
+      openForEdit(id);
     },
     openPhotos() {
       if (Object.values(sectionStatus).includes('saving')) return;
