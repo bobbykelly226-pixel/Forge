@@ -11,6 +11,7 @@ type Props = {
   canEnable: boolean;
   message: string | null;
   unmetRequirements: string[];
+  onAddLocation?: () => void;
 };
 
 export default function DiscoveryVisibilityToggle({
@@ -18,6 +19,7 @@ export default function DiscoveryVisibilityToggle({
   canEnable,
   message,
   unmetRequirements,
+  onAddLocation,
 }: Props) {
   const router = useRouter();
   const [enabled, setEnabled] = useState(initialEnabled);
@@ -105,6 +107,15 @@ export default function DiscoveryVisibilityToggle({
               <li key={requirement}>{requirement}</li>
             ))}
           </ul>
+          {onAddLocation && unmetRequirements.some((requirement) => /location/i.test(requirement)) ? (
+            <button
+              type="button"
+              onClick={onAddLocation}
+              className="mt-3 inline-flex min-h-11 items-center rounded-md bg-[#0B2D5C] px-4 py-2 text-sm font-semibold text-white hover:bg-[#0A2540]"
+            >
+              Add location
+            </button>
+          ) : null}
         </div>
       ) : null}
     </section>

@@ -220,6 +220,7 @@ export default function MyProfileHub({
 
 
               <DiscoveryVisibilityToggle
+                onAddLocation={() => workspaceRef.current?.openLocation()}
                 enabled={discoveryVisibility.enabled}
                 canEnable={discoveryVisibility.canEnable}
                 message={discoveryVisibility.message}

@@ -60,7 +60,7 @@ type PrivateProfileSeed = {
   location_provider: string | null;
 };
 
-export type ProfileWorkspaceHandle = { openPhotos: () => void };
+export type ProfileWorkspaceHandle = { openPhotos: () => void; openLocation: () => void };
 
 export type ProfileWorkspaceProps = {
   ref?: Ref<ProfileWorkspaceHandle>;
@@ -204,6 +204,16 @@ export default function ProfileWorkspace({
   };
 
   useImperativeHandle(ref, () => ({
+    openLocation() {
+      if (Object.values(sectionStatus).includes('saving')) return;
+      if (openSection === 'location') {
+        const node = sectionRefs.current.location;
+        node?.focus({ preventScroll: true });
+        node?.scrollIntoView({ behavior: 'instant', block: 'start' });
+        return;
+      }
+      openForEdit('location');
+    },
     openPhotos() {
       if (Object.values(sectionStatus).includes('saving')) return;
       if (openSection === 'photo') {
@@ -560,7 +570,12 @@ function SectionEditor({
       ) : null}
 
       {sectionId === 'location' ? (
-        <LocationPicker initial={buildInitialLocation(profile, privateDetails)} />
+        <LocationPicker
+          initial={buildInitialLocation(profile, privateDetails)}
+          optional={false}
+          allowManual={false}
+          description="Required to appear in Discovery and calculate distance. Select a city or postal-code suggestion, or use your current location. Only your city and state appear publicly."
+        />
       ) : null}
 
       {sectionId === 'about' ? (

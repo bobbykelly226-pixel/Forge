@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 import { readFileSync } from 'node:fs';
+import { PROFILE_EDIT_GROUPS, PROFILE_SECTIONS, isProfileSectionId } from '../profile/sections';
 
 import {
   INTERESTED_IN_OPTIONS,
@@ -22,6 +23,13 @@ const valid = {
 };
 
 describe('matching preference validation', () => {
+  it('makes required location reachable and editable from Profile basics', () => {
+    assert.equal(isProfileSectionId('location'), true);
+    assert.equal(PROFILE_SECTIONS.find(section => section.id === 'location')?.editable, true);
+    const groups = PROFILE_EDIT_GROUPS.filter(group => group.sections.includes('location'));
+    assert.equal(groups.length, 1);
+    assert.equal(groups[0]?.id, 'basics');
+  });
   it('uses labeled native age selectors in Discovery instead of number inputs', () => {
     const source = readFileSync(new URL('../../components/discovery/DiscoveryMatchingPreferences.tsx', import.meta.url), 'utf8');
     for (const bound of ['minimumAge', 'maximumAge']) {

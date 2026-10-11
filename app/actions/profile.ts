@@ -957,6 +957,18 @@ export async function saveProfileSection(
     const locationLongitude = parseOptionalNumber(
       readOptionalString(formData, 'location_longitude')
     );
+    if (
+      !locationCity || !locationRegion ||
+      locationLatitude == null || locationLongitude == null ||
+      !Number.isFinite(locationLatitude) || !Number.isFinite(locationLongitude) ||
+      locationLatitude < -90 || locationLatitude > 90 ||
+      locationLongitude < -180 || locationLongitude > 180
+    ) {
+      return {
+        success: false,
+        message: 'Choose a suggested location or use your current location before saving.',
+      };
+    }
     const hasLocation = Boolean(locationCity || locationRegion);
     const publicLocation = hasLocation
       ? toPublicLocationFields({
