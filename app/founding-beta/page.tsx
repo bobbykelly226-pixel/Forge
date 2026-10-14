@@ -1,3 +1,4 @@
+import Footer from '@/components/Footer';
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { ArrowRight, MessageCircle, ShieldCheck, Sparkles } from 'lucide-react';
@@ -78,19 +79,7 @@ export default async function FoundingBetaPage() {
           </div>
         </section>
       </main>
-      <footer className={styles.footer}>
-        <div className={styles.footerInner}>
-          <Link href="/" aria-label="Forge home"><img src="/Logos/forgedinlife-header-light.png" alt="Forge" /></Link>
-          <nav aria-label="Footer">
-            <Link href="/">Home</Link>
-            <Link href="/about">About</Link>
-            <Link href="/community-standards">Community Standards</Link>
-            <Link href="/privacy">Privacy Policy</Link>
-            <Link href="/terms">Terms of Service</Link>
-            <Link href="/contact">Contact</Link>
-          </nav>
-        </div>
-      </footer>
+      <Footer />
     </div>
   );
 }

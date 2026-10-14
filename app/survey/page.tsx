@@ -1,6 +1,6 @@
+import Footer from '@/components/Footer';
 import type { Metadata } from 'next';
-import Image from 'next/image';
-import Link from 'next/link';
+import Header from '@/components/Header';
 import SurveyForm from '@/components/survey/SurveyForm';
 import styles from './survey.module.css';
 
@@ -15,10 +15,7 @@ export const metadata: Metadata = {
 export default function SurveyPage() {
   return (
     <div className={styles.page}>
-      <header className={styles.header}><div className={styles.headerInner}>
-        <Image src="/Logos/forgedinlife-header-light.png" alt="Forge, Forged in Life" width={260} height={97} priority />
-        <p>Strong Values. Strong Connections.</p>
-      </div></header>
+      <Header />
       <main className={styles.main}>
         <div className={styles.intro}>
           <p className={styles.eyebrow}>Your experience matters</p>
@@ -32,19 +29,7 @@ export default function SurveyPage() {
         </div>
         <SurveyForm />
       </main>
-      <footer className={styles.footer}>
-        <div className={styles.footerInner}>
-          <Link href="/" aria-label="Forge home"><Image src="/Logos/forgedinlife-header-light.png" alt="Forge" width={180} height={67} /></Link>
-          <nav aria-label="Survey footer">
-            <Link href="/">Home</Link>
-            <Link href="/about">About</Link>
-            <Link href="/community-standards">Community Standards</Link>
-            <Link href="/privacy">Privacy Policy</Link>
-            <Link href="/terms">Terms of Service</Link>
-            <Link href="/contact">Contact</Link>
-          </nav>
-        </div>
-      </footer>
+      <Footer />
     </div>
   );
 }

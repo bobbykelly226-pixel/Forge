@@ -11,9 +11,9 @@ export default function Header() {
   const closeMenu = () => setMenuOpen(false);
 
   return (
-    <nav className="forge-marketing-header border-b border-[#0B2D5C]/20 bg-[#0B2D5C] backdrop-blur-md sticky top-0 z-50">
+    <nav style={{ fontFamily: "'Times New Roman', serif" }} className="forge-marketing-header border-b border-[#0B2D5C]/20 bg-[#0B2D5C] backdrop-blur-md sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-8 py-4 flex items-center justify-between gap-4">
-        <Link href="/" aria-current={pathname === '/' ? 'page' : undefined} onClick={closeMenu} className="flex items-center gap-3 hover:opacity-90 transition flex-shrink-0 pl-2">
+        <Link href="/" aria-label="Forge home" aria-current={pathname === '/' ? 'page' : undefined} onClick={closeMenu} className="flex items-center gap-3 hover:opacity-90 transition flex-shrink-0 pl-2">
           <img 
             src="/Logos/forgedinlife-header-light.png" 
             alt="Forge" 
