@@ -46,7 +46,7 @@
 .actions button:disabled { opacity: .55; cursor: not-allowed; }
 .actions button:focus-visible, .textarea:focus-visible, .footer a:focus-visible { outline: 2px solid #0B2D5C; outline-offset: 3px; }
 .error { color: #A31319; margin-top: 16px; }
-.footer { background: #0B2D5C; padding: 34px 24px; font-family: Georgia, 'Times New Roman', serif; font-size: .9rem; color: #E6E6E7; }
+.footer { background: #0B2D5C; padding: 34px 24px; font-family: 'Times New Roman'; font-size: 14px; color: #E6E6E7; }
 .footerInner { max-width: 1176px; margin: auto; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 24px; }
 .footer img { width: 135px; height: auto; }
 .footer p { font-family: Georgia, 'Times New Roman', serif; font-style: italic; font-size: 1.1rem; }
