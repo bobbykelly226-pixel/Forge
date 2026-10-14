@@ -57,7 +57,7 @@
 .honeypot { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
 .betaLink { display: inline-flex; align-items: center; min-height: 48px; margin-top: 24px; color: #0B2D5C; font-weight: 700; text-decoration: underline; }
 .questionDescription { font-size: .85rem; line-height: 1.4; color: #424B56; margin: -12px 0 16px; }
-.form { scroll-margin-top: 112px; }
+.form { scroll-margin-top: 112px; overflow: clip; }
 @media (min-width: 900px) {
   .page { display: flex; flex-direction: column; }
   .main { width: 100%; flex: 1; align-items: center; padding: 20px 32px; gap: 40px; }
