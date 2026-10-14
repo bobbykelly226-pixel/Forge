@@ -1,18 +1,56 @@
 'use client';
 
-import { useRef, useState } from 'react';
-import { SURVEY_QUESTIONS, selectSurveyOption } from '@/lib/survey/questions';
+import Link from 'next/link';
+import { useEffect, useRef, useState } from 'react';
+import { SURVEY_QUESTIONS, SURVEY_VERSION, selectSurveyOption } from '@/lib/survey/questions';
 import styles from '@/app/survey/survey.module.css';
 
 export default function SurveyForm() {
   const [step, setStep] = useState(0);
   const [answers, setAnswers] = useState<Record<string, string[]>>({});
   const [error, setError] = useState('');
+  const [submissionId, setSubmissionId] = useState<string | null>(null);
+  const [pending, setPending] = useState(false);
+  const [success, setSuccess] = useState(false);
+  const [website, setWebsite] = useState('');
+  const submitting = useRef(false);
   const heading = useRef<HTMLHeadingElement>(null);
   const question = SURVEY_QUESTIONS[step];
   const selected = answers[question.id] ?? [];
   const optional = question.kind === 'text';
   const last = step === SURVEY_QUESTIONS.length - 1;
+
+  useEffect(() => {
+    let active = true;
+    fetch('/api/survey', { cache: 'no-store' }).then(response => response.json()).then(result => {
+      if (active && result.success && typeof result.id === 'string') setSubmissionId(result.id);
+    }).catch(() => {});
+    return () => { active = false; };
+  }, []);
+
+  async function submit() {
+    if (submitting.current) return;
+    submitting.current = true;
+    setPending(true);
+    setError('');
+    try {
+      let id = submissionId;
+      if (!id) {
+        const session = await fetch('/api/survey', { cache: 'no-store' }).then(response => response.json());
+        if (!session.success || typeof session.id !== 'string') throw new Error();
+        id = session.id;
+        setSubmissionId(id);
+      }
+      const response = await fetch('/api/survey', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id, version: SURVEY_VERSION, answers, website }) });
+      const result = await response.json();
+      if (!response.ok || !result.success) { setError(result.message ?? 'Your feedback could not be saved. Please try again.'); return; }
+      setSuccess(true);
+      requestAnimationFrame(() => heading.current?.focus());
+    } catch { setError('Your feedback could not be saved. Your answers are still here, please try again.'); }
+    finally { submitting.current = false; setPending(false); }
+  }
+
+  if (success) return <section className={styles.form} role="status"><h2 ref={heading} tabIndex={-1} className={styles.question}>Thank you. Your feedback will help guide Forge’s priorities.</h2><p>Interested in trying Forge? Exploring the beta is optional and separate from this survey.</p><Link href="/founding-beta" className={styles.betaLink}>Explore the Forge beta</Link><p className={styles.note}>Your response has been saved. No signup is needed.</p></section>;
 
   function move(next: number) {
     setError('');
@@ -31,7 +69,9 @@ export default function SurveyForm() {
         return;
       }
       if (!last) move(step + 1);
+      else void submit();
     }}>
+      <div className={styles.honeypot} aria-hidden="true"><label htmlFor="survey-website">Leave this field empty</label><input id="survey-website" name="website" type="text" tabIndex={-1} autoComplete="off" value={website} onChange={event => setWebsite(event.target.value)} /></div>
       <div className={styles.progressRow}><span>Question {step + 1} of {SURVEY_QUESTIONS.length}</span><span>{optional ? 'Optional' : question.kind === 'multiple' ? 'Choose up to three' : 'Choose one'}</span></div>
       <progress className={styles.progress} value={step + 1} max={SURVEY_QUESTIONS.length} aria-label="Survey progress" />
       <h2 ref={heading} tabIndex={-1} className={styles.question} id="survey-question">{question.title}</h2>
@@ -45,7 +85,7 @@ export default function SurveyForm() {
         <fieldset className={styles.choices} aria-labelledby="survey-question" aria-describedby={error ? 'survey-error' : undefined}>
           {question.options?.map(option => {
             const checked = selected.includes(option);
-            const capped = !checked && selected.length >= 3 && !question.exclusive?.includes(option);
+            const capped = pending || (!checked && selected.length >= 3 && !question.exclusive?.includes(option));
             return (
               <label key={option} className={`${styles.choice} ${checked ? styles.selected : ''}`}>
                 <input type={question.kind === 'single' ? 'radio' : 'checkbox'} name={question.id} value={option} checked={checked} disabled={capped} onChange={() => {
@@ -61,10 +101,10 @@ export default function SurveyForm() {
       {question.kind === 'multiple' && <p className={styles.note} aria-live="polite">{selected.length} selected{selected.length === 3 ? ', deselect an answer to choose another.' : '.'}</p>}
       {error && <p className={styles.error} id="survey-error" role="alert">{error}</p>}
       <div className={styles.actions}>
-        {step > 0 && <button className={styles.back} type="button" onClick={() => move(step - 1)}>Back</button>}
-        <button className={styles.next} type="submit" disabled={last}>{last ? 'Submit feedback' : optional && !selected[0]?.trim() ? 'Skip and continue' : 'Continue'}</button>
+        {step > 0 && <button className={styles.back} type="button" disabled={pending} onClick={() => move(step - 1)}>Back</button>}
+        <button className={styles.next} type="submit" disabled={pending}>{pending ? 'Saving feedback…' : last ? 'Submit feedback' : optional && !selected[0]?.trim() ? 'Skip and continue' : 'Continue'}</button>
       </div>
-      {last && <p className={styles.note} role="status">This draft is not accepting responses yet. Your answers have not been sent.</p>}
+      {pending && <p className={styles.note} role="status">Saving your feedback.</p>}
     </form>
   );
 }

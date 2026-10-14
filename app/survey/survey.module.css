@@ -32,4 +32,6 @@
 .error { color: #A31319; margin-top: 16px; }
 .footer { display: flex; justify-content: center; gap: 24px; padding: 8px 20px 28px; font-size: .9rem; color: #0B2D5C; }
 .footer a { text-decoration: underline; text-underline-offset: 3px; }
+.honeypot { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+.betaLink { display: inline-flex; align-items: center; min-height: 48px; margin-top: 24px; color: #0B2D5C; font-weight: 700; text-decoration: underline; }
 @media (max-width: 480px) { .header span { display: none; } .main { padding: 24px 14px; } .form { padding: 20px 16px; } .actions .next { flex: 1; } }

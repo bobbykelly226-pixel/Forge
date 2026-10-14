@@ -1,7 +1,6 @@
 import type { Metadata } from 'next';
 import Image from 'next/image';
 import Link from 'next/link';
-import { notFound } from 'next/navigation';
 import SurveyForm from '@/components/survey/SurveyForm';
 import styles from './survey.module.css';
 
@@ -14,8 +13,6 @@ export const metadata: Metadata = {
 };
 
 export default function SurveyPage() {
-  // Keep the unfinished intake off Production until storage and abuse protection are ready.
-  if (process.env.NODE_ENV === 'production') notFound();
   return (
     <div className={styles.page}>
       <header className={styles.header}>
@@ -28,6 +25,7 @@ export default function SurveyPage() {
           <h1>Help shape a better dating experience</h1>
           <p>Tell us what has worked, what hasn’t, and what you wish dating apps did differently.</p>
           <p className={styles.note}>About 3 minutes. No name, email, or Forge account required. Please don’t include identifying details in written answers.</p>
+          <p className={styles.note}>Answers are not linked to a Forge account. A temporary security cookie and short lived abuse checks protect submissions. Basic hosting logs may include connection information.</p>
         </div>
         <SurveyForm />
       </main>
