@@ -5,7 +5,7 @@ import { useEffect, useRef, useState } from 'react';
 import { SURVEY_QUESTIONS, SURVEY_VERSION, selectSurveyOption } from '@/lib/survey/questions';
 import styles from '@/app/survey/survey.module.css';
 
-export default function SurveyForm() {
+export default function SurveyForm({ onStageChange }: { onStageChange: (stage: number) => void }) {
   const [step, setStep] = useState(0);
   const [answers, setAnswers] = useState<Record<string, string[]>>({});
   const [error, setError] = useState('');
@@ -46,6 +46,7 @@ export default function SurveyForm() {
       const result = await response.json();
       if (!response.ok || !result.success) { setError(result.message ?? 'Your feedback could not be saved. Please try again.'); return; }
       setSuccess(true);
+      onStageChange(SURVEY_QUESTIONS.length);
       requestAnimationFrame(() => { window.scrollTo({ top: 0, behavior: 'instant' }); heading.current?.focus({ preventScroll: true }); });
     } catch { setError('Your feedback could not be saved. Your answers are still here, please try again.'); }
     finally { submitting.current = false; setPending(false); }
@@ -56,6 +57,7 @@ export default function SurveyForm() {
   function move(next: number) {
     setError('');
     setStep(next);
+    onStageChange(next);
     requestAnimationFrame(() => {
       heading.current?.focus({ preventScroll: true });
       if (window.matchMedia('(min-width: 900px)').matches) window.scrollTo({ top: 0, behavior: 'instant' });
