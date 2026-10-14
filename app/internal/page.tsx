@@ -29,6 +29,11 @@ export const metadata = {
 
 const TOOLS = [
   {
+    href: '/internal/survey',
+    title: 'Dating Experience Survey',
+    description: 'View anonymous survey totals, answer counts, percentages, and written feedback.',
+  },
+  {
     href: '/internal/founding-beta',
     title: 'Founding Beta Requests',
     description: 'Manage beta capacity, view accounts and confirmation status, and review the waitlist.',
