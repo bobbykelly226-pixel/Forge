@@ -1,4 +1,8 @@
 .page { min-height: 100svh; background: #f8f6f2; color: #000; font-family: Arial, Helvetica, sans-serif; }
+.header { background: #0B2D5C; color: #fff; padding: 16px 32px; }
+.headerInner { max-width: 1176px; margin: auto; display: flex; align-items: center; justify-content: space-between; gap: 24px; }
+.header img { width: 260px; height: auto; }
+.header p { font-family: Georgia, 'Times New Roman', serif; font-size: 1.1rem; }
 .main { position: relative; display: grid; grid-template-columns: minmax(0, .9fr) minmax(0, 1.1fr); gap: clamp(32px, 5vw, 80px); align-items: start; max-width: 1240px; margin: auto; padding: 64px 32px 80px; }
 .main::before { content: ''; position: absolute; width: 420px; height: 420px; border: 1px solid #0b2d5c16; border-radius: 50%; top: -260px; right: -100px; pointer-events: none; z-index: 0; }
 .page { overflow-x: clip; }
@@ -49,7 +53,8 @@
 .footer nav { display: flex; flex-wrap: wrap; gap: 24px; }
 .footer a { text-decoration: underline; text-underline-offset: 3px; }
 .footer a:focus-visible { outline-color: #fff; }
+.footer .copyright { margin: 24px auto 0; padding-top: 20px; border-top: 1px solid #ffffff30; max-width: 1176px; font-family: Arial, Helvetica, sans-serif; font-style: normal; font-size: .8rem; color: #ffffffb8; text-align: center; }
 .honeypot { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
 .betaLink { display: inline-flex; align-items: center; min-height: 48px; margin-top: 24px; color: #0B2D5C; font-weight: 700; text-decoration: underline; }
 @media (max-width: 850px) { .main { grid-template-columns: 1fr; max-width: 720px; gap: 28px; padding: 36px 24px 48px; } .intro { padding-top: 0; } .intro h1 { font-size: clamp(2.6rem, 7vw, 3.6rem); } .invitation { margin-top: 22px; } .privacy { margin-top: 10px; } }
-@media (max-width: 480px) { .main { padding: 28px 18px 40px; } .intro h1 { font-size: 2.6rem; margin-bottom: 20px; } .form { padding: 24px 18px; } .question { font-size: 1.3rem; scroll-margin-top: 112px; } .actions .next { flex: 1; } .footer { padding: 26px 20px; } }
+@media (max-width: 480px) { .header { padding: 16px 20px; } .header img { width: 200px; } .header p { display: none; } .main { padding: 28px 18px 40px; } .intro h1 { font-size: 2.6rem; margin-bottom: 20px; } .form { padding: 24px 18px; } .question { font-size: 1.3rem; scroll-margin-top: 24px; } .actions .next { flex: 1; } .footer { padding: 26px 20px; } .footer nav { gap: 4px 20px; } .footer nav a { display: inline-flex; min-height: 44px; align-items: center; } }
