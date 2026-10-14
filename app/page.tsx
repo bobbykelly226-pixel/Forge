@@ -66,6 +66,15 @@ export default function Home() {
           </div>
         </section>
 
+        <section className={styles.surveyInvitation} aria-labelledby="survey-invitation-heading">
+          <div className={styles.sectionShell}>
+            <span className={styles.sectionEyebrow}>YOUR EXPERIENCE MATTERS</span>
+            <h2 id="survey-invitation-heading">Help shape <em>Forge.</em></h2>
+            <p>What has worked, what hasn’t, and what do you wish dating apps did differently? Share your thoughts in our short survey, no name, email, or account required.</p>
+            <Link href="/survey" className={styles.surveyLink}>Take the 3 minute survey</Link>
+          </div>
+        </section>
+
         <section className={styles.invitation} aria-labelledby="invitation-heading">
           <div className={styles.invitationInner}>
             <h2 id="invitation-heading">Ready to find something more meaningful?</h2>

@@ -46,14 +46,14 @@
 .actions button:disabled { opacity: .55; cursor: not-allowed; }
 .actions button:focus-visible, .textarea:focus-visible, .footer a:focus-visible { outline: 2px solid #0B2D5C; outline-offset: 3px; }
 .error { color: #A31319; margin-top: 16px; }
-.footer { border-top: 4px solid #C92027; background: #0B2D5C; padding: 28px 32px; font-size: .9rem; color: #fff; }
+.footer { background: #0B2D5C; padding: 34px 24px; font-family: Georgia, 'Times New Roman', serif; font-size: .9rem; color: #E6E6E7; }
 .footerInner { max-width: 1176px; margin: auto; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 24px; }
-.footer img { width: 150px; height: auto; }
+.footer img { width: 135px; height: auto; }
 .footer p { font-family: Georgia, 'Times New Roman', serif; font-style: italic; font-size: 1.1rem; }
-.footer nav { display: flex; flex-wrap: wrap; gap: 24px; }
-.footer a { text-decoration: underline; text-underline-offset: 3px; }
+.footer nav { display: flex; flex-wrap: wrap; gap: 16px 28px; }
+.footer a { text-decoration: none; }
+.footer a:hover { color: #fff; text-decoration: underline; }
 .footer a:focus-visible { outline-color: #fff; }
-.footer .copyright { margin: 24px auto 0; padding-top: 20px; border-top: 1px solid #ffffff30; max-width: 1176px; font-family: Arial, Helvetica, sans-serif; font-style: normal; font-size: .8rem; color: #ffffffb8; text-align: center; }
 .honeypot { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
 .betaLink { display: inline-flex; align-items: center; min-height: 48px; margin-top: 24px; color: #0B2D5C; font-weight: 700; text-decoration: underline; }
 @media (max-width: 850px) { .main { grid-template-columns: 1fr; max-width: 720px; gap: 28px; padding: 36px 24px 48px; } .intro { padding-top: 0; } .intro h1 { font-size: clamp(2.6rem, 7vw, 3.6rem); } .invitation { margin-top: 22px; } .privacy { margin-top: 10px; } }

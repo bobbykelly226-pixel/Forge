@@ -6,6 +6,14 @@
   background: var(--cream);
 }
 
+.surveyInvitation { padding: 64px 24px; background: #f8f6f2; border-top: 1px solid #0b2d5c20; }
+.surveyInvitation h2 { margin: 16px 0 18px; color: #0B2D5C; font-family: Arial, Helvetica, sans-serif; font-size: clamp(2.2rem, 4vw, 3.2rem); font-weight: 800; letter-spacing: -.035em; line-height: 1.1; }
+.surveyInvitation h2 em { color: #C92027; font-family: Georgia, 'Times New Roman', serif; font-weight: 500; }
+.surveyInvitation p { max-width: 760px; color: #0B2D5C; font-size: 1.1rem; line-height: 1.7; }
+.surveyLink { display: inline-flex; align-items: center; min-height: 48px; margin-top: 22px; border: 1px solid #0B2D5C; border-radius: 6px; padding: 12px 24px; background: #0B2D5C; color: #fff; font-family: Arial, Helvetica, sans-serif; font-weight: 700; }
+.surveyLink:hover { background: #0A2540; }
+.surveyLink:focus-visible { outline: 2px solid #0B2D5C; outline-offset: 4px; }
+
 .hero {
   position: relative;
   display: grid;

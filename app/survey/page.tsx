@@ -36,14 +36,14 @@ export default function SurveyPage() {
         <div className={styles.footerInner}>
           <Link href="/" aria-label="Forge home"><Image src="/Logos/forgedinlife-header-light.png" alt="Forge" width={180} height={67} /></Link>
           <nav aria-label="Survey footer">
-            <Link href="/about">About Forge</Link>
-            <Link href="/contact">Contact</Link>
+            <Link href="/">Home</Link>
+            <Link href="/about">About</Link>
             <Link href="/community-standards">Community Standards</Link>
             <Link href="/privacy">Privacy Policy</Link>
             <Link href="/terms">Terms of Service</Link>
+            <Link href="/contact">Contact</Link>
           </nav>
         </div>
-        <p className={styles.copyright}>© 2026 Forged In Life. All rights reserved.</p>
       </footer>
     </div>
   );
