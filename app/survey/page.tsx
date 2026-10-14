@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import Image from 'next/image';
 import Link from 'next/link';
 import SurveyForm from '@/components/survey/SurveyForm';
+import Header from '@/components/Header';
 import styles from './survey.module.css';
 
 export const metadata: Metadata = {
@@ -15,21 +16,21 @@ export const metadata: Metadata = {
 export default function SurveyPage() {
   return (
     <div className={styles.page}>
-      <header className={styles.header}>
-        <Link href="/" aria-label="Forge home"><Image src="/Logos/forgedinlife-header-light.png" alt="Forge" width={220} height={82} priority /></Link>
-        <span>Strong Values. Strong Connections.</span>
-      </header>
+      <Header />
       <main className={styles.main}>
         <div className={styles.intro}>
           <p className={styles.eyebrow}>Your experience matters</p>
-          <h1>Help shape a better dating experience</h1>
-          <p>Tell us what has worked, what hasn’t, and what you wish dating apps did differently.</p>
-          <p className={styles.note}>About 3 minutes. No name, email, or Forge account required. Please don’t include identifying details in written answers.</p>
-          <p className={styles.note}>Answers are not linked to a Forge account. A temporary security cookie and short lived abuse checks protect submissions. Basic hosting logs may include connection information.</p>
+          <h1>Help shape a better <em>dating experience.</em></h1>
+          <p className={styles.lead}>Tell us what has worked, what hasn’t, and what you wish dating apps did differently.</p>
+          <div className={styles.invitation}>
+            <strong>A few minutes. A real voice.</strong>
+            <p>About 3 minutes. No name, email, or Forge account required. Please don’t include identifying details in written answers.</p>
+          </div>
+          <details className={styles.privacy}><summary>How we protect your feedback</summary><p>Answers are not linked to a Forge account. A temporary security cookie and short lived abuse checks protect submissions. Basic hosting logs may include connection information.</p></details>
         </div>
         <SurveyForm />
       </main>
-      <footer className={styles.footer}><Link href="/privacy">Privacy Policy</Link><Link href="/">About Forge</Link></footer>
+      <footer className={styles.footer}><div className={styles.footerInner}><Link href="/" aria-label="Forge home"><Image src="/Logos/forgedinlife-header-light.png" alt="Forge" width={180} height={67} /></Link><p>Strong Values. Strong Connections.</p><nav aria-label="Survey footer"><Link href="/privacy">Privacy Policy</Link><Link href="/about">About Forge</Link></nav></div></footer>
     </div>
   );
 }
