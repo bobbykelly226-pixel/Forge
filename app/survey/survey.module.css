@@ -56,5 +56,27 @@
 .footer a:focus-visible { outline-color: #fff; }
 .honeypot { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
 .betaLink { display: inline-flex; align-items: center; min-height: 48px; margin-top: 24px; color: #0B2D5C; font-weight: 700; text-decoration: underline; }
+.questionDescription { font-size: .85rem; line-height: 1.4; color: #424B56; margin: -12px 0 16px; }
+.form { scroll-margin-top: 112px; }
+@media (min-width: 900px) {
+  .page { display: flex; flex-direction: column; }
+  .main { width: 100%; flex: 1; align-items: center; padding: 20px 32px; gap: 40px; }
+  .intro { padding-top: 0; }
+  .intro h1 { font-size: clamp(2.5rem, 3.6vw, 3.2rem); margin: 16px 0 20px; }
+  .lead { font-size: 1.05rem; }
+  .invitation { margin-top: 20px; padding: 14px 18px; }
+  .privacy { margin-top: 10px; }
+  .form { padding: 20px; }
+  .question { font-size: 1.25rem; margin: 16px 0; }
+  .dense .choices { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+  .choice { min-height: 44px; padding: 8px 10px; gap: 8px; font-size: .875rem; line-height: 1.35; }
+  .note { margin-top: 8px; font-size: .8rem; }
+  .actions { margin-top: 16px; }
+  .actions button { min-height: 44px; padding: 10px 20px; }
+  .textarea { height: 120px; }
+  .questionDescription { margin: -6px 0 12px; }
+  .page > footer { padding-block: 16px; }
+  .page > footer > div > div:last-child { margin-top: 12px; }
+}
 @media (max-width: 850px) { .main { grid-template-columns: 1fr; max-width: 720px; gap: 28px; padding: 36px 24px 48px; } .intro { padding-top: 0; } .intro h1 { font-size: clamp(2.6rem, 7vw, 3.6rem); } .invitation { margin-top: 22px; } .privacy { margin-top: 10px; } }
 @media (max-width: 480px) { .header { padding: 16px 20px; } .header img { width: 200px; } .header p { display: none; } .main { padding: 28px 18px 40px; } .intro h1 { font-size: 2.6rem; margin-bottom: 20px; } .form { padding: 24px 18px; } .question { font-size: 1.3rem; scroll-margin-top: 24px; } .actions .next { flex: 1; } .footer { padding: 26px 20px; } .footer nav { gap: 4px 20px; } .footer nav a { display: inline-flex; min-height: 44px; align-items: center; } }

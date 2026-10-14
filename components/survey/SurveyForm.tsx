@@ -15,6 +15,7 @@ export default function SurveyForm() {
   const [website, setWebsite] = useState('');
   const submitting = useRef(false);
   const heading = useRef<HTMLHeadingElement>(null);
+  const form = useRef<HTMLFormElement>(null);
   const question = SURVEY_QUESTIONS[step];
   const selected = answers[question.id] ?? [];
   const optional = question.kind === 'text';
@@ -45,7 +46,7 @@ export default function SurveyForm() {
       const result = await response.json();
       if (!response.ok || !result.success) { setError(result.message ?? 'Your feedback could not be saved. Please try again.'); return; }
       setSuccess(true);
-      requestAnimationFrame(() => heading.current?.focus());
+      requestAnimationFrame(() => { window.scrollTo({ top: 0, behavior: 'instant' }); heading.current?.focus({ preventScroll: true }); });
     } catch { setError('Your feedback could not be saved. Your answers are still here, please try again.'); }
     finally { submitting.current = false; setPending(false); }
   }
@@ -57,12 +58,13 @@ export default function SurveyForm() {
     setStep(next);
     requestAnimationFrame(() => {
       heading.current?.focus({ preventScroll: true });
-      heading.current?.scrollIntoView({ block: 'start', behavior: 'instant' });
+      if (window.matchMedia('(min-width: 900px)').matches) window.scrollTo({ top: 0, behavior: 'instant' });
+      else form.current?.scrollIntoView({ block: 'start', behavior: 'instant' });
     });
   }
 
   return (
-    <form className={styles.form} onSubmit={event => {
+    <form ref={form} className={`${styles.form} ${(question.options?.length ?? 0) > 6 ? styles.dense : ''}`} onSubmit={event => {
       event.preventDefault();
       if (!optional && !selected.length) {
         setError('Please choose an answer to continue.');
@@ -75,6 +77,7 @@ export default function SurveyForm() {
       <div className={styles.progressRow}><span>Question {step + 1} of {SURVEY_QUESTIONS.length}</span><span>{optional ? 'Optional' : question.kind === 'multiple' ? 'Choose up to three' : 'Choose one'}</span></div>
       <progress className={styles.progress} value={step + 1} max={SURVEY_QUESTIONS.length} aria-label="Survey progress" />
       <h2 ref={heading} tabIndex={-1} className={styles.question} id="survey-question">{question.title}</h2>
+      {question.description && <p className={styles.questionDescription} id="survey-question-description">{question.description}</p>}
       {optional ? (
         <div>
           <label htmlFor={question.id} className={styles.note}>Optional short answer</label>
@@ -82,7 +85,7 @@ export default function SurveyForm() {
           <p id="survey-text-note" className={styles.note}>Please leave out names and contact details. {(selected[0] ?? '').length}/1000 characters.</p>
         </div>
       ) : (
-        <fieldset className={styles.choices} aria-labelledby="survey-question" aria-describedby={error ? 'survey-error' : undefined}>
+        <fieldset className={styles.choices} aria-labelledby="survey-question" aria-describedby={[question.description ? 'survey-question-description' : '', error ? 'survey-error' : ''].filter(Boolean).join(' ') || undefined}>
           {question.options?.map(option => {
             const checked = selected.includes(option);
             const capped = pending || (!checked && selected.length >= 3 && !question.exclusive?.includes(option));
