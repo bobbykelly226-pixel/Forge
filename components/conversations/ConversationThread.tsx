@@ -415,7 +415,7 @@ export default function ConversationThread({
           });
           if (!response.ok) {
             await supabase.storage.from(MESSAGE_ATTACHMENT_BUCKET).remove([path]);
-            setLiveMessage('Voice message could not be verified. Record a message under 60 seconds and try again.');
+            setLiveMessage('Voice message could not be verified. Record a message up to 5 minutes and try again.');
             return false;
           }
         } catch {

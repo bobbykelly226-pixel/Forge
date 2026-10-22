@@ -39,10 +39,20 @@ select pg_temp.voice_is(public.get_voice_upload_for_validation((select conversat
 select pg_temp.voice_is(pg_temp.send_clip()->>'ok','false','outsider cannot send clip');
 reset role;
 insert into public.conversation_voice_checks(object_id,storage_path,sender_id,file_size,mime_type,duration_seconds)
-select object_id,path,pg_temp.voice_user(1),1000,'audio/mp4',14.5 from clip;
+select object_id,path,pg_temp.voice_user(1),1000,'audio/mp4',300 from clip;
+do $$
+begin
+  begin
+    update public.conversation_voice_checks set duration_seconds=300.001
+    where object_id=(select object_id from clip);
+    raise exception 'Voice verification failed: duration over five minutes was accepted';
+  exception when check_violation then null;
+  end;
+end;
+$$;
 select set_config('request.jwt.claim.sub',pg_temp.voice_user(1)::text,true);
 set local role authenticated;
-select pg_temp.voice_is(pg_temp.send_clip()->>'ok','true','inspected owner voice sends in active conversation');
+select pg_temp.voice_is(pg_temp.send_clip()->>'ok','true','inspected five-minute voice sends in active conversation');
 select pg_temp.voice_is(pg_temp.send_clip()->>'duplicate','true','retry deduplicates voice sends');
 select pg_temp.voice_assert((select count(*)=1 from public.messages where conversation_id=(select conversation_id from clip)),'retry creates only one message');
 select pg_temp.voice_is(public.send_conversation_message_with_attachments((select conversation_id from clip),'',gen_random_uuid(),jsonb_build_array(jsonb_build_object('storage_path',(select path from clip),'file_name','voice.m4a','mime_type','audio/mp4','file_size',999)))->>'ok','false','tampered voice metadata is denied');

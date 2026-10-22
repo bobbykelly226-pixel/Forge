@@ -8,7 +8,7 @@ export const runtime = 'nodejs';
 export const maxDuration = 30;
 
 export async function POST(request: Request) {
-  const deny = (status: number) => Response.json({ error: 'Voice message could not be verified. Record a message under 60 seconds and try again.' }, { status, headers: { 'Cache-Control': 'no-store' } });
+  const deny = (status: number) => Response.json({ error: 'Voice message could not be verified. Record a message up to 5 minutes and try again.' }, { status, headers: { 'Cache-Control': 'no-store' } });
   if (request.headers.get('origin') !== new URL(request.url).origin) return deny(403);
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();

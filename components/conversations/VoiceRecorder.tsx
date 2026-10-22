@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Mic, Square, X } from 'lucide-react';
 import { MESSAGE_ATTACHMENT_MAX_BYTES } from '@/lib/conversations/constants';
-import { chooseVoiceRecordingType, VOICE_MAX_SECONDS } from '@/lib/conversations/voice';
+import { chooseVoiceRecordingType, formatVoiceTime, VOICE_MAX_SECONDS } from '@/lib/conversations/voice';
 
 type Props = { onClose: () => void; onSend: (file: File) => Promise<boolean> };
 type Phase = 'idle' | 'opening' | 'recording' | 'preview' | 'sending';
@@ -137,10 +137,10 @@ export default function VoiceRecorder({ onClose, onSend }: Props) {
       <h2 id="voice-recorder-title" className="text-lg font-semibold">Voice message</h2>
       <button type="button" onClick={onClose} disabled={phase === 'sending'} aria-label="Close voice recorder" className="flex h-11 w-11 items-center justify-center rounded-lg disabled:opacity-50"><X aria-hidden="true" className="h-5 w-5" /></button>
     </div>
-    <p className="mt-2 text-sm">Record up to 60 seconds. Listen before you send.</p>
+    <p className="mt-2 text-sm">Record up to 5 minutes. Listen before you send.</p>
     <div className="my-5 rounded-lg border border-[#0B2D5C]/15 bg-[#F7F7F7] p-4">
       {url ? <audio src={url} controls preload="metadata" aria-label="Preview your voice message" className="w-full" />
-        : <p role="status" className="flex items-center gap-2"><Mic className={`h-5 w-5 ${phase === 'recording' ? 'text-red-700' : ''}`} aria-hidden="true" />{phase === 'recording' ? `Recording · 0:${String(seconds).padStart(2, '0')} / 1:00` : phase === 'opening' ? 'Waiting for microphone access…' : 'Ready when you are.'}</p>}
+        : <p role="status" className="flex items-center gap-2"><Mic className={`h-5 w-5 ${phase === 'recording' ? 'text-red-700' : ''}`} aria-hidden="true" />{phase === 'recording' ? `Recording · ${formatVoiceTime(seconds)} / ${formatVoiceTime(VOICE_MAX_SECONDS)}` : phase === 'opening' ? 'Waiting for microphone access…' : 'Ready when you are.'}</p>}
     </div>
     {error && <p role="alert" className="mb-4 text-sm">{error}</p>}
     <div className="flex flex-wrap justify-end gap-2">
