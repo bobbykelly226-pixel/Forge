@@ -38,7 +38,7 @@ test('uses privacy-preserving referrer and browser capability policies', () => {
   );
   assert.equal(
     getHeader('Permissions-Policy'),
-    'camera=(), microphone=(), geolocation=(self), browsing-topics=(), payment=(), usb=()'
+    'camera=(), microphone=(self), geolocation=(self), browsing-topics=(), payment=(), usb=()'
   );
 });
 
@@ -60,9 +60,9 @@ test('allows only the external browser resources Forge currently needs', () => {
   );
 });
 
- test('camera and microphone are enabled only on conversation routes', async () => {
+test('microphone policy survives client navigation and camera recording stays disabled', async () => {
  const routes = await nextConfig.headers!();
- assert.equal(routes.length, 2);
- assert.equal(routes[1].source, '/connections/c/:path*');
- assert.match(routes[1].headers[0].value, /camera=\(self\), microphone=\(self\)/);
- });
+ assert.equal(routes.length, 1);
+ assert.match(routes[0].headers.find(header => header.key === 'Permissions-Policy')!.value, /camera=\(\), microphone=\(self\)/);
+ assert.equal(nextConfig.env?.NEXT_PUBLIC_VIDEO_MESSAGES_ENABLED, 'false');
+});

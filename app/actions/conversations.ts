@@ -73,7 +73,7 @@ export async function reportUserAction(payload: ReportPayload) {
   const result = await reportUser(payload);
   if (!result.success || !result.data?.reportId) return result;
 
-  const messageReference = payload.details?.startsWith('Reported video message: ');
+  const messageReference = payload.details && /^Reported (?:video|voice) message: /.test(payload.details);
   if (messageReference) {
     const supabase = await createClient();
     const { data: { user } } = await supabase.auth.getUser();

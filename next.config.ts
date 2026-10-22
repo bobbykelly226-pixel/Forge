@@ -18,6 +18,8 @@ const contentSecurityPolicy = [
   'upgrade-insecure-requests',
 ].join('; ');
 
+// The document policy survives client navigation into chat. Browser permission is
+// still required, and microphone capture starts only after the member taps Record.
 export const securityHeaders = [
   {
     key: 'Content-Security-Policy',
@@ -34,7 +36,7 @@ export const securityHeaders = [
   {
     key: 'Permissions-Policy',
     value:
-      'camera=(), microphone=(), geolocation=(self), browsing-topics=(), payment=(), usb=()',
+      'camera=(), microphone=(self), geolocation=(self), browsing-topics=(), payment=(), usb=()',
   },
   {
     key: 'X-Frame-Options',
@@ -42,25 +44,16 @@ export const securityHeaders = [
   },
 ];
 
-// Approved release: enable Production and the designated Preview branches.
-const videoEnabled = (process.env.VERCEL_ENV === 'production'
-  || (process.env.VERCEL_ENV === 'preview'
-    && ['codex/video-messages', 'codex/fix008-discovery-persistent'].includes(process.env.VERCEL_GIT_COMMIT_REF ?? '')))
-  && process.env.NEXT_PUBLIC_VIDEO_MESSAGES_ENABLED !== 'false';
-
+// Video recording is reserved for a future Premium release. Existing playback remains available.
 const nextConfig: NextConfig = {
   env: {
-    NEXT_PUBLIC_VIDEO_MESSAGES_ENABLED: videoEnabled ? 'true' : 'false',
+    NEXT_PUBLIC_VIDEO_MESSAGES_ENABLED: 'false',
   },
   async headers() {
     return [
       {
         source: '/:path*',
         headers: securityHeaders,
-      },
-      {
-        source: '/connections/c/:path*',
-        headers: [{ key: 'Permissions-Policy', value: 'camera=(self), microphone=(self), geolocation=(self), browsing-topics=(), payment=(), usb=()' }],
       },
     ];
   },

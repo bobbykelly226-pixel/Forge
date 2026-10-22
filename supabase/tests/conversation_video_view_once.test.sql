@@ -63,26 +63,16 @@ insert into public.conversation_video_checks(
 select object_id,path,pg_temp.once_user(1),1000,'video/mp4',14.5
 from once_clip;
 
-create temporary table once_send(result jsonb);
-grant select on once_send to authenticated;
-set local role authenticated;
-insert into once_send(result)
-select public.send_conversation_message_with_attachments(
-  conversation_id,
-  '',
-  gen_random_uuid(),
-  jsonb_build_array(jsonb_build_object(
-    'storage_path',path,
-    'file_name','view-once.mp4',
-    'mime_type','video/mp4',
-    'file_size',1000,
-    'view_once',true
-  ))
+-- Historical fixture: new video sends are disabled for the future Premium tier.
+create temporary table once_send as
+with message as (
+  insert into public.messages(conversation_id,sender_id,body,client_message_id)
+  select conversation_id,pg_temp.once_user(1),'',gen_random_uuid() from once_clip returning id
+), attachment as (
+  insert into public.message_attachments(message_id,conversation_id,sender_id,storage_path,file_name,mime_type,file_size,attachment_kind,view_once,position)
+  select message.id,clip.conversation_id,pg_temp.once_user(1),clip.path,'view-once.mp4','video/mp4',1000,'file',true,0 from message cross join once_clip clip returning message_id
 )
-from once_clip;
-reset role;
-
-select is((select result->>'ok' from once_send), 'true', 'sender can send an inspected View Once video');
+select jsonb_build_object('ok',true,'message_id',message_id) result from attachment;
 
 create temporary table once_attachment as
 select a.id, a.storage_path

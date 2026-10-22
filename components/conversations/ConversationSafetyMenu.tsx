@@ -35,6 +35,7 @@ import { createClient } from '@/lib/supabase/client';
 
 type ConversationSafetyMenuProps = {
   reportMessageId?: string;
+  reportMediaKind?: 'video' | 'voice';
   peerUserId: string;
   peerFirstName: string;
   connectionId: string;
@@ -230,6 +231,7 @@ function SafetyDialog({
 
 export default function ConversationSafetyMenu({
   reportMessageId,
+  reportMediaKind = 'video',
   peerUserId,
   peerFirstName,
   connectionId,
@@ -422,7 +424,7 @@ export default function ConversationSafetyMenu({
       const result = await reportUserAction({
         reportedUserId: peerUserId,
         reason: reportReason,
-        details: (reportMessageId ? `Reported video message: ${reportMessageId}\n${reportDetails.trim()}` : reportDetails.trim()) || undefined,
+        details: (reportMessageId ? `Reported ${reportMediaKind} message: ${reportMessageId}\n${reportDetails.trim()}` : reportDetails.trim()) || undefined,
         conversationId,
         evidence,
       });
@@ -464,7 +466,7 @@ export default function ConversationSafetyMenu({
 
   return (
     <>
-      {reportMessageId ? <button type="button" className="mt-2 min-h-11 rounded-lg px-3 text-sm underline" onClick={() => { setReportReason('inappropriate_content'); setDialog('report'); }}>Report video</button> : <div className="relative" ref={menuRef}>
+      {reportMessageId ? <button type="button" className="mt-2 min-h-11 rounded-lg px-3 text-sm underline" onClick={() => { setReportReason('inappropriate_content'); setDialog('report'); }}>Report {reportMediaKind}</button> : <div className="relative" ref={menuRef}>
         <button
           type="button"
           data-conversation-options
@@ -588,7 +590,7 @@ export default function ConversationSafetyMenu({
 
       <SafetyDialog
         open={dialog === 'report'}
-        title={reportMessageId ? `Report video from ${peerFirstName}` : `Report ${peerFirstName}`}
+        title={reportMessageId ? `Report ${reportMediaKind} from ${peerFirstName}` : `Report ${peerFirstName}`}
         description="Reports are reviewed by Forge. Reporting does not automatically block this person, you can block separately if you need to."
         confirmLabel="Submit report"
         busyLabel="Submitting report…"
@@ -600,7 +602,7 @@ export default function ConversationSafetyMenu({
         focusConfirm={false}
       >
         <div className="mt-5 space-y-4">
-          {reportMessageId && <p className="text-sm text-black">This report will include a reference to the selected video message.</p>}
+          {reportMessageId && <p className="text-sm text-black">This report will include a reference to the selected {reportMediaKind} message.</p>}
           <label className="block">
             <span className="text-sm font-semibold text-[#0B2D5C]">Reason</span>
             <div className="relative mt-2">

@@ -28,7 +28,7 @@ export type LaunchEventPayloads = {
   };
   'Conversation Started': undefined;
   'Message Sent': {
-    attachment: 'none' | 'photo' | 'video' | 'video_view_once' | 'file';
+    attachment: 'none' | 'photo' | 'video' | 'video_view_once' | 'voice' | 'file';
   };
   'Beta Feedback Submitted': undefined;
 };

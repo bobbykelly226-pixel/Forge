@@ -39,7 +39,7 @@ insert into public.conversation_video_checks(object_id,storage_path,sender_id,fi
 select object_id,path,pg_temp.video_user(1),1000,'video/mp4',14.5 from clip;
 select set_config('request.jwt.claim.sub',pg_temp.video_user(1)::text,true);
 set local role authenticated;
-select is(pg_temp.send_clip()->>'ok','true','inspected owner video sends in active conversation');
+select is(pg_temp.send_clip()->>'ok','false','new video remains disabled even when inspected');
 select is(public.end_connection((select id from video_pair))->>'ok','true','can end after video');
 select is(pg_temp.send_clip()->>'ok','false','video cannot bypass ended conversation');
 reset role;

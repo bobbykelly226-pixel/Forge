@@ -27,3 +27,13 @@ test('rejects cross-conversation, cross-sender and mismatched attachment referen
     assert.equal(matchesReportedVideo(scope, { ...attachment, ...change }), false);
   }
 });
+
+test('voice report references and evidence remain bound to the reported sender and conversation', () => {
+  assert.equal(reportedVideoMessageId(`Reported voice message: ${id}\nDetails`), id);
+  const scope = { conversationId: 'conversation', reportedUserId: 'sender', messageId: id };
+  const voice = { conversation_id: 'conversation', sender_id: 'sender', message_id: id, storage_path: 'conversation/sender/voice.m4a', mime_type: 'audio/mp4' };
+  assert.equal(matchesReportedVideo(scope, voice), true);
+  assert.equal(matchesReportedVideo(scope, { ...voice, sender_id: 'other' }), false);
+  assert.equal(matchesReportedVideo(scope, { ...voice, mime_type: 'audio/mpeg' }), false);
+  assert.equal(reportedVideoEvidencePath(id, id, 'audio/webm'), `${id}/${id}.webm`);
+});

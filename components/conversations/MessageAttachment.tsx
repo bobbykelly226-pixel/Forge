@@ -10,6 +10,7 @@ import {
 import { MESSAGE_ATTACHMENT_BUCKET } from '@/lib/conversations/constants';
 import type { ConversationAttachment } from '@/lib/conversations/types';
 import VideoMessage from './VideoMessage';
+import VoiceMessage from './VoiceMessage';
 import { createClient } from '@/lib/supabase/client';
 
 type Props = {
@@ -25,7 +26,7 @@ export default function MessageAttachment({ attachment, isSent, localPreviewUrl 
 
   useEffect(() => {
     let active = true;
-    if (!path || localPreviewUrl || attachment.mimeType.startsWith('video/')) return;
+    if (!path || localPreviewUrl || /^(video|audio)\//.test(attachment.mimeType)) return;
 
     const load = async () => {
       const supabase = createClient();
@@ -48,6 +49,7 @@ export default function MessageAttachment({ attachment, isSent, localPreviewUrl 
   const displayUrl = localPreviewUrl ?? signedUrl;
 
   if (!path) return null;
+  if (attachment.mimeType.startsWith('audio/')) return <VoiceMessage path={path} localUrl={localPreviewUrl} />;
   if (attachment.mimeType.startsWith('video/')) return <VideoMessage
     path={path}
     localUrl={localPreviewUrl}

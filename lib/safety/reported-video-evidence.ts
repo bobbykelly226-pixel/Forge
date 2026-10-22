@@ -15,6 +15,7 @@ type ServiceClient = NonNullable<ReturnType<typeof createServiceClient>>;
 type PreservedVideo = {
   id: string;
   storagePath: string;
+  mimeType: string;
 };
 
 export async function preserveReportedVideoEvidence(
@@ -56,7 +57,7 @@ export async function preserveReportedVideoEvidence(
         .eq('message_id', messageId)
         .eq('conversation_id', report.conversation_id)
         .eq('sender_id', report.reported_user_id)
-        .in('mime_type', ['video/mp4', 'video/webm']),
+        .in('mime_type', ['video/mp4', 'video/webm', 'audio/mp4', 'audio/webm']),
     ]);
 
   if (!participant || !message || attachmentError || !attachments?.length) return [];
@@ -71,12 +72,12 @@ export async function preserveReportedVideoEvidence(
   for (const attachment of attachments) {
     const { data: existing, error: existingError } = await admin
       .from('reported_video_evidence')
-      .select('id, storage_path')
+      .select('id, storage_path, mime_type')
       .eq('report_id', report.id)
       .eq('source_attachment_id', attachment.id)
       .maybeSingle();
     if (existingError) {
-      console.error('Reported video evidence metadata could not be checked.', {
+      console.error('Reported media evidence metadata could not be checked.', {
         reportId: report.id,
         attachmentId: attachment.id,
         message: existingError.message,
@@ -84,7 +85,7 @@ export async function preserveReportedVideoEvidence(
       continue;
     }
     if (existing) {
-      preserved.push({ id: existing.id, storagePath: existing.storage_path });
+      preserved.push({ id: existing.id, storagePath: existing.storage_path, mimeType: existing.mime_type });
       continue;
     }
 
@@ -95,7 +96,7 @@ export async function preserveReportedVideoEvidence(
         destinationBucket: REPORTED_VIDEO_EVIDENCE_BUCKET,
       });
     if (copyError && !/already exists|duplicate/i.test(copyError.message)) {
-      console.error('Reported video evidence could not be copied.', {
+      console.error('Reported media evidence could not be copied.', {
         reportId: report.id,
         attachmentId: attachment.id,
         message: copyError.message,
@@ -120,11 +121,11 @@ export async function preserveReportedVideoEvidence(
         },
         { onConflict: 'report_id,source_attachment_id', ignoreDuplicates: true }
       )
-      .select('id, storage_path')
+      .select('id, storage_path, mime_type')
       .maybeSingle();
 
     if (insertError) {
-      console.error('Reported video evidence metadata could not be saved.', {
+      console.error('Reported media evidence metadata could not be saved.', {
         reportId: report.id,
         attachmentId: attachment.id,
         message: insertError.message,
@@ -132,17 +133,17 @@ export async function preserveReportedVideoEvidence(
       continue;
     }
     if (inserted) {
-      preserved.push({ id: inserted.id, storagePath: inserted.storage_path });
+      preserved.push({ id: inserted.id, storagePath: inserted.storage_path, mimeType: inserted.mime_type });
       continue;
     }
 
     const { data: concurrent } = await admin
       .from('reported_video_evidence')
-      .select('id, storage_path')
+      .select('id, storage_path, mime_type')
       .eq('report_id', report.id)
       .eq('source_attachment_id', attachment.id)
       .maybeSingle();
-    if (concurrent) preserved.push({ id: concurrent.id, storagePath: concurrent.storage_path });
+    if (concurrent) preserved.push({ id: concurrent.id, storagePath: concurrent.storage_path, mimeType: concurrent.mime_type });
   }
 
   return preserved;
