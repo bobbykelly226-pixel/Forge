@@ -765,6 +765,8 @@ export type Database = {
       }
       profile_photos: {
         Row: {
+          source_object_id: string | null
+          approved_object_id: string | null
           created_at: string
           display_order: number
           id: string
@@ -778,6 +780,8 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          source_object_id?: string | null
+          approved_object_id?: string | null
           created_at?: string
           display_order: number
           id?: string
@@ -791,6 +795,8 @@ export type Database = {
           user_id: string
         }
         Update: {
+          source_object_id?: string | null
+          approved_object_id?: string | null
           created_at?: string
           display_order?: number
           id?: string
@@ -817,6 +823,8 @@ export type Database = {
           storage_path: string
         }
         Insert: {
+          source_object_id?: string | null
+          approved_object_id?: string | null
           created_at?: string
           decision: Database["public"]["Enums"]["photo_moderation_status"]
           id?: string
@@ -827,6 +835,8 @@ export type Database = {
           storage_path: string
         }
         Update: {
+          source_object_id?: string | null
+          approved_object_id?: string | null
           created_at?: string
           decision?: Database["public"]["Enums"]["photo_moderation_status"]
           id?: string
@@ -2583,6 +2593,10 @@ export type Database = {
           receiver_id: string
           signal_key: string
         }[]
+      }
+      list_discovery_candidate_page: {
+        Args: { p_after?: string; p_limit?: number }
+        Returns: Database['public']['Views']['discoverable_profiles']['Row'][]
       }
       list_eligible_discovery_profiles: {
         Args: { p_limit?: number }

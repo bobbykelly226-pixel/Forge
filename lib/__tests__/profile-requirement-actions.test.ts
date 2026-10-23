@@ -5,7 +5,7 @@ import { PROFILE_EDIT_GROUPS, PROFILE_SECTIONS } from '../profile/sections';
 
 test('every Discovery blocker has a distinct, reachable correction destination', () => {
   const requirements = Object.values(DISCOVERY_REQUIREMENTS);
-  assert.equal(requirements.length, 4);
+  assert.equal(requirements.length, 7);
   assert.equal(new Set(requirements.map(item => item.id)).size, requirements.length);
   for (const item of requirements) {
     assert.ok(item.label.length > 0);

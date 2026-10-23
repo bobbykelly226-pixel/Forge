@@ -140,7 +140,10 @@ export default async function MyProfileHubPage({ searchParams }: PageProps) {
     discoveryStatusAllowed &&
     discoveryHasAdultDateOfBirth &&
     discoveryHasMatchingPreferences &&
-    discoveryHasPrivateLocation;
+    discoveryHasPrivateLocation &&
+    photos.some(photo => photo.moderation_status === 'approved' && photo.approved_object_id) &&
+    Boolean(profile.relationship_goals?.length || profile.relationship_goal?.trim()) &&
+    Boolean(profile.short_bio?.trim() || profile.more_about?.trim());
   const discoveryUnmetRequirements = [
     !discoveryStatusAllowed ? DISCOVERY_REQUIREMENTS.account : null,
     !discoveryHasAdultDateOfBirth ? DISCOVERY_REQUIREMENTS.birthdate : null,
@@ -148,6 +151,9 @@ export default async function MyProfileHubPage({ searchParams }: PageProps) {
       ? DISCOVERY_REQUIREMENTS.preferences
       : null,
     !discoveryHasPrivateLocation ? DISCOVERY_REQUIREMENTS.location : null,
+    !photos.some(photo => photo.moderation_status === 'approved' && photo.approved_object_id) ? DISCOVERY_REQUIREMENTS.photo : null,
+    !(profile.relationship_goals?.length || profile.relationship_goal?.trim()) ? DISCOVERY_REQUIREMENTS.intention : null,
+    !(profile.short_bio?.trim() || profile.more_about?.trim()) ? DISCOVERY_REQUIREMENTS.about : null,
   ].filter((requirement): requirement is DiscoveryRequirement => requirement !== null);
 
   const profileForWorkspace = {

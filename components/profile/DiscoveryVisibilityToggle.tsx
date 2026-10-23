@@ -13,7 +13,7 @@ type Props = {
   canEnable: boolean;
   message: string | null;
   unmetRequirements: DiscoveryRequirement[];
-  onEditSection?: (section: 'basics' | 'location') => void;
+  onEditSection?: (section: 'basics' | 'location' | 'photo' | 'relationship' | 'about') => void;
 };
 
 export default function DiscoveryVisibilityToggle({
@@ -43,7 +43,7 @@ export default function DiscoveryVisibilityToggle({
       const result = await setDiscoveryVisibilityAction(next);
       if (!result.success) {
         setEnabled(previous);
-        setError('Couldn’t update. Try again.');
+        setError(result.message || 'Couldn’t update. Try again.');
         return;
       }
       setEnabled(result.data.enabled);

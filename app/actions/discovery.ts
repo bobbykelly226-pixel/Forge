@@ -1,6 +1,10 @@
 'use server';
 
+import { rankDiscoveryCandidates } from '@/lib/discovery/ranking';
+import { createClient } from '@/lib/supabase/server';
+
 import {
+  attachDiscoverablePhotos,
   getDiscoveryProfile,
   getDiscoveryVisibilityState,
   listDiscoveryFeedProfiles,
@@ -42,8 +46,7 @@ export async function fetchDiscoveryFeedAction() {
     loadViewerCompatibilityPerson(),
   ]);
 
-  const cards = result.data.map((profile) => {
-    const card = toDiscoveryFeedCard(profile);
+  const candidates = result.data.map((profile) => {
     const comparison = questionnaireComparisons.success
       ? questionnaireComparisons.data[profile.id]
       : null;
@@ -60,16 +63,22 @@ export async function fetchDiscoveryFeedAction() {
       questionnaireResult && profileResult
         ? mergeCompatibilityResults(questionnaireResult, profileResult)
         : questionnaireResult ?? profileResult;
-    return engineResult
-      ? { ...card, ...toFeedAlignmentFields(engineResult) }
-      : card;
+    return { id: profile.id, value: profile, alignment: engineResult };
   });
-
+  const selected = rankDiscoveryCandidates(candidates);
+  const supabase = await createClient();
+  const withPhotos = await attachDiscoverablePhotos(supabase, selected.map(c => c.value));
+  const cards = withPhotos.map((profile, index) => {
+    const card = toDiscoveryFeedCard(profile);
+    const alignment = selected[index]?.alignment;
+    return alignment ? { ...card, ...toFeedAlignmentFields(alignment) } : card;
+  });
   return {
     success: true as const,
     profiles: cards,
     actionState: actionState.success ? actionState.data : {},
   };
+
 }
 
 export async function fetchDiscoveryProfileAction(profileId: string) {

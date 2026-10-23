@@ -38,7 +38,7 @@ export async function attachDiscoverablePhotos(
 
   if (error) {
     console.error('attachDiscoverablePhotos:', error.message);
-    return profiles;
+    return profiles.map(profile => ({ ...profile, photos: [], profile_photo_url: null }));
   }
 
   const byUser = new Map<
@@ -77,7 +77,7 @@ export async function attachDiscoverablePhotos(
     const photos = sortPhotosByDisplayOrder(byUser.get(profile.id) ?? []);
     const primaryUrl = resolveAuthoritativeProfilePhotoUrl({
       photos,
-      legacyProfilePhotoUrl: profile.profile_photo_url,
+      legacyProfilePhotoUrl: null,
     });
     return {
       ...profile,
@@ -165,7 +165,7 @@ export async function setDiscoveryVisibility(
     console.error('setDiscoveryVisibility rejected:', payload);
     return {
       success: false,
-      message: 'Couldn’t update. Try again.',
+      message: payload.message ?? 'Couldn’t update. Try again.',
     };
   }
 
@@ -200,25 +200,25 @@ export async function listDiscoveryFeedProfiles(): Promise<
     return { success: false, message: 'You must be signed in.' };
   }
 
-  const { data, error } = await supabase.rpc('list_eligible_discovery_profiles', {
-    p_limit: 50,
-  });
-
-  if (error) {
-    console.error('listDiscoveryFeedProfiles:', error.message);
-    return {
-      success: false,
-      message: 'Could not load Discovery right now. Please try again.',
-    };
+  const profiles: PublicDiscoveryProfile[] = [];
+  let after: string | undefined;
+  for (;;) {
+    const { data, error } = await supabase.rpc('list_discovery_candidate_page', { p_after: after, p_limit: 100 });
+    if (error) {
+      console.error('listDiscoveryFeedProfiles:', error.message);
+      return { success: false, message: 'Could not load Discovery right now. Please try again.' };
+    }
+    const page = (data ?? []) as PublicDiscoveryProfile[];
+    profiles.push(...page);
+    if (page.length < 100) break;
+    const next = page.at(-1)?.id;
+    if (!next || next === after || profiles.length > 5000) {
+      return { success: false, message: 'Discovery is busy right now. Please try again shortly.' };
+    }
+    after = next;
   }
+  return { success: true, data: profiles };
 
-  return {
-    success: true,
-    data: await attachDiscoverablePhotos(
-      supabase,
-      (data ?? []) as PublicDiscoveryProfile[]
-    ),
-  };
 }
 
 export async function getDiscoveryProfile(

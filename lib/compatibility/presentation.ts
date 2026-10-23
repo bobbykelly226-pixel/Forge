@@ -108,9 +108,11 @@ export function toFeedAlignmentFields(result: CompatibilityEngineResult): {
   alignmentLabel: string;
   hasImportantFactors: boolean;
   importantFactorsSummary?: string;
+  alignmentReasons: string[];
 } {
   return {
     alignmentLabel: result.alignment.label,
+    alignmentReasons: result.whyForgeIntroducedYou.slice(0, 2),
     hasImportantFactors: result.importantDifferences.length > 0,
     importantFactorsSummary:
       result.importantDifferences[0]?.copy ??

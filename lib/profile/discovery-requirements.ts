@@ -1,4 +1,7 @@
 export const DISCOVERY_REQUIREMENTS = {
+  photo: { id: 'photo', label: 'Add a photo and wait for Forge photo approval.', section: 'photo' },
+  intention: { id: 'intention', label: 'Choose what you are looking for in a relationship.', section: 'relationship' },
+  about: { id: 'about', label: 'Write a short About section.', section: 'about' },
   account: {
     id: 'account',
     label: 'Reactivate this account before entering Discovery.',

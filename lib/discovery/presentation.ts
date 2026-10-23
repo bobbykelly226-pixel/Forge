@@ -71,6 +71,8 @@ export type DiscoveryFeedCardModel = {
   confidence: string;
   hasImportantFactors: boolean;
   importantFactorsSummary?: string;
+  alignmentReasons?: string[];
+  relationshipIntention?: string;
   /** Null when the member has not written an About section — do not invent copy. */
   aboutPreview: string | null;
   characterSignals: string[];
@@ -144,6 +146,7 @@ export function toDiscoveryFeedCard(profile: PublicDiscoveryProfile): DiscoveryF
     characterSignals: [],
     portraitGradient: stablePortraitGradient(profile.id),
     photoUrl: profile.profile_photo_url,
+    relationshipIntention: collectStructuredPublicProfileDetails(profile).find(detail => detail.label === 'Looking for')?.value,
     filterData: {
       relationshipGoals:
         profile.relationship_goals?.length ? profile.relationship_goals : profile.relationship_goal ? [profile.relationship_goal] : [],

@@ -19,6 +19,7 @@ export type SeedAccessEnv = {
  * Production (VERCEL_ENV=production / ordinary production) never allows seed data.
  */
 export function isBetaSeedAccessAllowed(env: SeedAccessEnv = process.env): boolean {
+  if (env.VERCEL_ENV === 'production' || (env.NODE_ENV === 'production' && env.VERCEL_ENV !== 'preview')) return false;
   if (env.ENABLE_BETA_SEED === 'true' || env.ENABLE_INTERNAL_DEMOS === 'true') {
     return true;
   }
@@ -52,6 +53,9 @@ export function describeSeedAccessDecision(env: SeedAccessEnv = process.env): {
   allowed: boolean;
   reason: string;
 } {
+  if (env.VERCEL_ENV === 'production' || (env.NODE_ENV === 'production' && env.VERCEL_ENV !== 'preview')) {
+    return { allowed: false, reason: 'production_blocked' };
+  }
   if (env.ENABLE_BETA_SEED === 'true' || env.ENABLE_INTERNAL_DEMOS === 'true') {
     return { allowed: true, reason: 'ENABLE_BETA_SEED' };
   }

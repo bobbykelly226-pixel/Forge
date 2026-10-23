@@ -37,28 +37,21 @@ export async function loadQuestionnaireAlignmentComparison(
 export async function loadQuestionnaireAlignmentComparisons(
   partnerIds: string[]
 ): Promise<DataAccessResult<Record<string, QuestionnaireAlignmentComparison>>> {
-  const uniqueIds = [...new Set(partnerIds.filter(Boolean))].slice(0, 50);
+  const uniqueIds = [...new Set(partnerIds.filter(Boolean))];
   if (uniqueIds.length === 0) return { success: true, data: {} };
 
   const supabase = await createClient();
-  const { data, error } = await supabase.rpc(
-    'load_questionnaire_alignment_comparisons',
-    {
-      p_partner_ids: uniqueIds,
+  const comparisons: Record<string, QuestionnaireAlignmentComparison> = {};
+  for (let offset = 0; offset < uniqueIds.length; offset += 50) {
+    const { data, error } = await supabase.rpc('load_questionnaire_alignment_comparisons', {
+      p_partner_ids: uniqueIds.slice(offset, offset + 50),
       p_version_key: QUESTIONNAIRE_VERSION,
+    });
+    if (error) {
+      console.error('loadQuestionnaireAlignmentComparisons:', error.message);
+      return { success: false, message: 'Could not load questionnaire alignment right now.' };
     }
-  );
-
-  if (error) {
-    console.error('loadQuestionnaireAlignmentComparisons:', error.message);
-    return {
-      success: false,
-      message: 'Could not load questionnaire alignment right now.',
-    };
+    Object.assign(comparisons, parseQuestionnaireAlignmentComparisonMap(data));
   }
-
-  return {
-    success: true,
-    data: parseQuestionnaireAlignmentComparisonMap(data),
-  };
+  return { success: true, data: comparisons };
 }

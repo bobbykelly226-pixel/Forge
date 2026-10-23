@@ -1,4 +1,5 @@
 import { createClient } from '@/lib/supabase/server';
+import { contactErrorMessage } from '@/lib/safety/contact-errors';
 import { ensureFoundationalRecords, type DataAccessResult } from '@/lib/data/profile';
 import { MESSAGE_MAX_LENGTH, MESSAGE_PAGE_SIZE } from '@/lib/conversations/constants';
 import type {
@@ -35,7 +36,7 @@ function rpcResult(
 ): DataAccessResult<RpcOk> {
   if (error) {
     console.error(fallback, error.message);
-    return { success: false, message: fallback };
+    return { success: false, message: contactErrorMessage(error.message) ?? fallback };
   }
   const payload = (data ?? {}) as RpcOk;
   if (!payload.ok) {

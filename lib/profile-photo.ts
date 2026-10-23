@@ -90,7 +90,7 @@ type PhotoLike = {
 
 /**
  * Authoritative current profile photo URL.
- * Prefer primary profile_photos row; fall back to legacy profiles.profile_photo_url.
+ * Only managed photo rows may supply a URL. Legacy fields are never authoritative.
  */
 export function resolveAuthoritativeProfilePhotoUrl(input: {
   photos: PhotoLike[] | null | undefined;
@@ -103,7 +103,7 @@ export function resolveAuthoritativeProfilePhotoUrl(input: {
   if (primary) {
     return primary.public_url?.trim() || null;
   }
-  return input.legacyProfilePhotoUrl?.trim() || null;
+  return null;
 }
 
 export function photosAgreeWithLegacyUrl(input: {
@@ -180,8 +180,7 @@ export function orderedPublicPhotoUrls(input: {
 }): string[] {
   const photos = sortPhotosByDisplayOrder(input.photos ?? []);
   if (photos.length === 0) {
-    const legacy = input.legacyProfilePhotoUrl?.trim();
-    return legacy ? [legacy] : [];
+    return [];
   }
 
   return photos

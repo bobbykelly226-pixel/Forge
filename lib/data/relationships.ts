@@ -1,4 +1,5 @@
 import { createClient } from '@/lib/supabase/server';
+import { contactErrorMessage } from '@/lib/safety/contact-errors';
 import { ensureFoundationalRecords, type DataAccessResult } from '@/lib/data/profile';
 import { isOpenToChatNoteValid, OPEN_TO_CHAT_NOTE_MAX_LENGTH } from '@/lib/data-model-rules';
 
@@ -33,7 +34,7 @@ function rpcResult(
 ): DataAccessResult<RpcOk> {
   if (error) {
     console.error(fallback, error.message);
-    return { success: false, message: fallback };
+    return { success: false, message: contactErrorMessage(error.message) ?? fallback };
   }
   const payload = (data ?? {}) as RpcOk;
   if (!payload.ok) {

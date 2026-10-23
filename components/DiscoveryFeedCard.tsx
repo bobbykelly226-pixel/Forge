@@ -144,6 +144,9 @@ export default function DiscoveryFeedCard({ profile, index }: DiscoveryFeedCardP
                 </p>
               </section>
 
+              {profile.relationshipIntention ? <p className="text-sm leading-relaxed text-[#3D4654]"><span className="font-semibold">Looking for: </span>{profile.relationshipIntention}</p> : null}
+              {profile.alignmentReasons?.length ? <ul className="list-disc space-y-1 pl-5 text-sm leading-relaxed text-[#5A6575]" aria-label="Shared relationship interests">{profile.alignmentReasons.map(reason => <li key={reason}>{reason}</li>)}</ul> : null}
+
               {profile.hasImportantFactors ? (
                 <div className="flex items-start gap-3 rounded-2xl border-2 border-[#D62828]/80 bg-[#FBF6EE] px-4 py-3.5 lg:items-center lg:px-4 lg:py-3">
                   <span

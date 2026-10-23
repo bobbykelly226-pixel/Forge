@@ -50,19 +50,8 @@ export default function ProfilePhotoGallery({
       Boolean(photoUrl(photo))
     );
     if (sorted.length > 0) return sorted;
-    if (legacyProfilePhotoUrl?.trim()) {
-      return [
-        {
-          id: 'legacy',
-          storage_path: '',
-          display_order: 0,
-          is_primary: true,
-          public_url: legacyProfilePhotoUrl.trim(),
-        },
-      ];
-    }
     return [];
-  }, [legacyProfilePhotoUrl, photos]);
+  }, [photos]);
 
   const primaryIndex = useMemo(() => {
     const idx = ordered.findIndex((photo) => photo.is_primary);
