@@ -4,7 +4,8 @@ import type { EmailOtpType } from '@supabase/supabase-js';
 
 import {
   CONFIRMATION_COPY,
-  classifyConfirmationProviderError,
+  callbackDestination,
+  callbackFailureOutcome,
   outcomeForCodeExchangeFailure,
   type ConfirmationOutcome,
 } from '@/lib/auth/confirmation';
@@ -67,9 +68,9 @@ export async function completeAuthWithTokenHash(
   });
   if (error) {
     console.error('completeAuthWithTokenHash failed');
-    return failureResult(classifyConfirmationProviderError(error.message));
+    return failureResult(callbackFailureOutcome(error.message, nextPath, type));
   }
-  return redirectForAuthenticatedUser(nextPath);
+  return redirectForAuthenticatedUser(callbackDestination(nextPath, type));
 }
 
 /**

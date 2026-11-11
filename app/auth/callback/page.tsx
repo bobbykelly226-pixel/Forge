@@ -8,7 +8,9 @@ import {
 } from '@/app/actions/auth-callback';
 import {
   authResultPath,
-  classifyConfirmationProviderError,
+  callbackDestination,
+  callbackFailureOutcome,
+  isRecoveryCallback,
   type ConfirmationOutcome,
 } from '@/lib/auth/confirmation';
 import { createClient } from '@/lib/supabase/client';
@@ -18,10 +20,6 @@ import { Suspense, useEffect, useRef, useState } from 'react';
 
 function goToResult(outcome: ConfirmationOutcome) {
   window.location.replace(authResultPath(outcome));
-}
-
-function safeNextPath(next: string): string {
-  return next.startsWith('/') && !next.startsWith('//') ? next : '/onboarding';
 }
 
 function AuthCallbackInner() {
@@ -34,7 +32,11 @@ function AuthCallbackInner() {
     ran.current = true;
 
     const run = async () => {
-      const next = safeNextPath(searchParams.get('next') ?? '/onboarding');
+      const hashParams = new URLSearchParams(window.location.hash.replace(/^#/, ''));
+      const callbackType = searchParams.get('type') ?? hashParams.get('type');
+      const next = callbackDestination(searchParams.get('next'), callbackType);
+      const recovery = isRecoveryCallback(next, callbackType);
+      const failure = (error?: string | null) => callbackFailureOutcome(error, next, callbackType);
       const code = searchParams.get('code');
       const tokenHash = searchParams.get('token_hash');
       const type = searchParams.get('type') as EmailOtpType | null;
@@ -44,7 +46,7 @@ function AuthCallbackInner() {
         searchParams.get('error');
 
       if (queryError) {
-        goToResult(classifyConfirmationProviderError(queryError));
+        goToResult(failure(queryError));
         return;
       }
 
@@ -52,7 +54,7 @@ function AuthCallbackInner() {
         if (code) {
           const result = await completeAuthWithCode(code, next);
           if (!result.success) {
-            goToResult(result.outcome);
+            goToResult(recovery ? 'recovery_link_error' : result.outcome);
             return;
           }
           window.location.replace(result.redirectTo);
@@ -62,7 +64,7 @@ function AuthCallbackInner() {
         if (tokenHash && type) {
           const result = await completeAuthWithTokenHash(tokenHash, type, next);
           if (!result.success) {
-            goToResult(result.outcome);
+            goToResult(recovery ? 'recovery_link_error' : result.outcome);
             return;
           }
           window.location.replace(result.redirectTo);
@@ -70,17 +72,13 @@ function AuthCallbackInner() {
         }
 
         // Default Supabase email verify redirects with tokens (or errors) in the URL hash.
-        const hash = window.location.hash.startsWith('#')
-          ? window.location.hash.slice(1)
-          : window.location.hash;
-        const hashParams = new URLSearchParams(hash);
         const hashError =
           hashParams.get('error_description') ??
           hashParams.get('error_code') ??
           hashParams.get('error');
 
         if (hashError) {
-          goToResult(classifyConfirmationProviderError(hashError));
+          goToResult(failure(hashError));
           return;
         }
 
@@ -97,7 +95,7 @@ function AuthCallbackInner() {
 
           if (sessionError) {
             // Tokens present but unusable — often an already-consumed confirm link.
-            goToResult(classifyConfirmationProviderError(sessionError.message));
+            goToResult(failure(sessionError.message));
             return;
           }
           establishedClientSession = true;
@@ -133,15 +131,15 @@ function AuthCallbackInner() {
 
         // Confirmation tokens were accepted by setSession, but no usable user/session.
         if (establishedClientSession || (accessToken && refreshToken)) {
-          goToResult('confirmed_needs_signin');
+          goToResult(recovery ? 'recovery_link_error' : 'confirmed_needs_signin');
           return;
         }
 
         // No code, no token_hash, no hash tokens, no session → genuine failure.
-        goToResult('invalid_or_expired');
+        goToResult(failure());
       } catch {
         setMessage('Something went wrong while confirming your account.');
-        goToResult('invalid_or_expired');
+        goToResult(failure());
       }
     };
 

@@ -5,7 +5,7 @@ import Header from '@/components/Header';
 import { mapAuthErrorMessage } from '@/lib/auth/messages';
 import { createClient } from '@/lib/supabase/client';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { finishPasswordReset } from '@/lib/auth/password-reset';
 import { useState } from 'react';
 
 /**
@@ -13,7 +13,7 @@ import { useState } from 'react';
  * Requires an authenticated Supabase session established by the reset callback.
  */
 export default function UpdatePasswordForm() {
-  const router = useRouter();
+  const [passwordUpdated, setPasswordUpdated] = useState(false);
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
@@ -41,22 +41,19 @@ export default function UpdatePasswordForm() {
         data: { user },
       } = await supabase.auth.getUser();
 
-      if (!user) {
+      if (!user && !passwordUpdated) {
         setError('Your reset session expired. Request a new password reset link and try again.');
         return;
       }
 
-      const { error: updateError } = await supabase.auth.updateUser({ password });
-      if (updateError) {
-        setError(mapAuthErrorMessage(updateError.message));
+      const result = await finishPasswordReset(supabase.auth, password, passwordUpdated);
+      setPasswordUpdated(result.passwordUpdated);
+      if (result.error) {
+        setError(result.passwordUpdated ? result.error : mapAuthErrorMessage(result.error));
         return;
       }
-
-      setMessage('Your password was updated. Continuing to Forge…');
-      window.setTimeout(() => {
-        router.push('/app');
-        router.refresh();
-      }, 700);
+      setMessage('Your password was updated. Sign in with your new password.');
+      window.location.replace('/login');
     } catch {
       setError('Something went wrong. Please try again.');
     } finally {
@@ -125,7 +122,7 @@ export default function UpdatePasswordForm() {
             disabled={isSubmitting}
             className="w-full rounded-2xl bg-[#D62828] py-5 text-lg font-semibold text-white transition hover:bg-[#A61F1F] disabled:bg-gray-400"
           >
-            {isSubmitting ? 'Updating…' : 'Update password'}
+            {isSubmitting ? 'Updating…' : passwordUpdated ? 'Finish signing out' : 'Update password'}
           </button>
         </form>
 

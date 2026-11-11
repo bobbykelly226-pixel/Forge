@@ -3,10 +3,11 @@ import { NextResponse, type NextRequest } from 'next/server';
 
 import {
   authResultPath,
-  classifyConfirmationProviderError,
+  callbackDestination,
+  callbackFailureOutcome,
 } from '@/lib/auth/confirmation';
 import { buildCanonicalAuthUrl } from '@/lib/auth/origins';
-import { resolvePostAuthRedirect, sanitizeInternalPath } from '@/lib/auth/redirects';
+import { resolvePostAuthRedirect } from '@/lib/auth/redirects';
 import { createClient } from '@/lib/supabase/server';
 
 /**
@@ -17,11 +18,11 @@ export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
   const tokenHash = searchParams.get('token_hash');
   const type = searchParams.get('type') as EmailOtpType | null;
-  const next = sanitizeInternalPath(searchParams.get('next')) ?? '/onboarding';
+  const next = callbackDestination(searchParams.get('next'), type);
 
   if (!tokenHash || !type) {
     return NextResponse.redirect(
-      buildCanonicalAuthUrl(authResultPath('invalid_or_expired'))
+      buildCanonicalAuthUrl(authResultPath(callbackFailureOutcome(null, next, type)))
     );
   }
 
@@ -33,7 +34,7 @@ export async function GET(request: NextRequest) {
 
   if (error) {
     console.error('auth confirm verifyOtp failed');
-    const outcome = classifyConfirmationProviderError(error.message);
+    const outcome = callbackFailureOutcome(error.message, next, type);
     return NextResponse.redirect(buildCanonicalAuthUrl(authResultPath(outcome)));
   }
 

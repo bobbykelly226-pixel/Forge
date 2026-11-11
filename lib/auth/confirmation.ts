@@ -46,7 +46,7 @@ export const CONFIRMATION_COPY: Record<ConfirmationOutcome, ConfirmationPresenta
     outcome: 'recovery_link_error',
     title: 'Password reset link could not be opened',
     message:
-      'This older reset link could not create a secure password-reset session. Return to sign in and request a new reset email.',
+      'This reset link is invalid, expired, or already used. Return to sign in and request a new password reset email.',
     primaryHref: '/login',
     primaryLabel: 'Return to sign in',
   },
@@ -165,4 +165,26 @@ export function isSuccessfulConfirmationOutcome(outcome: ConfirmationOutcome): b
     outcome === 'confirmed_needs_signin' ||
     outcome === 'already_confirmed'
   );
+}
+
+/** Recovery intent is routing context, never authorization to change a password. */
+export function isRecoveryCallback(next?: string | null, type?: string | null): boolean {
+  return type === 'recovery' || next?.split('?')[0] === '/auth/update-password';
+}
+
+export function callbackDestination(next?: string | null, type?: string | null): string {
+  if (isRecoveryCallback(next, type)) return '/auth/update-password';
+  return next && next.startsWith('/') && !next.startsWith('//') && !next.includes('\\')
+    ? next
+    : '/onboarding';
+}
+
+export function callbackFailureOutcome(
+  error: string | null | undefined,
+  next?: string | null,
+  type?: string | null
+): Exclude<ConfirmationOutcome, 'session_ready' | 'confirmed_needs_signin'> {
+  return isRecoveryCallback(next, type)
+    ? 'recovery_link_error'
+    : classifyConfirmationProviderError(error);
 }
