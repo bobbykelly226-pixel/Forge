@@ -30,6 +30,8 @@ select pg_temp.trust_assert(not has_table_privilege('authenticated','private.con
 
 select set_config('request.jwt.claim.sub',pg_temp.trust_user(1)::text,true);
 set local role authenticated;
+select pg_temp.trust_error('select * from public.discoverable_profiles limit 1','42501','permission denied');
+select pg_temp.trust_error('update public.discoverable_profiles set short_bio=short_bio where false','42501','permission denied');
 select pg_temp.trust_error(format('insert into public.interests(sender_id,recipient_id,status) values(%L,%L,''pending'')',pg_temp.trust_user(1),pg_temp.trust_user(2)),'42501','permission denied');
 select pg_temp.trust_assert((public.send_interest(pg_temp.trust_user(2))->>'ok')::boolean,'ordinary Interest works');
 select pg_temp.trust_assert((public.send_interest(pg_temp.trust_user(2))->>'ok')::boolean,'Interest retry remains idempotent');
