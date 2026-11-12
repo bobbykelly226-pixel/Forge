@@ -213,7 +213,7 @@ export default function LoginForm() {
             disabled={isResetting || !email || !captchaReady}
             className="text-sm font-medium text-[#5A6575] underline-offset-2 hover:underline disabled:opacity-50"
           >
-            {isResetting ? 'Sending reset link...' : 'Reset password'}
+            {isResetting ? 'Sending reset link...' : 'Forgot password?'}
           </button>
         </div>
 
